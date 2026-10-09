@@ -44,13 +44,20 @@ Choose **Native HDR10 (experimental)** in Settings → HDR playback. This is the
 default for compatible PQ sources tagged with BT.2020 primaries and matrix.
 The YUV shader converts them to BT.2020 RGB without SDR tone mapping. The final
 pass keeps the picture in PQ, composites SDR controls in linear light at
-100-nit white, and packs exact 10-bit BGR10A2 words for VideoOut.
+100-nit white, and packs exact 10-bit RGB10A2 words for VideoOut.
 
 The pinned OpenGL SDK still treats its final attachment as BGRA8. The final
 shader uses its four channels to transport the four bytes of each packed
 10-bit pixel. Blending, dithering and sRGB conversion are disabled at this
-step. VideoOut reads those same bytes as `Bgr10A2Bt2100Pq`; the picture's RGB
+step. VideoOut reads those same bytes as `Rgb10A2Bt2100Pq`; the picture's RGB
 components are not reduced to 8 bits.
+
+The v0.5.14 package declares the HDR-capable application profile `0x62000000`
+documented by [ProsperoLight](https://github.com/blackbearreloaded/ProsperoLight/blob/a6e56cf4e8e9e469d5bc5cc06ff71ad4ca16a6a9/docs/PORTING.md).
+Earlier Nuvio packages declared zero. Firmware 11.00 rejected the RGB HDR10
+buffer attribute in the v0.5.13 console test even though decoding succeeded.
+Build and extracted-image validation now enforce the application metadata.
+This package correction still needs an HDR-output check on the console.
 
 The adapter borrows the SDK's registered buffer set and changes its attributes
 in place, following
@@ -62,7 +69,7 @@ restores SDR; a refused restoration retains HDR packing while it retries.
 **Convert HDR to SDR** is an explicit compatibility setting, not an automatic
 replacement for a failed HDR request.
 
-This is a console test build. Host tests verify packed pixels and simulated
+This is an experimental release. Host tests verify packed pixels and simulated
 transitions, but cannot confirm the PS5's HDMI signal or the TV's behavior.
 Source mastering-display metadata and MaxCLL/MaxFALL are not forwarded yet;
 the display uses the console/display defaults. HDR10+ dynamic metadata, HLG
@@ -123,7 +130,7 @@ console. A 24 fps source on a 60 Hz display
 also has uneven frame repetition; this is different from decoding below the
 source frame rate. The display's actual accepted refresh rate matters.
 
-The 19 host video/pacing tests include an
+The 22 host video/pacing tests include an
 actual H.264 High clip and one-pixel 3840x2160 detail through the production UI
 renderer, 877 distinct grayscale levels after 10-bit GPU conversion, and
 60/120 Hz scheduling over one minute with hitch recovery. HDR checks cover all

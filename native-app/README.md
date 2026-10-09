@@ -7,9 +7,14 @@ thumbnails, descriptions and watch-progress indicators. Films show their poster
 beside metadata and stream cards. These layouts follow the artwork-focused
 approach in [Stremio-Plus](https://github.com/LoZazaMastro/Stremio-Plus).
 
-This folder contains the Nuvio Max'd source for the current **v0.5.9 native experimental** app. The OpenGL
+This folder contains the Nuvio Max'd source for the **v0.5.14 native experimental
+release**. The OpenGL
 interface, addon requests and player run together in one process and are
 packaged as a single FFPFSC image.
+
+The v0.5.13 episode prompts show controller symbols: press D-pad Down to
+select Skip Intro, Skip Recap, Skip Credits or Next Episode, then use the cross
+button shown on the selected card to confirm.
 
 For downloads, installation, debrid setup and Watch Progress settings, start
 with the [main README](../README.md). This guide covers how the native app works,
@@ -44,6 +49,40 @@ replacement. Removing a title from Continue Watching uses the delete RPC.
 Only portable progress fields are uploaded. Stream URLs, playback headers and
 addon credentials aren't included. Guest progress stays local; secondary
 profiles and Trakt/Simkl progress sources aren't supported yet.
+
+## Connected Services
+
+Settings → Connected Services connects TorBox and Premiumize and lets the app
+resolve cached files requested by AIOStreams. TorBox supports phone QR pairing
+and API keys. Premiumize supports API keys; its QR flow needs a registered app
+client ID, so it isn't included in this build.
+
+Import connections from Nuvio Sync reads provider credentials and the resolver
+preference from profile 1. Import is explicit and read-only: connecting or
+disconnecting locally doesn't change another device. Imported credentials are
+cleared when signing out or changing accounts; manually entered connections
+stay on the PS5. Credentials are stored separately in app data with mode 0600
+and aren't included in logs, progress uploads or packaged images.
+
+Resolution checks the provider cache before requesting a file. It preserves
+the selected filename/episode and uses the original download link, including
+Premiumize's `link` rather than its converted `stream_link`. Uncached files
+aren't queued for download. Provider instructions survive local resume saves
+and are resolved again when playback resumes. Provider keys and addon proxy
+headers aren't forwarded to the resulting media URL.
+
+Instant playback prepares the focused stream first, then other candidates in
+the selected addon filter. The default is two candidates, with a setting for
+Off or one to five. Ready cards reuse the prepared original-file link; selecting
+an in-flight candidate joins its request. Links stay in memory for five minutes
+and are cleared when connections change. Leaving the list cancels pending work.
+One background resolution runs at a time, capped at six starts per minute and
+thirty per hour. Manual playback bypasses the background budget. Resume and
+matching next episodes use the same cache and resolver.
+
+Cloud Library isn't implemented yet. Live provider access and PS5 interaction
+still need console testing. See
+[CONNECTED_SERVICES.md](CONNECTED_SERVICES.md) for the test checklist.
 
 ## Browsing and playback
 
@@ -96,6 +135,13 @@ extra submissions when swap returns early. This does not change the source
 frame rate or add motion interpolation. Timing logs restart after pauses and
 buffering so they measure active playback.
 
+Settings → Display refresh defaults to **60 Hz**. **Prefer 120 Hz** requests the
+SDK's supported high-refresh mode at the selected resolution. Close and reopen
+the app to apply it. If the output cannot accept 120 Hz, the SDK keeps 60 Hz;
+the playback details report the accepted rate, not the request. 24 fps can have
+an even five-refresh cadence at 120 Hz, while 60 Hz alternates frame durations.
+This option still needs console testing and does not add interpolated frames.
+
 `player: presenting` logs the texture dimensions, bit depth and alignment.
 `player: quality` and the player controls show picture/render dimensions, color
 conversion, accepted refresh rate and stereo output. `display:` records startup
@@ -105,7 +151,7 @@ side are rejected.
 
 Settings → HDR playback defaults to **Native HDR10 (experimental)**. Compatible
 PQ/BT.2020 YUV pictures bypass SDR tone mapping. The final shader packs exact
-BGR10A2 pixel words into the existing BGRA8 EGL attachment, and VideoOut reads
+RGB10A2 pixel words into the existing BGRA8 EGL attachment, and VideoOut reads
 those words as 10-bit BT.2100 PQ. Blending, dithering and sRGB conversion are
 disabled for that final pass. This uses the pinned OpenGL SDK without changing
 its buffer registration or context ownership.
@@ -118,12 +164,38 @@ conversion requires the explicit **Convert HDR to SDR** setting. If returning
 to SDR is refused, the app keeps packing HDR pixels while it retries, so menu
 pixels aren't interpreted in the wrong format.
 
+The v0.5.12 SDR option replaces the old film-style curve and sample-specific
+exposure gain with luminance-based extended Reinhard mapping. It uses a valid
+MaxCLL or mastering peak, otherwise 1000 nits, and encodes the mapped display
+light with the BT.1886 ideal-black response. BT.2020 colours are fitted into
+BT.709 around neutral at the same mapped luminance, avoiding hard channel clips.
+This only affects explicitly converted HDR pictures; SDR sources and native PQ
+output bypass the tone map. Colour and motion improvements need PS5 validation.
+
 Native HDR is not yet console-verified. Source mastering-display/content-light
 metadata are not forwarded. Dynamic HDR10+ metadata, HLG and complete Dolby
 Vision processing aren't implemented; Dolby Vision profile 5 has no compatible
 HDR10 base and is rejected in native HDR mode. Audio is decoded to stereo,
 including Atmos-labeled sources. DRM, arbitrary JavaScript plugins and
 external-player-only links aren't supported.
+
+The v0.5.12 test build addresses an HDR output rejection seen on firmware 11.00
+with v0.5.11: VideoOut returned `0x80290003` (invalid pixel format) for the BGR
+HDR10 request. The candidate uses ProsperoLight's hardware-tested RGB HDR10
+format and matching red-in-low-bits packing. GPU checks cover all 1,024 channel
+values and cropped 4K one-pixel detail. This preserves PQ, 10-bit precision and
+the configured render resolution; acceptance on Nuvio Max'd still needs a
+console test. Output errors now include the failure stage and return code.
+
+The v0.5.13 console test still rejected that RGB format on firmware 11.00.
+The v0.5.14 package corrects the missing main application attribute: it now uses
+`0x62000000`, with `attribute2=0` and `attribute3=0x80040`, as in ProsperoLight
+and EVO Player. [ProsperoLight's porting documentation](https://github.com/blackbearreloaded/ProsperoLight/blob/a6e56cf4e8e9e469d5bc5cc06ff71ad4ca16a6a9/docs/PORTING.md)
+identifies the main attribute as required for the public HDR-capable VideoOut
+profile. The game category and direct-memory budget remain the same. A shared
+validator runs before compilation, in host checks, when recording build info,
+and against metadata extracted from the final image. This verifies the declared
+profile; HDR acceptance and motion cadence still require console testing.
 
 The target firmware range is **9.00 and above**, where the required jailbreak,
 kstuff-lite and ShadowMount+ work. **Firmware below 9.00 needs testing.** This
@@ -197,18 +269,21 @@ For an optional UI preview using the production login, film, series, home and pl
 bash native-app/tests/preview.sh
 ```
 
-The v0.5.9 suite has **168 tests and 27 display-selection assertions**:
+The v0.5.14 suite has **227 tests and 27 display-selection assertions**:
 
 | Area | Checks | What they cover |
 | --- | ---: | --- |
-| Account and HTTPS | 46 | Pairing, saved sessions, refresh, addons, catalogs, progress import/push/delete, conflicts and offline retry |
+| Account and HTTPS | 52 | Pairing, sessions, addons, catalogs, progress, read-only provider import, form requests and redirect restrictions |
+| Connected Services | 16 | Cached-file resolution, provider choice, exact episode/file selection, cancellation, QR pairing, credential storage and sanitized failures |
+| Instant playback | 26 | Original-link reuse, expiry, resume identities, next-episode isolation, bounded cache/budgets, cancellation, adopting pending work, settings changes and focus/filter priority |
 | Navigation | 6 | Empty/loading pages, catalog arrival and normal card navigation |
 | Stream cards and series | 12 | Addon formatting, filters, season selection, episode focus and late artwork |
-| Episode playback | 34 | IntroDB timing validation, skip targets, post-credit scenes, countdown, cancellation, season rollover and direct/debrid quality matching |
+| Episode playback | 35 | IntroDB timings, skip targets, credits/countdown, cancellation, season rollover and direct/resolvable debrid quality matching |
 | Decoder setup | 10 | Simulated platform failures, allocation cleanup, codec switching and bounded retries |
-| Video packing, GPU presentation and pacing | 19 | 8/10-bit planes, crops/strides, SDR conversion, exact 10-bit HDR packing, UI luminance, native 4K detail and 60/120 Hz scheduling |
-| HDR output transitions | 7 | Refused switches, flip-queue drain, post-flip confirmation, timeout, SDR restoration and handle ownership |
+| Video packing, GPU presentation and pacing | 22 | 8/10-bit planes, crops/strides, neutral HDR-to-SDR shadows, colour balance/gamut, peak metadata, exact 10-bit HDR packing, UI luminance, native 4K detail and 60/120 Hz scheduling |
+| HDR output transitions | 8 | Refused switches, flip-queue drain, post-flip confirmation, timeout, SDR restoration and handle ownership |
 | Display selection | 27 assertions | Full output vs pane dimensions, 1080p/1440p/4K selection, overrides, failed queries and handle cleanup |
+| Display refresh lifecycle | 6 | Pre-EGL 120 Hz request, 60 Hz fallback without resolution loss, failed requests/readback and confirmed-rate reporting |
 | Network | 6 | Reads/seeks, recovery, shared cooldown, cancellation and bounded DNS retries |
 | FFPFSC updater | 28 | Release selection, title/path/hash checks, cancellation, mounts, disconnected storage, verified backups and atomic replacement failures |
 

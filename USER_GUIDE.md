@@ -1,6 +1,4 @@
-# Nuvio Max'd user guide
-
-For downloads and a feature overview, visit the [project front page](README.md).
+# Nuvio Max'd
 
 Nuvio Max'd brings Nuvio to a jailbroken PlayStation 5 as a native, fullscreen app.
 The interface, addons and player run together on the console. Downloads include
@@ -12,8 +10,8 @@ Sign in with a QR code to load your addons and saved library from your primary
 Nuvio profile. **Watch Progress now uses Nuvio Sync**, so you can pause on the
 PS5 and pick up where you left off on another Nuvio device.
 
-**Current release: [v0.5.9 native experimental](https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/tag/v0.5.9-native-experimental).**
-Download `PPSA99288.zip` or `NuvioMaxd-0.5.9-native.ffpfsc`. The validation report,
+**Current release: [v0.5.14 native experimental](https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/tag/v0.5.14-native-experimental).**
+Download `PPSA99288.zip` or `NuvioMaxd-0.5.14-native.ffpfsc`. The validation report,
 matching source archive and `SHA256SUMS` are included. The development repository
 stays private; the source for each released version is available with its public
 downloads.
@@ -54,12 +52,12 @@ Let ShadowMount+ finish scanning, then open **Nuvio Max'd**.
 
 ### FFPFSC image
 
-1. Download `NuvioMaxd-0.5.9-native.ffpfsc` and put it in a `/homebrew/` folder
+1. Download `NuvioMaxd-0.5.14-native.ffpfsc` and put it in a `/homebrew/` folder
    on storage that ShadowMount+ scans, just like your other homebrew apps.
    For a USB drive, that might be:
 
    ```text
-   /mnt/usb0/homebrew/NuvioMaxd-0.5.9-native.ffpfsc
+   /mnt/usb0/homebrew/NuvioMaxd-0.5.14-native.ffpfsc
    ```
 
    Leave the image in that folder so ShadowMount+ can identify it automatically.
@@ -74,7 +72,7 @@ before opening Nuvio Max'd.
 The project targets firmware **9.00 and above** where the required jailbreak,
 kstuff-lite and ShadowMount+ work. **Firmware below 9.00 needs testing.** Console
 feedback so far comes from **11.20**; other versions in the target range remain
-unverified. v0.5.9 still needs console retesting.
+unverified. The v0.5.14 HDR correction still needs console confirmation.
 
 ### Updating an existing installation
 
@@ -113,9 +111,35 @@ Configure your debrid service in your addon, such as AIOStreams, using your
 usual Nuvio setup. After changing that configuration, choose **Settings → Reload
 addons and catalogs** on the PS5.
 
-The addon needs to return a playable direct/debrid link. A torrent hash alone
-can't be played through debrid. Leave **Peer-to-peer torrents** off if you want
-only direct/debrid results; the app shows a setup message when none are available.
+Addons can return playable direct/debrid links or supported cached-file resolution
+instructions for a connected provider. Leave **Peer-to-peer torrents** off if you
+want only direct/debrid results.
+
+### Connected Services in v0.5.14
+
+Open **Settings → Connected Services**. Connect TorBox with a
+phone QR code or API key, or Premiumize with an API key. If you've already
+connected them in Nuvio, choose **Import connections from Nuvio Sync** while
+signed in to copy the connections from your primary profile.
+
+Enable **Resolve playable links** and choose **Resolve with** to prefer TorBox
+or Premiumize. AIOStreams results that ask the client to resolve a cached file
+can then play through the connected service. The app requests the original
+file and checks that it is cached before proceeding. Provider-specific results
+stay with their named provider, and an unavailable file shows a retry/setup
+message. Existing direct links continue to work as before.
+
+**Instant playback** prepares cached original-file links as you browse, starting
+with the focused card and respecting the addon filter. Ready cards reuse their
+prepared links at launch. You can prepare one to five candidates or switch
+this off. Continue Watching and matching next episodes use the same resolver.
+The app still buffers video before playing.
+
+This test build includes connections, cached-file resolution, provider choice,
+background link preparation and read-only Sync import. Cloud Library remains
+planned. See the [Connected Services guide](native-app/CONNECTED_SERVICES.md)
+for setup and console checks. v0.5.14 is a public experimental release; live
+provider authentication and HDR output still need console testing.
 
 ## Browse films and series
 
@@ -147,7 +171,35 @@ quality, HDR/Dolby Vision, codec and audio. Custom image-badge rules from other
 Nuvio apps aren't synced yet. A badge describes the source file; it doesn't
 promise that the PS5 outputs that format.
 
-## What's new in 0.5.9
+## What's new
+
+### Public 0.5.14 experimental release
+
+- The package now declares the HDR-capable application profile used by
+  ProsperoLight and EVO Player. 0.5.13 still returned `0x80290003` on firmware
+  11.00 with the revised RGB HDR10 format; its package had omitted this required
+  declaration. Build preflight and extracted-image checks now enforce it.
+  This correction needs confirmation on the PS5; native 4K/PQ/10-bit packing
+  stays the same.
+- Skip Intro, Skip Recap, Skip Credits and Next Episode show cross and circle
+  controller symbols after pressing D-pad Down. Short action labels replace the
+  longer written button instructions.
+- The log identifies the running build at startup, and playback statistics mark
+  paused or buffering playback so a stopped frame counter is easier to understand.
+
+This includes the playback changes from 0.5.12:
+
+- A revised native HDR10 output format for the rejection reported on firmware
+  11.00, with clearer failure messages. This still needs console confirmation.
+- A new HDR-to-SDR conversion for shadow detail and colour balance, using the
+  stream's peak metadata where available. Native HDR keeps its original PQ values.
+- Settings → Display refresh offers **Prefer 120 Hz** for compatible displays.
+  Restart the app after changing it. Resolution stays as selected and the player
+  shows the accepted refresh rate; unsupported outputs retain 60 Hz.
+
+The public download and updater offer 0.5.14 as an experimental release.
+
+### Public 0.5.9
 
 - **Nuvio Max'd:** A distinct name, icon and startup wordmark. The title ID and
   saved data remain compatible with earlier Nuvio PS5 builds.
@@ -268,7 +320,7 @@ the TV reports HDR when playback starts. Leave out playable URLs and account tok
 
 See the [native build and test guide](native-app/README.md),
 [third-party notices](native-app/THIRD_PARTY.md) and
-[GitHub release guide](ps5/GITHUB.md) and [released-source details](SOURCE.md).
+[GitHub release guide](ps5/GITHUB.md).
 
 This is an unofficial client. Nuvio branding and account protocols come from
 [NuvioTVSmart](https://github.com/NuvioMedia/NuvioTVSmart). The native UI and
@@ -276,5 +328,6 @@ player are adapted from
 [unofficial-stremio-ps5-port](https://github.com/Sp9nky/unofficial-stremio-ps5-port),
 with the components and licenses listed in the third-party notices.
 
-Earlier private browser/bridge experiments used companion packages. Use the
-ZIP or FFPFSC instructions above for this native app.
+The browser/bridge code under `js/` and `ps5/` is retained from the earlier 0.3
+experiment. Its two-package installation guide is archived; use the ZIP or
+FFPFSC instructions above for the current app.
