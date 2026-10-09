@@ -1,0 +1,22 @@
+name: Verify and publish Nuvio Maxd 0.5.14
+on:
+  push:
+    branches: ['builds/v0.5.14']
+    paths: ['payload/**', 'manifest.json', 'assemble.py', 'publish.py', 'verify_payload.py', 'release-notes.md', '.github/workflows/public-release.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Verify image, ZIP, source and checksums
+        run: python3 assemble.py
+      - name: Publish verified public experimental release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 publish.py
