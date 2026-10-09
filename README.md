@@ -114,8 +114,8 @@ only direct/debrid results; the app shows a setup message when none are availabl
 ## Browse films and series
 
 The native C++ interface is built with BlackBearReloaded's
-[ps5-homebrew-ui](https://github.com/blackbearreloaded/ps5-homebrew-ui), the same
-Prospero UI toolkit used by Stremio-Plus. Poster rows scroll smoothly, artwork
+[ps5-homebrew-ui](https://github.com/blackbearreloaded/ps5-homebrew-ui).
+Poster rows scroll smoothly, artwork
 crossfades as you browse, and playback controls sit in a translucent panel.
 
 Films have a large poster beside their details and streams. Series have a wide
