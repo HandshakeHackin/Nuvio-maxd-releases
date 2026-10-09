@@ -18,9 +18,9 @@ matching source archive and `SHA256SUMS` are included. The development repositor
 stays private; the source for each released version is available with its public
 downloads.
 
-The [ProsperoStore listing](https://github.com/blackbearreloaded/ps5-homebrew-catalog/pull/109)
-has been submitted and is awaiting maintainer review. Install from the GitHub
-release while the listing is under review.
+Nuvio Max'd is also available in the
+[ProsperoStore homebrew shop](https://homebrew.page/app/PPSA99288/).
+Find **Nuvio Max'd** in the store to install it, or use the GitHub downloads.
 
 ## What you can do
 
@@ -185,7 +185,7 @@ are kept; an unlabelled tail after credits is left to play through.
 
 Automatic installation is experimental and needs ShadowMount+ 1.7, the local
 payload loader and a fully released backing image. Folder installs use manual
-replacement or ProsperoStore once listed. See the [update guide](native-app/UPDATING.md)
+replacement or ProsperoStore. See the [update guide](native-app/UPDATING.md)
 for the requirements, backups and remaining console checks.
 
 ### HDR features from 0.5.6

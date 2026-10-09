@@ -65,5 +65,5 @@ therefore public even though the development repository stays private.
 
 Version 0.5.9 is the first Max'd build pointed at this feed. Earlier builds use
 the former feed address and need one manual update. ZIP folder installs can be
-managed by ProsperoStore once listed, or updated by replacing the app folder.
+managed by ProsperoStore, or updated by replacing the app folder.
 The bundled installer handles FFPFSC images only.

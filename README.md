@@ -9,12 +9,12 @@
 <p align="center">
   <a href="https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/download/v0.5.9-native-experimental/PPSA99288.zip"><img src="https://img.shields.io/badge/Download-ZIP_folder-00B8E8?style=for-the-badge" alt="Download the PS5 app as a ZIP folder"></a>
   <a href="https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/download/v0.5.9-native-experimental/NuvioMaxd-0.5.9-native.ffpfsc"><img src="https://img.shields.io/badge/Download-FFPFSC_image-8B5CF6?style=for-the-badge" alt="Download the PS5 app as an FFPFSC image"></a>
-  <a href="https://github.com/blackbearreloaded/ps5-homebrew-catalog/pull/109"><img src="https://img.shields.io/badge/ProsperoStore-Awaiting_review-64748B?style=for-the-badge" alt="ProsperoStore submission is awaiting review"></a>
+  <a href="https://homebrew.page/app/PPSA99288/"><img src="https://img.shields.io/badge/ProsperoStore-Available-22C55E?style=for-the-badge" alt="Nuvio Max'd is available in ProsperoStore"></a>
 </p>
 
 <p align="center">
   <strong>Available to download now</strong> · v0.5.9 experimental<br>
-  <a href="USER_GUIDE.md">User guide</a> · <a href="https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/tag/v0.5.9-native-experimental">Release notes</a> · <a href="store/README.md">Store submission</a>
+  <a href="USER_GUIDE.md">User guide</a> · <a href="https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/tag/v0.5.9-native-experimental">Release notes</a> · <a href="https://homebrew.page/app/PPSA99288/">ProsperoStore listing</a>
 </p>
 
 Bring your Nuvio setup to the big screen. Sign in with your phone, browse your
@@ -22,9 +22,9 @@ addons and saved library, and keep your movie and episode progress in sync with
 your other Nuvio devices. Nuvio Max'd runs directly on a jailbroken PS5, with a
 built-in player and a controller-friendly interface.
 
-The **ProsperoStore homebrew shop listing is awaiting approval**. Both submission
-checks have passed; store maintainers are reviewing it. GitHub downloads are
-available now.
+**Available from GitHub and the [ProsperoStore homebrew shop](https://homebrew.page/app/PPSA99288/).**
+Find **Nuvio Max'd** in ProsperoStore to install the app, or choose a ZIP or
+FFPFSC download above.
 
 ## Key features
 
