@@ -1,278 +1,113 @@
-# Nuvio Max'd
+<p align="center">
+  <img src="sce_sys/icon0.png" alt="Nuvio Max'd app icon" width="176" height="176">
+</p>
 
-Nuvio Max'd brings Nuvio to a jailbroken PlayStation 5 as a native, fullscreen app.
-The interface, addons and player run together on the console. Downloads include
-a **ZIP folder** for ProsperoStore and ShadowMountPlus, and an **FFPFSC** image
-for people who prefer image installs. You don't need a PC running a companion
-Nuvio server. This is an unofficial client, previously named Nuvio PS5.
+<h1 align="center">Nuvio Max'd</h1>
 
-Sign in with a QR code to load your addons and saved library from your primary
-Nuvio profile. **Watch Progress now uses Nuvio Sync**, so you can pause on the
-PS5 and pick up where you left off on another Nuvio device.
+<p align="center"><strong>Your Nuvio library, addons and watch progress. Now on PS5.</strong></p>
 
-**Current release: [v0.5.9 native experimental](https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/tag/v0.5.9-native-experimental).**
-Download `PPSA99288.zip` or `NuvioMaxd-0.5.9-native.ffpfsc`. The validation report,
-matching source archive and `SHA256SUMS` are included. The development repository
-stays private; the source for each released version is available with its public
-downloads.
+<p align="center">
+  <a href="https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/download/v0.5.9-native-experimental/PPSA99288.zip"><img src="https://img.shields.io/badge/Download-ZIP_folder-00B8E8?style=for-the-badge" alt="Download the PS5 app as a ZIP folder"></a>
+  <a href="https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/download/v0.5.9-native-experimental/NuvioMaxd-0.5.9-native.ffpfsc"><img src="https://img.shields.io/badge/Download-FFPFSC_image-8B5CF6?style=for-the-badge" alt="Download the PS5 app as an FFPFSC image"></a>
+  <a href="https://github.com/blackbearreloaded/ps5-homebrew-catalog/pull/109"><img src="https://img.shields.io/badge/ProsperoStore-Awaiting_review-64748B?style=for-the-badge" alt="ProsperoStore submission is awaiting review"></a>
+</p>
 
-The [ProsperoStore listing](https://github.com/blackbearreloaded/ps5-homebrew-catalog/pull/109)
-has been submitted and is awaiting maintainer review. Install from the GitHub
-release while the listing is under review.
+<p align="center">
+  <strong>Available to download now</strong> · v0.5.9 experimental<br>
+  <a href="USER_GUIDE.md">User guide</a> · <a href="https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/tag/v0.5.9-native-experimental">Release notes</a> · <a href="store/README.md">Store submission</a>
+</p>
 
-## What you can do
+Bring your Nuvio setup to the big screen. Sign in with your phone, browse your
+addons and saved library, and keep your movie and episode progress in sync with
+your other Nuvio devices. Nuvio Max'd runs directly on a jailbroken PS5, with a
+built-in player and a controller-friendly interface.
 
-- Sign in with your phone and keep your login between launches.
-- Bring in enabled standard addons from your primary profile, including
-  AIOMetadata and AIOStreams, or add a manifest yourself in Settings.
-- Browse addon catalogs, search for titles and open your saved library.
-- Play direct and debrid links using the built-in player. Debrid comes from
-  your addon configuration; peer-to-peer torrents are off by default.
-- Compare streams using addon filters and cards showing file size, language,
-  quality, codec and audio badges when the addon provides those details.
-- Sync movie and episode resume positions with your other Nuvio devices.
-- Match the PS5 output resolution automatically, with manual display choices.
-- Browse artwork with smooth poster carousels, choose seasons from a visible row,
-  and pick episodes from larger thumbnails with synced progress bars.
+The **ProsperoStore homebrew shop listing is awaiting approval**. Both submission
+checks have passed; store maintainers are reviewing it. GitHub downloads are
+available now.
 
-## Install on your PS5
+## Key features
 
-You'll need a working jailbreak, a compatible **kstuff-lite 1.07+** setup and
-[ShadowMountPlus](https://github.com/drakmor/ShadowMountPlus). Follow their
-instructions for your firmware, including the requirements for experimental
-PFS/FFPFSC mounting.
-
-### ZIP folder
-
-Extract `PPSA99288.zip` and copy its `PPSA99288/` folder into a `/homebrew/`
-folder scanned by ShadowMount+, such as `/data/homebrew/`. The resulting path
-should be `/data/homebrew/PPSA99288/eboot.bin`, with no extra folder level.
-Set the folder and its contents to `0777` if your FTP client changes permissions.
-Let ShadowMount+ finish scanning, then open **Nuvio Max'd**.
-
-### FFPFSC image
-
-1. Download `NuvioMaxd-0.5.9-native.ffpfsc` and put it in a `/homebrew/` folder
-   on storage that ShadowMount+ scans, just like your other homebrew apps.
-   For a USB drive, that might be:
-
-   ```text
-   /mnt/usb0/homebrew/NuvioMaxd-0.5.9-native.ffpfsc
-   ```
-
-   Leave the image in that folder so ShadowMount+ can identify it automatically.
-2. Run ShadowMount+ and let its scan/install cycle finish. Open **Nuvio Max'd**
-   from the home screen.
-3. Scan the QR code with your phone, sign in to Nuvio and approve the device.
-   Press Circle to continue as a guest instead.
-
-After a console reboot, load the required jailbreak and mounting payloads again
-before opening Nuvio Max'd.
-
-The project targets firmware **11.20–13.60** where the required homebrew payloads
-work. Console feedback so far comes from **11.20**. This is a target range, not
-confirmation that every firmware and stream combination works; v0.5.9 still
-needs console retesting.
-
-### Updating an existing installation
-
-Close the app first. For image installs, delete the old `.ffpfsc` and replace it
-with the new image in `/homebrew/`. For folder installs, replace the old
-`PPSA99288/` app folder with the one from the ZIP. Use one install format at a time.
-ShadowMount+ matches the existing app by its `PPSA99288` title ID, so it
-recognizes the replacement as an update.
-
-Keep your app data to retain your login, addon configuration and local progress.
-The title ID and `/download0/nuvio` data folder are unchanged. Starting with
-0.5.7, Settings → App updates also offers a verified update through the bundled
-helper when the public feed and required local services are available.
-
-## Set up Watch Progress across devices
-
-1. Sign in to the **same Nuvio account** on the PS5 and your other device.
-2. Use the **primary profile** on both devices. On your other device, choose
-   **Nuvio Sync** as the Watch Progress source.
-3. Play a movie or episode, then pause or stop it. Open that title on the other
-   device and check its resume position.
-
-The PS5 saves and syncs progress every **30 seconds** during playback, and when
-you pause or stop. It checks for remote progress at startup/sign-in and every
-minute while you're browsing. For an immediate refresh, open **Settings → Watch
-Progress** and press Cross.
-
-If you're offline, updates are saved on the PS5 and retry when the service is
-available. Guest progress stays on the console. Secondary profiles and
-Trakt/Simkl progress sources aren't supported yet. Playable stream URLs and
-playback headers aren't included in progress uploads.
-
-## Use your debrid addons
-
-Configure your debrid service in your addon, such as AIOStreams, using your
-usual Nuvio setup. After changing that configuration, choose **Settings → Reload
-addons and catalogs** on the PS5.
-
-The addon needs to return a playable direct/debrid link. A torrent hash alone
-can't be played through debrid. Leave **Peer-to-peer torrents** off if you want
-only direct/debrid results; the app shows a setup message when none are available.
-
-## Browse films and series
-
-The native C++ interface is built with BlackBearReloaded's
-[ps5-homebrew-ui](https://github.com/blackbearreloaded/ps5-homebrew-ui).
-Poster rows scroll smoothly, artwork
-crossfades as you browse, and playback controls sit in a translucent panel.
-
-Films have a large poster beside their details and streams. Series have a wide
-episode carousel with thumbnails, descriptions and watch-progress bars. Use
-Left/Right to browse episodes, or press Up to reach the season row. Choose a
-season with Left/Right and Cross, then press Down to return to its episodes.
-L1/R1 also switches seasons. Missing episode thumbnails fall back to the series
-artwork when available.
-
-## Choosing a stream
-
-| Button | Action |
+| Feature | What you get |
 | --- | --- |
-| Cross | Play the selected stream |
-| Circle | Go back |
-| L1 / R1 | Switch addon filters |
-| Up from the first stream | Move to the All/addon filter row |
-| Triangle or the reload icon | Refresh available streams |
+| **Easy sign-in** | Scan a QR code with your phone. Your login stays saved between launches. |
+| **Your addons and library** | Load enabled standard addons and saved titles from your primary Nuvio profile, including setups using AIOMetadata and AIOStreams. Add manifests in Settings. |
+| **Browse and search** | Explore addon catalogs, find films and series, and open your saved library. |
+| **Nuvio Sync watch progress** | Resume movies and episodes across Nuvio devices using the same account and primary profile. Progress saved offline syncs when you reconnect. |
+| **Direct and debrid playback** | Play links supplied by your configured addons. Peer-to-peer torrents are off by default. |
+| **Clear stream cards** | Compare file size, language, quality, HDR, video codec and audio badges when the addon provides those details. Filter results by addon. |
+| **Artwork made for TV** | Smooth poster carousels, large artwork, gentle transitions and translucent playback controls. |
+| **A proper series view** | Choose a season, browse episode thumbnails and descriptions, and see watch-progress bars. |
+| **Skip Intro, Recap and Credits** | Skip buttons appear when IntroDB has timings for the episode. Known post-credit scenes are kept. |
+| **Next-episode autoplay** | Find the next episode during credits and show a countdown when a stream matching the advertised quality is ready. You can cancel or turn autoplay off. |
+| **A built-in video player** | Play compatible H.264 and HEVC streams, choose audio and subtitle tracks, and view playback details. |
+| **4K and display controls** | Play compatible 4K streams and follow the PS5's display resolution, with 1080p, 1440p and 4K overrides. Video conversion retains the decoded picture's original dimensions. |
+| **Experimental HDR10** | Native HDR10 output for compatible sources and displays, with an explicit HDR-to-SDR option in Settings. |
+| **Updates from the app** | Check the public release feed in Settings. Verified FFPFSC installation through the bundled helper is experimental; ZIP installs use manual replacement. |
 
-Cards use the addon's stream name, description and filename to identify the
-release. Size and language appear where available, with built-in badges for
-quality, HDR/Dolby Vision, codec and audio. Custom image-badge rules from other
-Nuvio apps aren't synced yet. A badge describes the source file; it doesn't
-promise that the PS5 outputs that format.
+## Download and get started
 
-## What's new in 0.5.9
+You'll need a jailbroken PS5, a compatible **kstuff-lite 1.07+** setup and
+[ShadowMount+](https://github.com/drakmor/ShadowMountPlus).
 
-- **Nuvio Max'd:** A distinct name, icon and startup wordmark. The title ID and
-  saved data remain compatible with earlier Nuvio PS5 builds.
-- **Public downloads:** ZIP and FFPFSC packages, exact source archives and
-  checksums are published together. The updater uses the public Max'd feed.
+| Download | Install it this way |
+| --- | --- |
+| [**ZIP folder — PPSA99288.zip**](https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/download/v0.5.9-native-experimental/PPSA99288.zip) | Extract it and place the `PPSA99288/` folder inside a `/homebrew/` folder scanned by ShadowMount+, such as `/data/homebrew/`. |
+| [**FFPFSC image — NuvioMaxd-0.5.9-native.ffpfsc**](https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/download/v0.5.9-native-experimental/NuvioMaxd-0.5.9-native.ffpfsc) | Place the image inside a `/homebrew/` folder on storage scanned by ShadowMount+. |
 
-### Episode features from 0.5.8
+Let ShadowMount+ finish scanning, open **Nuvio Max'd**, and scan the sign-in QR
+code with your phone. Your debrid service should already be configured in your
+addon through your usual Nuvio setup.
 
-- **Skip Intro and Skip Recap:** Buttons appear when IntroDB has timings for the
-  episode. Skip Credits stops before a reported post-credit scene.
-- **Next episode during credits:** The app looks up fresh streams in the
-  background and shows a 10-second countdown when a matching source is ready.
-  It prefers the same release group, then the same addon, while retaining the
-  advertised resolution, source format, HDR, codec and audio traits. If no match
-  is available, you choose a stream. Pausing, buffering or opening the track menu
-  pauses the countdown.
-- **Controller controls:** D-pad down selects the skip/next cards, left/right
-  changes cards, and Cross confirms. Circle cancels automatic next-episode
-  playback for the current episode, including at the end. D-pad up returns to
-  the regular controls. The touchpad still pauses and resumes.
+**Updating an existing install?** Close the app, delete the old FFPFSC and replace
+it with the new one. For ZIP installs, replace the `PPSA99288/` app folder.
+ShadowMount+ recognizes the matching title ID. Keep your app data to retain your
+login and local progress.
 
-Timings depend on IntroDB coverage and may differ between releases. Titles need
-an IMDb identity from their metadata; missing or invalid timings leave playback
-alone. Settings lets you turn off skip buttons or autoplay. No credit timings
-means next-episode autoplay waits until the file ends. Known post-credit scenes
-are kept; an unlabelled tail after credits is left to play through.
+The [full user guide](USER_GUIDE.md) covers firmware compatibility, installation,
+controller controls, addon setup and troubleshooting. Downloads include matching
+source, checksums and a validation report.
 
-### Updater from 0.5.7
+## Keep your place across devices
 
-- **App updates:** Settings → App updates checks a public release feed and verifies
-  the FFPFSC before offering **Install and close Nuvio Max'd**. A bundled helper retains
-  a backup, replaces the released image and requests a ShadowMount+ rescan.
-- **Matching source archives:** Each release includes the native source and build
-  instructions for that exact version. The development repository remains private.
+Sign in to the **same Nuvio account** and use the **primary profile** on each
+device. On your other Nuvio device, select **Nuvio Sync** as the Watch Progress
+source. The PS5 saves and syncs while you watch, and when you pause or stop.
 
-Automatic installation is experimental and needs ShadowMount+ 1.7, the local
-payload loader and a fully released backing image. Folder installs use manual
-replacement or ProsperoStore once listed. See the [update guide](native-app/UPDATING.md)
-for the requirements, backups and remaining console checks.
+Read the [Watch Progress setup](USER_GUIDE.md#set-up-watch-progress-across-devices)
+for refresh controls and offline behavior.
 
-### HDR features from 0.5.6
+## About this experimental release
 
-- **Experimental HDR10 playback:** Compatible PQ/BT.2020 pictures keep their
-  10-bit values and use HDR10 VideoOut instead of the SDR tone map. Controls and
-  subtitles are composed at 100-nit white. The app checks output status after
-  the first flips and restores SDR when you leave playback.
-- **An explicit SDR option:** Settings → HDR playback defaults to **Native HDR10
-  (experimental)**. If the PS5 refuses HDR, playback stops with a message.
-  Choose **Convert HDR to SDR** yourself if your display needs it.
+- **HDR10 and automatic image updates need further console testing.** HDR10+
+  dynamic metadata, full Dolby Vision processing and source mastering metadata
+  are not supported yet. Audio output is currently **stereo**, including Atmos
+  sources.
+- **Some catalog and playback issues are still being investigated**, including
+  empty AIOMetadata home rows, choppy 1080p HEVC and haze reported in some 4K
+  playback. A stream's badges describe its source; they do not guarantee the
+  same HDR or audio format at the TV.
+- **Watch Progress supports the primary Nuvio profile.** Guest progress stays on
+  the PS5; secondary profiles and Trakt/Simkl progress sources are not supported.
+- **Episode skipping depends on IntroDB coverage.** Missing timings leave the
+  episode playing normally.
 
-### Features from 0.5.5
-
-- **More room for artwork:** Film posters and series episode thumbnails get
-  larger layouts. Series have a selectable season row and a smooth horizontal
-  episode carousel. The player has a translucent transport panel and track menu.
-
-- **Follow PS5 output:** The app reads the console's configured resolution before
-  opening its display, following the approach in
-  [Stremio-Plus](https://github.com/LoZazaMastro/Stremio-Plus). Settings also offers
-  1080p, 1440p and 4K overrides; close and reopen Nuvio Max'd after changing one.
-- **More precise video conversion:** Common YUV pictures use a 10-bit RGB
-  intermediate at the original decoded dimensions. SDR output remains 8-bit;
-  the new experimental HDR10 path preserves 10-bit values through final output.
-- **Frame timing and playback details:** Rendering is paced at the refresh rate
-  accepted by the display backend. Player controls show decoded picture size,
-  bit depth, render resolution, HDR/SDR output status and stereo audio. Pauses
-  and buffering no longer distort the reported playback frame rate.
-- **Faster DNS failure recovery:** Parallel downloads stop after a small shared
-  DNS failure budget, including when failures arrive one at a time.
-
-### Features carried forward
-
-- **Nuvio Sync Watch Progress:** Cross-device movie and episode resume, with
-  saved offline updates and a manual refresh in Settings.
-- **Native-resolution video:** Common decoded formats retain their original
-  dimensions through GPU color conversion. This removes the old 1080p
-  intermediate and corrects the 10-bit interpretation behind some green pictures.
-- **H.264 setup recovery:** Unused codec workspaces are released when switching
-  codecs, and failed H.264 setup gets one retry with a smaller pipeline.
-- **Network recovery:** Failed downloads share a cooldown and stop after a
-  bounded retry budget, avoiding hundreds of new requests during a DNS outage.
-
-## Current limitations and troubleshooting
-
-The blank home-page issue reported with AIOMetadata is still being investigated.
-The supplied log showed an empty Calendar catalog as the only requested home row.
-
-Native HDR10 output is experimental and still needs a PS5/TV check. Source
-mastering-display and content-light metadata are not forwarded yet. HDR10+
-dynamic metadata, HLG and full Dolby Vision processing aren't supported; Dolby
-Vision playback needs a compatible HDR10 base picture. Audio output is stereo,
-including sources labeled Atmos. DRM, arbitrary JavaScript plugins and external-player-only
-links aren't supported. Videos above 4096 pixels per side are rejected.
-
-Recent console feedback reports choppy 1080p HEVC and haze or moving background
-pixels in otherwise smooth 4K playback. Those symptoms remain under investigation.
-See [playback quality and output limits](native-app/PLAYBACK_QUALITY.md) for what
-the current player preserves and what HDR metadata and surround output still need.
-
-The release passes **168 host tests and 27 display-selection assertions**. Its
-image is fully extracted and every packaged file compared with the build output. These checks cover the app
-code and file formats; playback and live Nuvio Sync still need testing on a PS5.
-
-For a playback, addon or sync problem, check `/download0/nuvio/log.txt`. Through
-FTP, the path is usually:
-
-```text
-/mnt/sandbox/PPSA99288_000/download0/nuvio/log.txt
-```
-
-Share the relevant `addons:`, `catalog`, `player:`, `hwdec:`, `net:` or `progress:`
-lines, along with your app version and firmware. For picture issues, include
-`display:`, `player: presenting`, `player: quality` and the `shown … fps` lines.
-For HDR tests, also share the `[HDR]` lines from `hui/dev/app.log` and whether
-the TV reports HDR when playback starts. Leave out playable URLs and account tokens.
+See [playback quality and output limits](native-app/PLAYBACK_QUALITY.md), the
+[update guide](native-app/UPDATING.md) and [troubleshooting](USER_GUIDE.md#current-limitations-and-troubleshooting)
+for details.
 
 ## Source and credits
 
-See the [native build and test guide](native-app/README.md),
-[third-party notices](native-app/THIRD_PARTY.md) and
-[GitHub release guide](ps5/GITHUB.md) and [released-source details](SOURCE.md).
+Nuvio Max'd is an **unofficial client**, previously named Nuvio PS5. It is not
+affiliated with Nuvio, Stremio or Sony.
 
-This is an unofficial client. Nuvio branding and account protocols come from
+Every release includes a matching source archive. See [released-source details](SOURCE.md),
+the [build guide](native-app/README.md) and [third-party notices](native-app/THIRD_PARTY.md).
+The project is distributed under the [GPL-3.0 license](LICENSE).
+
+Nuvio branding and account protocols come from
 [NuvioTVSmart](https://github.com/NuvioMedia/NuvioTVSmart). The native UI and
-player are adapted from
-[unofficial-stremio-ps5-port](https://github.com/Sp9nky/unofficial-stremio-ps5-port),
-with the components and licenses listed in the third-party notices.
-
-Earlier private browser/bridge experiments used companion packages. Use the
-ZIP or FFPFSC instructions above for this native app.
+integrated player are adapted from
+[Sp9nky's unofficial Stremio port](https://github.com/Sp9nky/unofficial-stremio-ps5-port),
+using [BlackBearReloaded's Prospero UI](https://github.com/blackbearreloaded/ps5-homebrew-ui)
+and the other credited components.
