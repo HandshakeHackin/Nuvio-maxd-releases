@@ -16,6 +16,10 @@ matching source archive and `SHA256SUMS` are included. The development repositor
 stays private; the source for each released version is available with its public
 downloads.
 
+The [ProsperoStore listing](https://github.com/blackbearreloaded/ps5-homebrew-catalog/pull/109)
+has been submitted and is awaiting maintainer review. Install from the GitHub
+release while the listing is under review.
+
 ## What you can do
 
 - Sign in with your phone and keep your login between launches.

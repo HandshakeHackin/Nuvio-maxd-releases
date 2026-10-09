@@ -1,6 +1,6 @@
-# Prepared submission text
+# Submission description
 
-Copy the text below into the catalog pull request if GitHub does not retain the prefilled description.
+This description was submitted in [catalog pull request #109](https://github.com/blackbearreloaded/ps5-homebrew-catalog/pull/109).
 
 ---
 
