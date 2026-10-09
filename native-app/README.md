@@ -125,6 +125,10 @@ HDR10 base and is rejected in native HDR mode. Audio is decoded to stereo,
 including Atmos-labeled sources. DRM, arbitrary JavaScript plugins and
 external-player-only links aren't supported.
 
+The target firmware range is **9.00 and above**, where the required jailbreak,
+kstuff-lite and ShadowMount+ work. **Firmware below 9.00 needs testing.** This
+range describes intended support; it has not been verified on every version.
+
 Console reports on firmware 11.20 confirm earlier builds' startup, QR sign-in,
 1080p playback and HEVC Main10 decoding. v0.5.9 corrects known 10-bit packing,
 resolution, H.264 setup and DNS retry problems, but recent console feedback still

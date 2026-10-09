@@ -50,6 +50,10 @@ available now.
 You'll need a jailbroken PS5, a compatible **kstuff-lite 1.07+** setup and
 [ShadowMount+](https://github.com/drakmor/ShadowMountPlus).
 
+**Target firmware: 9.00 and above**, where the required jailbreak and homebrew
+tools work. **Firmware below 9.00 needs testing.** Console feedback so far covers
+11.20; the full target range has not been verified.
+
 | Download | Install it this way |
 | --- | --- |
 | [**ZIP folder — PPSA99288.zip**](https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/download/v0.5.9-native-experimental/PPSA99288.zip) | Extract it and place the `PPSA99288/` folder inside a `/homebrew/` folder scanned by ShadowMount+, such as `/data/homebrew/`. |

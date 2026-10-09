@@ -71,10 +71,10 @@ Let ShadowMount+ finish scanning, then open **Nuvio Max'd**.
 After a console reboot, load the required jailbreak and mounting payloads again
 before opening Nuvio Max'd.
 
-The project targets firmware **11.20–13.60** where the required homebrew payloads
-work. Console feedback so far comes from **11.20**. This is a target range, not
-confirmation that every firmware and stream combination works; v0.5.9 still
-needs console retesting.
+The project targets firmware **9.00 and above** where the required jailbreak,
+kstuff-lite and ShadowMount+ work. **Firmware below 9.00 needs testing.** Console
+feedback so far comes from **11.20**; other versions in the target range remain
+unverified. v0.5.9 still needs console retesting.
 
 ### Updating an existing installation
 
