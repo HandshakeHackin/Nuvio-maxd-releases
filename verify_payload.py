@@ -25,7 +25,7 @@ with zipfile.ZipFile(package) as archive:
     assert packaged == report['fileSha256']
     param = json.loads(archive.read('PPSA99288/sce_sys/param.json'))
     assert param['titleId'] == 'PPSA99288'
-    assert param['contentVersion'] == '05.000.014'
+    assert param['contentVersion'] == '05.000.015'
     profile = {'attribute':0x62000000, 'attribute2':0, 'attribute3':0x80040}
     assert {k:param[k] for k in profile} == profile
     assert report['applicationDisplayProfile'] == profile
