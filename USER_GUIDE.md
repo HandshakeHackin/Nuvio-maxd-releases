@@ -10,8 +10,8 @@ Sign in with a QR code to load your addons and saved library from your primary
 Nuvio profile. **Watch Progress now uses Nuvio Sync**, so you can pause on the
 PS5 and pick up where you left off on another Nuvio device.
 
-**Current release: [v0.5.14 native experimental](https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/tag/v0.5.14-native-experimental).**
-Download `PPSA99288.zip` or `NuvioMaxd-0.5.14-native.ffpfsc`. The validation report,
+**Current release: [v0.5.16 native experimental](https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/tag/v0.5.16-native-experimental).**
+Download `PPSA99288.zip` or `NuvioMaxd-0.5.16-native.ffpfsc`. The validation report,
 matching source archive and `SHA256SUMS` are included. The development repository
 stays private; the source for each released version is available with its public
 downloads.
@@ -52,12 +52,12 @@ Let ShadowMount+ finish scanning, then open **Nuvio Max'd**.
 
 ### FFPFSC image
 
-1. Download `NuvioMaxd-0.5.14-native.ffpfsc` and put it in a `/homebrew/` folder
+1. Download `NuvioMaxd-0.5.16-native.ffpfsc` and put it in a `/homebrew/` folder
    on storage that ShadowMount+ scans, just like your other homebrew apps.
    For a USB drive, that might be:
 
    ```text
-   /mnt/usb0/homebrew/NuvioMaxd-0.5.14-native.ffpfsc
+   /mnt/usb0/homebrew/NuvioMaxd-0.5.16-native.ffpfsc
    ```
 
    Leave the image in that folder so ShadowMount+ can identify it automatically.
@@ -72,7 +72,7 @@ before opening Nuvio Max'd.
 The project targets firmware **9.00 and above** where the required jailbreak,
 kstuff-lite and ShadowMount+ work. **Firmware below 9.00 needs testing.** Console
 feedback so far comes from **11.20**; other versions in the target range remain
-unverified. The v0.5.14 HDR correction still needs console confirmation.
+unverified. The v0.5.16 HDR correction still needs console confirmation.
 
 ### Updating an existing installation
 
@@ -115,7 +115,7 @@ Addons can return playable direct/debrid links or supported cached-file resoluti
 instructions for a connected provider. Leave **Peer-to-peer torrents** off if you
 want only direct/debrid results.
 
-### Connected Services in v0.5.14
+### Connected Services in v0.5.16
 
 Open **Settings → Connected Services**. Connect TorBox with a
 phone QR code or API key, or Premiumize with an API key. If you've already
@@ -138,7 +138,7 @@ The app still buffers video before playing.
 This test build includes connections, cached-file resolution, provider choice,
 background link preparation and read-only Sync import. Cloud Library remains
 planned. See the [Connected Services guide](native-app/CONNECTED_SERVICES.md)
-for setup and console checks. v0.5.14 is a public experimental release; live
+for setup and console checks. v0.5.16 is a public experimental release; live
 provider authentication and HDR output still need console testing.
 
 ## Browse films and series
@@ -173,7 +173,7 @@ promise that the PS5 outputs that format.
 
 ## What's new
 
-### Public 0.5.14 experimental release
+### Public 0.5.16 experimental release
 
 - The package now declares the HDR-capable application profile used by
   ProsperoLight and EVO Player. 0.5.13 still returned `0x80290003` on firmware
@@ -197,7 +197,7 @@ This includes the playback changes from 0.5.12:
   Restart the app after changing it. Resolution stays as selected and the player
   shows the accepted refresh rate; unsupported outputs retain 60 Hz.
 
-The public download and updater offer 0.5.14 as an experimental release.
+The public download and updater offer 0.5.16 as an experimental release.
 
 ### Public 0.5.9
 
