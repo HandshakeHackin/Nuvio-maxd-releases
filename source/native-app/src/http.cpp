@@ -4,7 +4,7 @@
 
 #include "util.h"
 
-const char* kUserAgent = "NuvioMaxd/0.5.21 (PlayStation 5; native)";
+const char* kUserAgent = "NuvioMaxd/0.5.22 (PlayStation 5; native)";
 
 static std::string g_ca_bundle;
 

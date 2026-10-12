@@ -62,7 +62,15 @@ compile_pids=()
 for f in "${sources[@]}"; do
 	o="$B/obj/$(echo "${f#"$ROOT/"}" | tr '/' '_').o"
 	if [ ! -f "$o" ] || [ "$f" -nt "$o" ] || [ -n "$(find "$ROOT/gl" "$ROOT/ui" "$ROOT/src" "$ROOT/update" "$ROOT/third_party" -type f \( -name "*.h" -o -name "*.hpp" \) -newer "$o" -print -quit)" ]; then
-		"$CXX" "${FLAGS[@]}" -c "$f" -o "$o" &
+		compile_flags=("${FLAGS[@]}")
+		if [ "$f" = "$ROOT/gl/main.cpp" ]; then
+			compile_flags=()
+			for flag in "${FLAGS[@]}"; do
+				[ "$flag" = "-w" ] || compile_flags+=("$flag")
+			done
+			compile_flags+=(-Werror=misleading-indentation)
+		fi
+		"$CXX" "${compile_flags[@]}" -c "$f" -o "$o" &
 		compile_pids+=("$!")
 	fi
 	objs+=("$o")

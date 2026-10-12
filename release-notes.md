@@ -1,13 +1,9 @@
-Nuvio Max'd 0.5.21 — experimental HDR and HDMI audio test build
+Nuvio Max'd 0.5.22 — startup black-screen hotfix
 
-- Move HDR output switching into the graphics driver, with safe rollback and clearer diagnostics.
-- Add optional Auto/Bitstream audio for Dolby Digital, Dolby Digital Plus and DTS core at 48 kHz.
-- Keep PCM as the default; TrueHD and DTS-HD stay decoded PCM.
-- Recover to PCM and re-buffer after compressed audio output fails.
-- Keep native-resolution GPU YUV rendering and all existing subtitle/settings improvements.
+- Fix a startup halt that ran even when display setup succeeded.
+- Add a compiler check of the actual production entry point to catch conditional-indentation errors.
+- Retain experimental HDR switching, optional HDMI bitstream audio, subtitles and saved preferences.
 
-Start with PCM audio when testing Native HDR10, then try Auto audio with a compatible receiver. Test pause, seeking, track changes and leaving playback. Bitstream bypasses the HDMI capability check for testing. Keep 0.5.20 for rollback.
+Quit Nuvio before replacing its image or folder. Use PCM audio for the first playback test. Native HDR acceptance, receiver output and motion pacing still require console testing.
 
-Experimental build on builds/v0.5.21; main remains on 0.5.20. HDR acceptance on firmware 11.00, HDMI receiver output and motion smoothness require console testing. No Vulkan/RADV backend is included.
-
-Download PPSA99288.zip for folder installation or NuvioMaxd-0.5.21-native.ffpfsc for image installation. Matching source, validation results and SHA256SUMS are included.
+Published on builds/v0.5.22. Matching source, validation results and checksums are included. The startup fix passed compiler checks; successful launch still needs confirmation on the PS5.

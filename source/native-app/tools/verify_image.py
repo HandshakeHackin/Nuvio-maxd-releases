@@ -43,7 +43,7 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
     param = json.loads((extracted / 'sce_sys/param.json').read_text())
     display_profile = validate_display_metadata(param)
     assert param['titleId'] == 'PPSA99288'
-    assert param['contentVersion'] == '05.000.021'
+    assert param['contentVersion'] == '05.000.022'
     assert param['localizedParameters']['en-US']['titleName'] == "Nuvio Max'd"
     assert param['contentId'] == 'UP9000-PPSA99288_00-NUVIOPS5NAT00001'
     assert param['applicationCategoryType'] == 0
@@ -55,10 +55,11 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
     assert struct.unpack_from('<HH', data, elf + 16) == (0xFE10, 62)
     assert struct.unpack_from('<Q', data, elf + 24)[0] != 0
     info = json.loads((extracted / 'build-info.json').read_text())
-    assert info['version'] == '0.5.21-native-experimental'
+    assert info['version'] == '0.5.22-native-experimental'
     assert info['userExperienceUpdates']['optionalDonationQr']
     assert info['userExperienceUpdates']['installSourceSelector'] and info['userExperienceUpdates']['sourceAwareUpdateReminders']
     assert info['experimentalAv']['driverOwnedHdrSwitch'] and info['experimentalAv']['pcmDefault']
+    assert info['startupHotfix']['displayFailureHaltConditional'] and info['startupHotfix']['productionEntryPointCompilerGuard']
     assert info['name'] == "Nuvio Max'd"
     assert info['updater']['repository'] == 'HandshakeHackin/Nuvio-maxd-releases'
     assert not info['sourceDirty']
@@ -95,6 +96,7 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
     assert info['displayRefresh']['resolutionReducedForRefresh'] is False
     assert info['hdrToSdr']['exposureGain'] == 1
     test_log = args.host_test_log.read_text()
+    assert 'Production startup: actual entry point passes conditional-indentation compiler check' in test_log
     assert re.search(r'Ran 52 tests', test_log) and '\nOK\n' in test_log
     assert 'NetworkTests.test_parallel_dns_failure_does_not_walk_entire_file' in test_log
     assert re.search(r'Ran 6 tests', test_log)
@@ -148,7 +150,7 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
         'hostUpstreamAdaptationTestsPassed': True, 'hostExperienceTestsPassed': True,
         'playbackEngines': info['playbackEngines'],
         'evoPlayer': evo, 'hostEvoIntegrationTestsPassed': True,
-        'nativeHdr': info['nativeHdr'], 'experimentalAv': info['experimentalAv'], 'hostDriverHdrTransactionTestsPassed': 8, 'hostBitstreamTestsPassed': True,
+        'nativeHdr': info['nativeHdr'], 'experimentalAv': info['experimentalAv'], 'startupHotfix': info['startupHotfix'], 'hostStartupCompileCheckPassed': True, 'hostDriverHdrTransactionTestsPassed': 8, 'hostBitstreamTestsPassed': True,
         'playbackQualityUpdates': info['playbackQualityUpdates'],
         'hostPlaybackQualityTestsPassed': 11, 'hostPlaybackLifecycleTestsPassed': 3,
         'applicationDisplayProfile': display_profile,

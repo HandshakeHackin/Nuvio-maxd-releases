@@ -582,7 +582,7 @@ void Session::refresh_settings()
     set(kDonation, Kind::action, "Support on Ko-fi", "", "Optional support for development. Scan the QR code with your phone.");
     set(kInstallSource, Kind::value, "Install source", install_source_label(prefs_.install_source),
         "Where you installed Nuvio Max'd. Update reminders use this choice; change it if you switch install methods.");
-    set(kUpdates, Kind::value, "App updates", update.phase == AppUpdate::Phase::idle ? "Nuvio Max'd 0.5.21 (experimental)" : update.message,
+    set(kUpdates, Kind::value, "App updates", update.phase == AppUpdate::Phase::idle ? "Nuvio Max'd 0.5.22 (experimental)" : update.message,
         update_destination(prefs_.install_source));
     set(kExit, Kind::action, "Exit Nuvio Max'd", "", "Close the app and go back to the home screen.");
     changed_ |= kSettings;

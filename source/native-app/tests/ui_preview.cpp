@@ -80,7 +80,7 @@ int main(int argc, char** argv) {
     }
     else if(mode=="install-source" || mode=="store-update" || mode=="github-update") {
         sx::DropdownState d;
-        d.title=mode=="install-source" ? "Install source" : "New release: 0.5.21";
+        d.title=mode=="install-source" ? "Install source" : "New release: 0.5.22";
         d.options=mode=="install-source" ? std::vector<std::string>{"Homebrew Store","GitHub / manual download","Not sure"} :
             mode=="store-update" ? std::vector<std::string>{"Close","Change install source"} :
             std::vector<std::string>{"Download update in app","GitHub update instructions","Later"};

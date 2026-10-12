@@ -13,7 +13,7 @@ The development repository stays private; code for released builds is available
 without an account through the matching archives here.
 
 A browsable copy of this branch's released source is in [`source/`](source/README.md).
-This branch contains 0.5.21; `source/source-archive.json` identifies its exact
+This branch contains 0.5.22; `source/source-archive.json` identifies its exact
 development commit and original file hashes. The main and build branches
 retain their respective release versions. GitHub's language statistics count this
 app source, excluding vendored libraries and release-only verification scripts.

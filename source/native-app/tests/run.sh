@@ -3,6 +3,7 @@ set -euo pipefail
 ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 python3 "$ROOT/tools/validate_display_metadata.py" "$ROOT/app/sce_sys/param.json"
 mkdir -p "$ROOT/test-output"
+bash "$ROOT/tests/startup.sh"
 ${HOST_CXX:-g++} -std=c++20 -O1 -g -Wall -Wextra -Werror -pthread \
     -I"$ROOT/src" -I"$ROOT/third_party" "$ROOT/tests/account_host.cpp" \
     "$ROOT/src/nuvio_account.cpp" "$ROOT/src/watch_sync.cpp" "$ROOT/src/stremio.cpp" "$ROOT/src/http.cpp" "$ROOT/src/util.cpp" \

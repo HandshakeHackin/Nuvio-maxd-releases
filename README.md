@@ -7,15 +7,15 @@
 <p align="center"><strong>Your Nuvio library, addons and watch progress. Now on PS5.</strong></p>
 
 <p align="center">
-  <a href="https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/download/v0.5.21-native-experimental/PPSA99288.zip"><img src="https://img.shields.io/badge/Download-ZIP_folder-00B8E8?style=for-the-badge" alt="Download the PS5 app as a ZIP folder"></a>
-  <a href="https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/download/v0.5.21-native-experimental/NuvioMaxd-0.5.21-native.ffpfsc"><img src="https://img.shields.io/badge/Download-FFPFSC_image-8B5CF6?style=for-the-badge" alt="Download the PS5 app as an FFPFSC image"></a>
+  <a href="https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/download/v0.5.22-native-experimental/PPSA99288.zip"><img src="https://img.shields.io/badge/Download-ZIP_folder-00B8E8?style=for-the-badge" alt="Download the PS5 app as a ZIP folder"></a>
+  <a href="https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/download/v0.5.22-native-experimental/NuvioMaxd-0.5.22-native.ffpfsc"><img src="https://img.shields.io/badge/Download-FFPFSC_image-8B5CF6?style=for-the-badge" alt="Download the PS5 app as an FFPFSC image"></a>
   <a href="https://ko-fi.com/handshakehackin"><img src="https://img.shields.io/badge/Ko--fi-Support-FF5E5B?style=for-the-badge&logo=kofi&logoColor=white" alt="Support on Ko-fi — optional donation"></a>
   <a href="https://homebrew.page/app/PPSA99288/"><img src="https://img.shields.io/badge/ProsperoStore-Available-22C55E?style=for-the-badge" alt="Nuvio Max'd is available in ProsperoStore"></a>
 </p>
 
 <p align="center">
-  <strong>Available to download now</strong> · v0.5.21 experimental<br>
-  <a href="USER_GUIDE.md">User guide</a> · <a href="https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/tag/v0.5.21-native-experimental">Release notes</a> · <a href="https://homebrew.page/app/PPSA99288/">ProsperoStore listing</a>
+  <strong>Available to download now</strong> · v0.5.22 experimental<br>
+  <a href="USER_GUIDE.md">User guide</a> · <a href="https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/tag/v0.5.22-native-experimental">Release notes</a> · <a href="https://homebrew.page/app/PPSA99288/">ProsperoStore listing</a>
 </p>
 
 Bring your Nuvio setup to the big screen. Sign in with your phone, browse your
@@ -23,9 +23,9 @@ addons and saved library, and keep your movie and episode progress in sync with
 your other Nuvio devices. Nuvio Max'd runs directly on a jailbroken PS5, with a
 built-in player and a controller-friendly interface.
 
-**Version 0.5.21 is available from the GitHub downloads above.**
-The [ProsperoStore listing](https://homebrew.page/app/PPSA99288/) currently pins
-0.5.9; its catalog update is separate from this public release.
+**Version 0.5.22 is available from the GitHub downloads above.**
+The [ProsperoStore listing](https://homebrew.page/app/PPSA99288/) may receive this
+update later than GitHub; the catalog submission and merge are separate.
 
 ## Key features
 
@@ -46,13 +46,11 @@ The [ProsperoStore listing](https://homebrew.page/app/PPSA99288/) currently pins
 | **Experimental HDR10** | Native HDR10 output for compatible sources and displays, with an explicit HDR-to-SDR option in Settings. |
 | **Updates from the app** | Check the public release feed in Settings. Verified FFPFSC installation through the bundled helper is experimental; ZIP installs use manual replacement. |
 
-## What changed in 0.5.21
+## What changed in 0.5.22
 
-This experimental build tests driver-owned HDR output switching and optional HDMI bitstream audio. PCM remains the default. Settings → Audio output adds Auto and Bitstream for 48 kHz Dolby Digital, Dolby Digital Plus and DTS core; unsupported tracks fall back to PCM. TrueHD and DTS-HD remain decoded PCM.
+Fixed an unconditional startup halt after display setup that left the app on a black screen. The compiler now checks the actual production entry point for conditional-indentation errors; UI preview tests use a different entry point and did not catch this regression.
 
-The audio recovery path reopens PCM and re-buffers after an output failure. Host checks cover compressed framing, receiver capability checks, pause/seek recovery, and HDR registration rollback. **HDR acceptance, receiver output and motion pacing still need console testing, including firmware 11.00.**
-
-The renderer remains OpenGL with native-resolution GPU YUV conversion. This build does not include a Vulkan/RADV backend. The main branch remains on 0.5.20.
+The 0.5.21 experimental HDR and optional HDMI bitstream audio changes are retained. PCM remains the default. Native HDR acceptance and receiver output still need console testing.
 
 ## Download and get started
 
@@ -65,8 +63,8 @@ tools work. **Firmware below 9.00 needs testing.** Console feedback so far cover
 
 | Download | Install it this way |
 | --- | --- |
-| [**ZIP folder — PPSA99288.zip**](https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/download/v0.5.21-native-experimental/PPSA99288.zip) | Extract it and place the `PPSA99288/` folder inside a `/homebrew/` folder scanned by ShadowMount+, such as `/data/homebrew/`. |
-| [**FFPFSC image — NuvioMaxd-0.5.21-native.ffpfsc**](https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/download/v0.5.21-native-experimental/NuvioMaxd-0.5.21-native.ffpfsc) | Place the image inside a `/homebrew/` folder on storage scanned by ShadowMount+. |
+| [**ZIP folder — PPSA99288.zip**](https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/download/v0.5.22-native-experimental/PPSA99288.zip) | Extract it and place the `PPSA99288/` folder inside a `/homebrew/` folder scanned by ShadowMount+, such as `/data/homebrew/`. |
+| [**FFPFSC image — NuvioMaxd-0.5.22-native.ffpfsc**](https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/download/v0.5.22-native-experimental/NuvioMaxd-0.5.22-native.ffpfsc) | Place the image inside a `/homebrew/` folder on storage scanned by ShadowMount+. |
 
 Let ShadowMount+ finish scanning, open **Nuvio Max'd**, and scan the sign-in QR
 code with your phone. Configure your addon through your usual Nuvio setup. For cached-file resolution,
