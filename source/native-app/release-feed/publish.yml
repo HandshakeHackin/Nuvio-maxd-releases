@@ -1,0 +1,27 @@
+# Copy to .github/workflows/publish.yml in the public feed repository.
+name: Publish verified Nuvio Max'd downloads
+on:
+  push:
+    branches: ['publish/v*-native-experimental']
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify payload checksums
+        working-directory: release-payload
+        run: sha256sum -c SHA256SUMS
+      - name: Check package and matching source metadata
+        run: python3 verify_payload.py release-payload
+      - name: Publish experimental release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          tag=${BRANCH#publish/}
+          gh release create "$tag" --prerelease --title "Nuvio Max'd ${tag#v}" --notes-file release-notes.md
+          gh release upload "$tag" release-payload/*

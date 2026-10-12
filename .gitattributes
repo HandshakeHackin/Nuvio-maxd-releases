@@ -1,0 +1,4 @@
+# Count the published app source, excluding release-only automation and vendors.
+/*.py linguist-vendored
+/source/native-app/third_party/** linguist-vendored
+/source/native-app/gl/scanout_driver_extension.inc linguist-language=C

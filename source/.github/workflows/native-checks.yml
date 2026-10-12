@@ -1,0 +1,31 @@
+name: Native Nuvio Max'd checks
+on:
+  push:
+    paths:
+      - 'native-app/**'
+      - '.github/workflows/native-checks.yml'
+  pull_request:
+    paths:
+      - 'native-app/**'
+      - '.github/workflows/native-checks.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  account-and-transport:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install host dependencies
+        run: |
+          if ! pkg-config --exists libcurl openssl libavcodec libavutil libavformat libswscale libswresample libass egl gl || ! command -v ffmpeg >/dev/null; then
+            sudo apt-get update -qq -o Acquire::Retries=0 -o Acquire::http::Timeout=20 -o Acquire::https::Timeout=20
+            sudo apt-get install -y libcurl4-openssl-dev libssl-dev libavcodec-dev libavutil-dev libavformat-dev libswscale-dev libswresample-dev libass-dev libegl1-mesa-dev libgl1-mesa-dev libgl1-mesa-dri pkg-config openssl ffmpeg
+          fi
+      - name: Test account, catalogs, stream cards, navigation, decoder setup and GPU video
+        run: bash native-app/tests/run.sh
+      - name: Render controller dialogs and update guidance
+        run: bash native-app/tests/preview.sh
+      - name: Check whitespace
+        run: git diff --check
