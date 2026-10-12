@@ -9,6 +9,7 @@
 <p align="center">
   <a href="https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/download/v0.5.20-native-experimental/PPSA99288.zip"><img src="https://img.shields.io/badge/Download-ZIP_folder-00B8E8?style=for-the-badge" alt="Download the PS5 app as a ZIP folder"></a>
   <a href="https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/download/v0.5.20-native-experimental/NuvioMaxd-0.5.20-native.ffpfsc"><img src="https://img.shields.io/badge/Download-FFPFSC_image-8B5CF6?style=for-the-badge" alt="Download the PS5 app as an FFPFSC image"></a>
+  <a href="https://ko-fi.com/handshakehackin"><img src="https://img.shields.io/badge/Ko--fi-Support-FF5E5B?style=for-the-badge&logo=kofi&logoColor=white" alt="Support on Ko-fi — optional donation"></a>
   <a href="https://homebrew.page/app/PPSA99288/"><img src="https://img.shields.io/badge/ProsperoStore-Available-22C55E?style=for-the-badge" alt="Nuvio Max'd is available in ProsperoStore"></a>
 </p>
 
