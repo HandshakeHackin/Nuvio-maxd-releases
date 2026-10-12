@@ -48,7 +48,7 @@ The [ProsperoStore listing](https://homebrew.page/app/PPSA99288/) currently pins
 
 ## What changed in 0.5.21
 
-This experimental branch tests driver-owned HDR output switching and optional HDMI bitstream audio. PCM remains the default. Settings → Audio output adds Auto and Bitstream for 48 kHz Dolby Digital, Dolby Digital Plus and DTS core; unsupported tracks fall back to PCM. TrueHD and DTS-HD remain decoded PCM.
+This experimental build tests driver-owned HDR output switching and optional HDMI bitstream audio. PCM remains the default. Settings → Audio output adds Auto and Bitstream for 48 kHz Dolby Digital, Dolby Digital Plus and DTS core; unsupported tracks fall back to PCM. TrueHD and DTS-HD remain decoded PCM.
 
 The audio recovery path reopens PCM and re-buffers after an output failure. Host checks cover compressed framing, receiver capability checks, pause/seek recovery, and HDR registration rollback. **HDR acceptance, receiver output and motion pacing still need console testing, including firmware 11.00.**
 

@@ -14,3 +14,6 @@ a duplicate; resolve submission check failures within the authorized scope.
 Report the catalog PR link and status. A submitted PR is not a live store
 update: catalog maintainers must merge it and deploy the site/API. Never claim
 the store has updated without checking its live catalog.
+
+Use `builds/v<VERSION>` for versioned delivery branches, including experimental
+builds. Preserve earlier build branches and published release assets.
