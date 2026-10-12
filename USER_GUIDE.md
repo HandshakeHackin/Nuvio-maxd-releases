@@ -26,6 +26,8 @@ On your first launch after this update, choose **Homebrew Store**, **GitHub / ma
 
 The app checks once per launch for a newer verified public release. Reminders wait until playback and open dialogs finish. Store users are directed to check Homebrew Store; its catalog may receive the release later than GitHub. GitHub/manual users can view manual update instructions or use the existing verified image updater. Not sure directs you to choose a source. An offline background check stays quiet; retry in Settings → App updates.
 
+Settings → Buy me a coffee shows an optional donation link and QR code for [buymeacoffee.com/handshakehackin](https://buymeacoffee.com/handshakehackin).
+
 This records your choice, not automatic proof of where the installer came from, and does not upload an installation identifier.
 
 ## Included subtitle fixes from 0.5.19
