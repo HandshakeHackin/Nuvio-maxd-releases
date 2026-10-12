@@ -4,8 +4,8 @@ import json
 import subprocess
 
 REPO = 'HandshakeHackin/Nuvio-maxd-releases'
-TAG = 'v0.5.21-native-experimental'
-PUBLICATION = '8b309a0e2b41216440126710f04089a12427023b'
+TAG = 'v0.5.22-native-experimental'
+PUBLICATION = '96428255b29e138c99a83973b2383f6367407a37'
 
 def api(*args):
     return json.loads(subprocess.check_output(['gh', 'api', *args], text=True))
@@ -19,14 +19,14 @@ else:
     request = Path('download/release-request.json')
     request.write_text(json.dumps({
         'tag_name': TAG, 'target_commitish': PUBLICATION,
-        'name': "Nuvio Max'd 0.5.21-native-experimental",
+        'name': "Nuvio Max'd 0.5.22-native-experimental",
         'body': Path('release-notes.md').read_text(), 'draft': True, 'prerelease': True,
     }))
     release = api('--method', 'POST', f'repos/{REPO}/releases', '--input', str(request))
 assert release['tag_name'] == TAG and release['target_commitish'] == PUBLICATION
 assert release['prerelease']
 expected = json.loads(Path('manifest.json').read_text())
-image = Path('download/NuvioMaxd-0.5.21-native.ffpfsc')
+image = Path('download/NuvioMaxd-0.5.22-native.ffpfsc')
 expected[image.name] = {'bytes': image.stat().st_size, 'sha256': hashlib.sha256(image.read_bytes()).hexdigest()}
 if release['draft']:
     subprocess.run(['gh', 'release', 'upload', TAG, '--repo', REPO, '--clobber',

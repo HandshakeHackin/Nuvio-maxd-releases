@@ -1,10 +1,10 @@
 {
   "name": "Nuvio Max'd",
-  "version": "0.5.21-native-experimental",
-  "sourceCommit": "2a1b5786fb0ff9a07e7a328d6482f29379963f62",
+  "version": "0.5.22-native-experimental",
+  "sourceCommit": "fd5c23ef10c637b2594a1ebea779980a45f7155c",
   "image": "PPSA99288.ffpfsc",
-  "imageBytes": 42336256,
-  "imageSha256": "7f6fa4d46a5ec28430a285678566d334b1f09b906ee22d0e49ee516c90c6ffe4",
+  "imageBytes": 42401792,
+  "imageSha256": "23b8007c164eb3e18dbb049a9dde416e610ad55947853fa9a936b897573a7d96",
   "container": "PS5 PFS + PFSC containing exFAT",
   "containerErrors": 0,
   "containerWarnings": 0,
@@ -119,6 +119,12 @@
     "driverPatchSha256": "110576abc216d06e16d4d493ef8964c6f0cd43f46d22dbc9ccc77c491e4296c5",
     "driverObjectSha256": "f79c4bd3f42d31008831a46e1eae63c42c457bae6143a20f396b3b1e3d36db77"
   },
+  "startupHotfix": {
+    "displayFailureHaltConditional": true,
+    "productionEntryPointCompilerGuard": true,
+    "hardwareVerified": false
+  },
+  "hostStartupCompileCheckPassed": true,
   "hostDriverHdrTransactionTestsPassed": 8,
   "hostBitstreamTestsPassed": true,
   "playbackQualityUpdates": {
@@ -187,13 +193,13 @@
   "filesystemPermissions": "ExFAT mount permissions require console verification",
   "fileSha256": {
     "THIRD_PARTY.md": "1291549e9d148a4f276c75d37a917b5f23424c76058a9c8bbed0b0a314c120cb",
-    "nuvio-updater.elf": "43667172cbdb1172e28958b7d002791853466b971217adac2000bca1146712b1",
+    "nuvio-updater.elf": "caecfdd1d36c11cf62821adbb05988376dce19df49b95f3012cce62e3042b3bb",
     "LICENSE": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
-    "eboot.bin": "9ff297129c2913518c6d41acb7d80ebc0a565c61ae0bf1c8cf7397e291b2d908",
+    "eboot.bin": "6bad80840c61c07007751ec67b9b542eee465909e9f4c2e8eef58cdc20512ead",
     "ca-bundle.crt": "11163db462ffae3918afdf46c70a8db70cfcbaa8077352290b62a9c03c36fe6c",
-    "build-info.json": "dd3700dd37b727a4551cd66511c6492b54e3364873ebe4c16096ca632fd7c3de",
+    "build-info.json": "f93a4df75b73f95f4abc212c9924c40fc6c1d354a019355863f906e73f3a18fe",
     "account-config.json": "1014f3c748bee58a832ea5d1be191ebaa2e577ef8a08e8168f01cb6d78f1921f",
-    "sce_sys/param.json": "c5a4f415302d4f7609017733d176530d15a0e97c1f6589ec01b7537942d7e473",
+    "sce_sys/param.json": "0863b1520bf22f6a46dd427f96d9c62bfea3108d8a94c7ccc4959995b315d70a",
     "sce_sys/icon0.png": "fff8126b20f15bfc8bf062b9de6d36803d8420ee35ef9b578c403da7caabb517",
     "sce_module/libc.prx": "e6ff45d16adf687855cc3b33b0c8a4132b6504360b221e0a34c7e99fb3ba0036",
     "licenses/zstd.txt": "7055266497633c9025b777c78eb7235af13922117480ed5c674677adc381c9d8",
@@ -323,23 +329,23 @@
     "licenses/ps5-opengl/LICENSES/Mesa/exceptions/Linux-Syscall-Note": "9b4084655174654608fd037e9ddb4feeadfada01cd042e9c17b05aa7105b2b9f"
   },
   "zip": "PPSA99288.zip",
-  "zipBytes": 40178191,
-  "zipSha256": "2bc0b0211fa672a770607158a974785f32f524eb857eae4f1c7eee001d14d9bc",
+  "zipBytes": 40237112,
+  "zipSha256": "46d28aef59d4a18cba42843ded4ba1d852ddef6fdb15a54cdf2dc62f422503a2",
   "zipFilesMatchImage": true,
   "zipPermissions": "0777",
   "hostTestEvidence": {
     "conclusion": "success",
-    "headSha": "2a1b5786fb0ff9a07e7a328d6482f29379963f62",
-    "runId": 38202654639,
-    "url": "https://github.com/HandshakeHackin/nuvio-ps5/actions/runs/38202654639"
+    "headSha": "fd5c23ef10c637b2594a1ebea779980a45f7155c",
+    "runId": 38269030812,
+    "url": "https://github.com/HandshakeHackin/nuvio-ps5/actions/runs/38269030812"
   },
   "hostToolsEvidence": {
     "conclusion": "success",
-    "headSha": "2a1b5786fb0ff9a07e7a328d6482f29379963f62",
-    "runId": 38202654648,
-    "url": "https://github.com/HandshakeHackin/nuvio-ps5/actions/runs/38202654648"
+    "headSha": "fd5c23ef10c637b2594a1ebea779980a45f7155c",
+    "runId": 38269030856,
+    "url": "https://github.com/HandshakeHackin/nuvio-ps5/actions/runs/38269030856"
   },
-  "sourceArchiveFileCount": 561,
+  "sourceArchiveFileCount": 562,
   "supportedImportCount": 427,
   "buildDependencies": {
     "OpenGL": "1.0.1",

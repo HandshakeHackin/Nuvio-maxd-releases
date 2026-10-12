@@ -5,8 +5,8 @@ import shutil
 import subprocess
 import zipfile
 
-VERSION = '0.5.21'
-SOURCE = '2a1b5786fb0ff9a07e7a328d6482f29379963f62'
+VERSION = '0.5.22'
+SOURCE = 'fd5c23ef10c637b2594a1ebea779980a45f7155c'
 manifest = json.loads(Path('manifest.json').read_text())
 destination = Path('download')
 destination.mkdir(exist_ok=True)
@@ -19,6 +19,7 @@ report = json.loads((destination / 'native-validation.json').read_text())
 assert report['sourceCommit'] == SOURCE and report['version'] == VERSION + '-native-experimental'
 assert report['extractedFileCount'] == 135 and report['allExtractedFileHashesMatch']
 assert report['evoPlayer']['version'] == '0.12.0' and report['hostEvoIntegrationTestsPassed']
+assert report['hostStartupCompileCheckPassed'] and report['startupHotfix']['displayFailureHaltConditional']
 assert report['hostDriverHdrTransactionTestsPassed'] == 8 and report['hostBitstreamTestsPassed']
 assert report['experimentalAv']['pcmDefault'] and report['experimentalAv']['driverOwnedHdrSwitch']
 assert report['hostExperienceTestsPassed']
@@ -44,4 +45,4 @@ subprocess.run(['python3', 'verify_payload.py', str(destination)], check=True)
 for line in (destination / 'SHA256SUMS').read_text().splitlines():
     digest, name = line.split('  ', 1)
     assert hashlib.sha256((destination / name).read_bytes()).hexdigest() == digest, name
-print('Verified public 0.5.21 payload; console confirmation remains pending.')
+print('Verified public 0.5.22 payload; console confirmation remains pending.')
