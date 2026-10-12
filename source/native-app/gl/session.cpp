@@ -132,7 +132,8 @@ bool Session::init(const std::string &base_dir, const std::string &data_dir, hui
     debrid::load(data_dir_ + "/connected-services.json", services_);
     const auto account_user = nuvio_account_user_id();
     if ((!services_.torbox.sync_owner.empty() && services_.torbox.sync_owner != account_user) ||
-        (!services_.premiumize.sync_owner.empty() && services_.premiumize.sync_owner != account_user)) {
+        (!services_.premiumize.sync_owner.empty() && services_.premiumize.sync_owner != account_user) ||
+        (!services_.animeskip.sync_owner.empty() && services_.animeskip.sync_owner != account_user)) {
         services_.clear_synced(); debrid::save(data_dir_ + "/connected-services.json", services_);
     }
     prepared_->configure(services_);
@@ -530,7 +531,7 @@ void Session::refresh_settings()
         prefs_.builtin_torrents);
     const int connections = int(!services_.torbox.key.empty()) + int(!services_.premiumize.key.empty());
     set(kConnectedServices, Kind::value, "Connected Services", connections ? std::to_string(connections) + " connected" : "TorBox / Premiumize",
-        "Connect TorBox or Premiumize, import connections from Nuvio Sync, and prepare cached links for faster playback. The selected file keeps its original quality.");
+        "Connect TorBox or Premiumize, import connections from Nuvio Sync, and prepare cached links for faster playback. The selected file keeps its original quality. An Anime-Skip client ID adds anime skip timings.");
     set(kServer, Kind::value, "Watch Progress", signed_in() ? "Nuvio Sync" : "Saved on this PS5",
         signed_in() ? "Resume across devices using Nuvio Sync on the same account and primary profile. Press Cross to refresh."
                     : "Sign in to sync progress with Nuvio. Guest progress stays on this PS5.");
@@ -571,7 +572,7 @@ void Session::refresh_settings()
     set(kAutoplay, Kind::toggle, "Play next episode automatically", "", "Show a cancellable countdown during credits or at the end of an episode. Match the selected stream quality.",
         prefs_.autoplay_next);
     set(kSkipSegments, Kind::toggle, "Skip intro and recap buttons", "",
-        "Use IntroDB episode timings for intros, recaps and credits. Availability varies by show and release.", prefs_.skip_segments);
+        "Use IntroDB episode timings for intros, recaps and credits, with AniSkip and Anime-Skip filling in for anime. Availability varies by show and release.", prefs_.skip_segments);
     set(kCalmBackgrounds, Kind::toggle, "Calmer backgrounds", "", "Keep decorative menu backgrounds still. Video playback stays full quality.", prefs_.calm_backgrounds);
     set(kUiSounds, Kind::toggle, "Interface sounds", "", "A soft sound when you move around, go back or switch page.", prefs_.ui_sounds);
     set(kAddAddon, Kind::value, "Add addon by URL", "",

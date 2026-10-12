@@ -262,6 +262,7 @@ class Session
     void sign_out();
     void services_menu();
     void service_menu(const std::string& provider);
+    void animeskip_menu();
     bool services_save(const debrid::Settings& next);
     void services_import();
     void service_login_start();
@@ -313,6 +314,7 @@ class Session
     void watch_auto_subtitles();
     void watch_next_episode();
     void watch_load_segments(int season, int episode);
+    void watch_load_anime_segments(double duration);
     void watch_prefetch_next();
     bool watch_episode_update(double now, double position, double duration, bool advancing, bool ended = false);
     bool watch_episode_input(const hui::InputFrame &input);
@@ -476,6 +478,8 @@ class Session
     bool autoplay_pending_ = false;
     ::Stream autoplay_previous_;
     episode_playback::Flow w_episode_;
+    episode_playback::AnimeIds w_anime_; // anime timings wait for the file's duration
+    bool w_anime_requested_ = false;
     std::optional<::Video> w_next_;
     std::vector<::Stream> w_next_streams_;
     int w_next_pending_ = 0, w_next_answered_ = 0, w_next_generation_ = 0;

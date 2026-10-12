@@ -89,6 +89,11 @@ std::string provider_name(const std::string& value) {
 bool valid_key(const std::string& key) {
     return !key.empty() && key.size() <= 4096 && std::all_of(key.begin(), key.end(), [](unsigned char c) { return c > 32 && c < 127; });
 }
+bool valid_client_id(const std::string& id) {
+    return !id.empty() && id.size() <= 256 && std::all_of(id.begin(), id.end(), [](unsigned char c) {
+        return std::isalnum(c) || c == '-' || c == '_' || c == '.';
+    });
+}
 std::string Settings::key(const std::string& provider) const {
     const auto id = provider_id(provider);
     return id == "torbox" ? torbox.key : id == "premiumize" ? premiumize.key : "";
@@ -109,6 +114,7 @@ bool Settings::can_resolve(const ::Stream& stream) const {
 void Settings::clear_synced() {
     if (!torbox.sync_owner.empty()) torbox = {};
     if (!premiumize.sync_owner.empty()) premiumize = {};
+    if (!animeskip.sync_owner.empty()) animeskip = {};
 }
 bool load(const std::string& path, Settings& settings) {
     json data;
@@ -122,12 +128,16 @@ bool load(const std::string& path, Settings& settings) {
         if (!valid_key(credential.key)) credential.key.clear();
         credential.sync_owner = jstr(jobj(data, provider), "sync_owner");
     }
+    next.animeskip.key = trim(jstr(jobj(data, "animeskip"), "key"));
+    if (!valid_client_id(next.animeskip.key)) next.animeskip.key.clear();
+    next.animeskip.sync_owner = jstr(jobj(data, "animeskip"), "sync_owner");
     settings = next; chmod(path.c_str(), 0600); return true;
 }
 bool save(const std::string& path, const Settings& settings) {
     const json data{{"enabled", settings.enabled}, {"preferred", settings.preferred}, {"instant_limit", settings.instant_limit},
         {"torbox", {{"key", settings.torbox.key}, {"sync_owner", settings.torbox.sync_owner}}},
-        {"premiumize", {{"key", settings.premiumize.key}, {"sync_owner", settings.premiumize.sync_owner}}}};
+        {"premiumize", {{"key", settings.premiumize.key}, {"sync_owner", settings.premiumize.sync_owner}}},
+        {"animeskip", {{"key", settings.animeskip.key}, {"sync_owner", settings.animeskip.sync_owner}}}};
     const std::string temp = path + ".tmp", body = data.dump();
     FILE* f = fopen(temp.c_str(), "wb");
     if (!f) return false;
@@ -144,6 +154,15 @@ bool import_snapshot(Settings& settings, const json& snapshot) {
     Settings next = settings;
     for (const auto& row : rows) {
         const std::string provider = jstr(row, "provider");
+        if (provider == "animeskip") {
+            json value = jobj(row, "credential_json");
+            if (value.is_string()) value = json::parse(value.get<std::string>(), nullptr, false);
+            if (!value.is_object() || !jobj(value, "client_id").is_string()) return false;
+            const std::string id = trim(jstr(value, "client_id"));
+            if (!id.empty() && !valid_client_id(id)) return false;
+            next.animeskip = {id, owner};
+            continue;
+        }
         if (!starts_with(provider, "debrid:")) continue;
         const auto id = provider_id(provider.substr(7));
         if (id.empty()) continue;

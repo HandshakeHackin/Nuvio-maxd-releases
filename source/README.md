@@ -211,7 +211,9 @@ The public download and updater offer 0.5.14 as an experimental release.
 ### Episode features from 0.5.8
 
 - **Skip Intro and Skip Recap:** Buttons appear when IntroDB has timings for the
-  episode. Skip Credits stops before a reported post-credit scene.
+  episode. For anime, AniSkip and, once you add its client ID in Connected
+  Services, Anime-Skip come first, with IntroDB filling gaps. Skip Credits
+  stops before a reported post-credit scene.
 - **Next episode during credits:** The app looks up fresh streams in the
   background and shows a 10-second countdown when a matching source is ready.
   It prefers the same release group, then the same addon, while retaining the
@@ -223,8 +225,11 @@ The public download and updater offer 0.5.14 as an experimental release.
   playback for the current episode, including at the end. D-pad up returns to
   the regular controls. The touchpad still pauses and resumes.
 
-Timings depend on IntroDB coverage and may differ between releases. Titles need
-an IMDb identity from their metadata; missing or invalid timings leave playback
+Timings depend on IntroDB, AniSkip and Anime-Skip coverage and may differ
+between releases. Anime timings are used only when they were recorded on a file
+within 20 seconds of the one playing, after allowing for opening branding that
+Anime-Skip marks and a shorter copy lacks. Titles need an IMDb identity, or for anime
+a Kitsu, MyAnimeList or AniList identity; missing or invalid timings leave playback
 alone. Settings lets you turn off skip buttons or autoplay. No credit timings
 means next-episode autoplay waits until the file ends. Known post-credit scenes
 are kept; an unlabelled tail after credits is left to play through.

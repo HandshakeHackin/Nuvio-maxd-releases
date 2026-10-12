@@ -228,6 +228,8 @@ Meta parse_meta(const json& j) {
 			vid.released = jstr(v, "released", jstr(v, "firstAired"));
 			vid.season = int(jnum(v, "season", 0));
 			vid.episode = int(jnum(v, "episode", jnum(v, "number", 0)));
+			vid.imdb_season = int(jnum(v, "imdbSeason", 0));
+			vid.imdb_episode = int(jnum(v, "imdbEpisode", 0));
 			m.videos.push_back(vid);
 		}
 		std::stable_sort(m.videos.begin(), m.videos.end(), [](const Video& a, const Video& b) {

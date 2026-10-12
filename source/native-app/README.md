@@ -89,6 +89,10 @@ cleared when signing out or changing accounts; manually entered connections
 stay on the PS5. Credentials are stored separately in app data with mode 0600
 and aren't included in logs, progress uploads or packaged images.
 
+An Anime-Skip client ID can be entered or imported the same way. It is sent
+only to Anime-Skip, to look up anime intro, recap and credit timings, and is
+never used to resolve streams.
+
 Resolution checks the provider cache before requesting a file. It preserves
 the selected filename/episode and uses the original download link, including
 Premiumize's `link` rather than its converted `stream_link`. Uncached files
@@ -300,11 +304,11 @@ The v0.5.14 suite has **227 tests and 27 display-selection assertions**:
 | Area | Checks | What they cover |
 | --- | ---: | --- |
 | Account and HTTPS | 52 | Pairing, sessions, addons, catalogs, progress, read-only provider import, form requests and redirect restrictions |
-| Connected Services | 16 | Cached-file resolution, provider choice, exact episode/file selection, cancellation, QR pairing, credential storage and sanitized failures |
+| Connected Services | 18 | Cached-file resolution, provider choice, exact episode/file selection, cancellation, QR pairing, credential storage, Anime-Skip client IDs and sanitized failures |
 | Instant playback | 26 | Original-link reuse, expiry, resume identities, next-episode isolation, bounded cache/budgets, cancellation, adopting pending work, settings changes and focus/filter priority |
 | Navigation | 6 | Empty/loading pages, catalog arrival and normal card navigation |
 | Stream cards and series | 12 | Addon formatting, filters, season selection, episode focus and late artwork |
-| Episode playback | 35 | IntroDB timings, skip targets, credits/countdown, cancellation, season rollover and direct/resolvable debrid quality matching |
+| Episode playback | 56 | IntroDB, AniSkip and Anime-Skip timings, anime ID mapping, merge priority, skip targets, credits/countdown, cancellation, season rollover and direct/resolvable debrid quality matching |
 | Decoder setup | 10 | Simulated platform failures, allocation cleanup, codec switching and bounded retries |
 | Video packing, GPU presentation and pacing | 22 | 8/10-bit planes, crops/strides, neutral HDR-to-SDR shadows, colour balance/gamut, peak metadata, exact 10-bit HDR packing, UI luminance, native 4K detail and 60/120 Hz scheduling |
 | HDR output transitions | 8 | Refused switches, flip-queue drain, post-flip confirmation, timeout, SDR restoration and handle ownership |

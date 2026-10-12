@@ -119,6 +119,18 @@ URLs or provider headers are sent. Coverage and release timing accuracy vary.
 The native implementation validates timings and preserves known post-credit
 scenes before automatic transitions.
 
+For anime, [ARM](https://arm.haglund.dev/) maps Kitsu, MyAnimeList, AniList and
+IMDb identities to MyAnimeList and AniList IDs. [AniSkip](https://aniskip.com/)
+receives the MyAnimeList ID, the episode number and the file's length in
+seconds. [Anime-Skip](https://anime-skip.com/) receives the AniList ID and the
+user's own client ID, and is used only when one is set. Both anime services
+record the file length their timings were made on and are checked against the
+playing file, so for anime they come before IntroDB, which fills in segment
+types they lack. Nuvio's `SkipIntroRepository.kt` puts IntroDB first; on a
+23:30 copy of One Piece episode 412, IntroDB's intro started 39 seconds after
+the opening. No account tokens, playable URLs or
+provider headers are sent to any of them.
+
 ## 0.5.16 adaptations
 
 Unicode-safe wrapping in `third_party/hui/src/gfx/font.cpp` follows ps5-homebrew-ui commit `aed286b81cdf70a814d3059f54633ba34844e46e` (BlackBearReloaded, GPL-3.0-or-later). The vendored base remains in `VERSION.txt`; only the wrapping function was ported. Native frame-selection principles and the display declaration follow ProsperoLight commit `91c0cf8b6bc6c9cbb2d48c8cc6994fbccaa2d61f` (BlackBearReloaded, GPL-3.0-or-later). Background logging is an independent implementation inspired by ProsperoEden; its reference pin appears in `dependencies.json`. See `UPSTREAM_REFRESH.md` for scope.
