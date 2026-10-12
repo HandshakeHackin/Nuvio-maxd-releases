@@ -1,0 +1,22 @@
+{
+  "NuvioMaxd-0.5.19-FFPFSC.zip": {
+    "bytes": 41708291,
+    "sha256": "98dea035fa89631ae9cda65a3befaa395a98da6da9a5b9a330ca9a3b93fbea49"
+  },
+  "native-validation.json": {
+    "bytes": 20469,
+    "sha256": "4eccc7429b46ed37dcebb79896b416451e83dced3860015efcc0f13d6b9151d0"
+  },
+  "SHA256SUMS": {
+    "bytes": 457,
+    "sha256": "6d4f908154a18f30bd8d6f598eaee05ca4a836d3eff5e967913402502a45b79e"
+  },
+  "NuvioMaxd-0.5.19-source.tar.gz": {
+    "bytes": 17410488,
+    "sha256": "b76dc1603e01987ccb6cac71fb749941efba666d099febbd0f6683ca1c24a2e8"
+  },
+  "PPSA99288.zip": {
+    "bytes": 40161125,
+    "sha256": "59a252c7fb138630d857157f5d1b823c7a038e5590d1157e32520dff738ed894"
+  }
+}
