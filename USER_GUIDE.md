@@ -10,8 +10,8 @@ Sign in with a QR code to load your addons and saved library from your primary
 Nuvio profile. **Watch Progress now uses Nuvio Sync**, so you can pause on the
 PS5 and pick up where you left off on another Nuvio device.
 
-**Current release: [v0.5.19 native experimental](https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/tag/v0.5.19-native-experimental).**
-Download `PPSA99288.zip` or `NuvioMaxd-0.5.19-native.ffpfsc`. The validation report,
+**Current release: [v0.5.20 native experimental](https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/tag/v0.5.20-native-experimental).**
+Download `PPSA99288.zip` or `NuvioMaxd-0.5.20-native.ffpfsc`. The validation report,
 matching source archive and `SHA256SUMS` are included. The development repository
 stays private; the source for each released version is available with its public
 downloads.
@@ -20,7 +20,15 @@ Nuvio Max'd is also available in the
 [ProsperoStore homebrew shop](https://homebrew.page/app/PPSA99288/).
 Find **Nuvio Max'd** in the store to install it, or use the GitHub downloads.
 
-## New in 0.5.19
+## New in 0.5.20
+
+On your first launch after this update, choose **Homebrew Store**, **GitHub / manual download**, or **Not sure**. The choice is saved locally; change it in Settings → Install source if you switch methods. Pressing Circle saves Not sure.
+
+The app checks once per launch for a newer verified public release. Reminders wait until playback and open dialogs finish. Store users are directed to check Homebrew Store; its catalog may receive the release later than GitHub. GitHub/manual users can view manual update instructions or use the existing verified image updater. Not sure directs you to choose a source. An offline background check stays quiet; retry in Settings → App updates.
+
+This records your choice, not automatic proof of where the installer came from, and does not upload an installation identifier.
+
+## Included subtitle fixes from 0.5.19
 
 - Automatic subtitles wait for the file's track metadata, then prefer in-file tracks in your preferred languages.
 - An explicitly declared untagged file default is tried before addon subtitles. Known foreign-language tracks are not selected at random.
@@ -77,12 +85,12 @@ Let ShadowMount+ finish scanning, then open **Nuvio Max'd**.
 
 ### FFPFSC image
 
-1. Download `NuvioMaxd-0.5.19-native.ffpfsc` and put it in a `/homebrew/` folder
+1. Download `NuvioMaxd-0.5.20-native.ffpfsc` and put it in a `/homebrew/` folder
    on storage that ShadowMount+ scans, just like your other homebrew apps.
    For a USB drive, that might be:
 
    ```text
-   /mnt/usb0/homebrew/NuvioMaxd-0.5.19-native.ffpfsc
+   /mnt/usb0/homebrew/NuvioMaxd-0.5.20-native.ffpfsc
    ```
 
    Leave the image in that folder so ShadowMount+ can identify it automatically.
@@ -222,7 +230,7 @@ This includes the playback changes from 0.5.12:
   Restart the app after changing it. Resolution stays as selected and the player
   shows the accepted refresh rate; unsupported outputs retain 60 Hz.
 
-The public download and updater offer 0.5.19 as an experimental release.
+The public download and updater offer 0.5.20 as an experimental release.
 
 ### Public 0.5.9
 
