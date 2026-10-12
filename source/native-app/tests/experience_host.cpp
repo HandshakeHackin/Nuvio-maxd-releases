@@ -20,7 +20,12 @@ int main() {
  assert(sx::should_show_release_notes("","0.5.17") && sx::should_show_release_notes("0.5.16","0.5.17"));
  assert(!sx::should_show_release_notes("0.5.17","0.5.17"));
  sx::ExperiencePreferences defaults;
- assert(defaults.install_source.empty());
+ assert(defaults.install_source.empty() && defaults.audio_output_mode=="pcm");
+ sx::load_experience({{"audio_output_mode","invalid"}},defaults);assert(defaults.audio_output_mode=="pcm");
+ for(const std::string mode : {"pcm","auto","bitstream"}) {
+     defaults.audio_output_mode=mode;nlohmann::json saved;sx::save_experience(saved,defaults);
+     sx::ExperiencePreferences loaded;sx::load_experience(saved,loaded);assert(loaded.audio_output_mode==mode);
+ }
  sx::load_experience({{"install_source","unsupported"}},defaults); assert(defaults.install_source.empty());
  sx::load_experience({{"install_source",42}},defaults); assert(defaults.install_source.empty());
  for(const std::string source : {"store","github","unknown"}) {

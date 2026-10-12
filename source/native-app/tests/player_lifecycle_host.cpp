@@ -8,16 +8,25 @@ extern "C" {
 #include <libavcodec/avcodec.h>
 }
 #include <chrono>
+#include <cstring>
 #include <thread>
 #include <iostream>
 #include <stdexcept>
 static bool hardware=false;
+static std::atomic<bool> fail_bitstream{false};
 static std::atomic<bool> failed_hardware{false};
 void require(bool ok,const char* message) { if(!ok) throw std::runtime_error(message); }
 extern "C" int sceAudioOutInit(){return 0;}
 extern "C" int sceAudioOutOpen(int,int,int,unsigned,unsigned,unsigned){return 42;}
 extern "C" int sceAudioOutClose(int){return 0;}
-extern "C" int sceAudioOutOutput(int,const void*) { std::this_thread::sleep_for(std::chrono::nanoseconds(5333333)); return 0; }
+extern "C" int sceAudioOutOutput(int h,const void*) {
+    if(h==47)return fail_bitstream?-1:0;
+    std::this_thread::sleep_for(std::chrono::nanoseconds(5333333));return 0;
+}
+extern "C" int sceAudioOutExOpen(int,int){return 47;}
+extern "C" int sceAudioOutExClose(int){return 0;}
+extern "C" int sceAudioOutExConfigureOutput(int,unsigned,int,int,uint64_t){return 0;}
+extern "C" int sceAudioOutSysGetHdmiMonitorInfo(int,void* ptr,unsigned n){std::memset(ptr,0,n);static_cast<uint8_t*>(ptr)[0x98]=2;return 0;}
 const std::string& http_ca_bundle(){static const std::string empty;return empty;}
 const char* kUserAgent="NuvioTest";
 std::string language_name(const std::string& s){return s;}
@@ -74,7 +83,7 @@ void run_until(Player& p,const std::function<bool()>& ready,double timeout=8) {
     throw std::runtime_error("player timed out: "+p.stats());
 }
 int main(int argc,char** argv) try {
-    require(argc==2,"fixture missing");
+    require(argc==3,"fixtures missing");
     Player p; Player::Options o;o.url=argv[1];o.surround=true;
     p.open(o); run_until(p,[&]{return p.position()>.25 && !p.buffering();});
     const auto subs=p.subtitle_tracks();
@@ -89,5 +98,16 @@ int main(int argc,char** argv) try {
     hardware=true;p.open(o);
     run_until(p,[&]{return failed_hardware && p.codec_summary().find("(software)")!=std::string::npos && !p.buffering() && p.position()>.8;});
     p.close();std::cout<<"Playback lifecycle: hardware failure reseek to software without an A/V wait cycle passed\n";
+    hardware=false;o.url=argv[2];o.audio_mode="auto";p.open(o);
+    run_until(p,[&]{return !p.buffering() && p.position()>.25;});
+    require(p.audio_output().find("Dolby Digital bitstream")!=std::string::npos,"AC3 did not use compressed output");
+    p.set_paused(true);std::this_thread::sleep_for(std::chrono::milliseconds(15));const double bs_paused=p.position();
+    std::this_thread::sleep_for(std::chrono::milliseconds(60));require(std::abs(bs_paused-p.position())<.006,"bitstream pause moved the clock");
+    p.seek(6);run_until(p,[&]{return !p.buffering();});require(p.position()>=6 && p.position()<6.10,"bitstream seek boundary failed");
+    p.set_paused(false);p.seek(2);run_until(p,[&]{return !p.buffering() && p.position()>2.12;});
+    fail_bitstream=true;
+    run_until(p,[&]{return p.audio_output().find("PCM")!=std::string::npos && !p.buffering() && p.position()>2.35;});
+    p.close();fail_bitstream=false;
+    std::cout<<"Playback lifecycle: bitstream pause/seek and failed-port recovery to PCM passed\n";
     return 0;
 } catch(const std::exception& e) { std::cerr<<"FAIL: "<<e.what()<<'\n';return 1; }

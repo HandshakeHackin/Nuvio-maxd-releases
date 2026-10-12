@@ -449,6 +449,7 @@ void Session::watch_start(const std::string &url, const std::vector<std::string>
     o.parallel = direct;
     o.evo = prefs_.evo_player;
     o.surround = prefs_.surround_audio;
+    o.audio_mode=prefs_.audio_output_mode;
     o.headers = headers;
     o.start = start;
     o.audio_langs = pref_langs(prefs_.audio_langs);

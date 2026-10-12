@@ -1,4 +1,4 @@
-// The switch sequence follows EVO Player's in-place VideoOut attribute change.
+// Switching is owned by the experimental extension inside the OpenGL runtime.
 // HDR uses ProsperoLight's hardware-tested RGB10A2 BT.2100 PQ scanout format.
 // Buffer registration and GPU rendering stay owned by the pinned OpenGL SDK.
 // SPDX-License-Identifier: GPL-3.0-or-later
@@ -14,6 +14,7 @@ int __real_sceVideoOutClose(int);
 void sceVideoOutSetBufferAttribute2(void*, std::uint64_t, unsigned, unsigned, unsigned,
                                    std::uint64_t, unsigned, std::uint64_t);
 int sceVideoOutSubmitChangeBufferAttribute2(int, int, const void*, const void*);
+int ps5_opengl_set_scanout_format(std::uint64_t, std::int32_t*);
 int sceVideoOutIsFlipPending(int);
 int sceVideoOutGetOutputStatus(int, void*);
 int sceKernelUsleep(unsigned);
@@ -32,6 +33,8 @@ struct OutputStatus {
 static_assert(sizeof(OutputStatus) == 48 && offsetof(OutputStatus, flags) == 16);
 int handle = -1, set_index = -1;
 bool hdr_bgr=false;
+bool switching_driver=false;
+std::int32_t driver_results[4]{};
 std::uint64_t attempted_format=0;
 OutputStatus readback{};
 int readback_rc=0;
@@ -54,7 +57,7 @@ bool fail(const char* stage, std::uint32_t result) {
 extern "C" int __wrap_sceVideoOutRegisterBuffers2(int h, int index, int start, void* buffers,
                                                    int count, void* attr, int category, void* option) {
     const int rc = __real_sceVideoOutRegisterBuffers2(h,index,start,buffers,count,attr,category,option);
-    if (rc == 0) {
+    if (rc == 0 && !switching_driver) {
         handle = h; set_index = index; hdr = hdr_confirmed = hdr_failed = false;
         hdr_bgr=false; attempted_format=0;
         pending_frames = 0; last_result = 0; failure_stage = "none";
@@ -96,9 +99,12 @@ bool HdrOutput::set(bool enable, int width, int height) {
     int rc=0;
     const std::uint64_t candidates[]={enable?kHdr:kSdr,kHdrBgr};
     for(int candidate=0;candidate<(enable?2:1);++candidate) {
-        Attribute attr{}; attempted_format=candidates[candidate];
-        sceVideoOutSetBufferAttribute2(&attr,attempted_format,0,unsigned(width),unsigned(height),0,0,0);
-        rc=sceVideoOutSubmitChangeBufferAttribute2(handle,set_index,&attr,nullptr);
+        attempted_format=candidates[candidate];
+        switching_driver=true;
+        rc=ps5_opengl_set_scanout_format(attempted_format,driver_results);
+        switching_driver=false;
+        std::printf("[HDR] driver change=%08x unregister=%08x register=%08x restore=%08x\n",
+            unsigned(driver_results[0]),unsigned(driver_results[1]),unsigned(driver_results[2]),unsigned(driver_results[3]));
         last_result=std::uint32_t(rc);
         std::printf("[HDR] attribute %s render=%dx%d format=%016llx rc=%08x handle=%08x set=%d candidate=%d\n",
             enable?"HDR10":"SDR",width,height,(unsigned long long)attempted_format,unsigned(rc),unsigned(handle),set_index,candidate);

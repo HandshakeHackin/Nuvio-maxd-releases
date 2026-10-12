@@ -39,6 +39,7 @@ enum SettingIndex
     kSubSize,
     kSubFont, kSubColour, kSubEffect, kSubBackground,
     kSeek, kShoulderSeek, kCountdown, kReducedMotion, kHighContrast, kDiagnostics, kReleaseNotes,
+    kAudioMode,
     kAudioOutput,
     kAudioLangs,
     kAutoplay,
@@ -542,6 +543,8 @@ void Session::refresh_settings()
         "Choose the video engine. Applies to the next stream; subtitles and Watch Progress stay available.");
     set(kRefresh, Kind::value, "Display refresh", prefs_.display_refresh == 120 ? "Prefer 120 Hz" : "60 Hz",
         "120 Hz can make 24 fps films feel steadier on a compatible TV. Keeps the selected resolution; uses 60 Hz if unavailable. Close and reopen to apply.");
+    set(kAudioMode, Kind::value, "Audio output", prefs_.audio_output_mode=="pcm"?"PCM":prefs_.audio_output_mode=="auto"?"Auto (experimental)":"Bitstream (experimental)",
+        "Auto checks your receiver; Bitstream tries Dolby Digital, Dolby Digital Plus or DTS core. Other formats use PCM. Applies to the next video.");
     set(kAudioOutput, Kind::toggle, "Surround audio", "", "Prefer 7.1 PCM with stereo fallback. Turn off for stereo. Applies to the next video.", prefs_.surround_audio);
     set(kSubLangs, Kind::value, "Subtitle languages", prefs_.subtitle_langs.empty() ? "None" : prefs_.subtitle_langs,
         "Preferred order, for example \"gre, eng\".");
@@ -579,7 +582,7 @@ void Session::refresh_settings()
     set(kDonation, Kind::action, "Support on Ko-fi", "", "Optional support for development. Scan the QR code with your phone.");
     set(kInstallSource, Kind::value, "Install source", install_source_label(prefs_.install_source),
         "Where you installed Nuvio Max'd. Update reminders use this choice; change it if you switch install methods.");
-    set(kUpdates, Kind::value, "App updates", update.phase == AppUpdate::Phase::idle ? "Nuvio Max'd 0.5.20 (experimental)" : update.message,
+    set(kUpdates, Kind::value, "App updates", update.phase == AppUpdate::Phase::idle ? "Nuvio Max'd 0.5.22 (experimental)" : update.message,
         update_destination(prefs_.install_source));
     set(kExit, Kind::action, "Exit Nuvio Max'd", "", "Close the app and go back to the home screen.");
     changed_ |= kSettings;
@@ -719,6 +722,12 @@ void Session::settings_activate(int row)
     }
     case kReducedMotion: prefs_.reduced_motion=!prefs_.reduced_motion; save_prefs(); cue(hui::audio::Cue::toggle); break;
     case kHighContrast: prefs_.high_contrast=!prefs_.high_contrast; save_prefs(); cue(hui::audio::Cue::toggle); break;
+    case kAudioMode: {
+        const int active=prefs_.audio_output_mode=="pcm"?0:prefs_.audio_output_mode=="auto"?1:2;
+        open_dropdown("Audio output",{"PCM","Auto (experimental)","Bitstream (experimental)"},active,[this](int i){
+            prefs_.audio_output_mode=i==0?"pcm":i==1?"auto":"bitstream";save_prefs();refresh_settings();});
+        dropdown.message="Auto uses only formats advertised by the HDMI receiver. Bitstream tries a compressed port even if capability detection is unavailable. Refused ports fall back to PCM. TrueHD and DTS-HD keep decoded lossless PCM.";break;
+    }
     case kDonation: {
         sign_in=SignInState{};sign_in.link_only=true;sign_in.title="Support on Ko-fi";
         sign_in.link=donation_link;sign_in.cancel_label="Close";

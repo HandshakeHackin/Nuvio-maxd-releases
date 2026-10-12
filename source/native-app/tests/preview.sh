@@ -18,7 +18,7 @@ EGL_PLATFORM=surfaceless LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=llvmpipe \
     MESA_GL_VERSION_OVERRIDE=4.6 MESA_GLSL_VERSION_OVERRIDE=460 MESA_SHADER_CACHE_DISABLE=true \
     "$B/ui-preview" "$ROOT" "$B/stream-cards.png" streams
 
-for mode in movie series seasons player tracks home skip skip-focused recap-focused credits-focused next-focused subtitle-preview subtitle-preview-high-contrast release-notes install-source store-update github-update donation; do
+for mode in movie series seasons player tracks home skip skip-focused recap-focused credits-focused next-focused subtitle-preview subtitle-preview-high-contrast release-notes install-source store-update github-update donation audio-output; do
     EGL_PLATFORM=surfaceless LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=llvmpipe \
         MESA_GL_VERSION_OVERRIDE=4.6 MESA_GLSL_VERSION_OVERRIDE=460 MESA_SHADER_CACHE_DISABLE=true \
         "$B/ui-preview" "$ROOT" "$B/$mode.png" "$mode"

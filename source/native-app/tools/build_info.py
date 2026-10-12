@@ -32,7 +32,7 @@ display_profile = validate_display_metadata(json.loads(
     (Path(sys.argv[1]).parent / 'sce_sys/param.json').read_text()))
 info = {
     'name': "Nuvio Max'd",
-    'version': '0.5.20-native-experimental',
+    'version': '0.5.22-native-experimental',
     'titleId': sys.argv[2],
     'architecture': 'single native OpenGL app with integrated playback',
     'sourceCommit': source_commit,
@@ -41,7 +41,9 @@ info = {
     'updater': {'repository': 'HandshakeHackin/Nuvio-maxd-releases', 'format': 'FFPFSC', 'helper': 'nuvio-updater.elf', 'shadowmountApi': '1.7 / public HTTP API v1', 'automaticInstallHardwareVerified': False},
     'userExperienceUpdates': {'versionChangelog': True, 'installSourceSelector': True, 'optionalDonationQr': True, 'sourceAwareUpdateReminders': True, 'startupUpdateCheck': True, 'subtitleStylingPreview': True, 'customSeekIntervals': True, 'customEpisodeCountdown': True, 'reducedMotion': True, 'higherContrast': True, 'privateRuntimeAndCrashDiagnostics': True, 'backgroundLogging': True, 'calmerBackgrounds': 'optional, saved locally; video quality unchanged', 'nativePresentation': 'timestamp order with bounded source-frame catch-up', 'longWordWrapping': 'UTF-8 code-point boundaries', 'updaterBackup': 'retains previous verified image'},
     'playbackQualityUpdates': {'sampleClock': True, 'seekGate': True, 'decoderFailureReseek': True, 'surroundPcm': True, 'floatingPointAudio': True, 'audioStereoFallback': True, 'embeddedFirstSubtitleDefaults': True, 'manualSubtitleChoiceProtected': True, 'externalSubtitleReopenRecovery': True, 'libassStyledText': True, 'bitmapSubtitles': True, 'bundledCjkThaiFonts': True, 'packetSlabBytes': 268435456, 'packetHardBudgetBytes': 335544320, 'pcmRingSeconds': 2, 'hardwareVerified': False},
+    'experimentalAv': {'driverOwnedHdrSwitch': True, 'pcmDefault': True, 'audioModes': ['pcm','auto','bitstream'], 'bitstreamCodecs': ['AC3','EAC3','DTS core'], 'trueHdDtsHd': 'decoded lossless PCM', 'hardwareVerified': False, 'driverPatchSha256': hashlib.sha256((root/'gl/scanout_driver_extension.inc').read_bytes()).hexdigest(), 'driverObjectSha256': hashlib.sha256(Path(sys.argv[3]).read_bytes()).hexdigest()},
     'hardwareVerified': False,
+    'startupHotfix': {'displayFailureHaltConditional': True, 'productionEntryPointCompilerGuard': True, 'hardwareVerified': False},
     'firmwareTarget': '9.00 and above where required jailbreak and homebrew tools work; below 9.00 untested',
     'verifiedFirmwares': [],
     'applicationDisplayProfile': display_profile,

@@ -97,8 +97,10 @@ int main()
         display_fallback = true;
     }
     if (!opened)
+    {
         nuvio_diagnostics::record({{"phase","fatal"}});
         sys::park();
+    }
     display_fallback |= display.width() != selected.width || display.height() != selected.height;
     sys::log("[SX] display: PS5 configured=%ux%u query_rc=%08x requested=%dx%d render=%dx%d SDR; fallback=%d",
              selected.configured_width, selected.configured_height, unsigned(selected.query_result),
@@ -136,7 +138,7 @@ int main()
         {
             sys::log("[SX] fatal: boot swap failed");
             nuvio_diagnostics::record({{"phase","fatal"}});
-        sys::park();
+            sys::park();
         }
         if (!splash_hidden)
         {
@@ -268,14 +270,14 @@ int main()
             if (!hdr_compositor.present(renderer,video ? session.video_texture : 0,rect,0,&error,sx::HdrOutput::bgr())) {
                 sys::log("[HDR] fatal: %s",error.c_str());
                 nuvio_diagnostics::record({{"phase","fatal"}});
-        sys::park();
+                sys::park();
             }
         } else renderer.present(0, display.width(), display.height());
         if (!display.swap())
         {
             sys::log("[SX] fatal: swap failed at frame %llu", static_cast<unsigned long long>(frames));
             nuvio_diagnostics::record({{"phase","fatal"}});
-        sys::park();
+            sys::park();
         }
         sx::HdrOutput::presented();
         ++frames;

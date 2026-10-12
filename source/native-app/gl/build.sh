@@ -54,7 +54,7 @@ sources=("$ROOT"/ui/*.cpp "$ROOT"/gl/*.cpp "$ROOT/update/core.cpp"
 	"$ROOT/src/nuvio_account.cpp" "$ROOT/src/watch_sync.cpp" "$ROOT/src/connected_services.cpp" "$ROOT/src/connected_preparer.cpp" "$ROOT/src/bidi.cpp" "$ROOT/src/stremio.cpp" "$ROOT/src/http.cpp" "$ROOT/src/util.cpp" "$ROOT/src/tasks.cpp"
 	"$ROOT/src/packet_storage.cpp" "$ROOT/src/diagnostics.cpp" "$ROOT/src/player.cpp" "$ROOT/src/netstream.cpp" "$ROOT/src/hwdec_ps5.cpp" "$ROOT/src/yuv_convert.cpp" "$ROOT/src/video_frame.cpp" "$ROOT/src/display_output.cpp"
 	"$ROOT/src/evo_backend.cpp" "$ROOT/src/evo_runtime.cpp"
-	"$ROOT/src/subtitle_renderer.cpp" "$ROOT/src/subtitles.cpp" "$ROOT/src/pcm_out.cpp" "$ROOT"/src/torrent/*.cpp
+	"$ROOT/src/subtitle_renderer.cpp" "$ROOT/src/subtitles.cpp" "$ROOT/src/pcm_out.cpp" "$ROOT/src/bitstream.cpp" "$ROOT"/src/torrent/*.cpp
 	"$HUI"/src/gfx/*.cpp "$HUI"/src/audio/{mixer,cues,wav}.cpp "$HUI/src/platform/ps5/audio_out.cpp" "$HUI/src/core/save_file.cpp" "$HUI/src/core/input.cpp" "$HUI/src/ui/glyphs.cpp"
 	"$HUI/src/platform/ps5/display_egl.cpp" "$HUI/src/platform/ps5/system.cpp" "$HUI/src/platform/ps5/pad.cpp")
 objs=()
@@ -62,7 +62,15 @@ compile_pids=()
 for f in "${sources[@]}"; do
 	o="$B/obj/$(echo "${f#"$ROOT/"}" | tr '/' '_').o"
 	if [ ! -f "$o" ] || [ "$f" -nt "$o" ] || [ -n "$(find "$ROOT/gl" "$ROOT/ui" "$ROOT/src" "$ROOT/update" "$ROOT/third_party" -type f \( -name "*.h" -o -name "*.hpp" \) -newer "$o" -print -quit)" ]; then
-		"$CXX" "${FLAGS[@]}" -c "$f" -o "$o" &
+		compile_flags=("${FLAGS[@]}")
+		if [ "$f" = "$ROOT/gl/main.cpp" ]; then
+			compile_flags=()
+			for flag in "${FLAGS[@]}"; do
+				[ "$flag" = "-w" ] || compile_flags+=("$flag")
+			done
+			compile_flags+=(-Werror=misleading-indentation)
+		fi
+		"$CXX" "${compile_flags[@]}" -c "$f" -o "$o" &
 		compile_pids+=("$!")
 	fi
 	objs+=("$o")
@@ -91,6 +99,8 @@ done
 
 "$CC" -O2 -c "$ROOT/third_party/qrcodegen.c" -o "$B/qrcodegen.o"
 objs+=("$B/qrcodegen.o")
+python3 "$ROOT/tools/build_hdr_driver.py" "$GL" "$SDK" "$B"
+objs+=("$B/hdr_driver.o")
 echo ">> linking"
 read -r -a DEPS <<< "$("$SDK/bin/prospero-pkg-config" --static --libs libcurl libwebp \
 	libavformat libavcodec libavutil libswresample libswscale libass |
@@ -164,7 +174,7 @@ cp "$HUI/LICENSE" "$HUI/THIRD_PARTY_NOTICES.md" "$APP/licenses/ps5-homebrew-ui/"
 SDK_DIR="$(dirname "$GL")"
 for f in LICENSE LICENSES THIRD_PARTY_NOTICES.md; do [ -e "$SDK_DIR/$f" ] && cp -r "$SDK_DIR/$f" "$APP/licenses/ps5-opengl/"; done
 chmod -R 0777 "$APP"
-python3 "$ROOT/tools/build_info.py" "$APP/build-info.json" "$TITLE"
+python3 "$ROOT/tools/build_info.py" "$APP/build-info.json" "$TITLE" "$B/hdr_driver.o"
 chmod 0777 "$APP/build-info.json"
 
 mkdir -p "$OUT"

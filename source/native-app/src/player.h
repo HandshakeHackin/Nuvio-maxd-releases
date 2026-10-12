@@ -53,6 +53,7 @@ public:
 		// downloaded over several connections (netstream.h).
 		bool parallel = false;
 		bool surround = true;
+		std::string audio_mode = "pcm"; // experimental passthrough is opt-in
 		bool evo = false; // EVO Player 0.12.0 decoder and presentation core
 	};
 	enum class State { Idle, Opening, Playing, Ended, Failed };
@@ -145,6 +146,7 @@ private:
 	bool full_range_ = false;
 	float hdr_peak_nits_ = 1000.0f;
 	void audio_thread();
+	void open_audio_output(int stream, bool pcm_only = false);
 	void fail(const std::string& msg);
 	bool open_stream_codec(int stream, AVCodecContext** out);
 	void handle_subtitle_packet(AVPacket* pkt);

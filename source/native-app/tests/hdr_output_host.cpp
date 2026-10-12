@@ -32,6 +32,11 @@ void sceVideoOutSetBufferAttribute2(void*,std::uint64_t f,unsigned t,unsigned w,
 int sceVideoOutSubmitChangeBufferAttribute2(int handle,int index,const void*,const void* option) {
     require(handle==42&&index==0&&!option,"borrowed registration was lost"); ++changes; return bgr_only && format==UINT64_C(0x8100070422000000) ? int(0x80290003u) : change_rc;
 }
+int ps5_opengl_set_scanout_format(std::uint64_t f,std::int32_t* results) {
+    for(int i=0;i<4;++i)results[i]=0x7fffffff;
+    sceVideoOutSetBufferAttribute2(nullptr,f,0,3840,2160,0,0,0);
+    results[0]=sceVideoOutSubmitChangeBufferAttribute2(42,0,nullptr,nullptr);return results[0];
+}
 int sceVideoOutIsFlipPending(int) { return pending; }
 int sceKernelUsleep(unsigned us) { ++sleeps; clock_us+=us; return sleep_rc; }
 int sceVideoOutGetOutputStatus(int,void* ptr) {

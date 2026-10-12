@@ -32,14 +32,16 @@ public:
 	~PcmOut() { close(); }
 
 	bool open(bool surround = true);
+	bool open_bitstream(int kind, bool check_receiver);
+	int bitstream_kind() const { return bitstream_kind_; }
 	int channels() const { return channels_; }
 	bool floating_point() const { return floating_; }
 	size_t bytes_per_frame() const { return size_t(channels_) * (floating_ ? 4 : 2); }
-	double queued_seconds() const { return double(queued_bytes()) / (kRate * bytes_per_frame()); }
+	double queued_seconds() const { return double(queued_bytes()) / (rate_.load() * bytes_per_frame()); }
 	uint64_t played_frames() const { return played_frames_; }
 	double played_seconds() const;
 	std::string description() const;
-	void close();
+	void close(bool release_claim = true);
 	bool is_open() const { return open_; }
 	bool failed() const { return failed_; }
 
@@ -54,7 +56,7 @@ private:
 	static void* thread_main(void* self);
 	void run();
 
-	bool open_ = false;
+	std::atomic<bool> open_{false};
 	int handle_ = -1;
 	pthread_t thread_{};
 	std::atomic<bool> stop_{false};
@@ -63,8 +65,10 @@ private:
 	mutable std::mutex m_;
 	std::vector<uint8_t> ring_;
 	size_t head_ = 0, count_ = 0;
-	int channels_ = 2;
-	bool floating_ = true;
+	std::atomic<int> channels_{2};
+	std::atomic<int> rate_{kRate}, grain_frames_{256}, bitstream_kind_{0};
+	bool start_thread();
+	std::atomic<bool> floating_{true};
 	std::atomic<uint64_t> played_frames_{0};
 	uint64_t generation_ = 0;
 	size_t inflight_frames_=0;

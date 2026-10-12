@@ -10,8 +10,8 @@ Sign in with a QR code to load your addons and saved library from your primary
 Nuvio profile. **Watch Progress now uses Nuvio Sync**, so you can pause on the
 PS5 and pick up where you left off on another Nuvio device.
 
-**Current release: [v0.5.20 native experimental](https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/tag/v0.5.20-native-experimental).**
-Download `PPSA99288.zip` or `NuvioMaxd-0.5.20-native.ffpfsc`. The validation report,
+**Current release: [v0.5.22 native experimental](https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/tag/v0.5.22-native-experimental).**
+Download `PPSA99288.zip` or `NuvioMaxd-0.5.22-native.ffpfsc`. The validation report,
 matching source archive and `SHA256SUMS` are included. The development repository
 stays private; the source for each released version is available with its public
 downloads.
@@ -20,7 +20,16 @@ Nuvio Max'd is also available in the
 [ProsperoStore homebrew shop](https://homebrew.page/app/PPSA99288/).
 Find **Nuvio Max'd** in the store to install it, or use the GitHub downloads.
 
-## New in 0.5.20
+## New in 0.5.22
+
+- Fixed a startup halt that left Nuvio on a black screen after opening the display.
+- Added a compiler check of the actual startup entry point to catch this mistake.
+- Retained the experimental HDR driver and optional Auto/Bitstream audio settings from 0.5.21.
+
+Quit Nuvio before replacing its image or folder. Launch 0.5.22 and confirm that the loading screen and library/sign-in screen appear. Test normal playback with PCM audio before native HDR or a receiver's Auto audio output. Console confirmation remains necessary.
+
+## Included installation reminders from 0.5.20
+
 
 On your first launch after this update, choose **Homebrew Store**, **GitHub / manual download**, or **Not sure**. The choice is saved locally; change it in Settings → Install source if you switch methods. Pressing Circle saves Not sure.
 
@@ -88,12 +97,12 @@ Let ShadowMount+ finish scanning, then open **Nuvio Max'd**.
 
 ### FFPFSC image
 
-1. Download `NuvioMaxd-0.5.20-native.ffpfsc` and put it in a `/homebrew/` folder
+1. Download `NuvioMaxd-0.5.22-native.ffpfsc` and put it in a `/homebrew/` folder
    on storage that ShadowMount+ scans, just like your other homebrew apps.
    For a USB drive, that might be:
 
    ```text
-   /mnt/usb0/homebrew/NuvioMaxd-0.5.20-native.ffpfsc
+   /mnt/usb0/homebrew/NuvioMaxd-0.5.22-native.ffpfsc
    ```
 
    Leave the image in that folder so ShadowMount+ can identify it automatically.
@@ -233,7 +242,7 @@ This includes the playback changes from 0.5.12:
   Restart the app after changing it. Resolution stays as selected and the player
   shows the accepted refresh rate; unsupported outputs retain 60 Hz.
 
-The public download and updater offer 0.5.20 as an experimental release.
+The public download and updater offer 0.5.22 as an experimental release.
 
 ### Public 0.5.9
 
@@ -326,8 +335,10 @@ The supplied log showed an empty Calendar catalog as the only requested home row
 Native HDR10 output is experimental and still needs a PS5/TV check. Source
 mastering-display and content-light metadata are not forwarded yet. HDR10+
 dynamic metadata, HLG and full Dolby Vision processing aren't supported; Dolby
-Vision playback needs a compatible HDR10 base picture. Audio output is stereo,
-including sources labeled Atmos. DRM, arbitrary JavaScript plugins and external-player-only
+Vision playback needs a compatible HDR10 base picture. PCM is the default audio output, with optional surround PCM. Auto/Bitstream
+can pass AC-3, E-AC-3 and DTS core to compatible receivers; E-AC-3 Atmos stays
+in the compressed stream. TrueHD and DTS-HD remain decoded PCM. HDMI output
+requires receiver testing. DRM, arbitrary JavaScript plugins and external-player-only
 links aren't supported. Videos above 4096 pixels per side are rejected.
 
 Recent console feedback reports choppy 1080p HEVC and haze or moving background
@@ -335,7 +346,8 @@ pixels in otherwise smooth 4K playback. Those symptoms remain under investigatio
 See [playback quality and output limits](source/native-app/PLAYBACK_QUALITY.md) for what
 the current player preserves and what HDR metadata and surround output still need.
 
-The release passes **168 host tests and 27 display-selection assertions**. Its
+The release passes the host playback, HDR, subtitle, settings, transport and
+GPU presentation checks, including **27 display-selection assertions**. Its
 image is fully extracted and every packaged file compared with the build output. These checks cover the app
 code and file formats; playback and live Nuvio Sync still need testing on a PS5.
 

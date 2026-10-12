@@ -1,4 +1,5 @@
 #include "player.h"
+#include "bitstream.h"
 #include "evo_backend.h"
 #include "frame_selection.h"
 
@@ -460,7 +461,7 @@ void Player::demux_run() {
 	}
 
 	if (as >= 0) {
-		if (!pcm_.open(opts_.surround)) dlog("player: can't open the audio output");
+		open_audio_output(as);
 	}
 
 	dlog("player: %s, %.0fs, video #%d %s, audio #%d %s", fmt_->iformat->name, duration_, vs,
@@ -505,6 +506,7 @@ void Player::demux_run() {
 				avcodec_free_context(&actx_);
 				actx_ = nc;
 				audio_stream_ = sw;
+                { std::lock_guard<std::mutex> clock(clock_m_); pcm_.close(false); open_audio_output(sw); }
 				// Without the index (quick_) it just carries on from here.
 				if (target < 0 && !quick_) target = position();
 			}
@@ -1002,11 +1004,20 @@ double Player::queued_audio_seconds() const {
 	return pcm_.queued_seconds();
 }
 
+void Player::open_audio_output(int stream, bool pcm_only) {
+    const auto* p=fmt_->streams[stream]->codecpar;
+    const int kind=bitstream::kind(p);
+    if(!pcm_only && opts_.audio_mode!="pcm" && kind && pcm_.open_bitstream(kind,opts_.audio_mode!="bitstream")) return;
+    if(!pcm_only && opts_.audio_mode!="pcm") dlog("audio: %s uses PCM fallback",avcodec_get_name(p->codec_id));
+    if(!pcm_.open(opts_.surround)) dlog("player: can't open the audio output");
+}
 void Player::audio_thread() {
 	AVPacket* pkt = nullptr;
 	AVFrame* frame = av_frame_alloc();
 	int serial = aq_.serial();
 	bool sent_eof = false;
+    bitstream::Packer packer;
+    int packed_serial=-1; double burst_pts=-1;
 	std::vector<uint8_t> out;
 	int swr_rate = 0, swr_fmt = -1;
 	AVChannelLayout swr_layout;
@@ -1016,7 +1027,7 @@ void Player::audio_thread() {
 		int s = 0;
 		int r = aq_.get(&pkt, &s, 50);
 		if (abort_) break;
-		if (r == 0) continue;
+		if (r == 0 && !(pcm_.bitstream_kind() && pcm_.failed())) continue;
 		std::unique_lock<std::mutex> alock(actx_m_);
 		if (!actx_) {
 			if (r == 1) av_packet_free(&pkt);
@@ -1029,6 +1040,50 @@ void Player::audio_thread() {
 			audio_drained_ = false;
 			if (swr_) swr_free(&swr_);
 		}
+        if(pcm_.bitstream_kind()) {
+            bool ok=!pcm_.failed();
+            if(ok && r==1 && packed_serial!=serial) {ok=packer.start(fmt_->streams[audio_stream_]->codecpar);packed_serial=serial;burst_pts=-1;}
+            const double tb=av_q2d(fmt_->streams[audio_stream_]->time_base);
+            const double pts=r==1?to_sec(pkt->pts,tb):-1;
+            if(ok && r==1) {
+                if(burst_pts<0) burst_pts=pts;
+                ok=packer.pack(pkt,out);
+                if(ok && !out.empty()) {
+                    const double duration=double(out.size())/(bitstream::rate(pcm_.bitstream_kind())*4.0);
+                    const double drop=adrop_;
+                    if(drop>=0 && burst_pts>=0 && burst_pts<drop) {
+                        // A compressed frame cannot be sample-trimmed. Skip the
+                        // boundary frame and start with the first whole burst.
+                        burst_pts=-1;av_packet_free(&pkt);continue;
+                    }
+                    alock.unlock();
+                    while(!abort_ && aq_.serial()==serial && !pcm_.failed() && queued_audio_seconds()>kMaxQueuedAudio) delay_ms(5);
+                    alock.lock();
+                    if(abort_ || aq_.serial()!=serial) {av_packet_free(&pkt);continue;}
+                    std::lock_guard<std::mutex> clock(clock_m_);
+                    if(pcm_.failed()) ok=false;
+                    else if(aq_.serial()==serial) {
+                        adrop_=-1;
+                        const double start=burst_pts>=0?burst_pts:std::max(0.0,audio_end_pts_);
+                        if(audio_base_pts_<0)audio_base_pts_=start;
+                        ok=pcm_.queue(out.data(),out.size());audio_end_pts_=start+duration;
+                    }
+                    burst_pts=-1;
+                }
+            }
+            if(!ok) {
+                double target;
+                { std::lock_guard<std::mutex> clock(clock_m_);
+                  target=clock_locked();pcm_.close(false);open_audio_output(audio_stream_,true);
+                  audio_base_pts_=audio_end_pts_=-1;wall_base_pts_=target;wall_base_time_=now_seconds(); }
+                dlog("audio: bitstream failed; restoring PCM and rebuffering at %.3f s",target);
+                buffering_=true;pcm_.pause(true);packer.clear();packed_serial=-1;
+                {std::lock_guard<std::mutex> seek(seek_m_);seek_target_=target;seek_req_=true;}
+            }
+            if(r==1)av_packet_free(&pkt);else if(r==-1) {if(ok)audio_drained_=true;alock.unlock();delay_ms(10);}
+            continue;
+        }
+        packer.clear();packed_serial=-1;burst_pts=-1;
 		if (r == -1) {
 			if (sent_eof) {
 				alock.unlock();
@@ -1160,7 +1215,7 @@ bool Player::buffering(int* percent) const {
 
 void Player::update_buffering() {
 	if (state_ != State::Playing || recovering_) return;
-	if(pcm_.failed()) { fail("The PS5 audio output stopped. Try stereo audio output in Settings."); return; }
+	if(pcm_.failed() && !pcm_.bitstream_kind()) { fail("The PS5 audio output stopped. Try stereo audio output in Settings."); return; }
 	bool has_v = video_stream_ >= 0, has_a = audio_stream_ >= 0 && pcm_.is_open();
 	if (buffering_) {
 		double target = std::max(kBufferTargets[stalls_], start_target_);

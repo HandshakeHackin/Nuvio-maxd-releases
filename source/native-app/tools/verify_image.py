@@ -43,7 +43,7 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
     param = json.loads((extracted / 'sce_sys/param.json').read_text())
     display_profile = validate_display_metadata(param)
     assert param['titleId'] == 'PPSA99288'
-    assert param['contentVersion'] == '05.000.020'
+    assert param['contentVersion'] == '05.000.022'
     assert param['localizedParameters']['en-US']['titleName'] == "Nuvio Max'd"
     assert param['contentId'] == 'UP9000-PPSA99288_00-NUVIOPS5NAT00001'
     assert param['applicationCategoryType'] == 0
@@ -55,9 +55,11 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
     assert struct.unpack_from('<HH', data, elf + 16) == (0xFE10, 62)
     assert struct.unpack_from('<Q', data, elf + 24)[0] != 0
     info = json.loads((extracted / 'build-info.json').read_text())
-    assert info['version'] == '0.5.20-native-experimental'
+    assert info['version'] == '0.5.22-native-experimental'
     assert info['userExperienceUpdates']['optionalDonationQr']
     assert info['userExperienceUpdates']['installSourceSelector'] and info['userExperienceUpdates']['sourceAwareUpdateReminders']
+    assert info['experimentalAv']['driverOwnedHdrSwitch'] and info['experimentalAv']['pcmDefault']
+    assert info['startupHotfix']['displayFailureHaltConditional'] and info['startupHotfix']['productionEntryPointCompilerGuard']
     assert info['name'] == "Nuvio Max'd"
     assert info['updater']['repository'] == 'HandshakeHackin/Nuvio-maxd-releases'
     assert not info['sourceDirty']
@@ -94,6 +96,7 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
     assert info['displayRefresh']['resolutionReducedForRefresh'] is False
     assert info['hdrToSdr']['exposureGain'] == 1
     test_log = args.host_test_log.read_text()
+    assert 'Production startup: actual entry point passes conditional-indentation compiler check' in test_log
     assert re.search(r'Ran 52 tests', test_log) and '\nOK\n' in test_log
     assert 'NetworkTests.test_parallel_dns_failure_does_not_walk_entire_file' in test_log
     assert re.search(r'Ran 6 tests', test_log)
@@ -113,12 +116,15 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
     assert '26 Instant playback tests passed' in test_log
     assert 'Episode skip and next playback: 35 tests, 0 failures' in test_log
     assert 'FFPFSC updater: 28 tests, 0 failures' in test_log
+    assert 'Driver HDR transactions: 8 registration, busy and rollback cases passed' in test_log
+    assert 'Bitstream audio: framing, capabilities, lossless fallback, pacing, seek epoch and port recovery passed' in test_log
     assert 'HDR output transitions: 9 tests, 0 failures' in test_log
     assert test_log.count('Playback quality:') == 11
     assert 'Install source: unset migration, validated local persistence and source-specific update routing passed' in test_log
-    for preview in ('install-source', 'store-update', 'github-update', 'donation'):
+    for preview in ('install-source', 'store-update', 'github-update', 'donation', 'audio-output'):
         assert preview + ': GL error 0x0' in test_log
     assert 'Playback lifecycle: open, pause, sample-trimmed forward/back seek passed' in test_log
+    assert 'Playback lifecycle: bitstream pause/seek and failed-port recovery to PCM passed' in test_log
     assert 'Playback lifecycle: hardware failure reseek to software without an A/V wait cycle passed' in test_log
     assert 'PS5 display output: 27 display output selection and probe-lifecycle assertions' in test_log
     report = {
@@ -144,9 +150,9 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
         'hostUpstreamAdaptationTestsPassed': True, 'hostExperienceTestsPassed': True,
         'playbackEngines': info['playbackEngines'],
         'evoPlayer': evo, 'hostEvoIntegrationTestsPassed': True,
-        'nativeHdr': info['nativeHdr'],
+        'nativeHdr': info['nativeHdr'], 'experimentalAv': info['experimentalAv'], 'startupHotfix': info['startupHotfix'], 'hostStartupCompileCheckPassed': True, 'hostDriverHdrTransactionTestsPassed': 8, 'hostBitstreamTestsPassed': True,
         'playbackQualityUpdates': info['playbackQualityUpdates'],
-        'hostPlaybackQualityTestsPassed': 11, 'hostPlaybackLifecycleTestsPassed': 2,
+        'hostPlaybackQualityTestsPassed': 11, 'hostPlaybackLifecycleTestsPassed': 3,
         'applicationDisplayProfile': display_profile,
         'hdrToSdr': info['hdrToSdr'], 'displayRefresh': info['displayRefresh'],
         'updater': info['updater'], 'hostUpdaterTestsPassed': 28,
