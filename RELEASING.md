@@ -23,3 +23,8 @@ maintainers. Do not rewrite an older released asset to update a listing.
 
 Catalog: https://github.com/blackbearreloaded/ps5-homebrew-catalog
 Submission guide: https://github.com/blackbearreloaded/ps5-homebrew-catalog/blob/main/docs/submitting.md
+
+If GitHub denies creating the upstream PR (for example, a 403 integration
+permission error), retain the pushed fork branch and provide a prefilled compare
+link for the owner to submit in GitHub. Report the submission as blocked until
+the PR exists; do not claim it was submitted or that the store updated.
