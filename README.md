@@ -8,13 +8,13 @@
 
 <p align="center">
   <a href="https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/download/v0.5.17-native-experimental/PPSA99288.zip"><img src="https://img.shields.io/badge/Download-ZIP_folder-00B8E8?style=for-the-badge" alt="Download the PS5 app as a ZIP folder"></a>
-  <a href="https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/download/v0.5.17-native-experimental/NuvioMaxd-0.5.17-native.ffpfsc"><img src="https://img.shields.io/badge/Download-FFPFSC_image-8B5CF6?style=for-the-badge" alt="Download the PS5 app as an FFPFSC image"></a>
+  <a href="https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/download/v0.5.17-native-experimental/NuvioMaxd-0.5.18-native.ffpfsc"><img src="https://img.shields.io/badge/Download-FFPFSC_image-8B5CF6?style=for-the-badge" alt="Download the PS5 app as an FFPFSC image"></a>
   <a href="https://homebrew.page/app/PPSA99288/"><img src="https://img.shields.io/badge/ProsperoStore-Available-22C55E?style=for-the-badge" alt="Nuvio Max'd is available in ProsperoStore"></a>
 </p>
 
 <p align="center">
   <strong>Available to download now</strong> · v0.5.17 experimental<br>
-  <a href="USER_GUIDE.md">User guide</a> · <a href="https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/tag/v0.5.17-native-experimental">Release notes</a> · <a href="https://homebrew.page/app/PPSA99288/">ProsperoStore listing</a>
+  <a href="USER_GUIDE.md">User guide</a> · <a href="https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/tag/v0.5.18-native-experimental">Release notes</a> · <a href="https://homebrew.page/app/PPSA99288/">ProsperoStore listing</a>
 </p>
 
 Bring your Nuvio setup to the big screen. Sign in with your phone, browse your
@@ -63,7 +63,7 @@ tools work. **Firmware below 9.00 needs testing.** Console feedback so far cover
 | Download | Install it this way |
 | --- | --- |
 | [**ZIP folder — PPSA99288.zip**](https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/download/v0.5.17-native-experimental/PPSA99288.zip) | Extract it and place the `PPSA99288/` folder inside a `/homebrew/` folder scanned by ShadowMount+, such as `/data/homebrew/`. |
-| [**FFPFSC image — NuvioMaxd-0.5.17-native.ffpfsc**](https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/download/v0.5.17-native-experimental/NuvioMaxd-0.5.17-native.ffpfsc) | Place the image inside a `/homebrew/` folder on storage scanned by ShadowMount+. |
+| [**FFPFSC image — NuvioMaxd-0.5.18-native.ffpfsc**](https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/download/v0.5.17-native-experimental/NuvioMaxd-0.5.18-native.ffpfsc) | Place the image inside a `/homebrew/` folder on storage scanned by ShadowMount+. |
 
 Let ShadowMount+ finish scanning, open **Nuvio Max'd**, and scan the sign-in QR
 code with your phone. Configure your addon through your usual Nuvio setup. For cached-file resolution,

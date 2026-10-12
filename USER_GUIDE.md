@@ -10,8 +10,8 @@ Sign in with a QR code to load your addons and saved library from your primary
 Nuvio profile. **Watch Progress now uses Nuvio Sync**, so you can pause on the
 PS5 and pick up where you left off on another Nuvio device.
 
-**Current release: [v0.5.17 native experimental](https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/tag/v0.5.17-native-experimental).**
-Download `PPSA99288.zip` or `NuvioMaxd-0.5.17-native.ffpfsc`. The validation report,
+**Current release: [v0.5.18 native experimental](https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/tag/v0.5.18-native-experimental).**
+Download `PPSA99288.zip` or `NuvioMaxd-0.5.18-native.ffpfsc`. The validation report,
 matching source archive and `SHA256SUMS` are included. The development repository
 stays private; the source for each released version is available with its public
 downloads.
@@ -19,6 +19,21 @@ downloads.
 Nuvio Max'd is also available in the
 [ProsperoStore homebrew shop](https://homebrew.page/app/PPSA99288/).
 Find **Nuvio Max'd** in the store to install it, or use the GitHub downloads.
+
+## New in 0.5.18
+
+- Revised audio timing and synchronized recovery after seeking or decoder failure.
+- Surround PCM audio, with stereo fallback. Settings → Surround audio applies to the next video.
+- Styled ASS/SSA and bitmap subtitles, including PGS tracks.
+- Bundled CJK and Thai fonts and improved subtitle shaping.
+- Additional HDR format checks with matching pixel packing and clearer errors.
+- Reusable packet storage and bounded audio buffers.
+
+The app shows these notes once after updating. Reopen them in Settings → What's new.
+This remains experimental: host checks pass, but native HDR, HDMI speaker routing
+and remaining motion judder need console verification. If HDR is rejected, select
+Settings → HDR playback → Convert HDR to SDR. At 60 Hz, 24 fps films can still
+have cadence judder; 120 Hz is optional where the console/display accept it.
 
 ## What you can do
 
@@ -52,12 +67,12 @@ Let ShadowMount+ finish scanning, then open **Nuvio Max'd**.
 
 ### FFPFSC image
 
-1. Download `NuvioMaxd-0.5.17-native.ffpfsc` and put it in a `/homebrew/` folder
+1. Download `NuvioMaxd-0.5.18-native.ffpfsc` and put it in a `/homebrew/` folder
    on storage that ShadowMount+ scans, just like your other homebrew apps.
    For a USB drive, that might be:
 
    ```text
-   /mnt/usb0/homebrew/NuvioMaxd-0.5.17-native.ffpfsc
+   /mnt/usb0/homebrew/NuvioMaxd-0.5.18-native.ffpfsc
    ```
 
    Leave the image in that folder so ShadowMount+ can identify it automatically.
@@ -72,7 +87,7 @@ before opening Nuvio Max'd.
 The project targets firmware **9.00 and above** where the required jailbreak,
 kstuff-lite and ShadowMount+ work. **Firmware below 9.00 needs testing.** Console
 feedback so far comes from **11.20**; other versions in the target range remain
-unverified. The v0.5.17 HDR correction still needs console confirmation.
+unverified. Native HDR compatibility and motion smoothness still need console confirmation.
 
 ### Updating an existing installation
 
@@ -197,7 +212,7 @@ This includes the playback changes from 0.5.12:
   Restart the app after changing it. Resolution stays as selected and the player
   shows the accepted refresh rate; unsupported outputs retain 60 Hz.
 
-The public download and updater offer 0.5.17 as an experimental release.
+The public download and updater offer 0.5.18 as an experimental release.
 
 ### Public 0.5.9
 
