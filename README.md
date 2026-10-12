@@ -95,8 +95,8 @@ for refresh controls and offline behavior.
 
 - **HDR10 and automatic image updates need further console testing.** HDR10+
   dynamic metadata, full Dolby Vision processing and source mastering metadata
-  are not supported yet. Audio output is currently **stereo**, including Atmos
-  sources.
+  are not supported yet. Audio defaults to decoded PCM, with optional surround PCM and experimental
+  AC-3/E-AC-3/DTS core bitstream output. TrueHD and DTS-HD remain decoded PCM.
 - **Some catalog and playback issues are still being investigated**, including
   empty AIOMetadata home rows, choppy 1080p HEVC and haze reported in some 4K
   playback. A stream's badges describe its source; they do not guarantee the
