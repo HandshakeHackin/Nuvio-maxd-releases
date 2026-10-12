@@ -1,0 +1,14 @@
+{
+  "description": "Public Nuvio client configuration; no user credentials or privileged server keys.",
+  "sources": [
+    "https://nuvio.tv/config.js",
+    "https://api.nuvio.tv/.well-known/nuvio"
+  ],
+  "retrievedAt": "2026-10-07",
+  "env": {
+    "NUVIO_SUPABASE_URL": "https://api.nuvio.tv",
+    "NUVIO_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNzgxNTIxMzQ2LCJleHAiOjE5MzkyMDEzNDZ9.tmQaj682pwzehpqlgCDMnySOqiUvpgRbrE43T4VJpDI",
+    "TV_LOGIN_WEB_BASE_URL": "https://nuvio.tv/tv-login",
+    "DEVICE_LOGIN_WEB_BASE_URL": "https://nuvio.tv/link"
+  }
+}

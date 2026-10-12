@@ -106,8 +106,8 @@ for refresh controls and offline behavior.
 - **Episode skipping depends on IntroDB coverage.** Missing timings leave the
   episode playing normally.
 
-See [playback quality and output limits](native-app/PLAYBACK_QUALITY.md), the
-[update guide](native-app/UPDATING.md) and [troubleshooting](USER_GUIDE.md#current-limitations-and-troubleshooting)
+See [playback quality and output limits](source/native-app/PLAYBACK_QUALITY.md), the
+[update guide](source/native-app/UPDATING.md) and [troubleshooting](USER_GUIDE.md#current-limitations-and-troubleshooting)
 for details.
 
 ## Source and credits
@@ -115,8 +115,8 @@ for details.
 Nuvio Max'd is an **unofficial client**, previously named Nuvio PS5. It is not
 affiliated with Nuvio, Stremio or Sony.
 
-Every release includes a matching source archive. See [released-source details](SOURCE.md),
-the [build guide](native-app/README.md) and [third-party notices](native-app/THIRD_PARTY.md).
+Every release includes a matching source archive. Browse this branch's [app source](source/native-app/README.md) directly on GitHub. See [released-source details](SOURCE.md),
+the [build guide](source/native-app/README.md) and [third-party notices](source/native-app/THIRD_PARTY.md).
 The project is distributed under the [GPL-3.0 license](LICENSE).
 
 Nuvio branding and account protocols come from

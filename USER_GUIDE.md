@@ -184,7 +184,7 @@ The app still buffers video before playing.
 
 This test build includes connections, cached-file resolution, provider choice,
 background link preparation and read-only Sync import. Cloud Library remains
-planned. See the [Connected Services guide](native-app/CONNECTED_SERVICES.md)
+planned. See the [Connected Services guide](source/native-app/CONNECTED_SERVICES.md)
 for setup and console checks. v0.5.17 is a public experimental release; live
 provider authentication and HDR output still need console testing.
 
@@ -284,7 +284,7 @@ are kept; an unlabelled tail after credits is left to play through.
 
 Automatic installation is experimental and needs ShadowMount+ 1.7, the local
 payload loader and a fully released backing image. Folder installs use manual
-replacement or ProsperoStore. See the [update guide](native-app/UPDATING.md)
+replacement or ProsperoStore. See the [update guide](source/native-app/UPDATING.md)
 for the requirements, backups and remaining console checks.
 
 ### HDR features from 0.5.6
@@ -345,7 +345,7 @@ links aren't supported. Videos above 4096 pixels per side are rejected.
 
 Recent console feedback reports choppy 1080p HEVC and haze or moving background
 pixels in otherwise smooth 4K playback. Those symptoms remain under investigation.
-See [playback quality and output limits](native-app/PLAYBACK_QUALITY.md) for what
+See [playback quality and output limits](source/native-app/PLAYBACK_QUALITY.md) for what
 the current player preserves and what HDR metadata and surround output still need.
 
 The release passes the host playback, HDR, subtitle, settings, transport and
@@ -368,8 +368,8 @@ the TV reports HDR when playback starts. Leave out playable URLs and account tok
 
 ## Source and credits
 
-See the [native build and test guide](native-app/README.md),
-[third-party notices](native-app/THIRD_PARTY.md) and
+See the [native build and test guide](source/native-app/README.md),
+[third-party notices](source/native-app/THIRD_PARTY.md) and
 [GitHub release guide](ps5/GITHUB.md).
 
 This is an unofficial client. Nuvio branding and account protocols come from

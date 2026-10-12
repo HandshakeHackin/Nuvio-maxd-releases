@@ -1,0 +1,11 @@
+Noto Sans CJK SC Regular, SIL OFL 1.1.
+
+Prepared from https://github.com/notofonts/noto-cjk at commit
+f8d157532fbfaeda587e826d4cd5b21a49186f7c,
+Sans/Variable/TTF/NotoSansCJKsc-VF.ttf.
+
+Converted to static weight 400 with fonttools 4.61.1 using
+native-app/tools/prepare_cjk_font.py. The TrueType quadratic outlines work
+with both libass/FreeType and the UI signed-distance-field renderer.
+Source and output hashes are recorded in native-app/dependencies.json.
+The complete OFL license is in NotoSansCJK-LICENSE.txt.
