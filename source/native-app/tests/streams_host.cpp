@@ -101,6 +101,34 @@ void series_returns_to_episodes() {
     f.press(hui::Action::page_next); f.press(hui::Action::back);
     expect(f.page.mode()==sx::Detail::Mode::episodes,"Back from filtered streams lost episodes");
 }
+void reload_keeps_late_selected_source() {
+    Fixture f; f.move(hui::Direction::down);
+    const auto selected = f.content.streams[1];
+    f.content.streams_loading = true; f.content.streams.clear(); f.page.refresh();
+    f.move(hui::Direction::none);
+    expect(!f.page.filters_focused() && f.page.stream_index()==-1,"pending reload moved focus to filters");
+    sx::Stream early; early.identity="early"; early.addon="AIOStreams";
+    f.content.streams.push_back(early); f.page.refresh(); f.move(hui::Direction::none);
+    f.content.streams.push_back(selected); f.page.refresh();
+    expect(f.page.stream_index()==1,"early reload response replaced the selected source");
+    f.content.streams_loading=false; f.page.refresh();
+    expect(f.page.stream_index()==1,"completed reload lost the selected source");
+}
+void reload_respects_navigation_and_missing_source() {
+    Fixture f; f.move(hui::Direction::down);
+    const auto previous = f.content.streams[1];
+    f.content.streams_loading=true; f.content.streams.clear(); f.page.refresh();
+    sx::Stream early; early.identity="early"; early.addon="AIOStreams";
+    sx::Stream chosen=early; chosen.identity="chosen";
+    f.content.streams={early,chosen}; f.page.refresh();
+    f.move(hui::Direction::down); f.move(hui::Direction::down);
+    f.content.streams.push_back(previous); f.page.refresh();
+    expect(f.page.stream_index()==1,"late previous source overrode a new controller choice");
+    f.content.streams={early}; f.content.streams_loading=false; f.page.refresh();
+    expect(f.page.stream_index()==0,"removed source did not fall back to a valid result");
+    f.content.streams.clear(); f.page.refresh();
+    expect(f.page.stream_index()==-1,"empty completed reload exposed a stale stream");
+}
 void season_selection_does_not_open_streams() {
     Fixture f; f.content.series=true; f.content.seasons={"Season 1","Season 2","Specials"};
     f.content.episodes.resize(16); f.content.season=1; f.content.episode_hint=6;
@@ -150,6 +178,8 @@ int main() {
         {"filtered_index_maps_to_source",filtered_index_maps_to_source}, {"pills_never_start_playback",pills_never_start_playback},
         {"empty_filter_and_late_arrival",empty_filter_and_late_arrival}, {"arrival_keeps_selected_source",arrival_keeps_selected_source},
         {"series_returns_to_episodes",series_returns_to_episodes},
+        {"reload_keeps_late_selected_source",reload_keeps_late_selected_source},
+        {"reload_respects_navigation_and_missing_source",reload_respects_navigation_and_missing_source},
         {"season_selection_does_not_open_streams",season_selection_does_not_open_streams},
         {"empty_season_keeps_other_seasons_reachable",empty_season_keeps_other_seasons_reachable},
         {"late_episode_art_keeps_focus_and_selection",late_episode_art_keeps_focus_and_selection},
@@ -159,6 +189,6 @@ int main() {
         try { t.run(); std::printf("%s: PASS\n",t.name); }
         catch(const std::exception &e) { ++failed; std::printf("%s: FAIL (%s)\n",t.name,e.what()); }
     }
-    std::printf("Stream presentation and navigation: 12 tests, %d failures\n",failed);
+    std::printf("Stream presentation and navigation: 14 tests, %d failures\n",failed);
     return failed ? 1 : 0;
 }

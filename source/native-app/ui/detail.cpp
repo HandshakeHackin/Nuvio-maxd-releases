@@ -101,9 +101,14 @@ void Detail::rebuild_streams()
         for (int i = 0; i < static_cast<int>(content_->streams.size()); ++i)
             if (filter_ == 0 || content_->streams[i].addon == filters_[filter_]) visible_.push_back(i);
     stream_ = std::clamp(stream_,0,std::max(0,static_cast<int>(visible_.size())-1));
+    bool selected_found = false;
     for (int i = 0; i < static_cast<int>(visible_.size()); ++i)
-        if (!selected_identity_.empty() && content_->streams[visible_[i]].identity == selected_identity_) stream_ = i;
-    if (!visible_.empty()) selected_identity_ = content_->streams[visible_[stream_]].identity;
+        if (!selected_identity_.empty() && content_->streams[visible_[i]].identity == selected_identity_)
+        { stream_ = i; selected_found = true; }
+    // A reload may answer one addon before the selected source's addon. Keep
+    // its identity until that response arrives or the whole request completes.
+    if (!visible_.empty() && (selected_found || !content_->streams_loading || selected_identity_.empty()))
+        selected_identity_ = content_->streams[visible_[stream_]].identity;
 }
 
 void Detail::select_filter(int index)
@@ -240,9 +245,13 @@ void Detail::update(const hui::InputFrame &input, float dt)
                 else --stream_;
             }
             else if (input.nav == Direction::down) stream_ = std::min(std::max(0,static_cast<int>(visible_.size())-1),stream_+1);
-            if (visible_.empty()) filters_focused_ = true;
+            if (visible_.empty() && !content_->streams_loading) filters_focused_ = true;
         }
-        if (stream_ < static_cast<int>(visible_.size())) selected_identity_ = content_->streams[visible_[stream_]].identity;
+        if (stream_ < static_cast<int>(visible_.size()) &&
+            (!content_->streams_loading || selected_identity_.empty() ||
+             (!filters_focused_ && (input.nav == Direction::up || input.nav == Direction::down ||
+                                   input.is_pressed(Action::confirm)))))
+            selected_identity_ = content_->streams[visible_[stream_]].identity;
         if (input.is_pressed(Action::back) && content_->series)
         {
             set_mode(Mode::episodes);

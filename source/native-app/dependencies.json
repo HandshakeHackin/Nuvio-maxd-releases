@@ -15,12 +15,16 @@
     "appliedUpdates": {
       "commit": "aed286b81cdf70a814d3059f54633ba34844e46e",
       "scope": "Unicode-safe long-word wrapping; dynamic font fallback retained"
+    },
+    "graphicsConsumerUpdate": {
+      "commit": "dbf8286661224c7d8b01fdea62052251eec43eca",
+      "scope": "OpenGL SDK 1.0.2 integration; vendored rendering/input code unchanged"
     }
   },
   "opengl": {
-    "version": "1.0.1",
-    "archiveSha256": "aaa2e8957f55e1fc0b654dcb35a36e585f7e635d63952da40a28be7f64fde741",
-    "manifestSha256": "52b6b82f32aec7c983680858c50c25c926266d58f7660d79d44fc1c4505d05bc"
+    "version": "1.0.2",
+    "archiveSha256": "30d8e51dd062739b629346102be5932728ba714bc50b1bdcdf08306c8843d9a4",
+    "manifestSha256": "0d432edc9d648d6e0cccb4d5eb3db8484f10ba4b075b5ccf23edda3251b66360"
   },
   "sdk": {
     "version": "0.44",
@@ -66,7 +70,11 @@
   "presentationReference": {
     "repository": "https://github.com/blackbearreloaded/ProsperoLight",
     "commit": "91c0cf8b6bc6c9cbb2d48c8cc6994fbccaa2d61f",
-    "scope": "bounded timestamp-order catch-up and older-firmware 120 Hz/VRR declaration"
+    "scope": "bounded timestamp-order catch-up and older-firmware 120 Hz/VRR declaration",
+    "startupTimingReference": {
+      "commit": "136ac41bdac09196e7ba4bb95ce96686b7df5757",
+      "scope": "Independent Nuvio startup-stage timing diagnostics"
+    }
   },
   "loggingReference": {
     "repository": "https://github.com/blackbearreloaded/ProsperoEden",
@@ -77,7 +85,13 @@
     "repository": "LoZazaMastro/Stremio-Plus",
     "commit": "64d1bfb5b78b3c6a37e013973402f3239bee5df0",
     "version": "0.5.6",
-    "scope": "Feature design for subtitle styling, playback preferences, accessibility and diagnostics; Nuvio-specific implementation"
+    "scope": "Feature design for subtitle styling, playback preferences, accessibility and diagnostics; Nuvio-specific implementation",
+    "appliedUpdates": {
+      "repository": "NuvioMedia/NuvioTVSmart",
+      "commit": "c003faf6a0641296c5d02914d9ca3b56a6988e9c",
+      "version": "1.2.4",
+      "scope": "Preserve selected stream across asynchronous reload responses; existing stale-request generation guards retained"
+    }
   },
   "subtitleStack": {
     "libass": "0.17.3 (pinned SDK build)",
@@ -96,9 +110,9 @@
     }
   },
   "experimentalHdrDriver": {
-    "baseRuntimeCommit": "db752da4c89380af228497b5b6852163a4e61069",
+    "baseRuntimeCommit": "a519561626933257213d64a4a8bd5e02b55dceb2",
     "sourceArchiveSha256": {
-      "ps5-opengl.tar": "0542dc3441267b6b79ceafa535a90f4eea1f4add3702cadbb32041b2fdb19fcf",
+      "ps5-opengl.tar": "c4d35dd7d5afe7510e57febe7d6f174dfc9eeaab24cb8aa0998a5dffc6c7c9f1",
       "mesa-26.2.0.tar.xz": "efd4bb08cdb7c365a812cd4e6c9202ab55b2f22cdcd13c7d6c4f9647b799a4ef",
       "opengnm-psbc.tar": "ac18c6a2952c5dc7d9b96ed9549bc05eda006dcc4b54623176bfa29ff83ede9c"
     },

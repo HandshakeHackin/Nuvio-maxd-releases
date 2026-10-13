@@ -10,10 +10,10 @@ Sign in with a QR code to load your addons and saved library from your primary
 Nuvio profile. **Watch Progress now uses Nuvio Sync**, so you can pause on the
 PS5 and pick up where you left off on another Nuvio device.
 
-**Current release: [v0.5.22 native experimental](https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/tag/v0.5.22-native-experimental).**
+**Current release: [v0.5.23 native experimental](https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/tag/v0.5.23-native-experimental).**
 
-0.5.22 fixes an unconditional startup halt after display setup that caused a black screen. The production entry point now has a compiler check for this control-flow mistake. Experimental HDR and HDMI bitstream audio remain available for console testing.
-Download `PPSA99288.zip` or `NuvioMaxd-0.5.22-native.ffpfsc`. The validation report,
+0.5.23 updates OpenGL to 1.0.2 with logging-stall, cache and shader/submission fixes. Stream reloads preserve the selected source while addons answer, and startup-stage timings improve diagnostics. The startup hotfix and experimental HDR/HDMI bitstream audio are retained.
+Download `PPSA99288.zip` or `NuvioMaxd-0.5.23-native.ffpfsc`. The validation report,
 matching source archive and `SHA256SUMS` are included. The development repository
 stays private; the source for each released version is available with its public
 downloads.
@@ -54,12 +54,12 @@ Let ShadowMount+ finish scanning, then open **Nuvio Max'd**.
 
 ### FFPFSC image
 
-1. Download `NuvioMaxd-0.5.22-native.ffpfsc` and put it in a `/homebrew/` folder
+1. Download `NuvioMaxd-0.5.23-native.ffpfsc` and put it in a `/homebrew/` folder
    on storage that ShadowMount+ scans, just like your other homebrew apps.
    For a USB drive, that might be:
 
    ```text
-   /mnt/usb0/homebrew/NuvioMaxd-0.5.22-native.ffpfsc
+   /mnt/usb0/homebrew/NuvioMaxd-0.5.23-native.ffpfsc
    ```
 
    Leave the image in that folder so ShadowMount+ can identify it automatically.
