@@ -5,8 +5,8 @@ import shutil
 import subprocess
 import zipfile
 
-VERSION = '0.5.22'
-SOURCE = 'fd5c23ef10c637b2594a1ebea779980a45f7155c'
+VERSION = '0.5.23'
+SOURCE = 'b36cda66d4a98e9d04f1d74e2d4a0aca319f535b'
 manifest = json.loads(Path('manifest.json').read_text())
 destination = Path('download')
 destination.mkdir(exist_ok=True)
@@ -22,6 +22,9 @@ assert report['evoPlayer']['version'] == '0.12.0' and report['hostEvoIntegration
 assert report['hostStartupCompileCheckPassed'] and report['startupHotfix']['displayFailureHaltConditional']
 assert report['hostDriverHdrTransactionTestsPassed'] == 8 and report['hostBitstreamTestsPassed']
 assert report['experimentalAv']['pcmDefault'] and report['experimentalAv']['driverOwnedHdrSwitch']
+assert report['graphicsRefresh']['opengl'] == '1.0.2'
+assert report['graphicsRefresh']['streamReloadSelection'] and report['graphicsRefresh']['startupStageTiming']
+assert report['hostStreamPresentationTestsPassed'] == 14
 assert report['hostExperienceTestsPassed']
 assert report['hostPlaybackQualityTestsPassed'] == 11 and report['hostPlaybackLifecycleTestsPassed'] == 3
 assert report['userExperienceUpdates']['installSourceSelector'] and report['userExperienceUpdates']['sourceAwareUpdateReminders']
@@ -45,4 +48,4 @@ subprocess.run(['python3', 'verify_payload.py', str(destination)], check=True)
 for line in (destination / 'SHA256SUMS').read_text().splitlines():
     digest, name = line.split('  ', 1)
     assert hashlib.sha256((destination / name).read_bytes()).hexdigest() == digest, name
-print('Verified public 0.5.22 payload; console confirmation remains pending.')
+print('Verified public 0.5.23 payload; console confirmation remains pending.')

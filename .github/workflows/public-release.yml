@@ -1,7 +1,7 @@
-name: Verify and publish Nuvio Maxd 0.5.22
+name: Verify and publish Nuvio Maxd 0.5.23
 on:
   push:
-    branches: ['builds/v0.5.22']
+    branches: ['builds/v0.5.23']
     paths: ['payload/**', 'manifest.json', 'assemble.py', 'publish.py', 'verify_payload.py', 'release-notes.md', '.github/workflows/public-release.yml']
   workflow_dispatch:
 permissions:

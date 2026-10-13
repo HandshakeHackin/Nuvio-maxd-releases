@@ -1,22 +1,22 @@
 {
+  "NuvioMaxd-0.5.23-FFPFSC.zip": {
+    "bytes": 41793605,
+    "sha256": "6c9a20e815bdd976a843462d954530c9cf198a358666ed19a505948aa1fa73f0"
+  },
   "native-validation.json": {
-    "bytes": 21368,
-    "sha256": "10f9fe415f08eb022454591d06ae67a8e801cc20b78ce80ecfab1979cd83ba7e"
+    "bytes": 21585,
+    "sha256": "df98511b138b85eaefa20e20ab76398a76feb562b332111554c63dde1f18df5d"
   },
-  "NuvioMaxd-0.5.22-source.tar.gz": {
-    "bytes": 17426848,
-    "sha256": "d26b7457e720122e6eb97d070835ab400d03c424c561fba71c96f70bf8a8d4d8"
-  },
-  "NuvioMaxd-0.5.22-FFPFSC.zip": {
-    "bytes": 41782660,
-    "sha256": "42c39ddde570503d9d4a636cd387bb5b8f12bb9311f421083fc99d7c4c69fbda"
+  "NuvioMaxd-0.5.23-source.tar.gz": {
+    "bytes": 17429162,
+    "sha256": "220b0f2678dd29fa0a15f67eae8271c3ca358287c01607dc9274ae2420e7aa6f"
   },
   "SHA256SUMS": {
     "bytes": 457,
-    "sha256": "23f0d02916a9a431360ae1215f0f0f0fcdf48ada7fa6395b720f93cd31ac2a31"
+    "sha256": "31cdee22845523efab169ada0db2532bf05a114f23462165112932b36dabaad5"
   },
   "PPSA99288.zip": {
-    "bytes": 40237112,
-    "sha256": "46d28aef59d4a18cba42843ded4ba1d852ddef6fdb15a54cdf2dc62f422503a2"
+    "bytes": 40259669,
+    "sha256": "614920dfbdfc19eefd10ac44241837b54a42e49dd73a70ae6d7a8651079bde01"
   }
 }

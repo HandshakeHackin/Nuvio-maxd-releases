@@ -1,10 +1,10 @@
 {
   "name": "Nuvio Max'd",
-  "version": "0.5.22-native-experimental",
-  "sourceCommit": "fd5c23ef10c637b2594a1ebea779980a45f7155c",
+  "version": "0.5.23-native-experimental",
+  "sourceCommit": "b36cda66d4a98e9d04f1d74e2d4a0aca319f535b",
   "image": "PPSA99288.ffpfsc",
   "imageBytes": 42401792,
-  "imageSha256": "23b8007c164eb3e18dbb049a9dde416e610ad55947853fa9a936b897573a7d96",
+  "imageSha256": "46378a5a409eb1c89f3a32bdb5fbdb9596ff5158020a31798b89daac21783e68",
   "container": "PS5 PFS + PFSC containing exFAT",
   "containerErrors": 0,
   "containerWarnings": 0,
@@ -47,7 +47,7 @@
   },
   "hostInstantPlaybackTestsPassed": 26,
   "hostDecoderSetupTestsPassed": 10,
-  "hostStreamPresentationTestsPassed": 12,
+  "hostStreamPresentationTestsPassed": 14,
   "hostVideoPackingAndGpuTestsPassed": 23,
   "hostNetworkTestsPassed": 6,
   "hostHdrOutputTestsPassed": 9,
@@ -74,6 +74,13 @@
     "nativePresentation": "timestamp order with bounded source-frame catch-up",
     "longWordWrapping": "UTF-8 code-point boundaries",
     "updaterBackup": "retains previous verified image"
+  },
+  "graphicsRefresh": {
+    "opengl": "1.0.2",
+    "periodicDriverStatistics": "opt-in; teardown summary retained",
+    "streamReloadSelection": true,
+    "startupStageTiming": true,
+    "hardwareVerified": false
   },
   "hostUpstreamAdaptationTestsPassed": true,
   "hostExperienceTestsPassed": true,
@@ -117,7 +124,7 @@
     "trueHdDtsHd": "decoded lossless PCM",
     "hardwareVerified": false,
     "driverPatchSha256": "110576abc216d06e16d4d493ef8964c6f0cd43f46d22dbc9ccc77c491e4296c5",
-    "driverObjectSha256": "f79c4bd3f42d31008831a46e1eae63c42c457bae6143a20f396b3b1e3d36db77"
+    "driverObjectSha256": "e762ffab02d3ce5607f2af6c9b10e8edc48cd3110df8ade34e68ac5af002b322"
   },
   "startupHotfix": {
     "displayFailureHaltConditional": true,
@@ -192,14 +199,14 @@
   "verifiedFirmwares": [],
   "filesystemPermissions": "ExFAT mount permissions require console verification",
   "fileSha256": {
-    "THIRD_PARTY.md": "1291549e9d148a4f276c75d37a917b5f23424c76058a9c8bbed0b0a314c120cb",
-    "nuvio-updater.elf": "caecfdd1d36c11cf62821adbb05988376dce19df49b95f3012cce62e3042b3bb",
+    "THIRD_PARTY.md": "7bc8dcf446d5d8c4cb7360a07ffa5017b3494f8aa6ef91a29d529a1860ed515e",
+    "nuvio-updater.elf": "a6ab2d832e10f0af658dd1cec93f29e602078a9ae9e1836eda98aa9cfbc6ad87",
     "LICENSE": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
-    "eboot.bin": "6bad80840c61c07007751ec67b9b542eee465909e9f4c2e8eef58cdc20512ead",
+    "eboot.bin": "3c4723e73bcd5bc0dae565f0ddb56a16e307df33527e10a77b79f67f735ffe31",
     "ca-bundle.crt": "11163db462ffae3918afdf46c70a8db70cfcbaa8077352290b62a9c03c36fe6c",
-    "build-info.json": "f93a4df75b73f95f4abc212c9924c40fc6c1d354a019355863f906e73f3a18fe",
+    "build-info.json": "1110638231a43e8105c2a4e180f645774d0d0fc3c4166d0b6024b4c56f66510d",
     "account-config.json": "1014f3c748bee58a832ea5d1be191ebaa2e577ef8a08e8168f01cb6d78f1921f",
-    "sce_sys/param.json": "0863b1520bf22f6a46dd427f96d9c62bfea3108d8a94c7ccc4959995b315d70a",
+    "sce_sys/param.json": "4327050119a945fd67be0f68f583dd602ad7dbab71d2082643e6d1caec8627a8",
     "sce_sys/icon0.png": "fff8126b20f15bfc8bf062b9de6d36803d8420ee35ef9b578c403da7caabb517",
     "sce_module/libc.prx": "e6ff45d16adf687855cc3b33b0c8a4132b6504360b221e0a34c7e99fb3ba0036",
     "licenses/zstd.txt": "7055266497633c9025b777c78eb7235af13922117480ed5c674677adc381c9d8",
@@ -302,7 +309,7 @@
     "sounds/glass/focus_02.wav": "8675f6e70ed8c0a446f5899da100e0be92aa43fc7ab8d93bfa010716c24445ca",
     "sounds/glass/error_01.wav": "ab0fe700bb8d245f5e42ea2484045908c39971459aafeb985c7413caa30fcf85",
     "sounds/glass/back_01.wav": "132a55c945c7a3f17d52ccd513c8f162508a301cbcdca1c3bea376af7e06d8b9",
-    "licenses/ps5-opengl/THIRD_PARTY_NOTICES.md": "d9dc49dab17946e41c4ce8e9305607375e39eceaaf4206cdf60c34e628605d78",
+    "licenses/ps5-opengl/THIRD_PARTY_NOTICES.md": "f28d226f4cd2ee580787ddc02956e0f551d337dc3775aa51bf933c283713a22a",
     "licenses/ps5-opengl/LICENSE": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
     "licenses/ps5-homebrew-ui/THIRD_PARTY_NOTICES.md": "1d92d371d6cae90f07805101fe1dcc27cfe1b23c29452bb2093826093cfb01d6",
     "licenses/ps5-homebrew-ui/LICENSE": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
@@ -329,26 +336,26 @@
     "licenses/ps5-opengl/LICENSES/Mesa/exceptions/Linux-Syscall-Note": "9b4084655174654608fd037e9ddb4feeadfada01cd042e9c17b05aa7105b2b9f"
   },
   "zip": "PPSA99288.zip",
-  "zipBytes": 40237112,
-  "zipSha256": "46d28aef59d4a18cba42843ded4ba1d852ddef6fdb15a54cdf2dc62f422503a2",
+  "zipBytes": 40259669,
+  "zipSha256": "614920dfbdfc19eefd10ac44241837b54a42e49dd73a70ae6d7a8651079bde01",
   "zipFilesMatchImage": true,
   "zipPermissions": "0777",
   "hostTestEvidence": {
     "conclusion": "success",
-    "headSha": "fd5c23ef10c637b2594a1ebea779980a45f7155c",
-    "runId": 38269030812,
-    "url": "https://github.com/HandshakeHackin/nuvio-ps5/actions/runs/38269030812"
+    "headSha": "b36cda66d4a98e9d04f1d74e2d4a0aca319f535b",
+    "runId": 38348001100,
+    "url": "https://github.com/HandshakeHackin/nuvio-ps5/actions/runs/38348001100"
   },
   "hostToolsEvidence": {
     "conclusion": "success",
-    "headSha": "fd5c23ef10c637b2594a1ebea779980a45f7155c",
-    "runId": 38269030856,
-    "url": "https://github.com/HandshakeHackin/nuvio-ps5/actions/runs/38269030856"
+    "headSha": "b36cda66d4a98e9d04f1d74e2d4a0aca319f535b",
+    "runId": 38348001094,
+    "url": "https://github.com/HandshakeHackin/nuvio-ps5/actions/runs/38348001094"
   },
   "sourceArchiveFileCount": 562,
-  "supportedImportCount": 427,
+  "supportedImportCount": 428,
   "buildDependencies": {
-    "OpenGL": "1.0.1",
+    "OpenGL": "1.0.2",
     "PayloadSDK": "0.44",
     "MkPFS": "1.1.0"
   }
