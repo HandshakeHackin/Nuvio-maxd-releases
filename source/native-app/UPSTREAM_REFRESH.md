@@ -1,5 +1,26 @@
 # 0.5.16 upstream refresh
 
+## 0.5.23 follow-up
+
+- OpenGL SDK 1.0.2 is pinned by archive, manifest and source hashes. The existing
+  driver-owned HDR extension is rebuilt against its exact runtime source. This
+  brings opt-in periodic statistics, reduced cache flushing, program-query fixes
+  and the longer submission retirement bound into the native app.
+- The UI toolkit consumes the new SDK while retaining the app's font, display
+  and controller adaptations. No standalone player loop is substituted.
+- Stream reloads retain controller focus and the selected source's identity
+  while addons answer, including when that source arrives last. A new manual
+  choice wins, and a removed source falls back after the request completes.
+- Startup logs record display, renderer, first picture, modules, fonts, icons,
+  session and input timings once per launch, without stream/account data.
+- Existing update backups, verified replacement and unmount checks already
+  cover the applicable upstream recovery behavior. No privileged Lapy helper is
+  added. PacBrew's SDL2 and additional libraries are not used by this renderer;
+  the linked library set stays at the verified SDK 0.44 / PacBrew 0.40.2 pins.
+- Firmware 11 HDR acceptance and motion smoothness require console testing.
+
+## Original refresh
+
 Native playback remains the default; EVO Player 0.12.0 remains optional.
 
 - OpenGL SDK 1.0.1 includes its graphics-buffer lifetime fix. The archive and every SDK file are hash-verified before linking.

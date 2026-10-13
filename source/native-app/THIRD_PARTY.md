@@ -43,7 +43,7 @@ license:
 | ps5-payload-sdk `libc.a`, start-up code and system-module stubs | GPL-3.0-or-later; FreeBSD-derived parts BSD |
 | ps5-native-app-boilerplate start-up code (`tooling/native/app_crt.cpp`) and the clean-room `sce_module/libc.prx` loader shim shipped with the app | GPL-3.0-or-later |
 | [LLVM](https://llvm.org/) libc++, libc++abi, libunwind | Apache-2.0 WITH LLVM-exception |
-| [ps5-opengl](https://github.com/blackbearreloaded/ps5-opengl) SDK (BlackBearReloaded), v1.0.1: OpenGL 4.6 on the PS5, with [Mesa](https://mesa3d.org/) and OpenGNM PSBC components. Downloaded at build time (checksum-verified); its license texts and notices are copied into the app (`licenses/ps5-opengl/`) | GPL-3.0-or-later; Mesa MIT; the other parts as stated in the SDK |
+| [ps5-opengl](https://github.com/blackbearreloaded/ps5-opengl) SDK (BlackBearReloaded), v1.0.2: OpenGL 4.6 on the PS5, with [Mesa](https://mesa3d.org/) and OpenGNM PSBC components. Downloaded at build time (checksum-verified); its license texts and notices are copied into the app (`licenses/ps5-opengl/`) | GPL-3.0-or-later; Mesa MIT; the other parts as stated in the SDK |
 | [miniupnpc](https://github.com/miniupnp/miniupnp) (Thomas Bernard): the built-in torrent engine's port mapping | BSD-3-Clause |
 | [dht](https://github.com/jech/dht) (Juliusz Chroboczek): the built-in torrent engine's DHT | MIT |
 | [FFmpeg](https://ffmpeg.org/) (libavformat, libavcodec, libavutil, libswresample, libswscale), built with `--enable-gpl --enable-version3` | GPL-3.0-or-later |
@@ -135,3 +135,5 @@ Library License), supplied by the pinned homebrew SDK. Exact license texts are
 in `app/licenses/`. Noto Sans CJK SC and Noto Sans Thai are bundled under SIL OFL
 1.1; file hashes are recorded in `dependencies.json`. New local playback/subtitle/
 audio adapters are GPL-3.0-or-later.
+
+0.5.23 uses ps5-opengl SDK 1.0.2 at a519561626933257213d64a4a8bd5e02b55dceb2. Its runtime is rebuilt with Nuvio's existing driver-owned HDR extension. The toolkit's SDK consumption update follows dbf8286661224c7d8b01fdea62052251eec43eca; local UI adaptations remain. Stream reload selection behavior is independently implemented following NuvioTVSmart 1.2.4 (c003faf6a0641296c5d02914d9ca3b56a6988e9c). Startup stage timing follows ProsperoLight's diagnostics approach; no standalone player or privileged helper is bundled.

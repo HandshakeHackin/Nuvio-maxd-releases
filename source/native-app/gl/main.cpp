@@ -62,6 +62,14 @@ std::uint32_t load_icon(hui::gfx::Renderer &renderer, const std::string &path)
 int main()
 {
     using namespace hui;
+    const std::int64_t startup_t0 = sys::monotonic_us();
+    auto startup_previous = startup_t0;
+    const auto startup_stage = [&](const char* stage) {
+        const auto now = sys::monotonic_us();
+        sys::log("[SX] startup stage=%s elapsed_ms=%.1f stage_ms=%.1f", stage,
+                 double(now - startup_t0) / 1000, double(now - startup_previous) / 1000);
+        startup_previous = now;
+    };
     nuvio_diagnostics::init(kData,nuvio_update::current_version);
     sys::log("[SX] entry");
     const std::string root = kRoot;
@@ -102,6 +110,7 @@ int main()
         sys::park();
     }
     display_fallback |= display.width() != selected.width || display.height() != selected.height;
+    startup_stage("display");
     sys::log("[SX] display: PS5 configured=%ux%u query_rc=%08x requested=%dx%d render=%dx%d SDR; fallback=%d",
              selected.configured_width, selected.configured_height, unsigned(selected.query_result),
              selected.width, selected.height, display.width(), display.height(), display_fallback);
@@ -116,6 +125,7 @@ int main()
         sys::park();
     }
 
+    startup_stage("renderer");
     // Start the mark and loading animation before slow module and network setup.
     // The app name joins it as soon as the fonts are ready.
     static sx::Icons icons;
@@ -147,10 +157,12 @@ int main()
         }
     };
     boot_frame();
+    startup_stage("first-picture");
     ps5_load_modules(); // the keyboard dialog
     boot_frame();
     HwDecoder::load_module(); // the hardware video decoder
     boot_frame();
+    startup_stage("modules");
     if (!sx::load_ui_fonts(renderer, root + "/fonts", root + "/hui-fonts", &ui_fonts, &fonts))
     {
         sys::log("[SX] fatal: fonts failed");
@@ -158,6 +170,7 @@ int main()
         sys::park();
     }
     boot_frame();
+    startup_stage("fonts");
 
     const char *solid[5] = {"nav_board", "nav_discover", "nav_library", "nav_addons", "nav_settings"};
     for (int i = 0; i < 5; ++i)
@@ -168,6 +181,7 @@ int main()
     icons.search = load_icon(renderer, icon_dir + "/search.png");
     icons.logo = load_icon(renderer, icon_dir + "/logo_l.png");
     boot_frame();
+    startup_stage("icons");
 
     static sx::Session session;
     if (!session.init(root, kData, &renderer))
@@ -177,6 +191,7 @@ int main()
         sys::park();
     }
     session.set_display_output(display.width(), display.height(), display.refresh_hz());
+    startup_stage("session");
     session.set_display_configuration(selected.query_result == 0 ? selected.configured_width : 0,
                                       selected.query_result == 0 ? selected.configured_height : 0,
                                       display_fallback);
@@ -187,6 +202,7 @@ int main()
 
     ps5::Pad pad;
     pad.open();
+    startup_stage("input-ready");
     InputTracker tracker;
     PadSample samples[64];
 

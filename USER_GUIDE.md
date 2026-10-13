@@ -10,8 +10,8 @@ Sign in with a QR code to load your addons and saved library from your primary
 Nuvio profile. **Watch Progress now uses Nuvio Sync**, so you can pause on the
 PS5 and pick up where you left off on another Nuvio device.
 
-**Current release: [v0.5.22 native experimental](https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/tag/v0.5.22-native-experimental).**
-Download `PPSA99288.zip` or `NuvioMaxd-0.5.22-native.ffpfsc`. The validation report,
+**Current release: [v0.5.23 native experimental](https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/tag/v0.5.23-native-experimental).**
+Download `PPSA99288.zip` or `NuvioMaxd-0.5.23-native.ffpfsc`. The validation report,
 matching source archive and `SHA256SUMS` are included. The development repository
 stays private; the source for each released version is available with its public
 downloads.
@@ -20,13 +20,14 @@ Nuvio Max'd is also available in the
 [ProsperoStore homebrew shop](https://homebrew.page/app/PPSA99288/).
 Find **Nuvio Max'd** in the store to install it, or use the GitHub downloads.
 
-## New in 0.5.22
+## New in 0.5.23
 
-- Fixed a startup halt that left Nuvio on a black screen after opening the display.
-- Added a compiler check of the actual startup entry point to catch this mistake.
-- Retained the experimental HDR driver and optional Auto/Bitstream audio settings from 0.5.21.
+- Updated to OpenGL SDK 1.0.2 with periodic logging-stall, GPU cache, shader-query and submission timeout fixes.
+- Stream reloads preserve your selection and controller focus while addons answer. A new manual choice takes priority.
+- Added startup-stage timings for display, renderer, modules, fonts and session setup.
+- Retained the startup hotfix, verified update backups, experimental HDR and optional HDMI bitstream audio.
 
-Quit Nuvio before replacing its image or folder. Launch 0.5.22 and confirm that the loading screen and library/sign-in screen appear. Test normal playback with PCM audio before native HDR or a receiver's Auto audio output. Console confirmation remains necessary.
+Quit Nuvio before replacing its image or folder. Start with PCM audio, then compare the same video and camera-pan scene. Motion smoothness, HDR acceptance and receiver output still need console confirmation.
 
 ## Included installation reminders from 0.5.20
 
@@ -97,12 +98,12 @@ Let ShadowMount+ finish scanning, then open **Nuvio Max'd**.
 
 ### FFPFSC image
 
-1. Download `NuvioMaxd-0.5.22-native.ffpfsc` and put it in a `/homebrew/` folder
+1. Download `NuvioMaxd-0.5.23-native.ffpfsc` and put it in a `/homebrew/` folder
    on storage that ShadowMount+ scans, just like your other homebrew apps.
    For a USB drive, that might be:
 
    ```text
-   /mnt/usb0/homebrew/NuvioMaxd-0.5.22-native.ffpfsc
+   /mnt/usb0/homebrew/NuvioMaxd-0.5.23-native.ffpfsc
    ```
 
    Leave the image in that folder so ShadowMount+ can identify it automatically.
@@ -242,7 +243,7 @@ This includes the playback changes from 0.5.12:
   Restart the app after changing it. Resolution stays as selected and the player
   shows the accepted refresh rate; unsupported outputs retain 60 Hz.
 
-The public download and updater offer 0.5.22 as an experimental release.
+The public download and updater offer 0.5.23 as an experimental release.
 
 ### Public 0.5.9
 

@@ -456,6 +456,7 @@ void Session::detail_load_streams(const std::string &video_id, const std::string
             detail.stream_addons.push_back(a->name);
         }
     d_pending_ = static_cast<int>(sources.size());
+    detail.streams_loading = d_pending_ > 0;
     if (prefetched)
     {
         d_found_ = *prefetched;
@@ -511,6 +512,7 @@ void Session::detail_reload_streams()
 
 void Session::detail_refresh_streams()
 {
+    detail.streams_loading = d_answered_ < d_pending_;
     // Direct/debrid streams first. Raw torrents appear only when enabled.
     std::vector<std::size_t> order;
     for (std::size_t i = 0; i < d_found_.size(); ++i)

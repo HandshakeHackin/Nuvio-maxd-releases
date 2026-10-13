@@ -152,6 +152,7 @@ struct DetailContent
     // What the lists say while they are empty: "Loading streams...", "No streams found".
     std::string episodes_status;
     std::string streams_status;
+    bool streams_loading = false;
     std::vector<std::string> stream_addons;
     std::string resume_label;
     // Asks the page to put its episode cursor on `episode_hint` when this changes.

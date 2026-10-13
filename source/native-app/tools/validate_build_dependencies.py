@@ -19,4 +19,4 @@ for line in (gl / 'manifest.sha256').read_text().splitlines():
     assert sha(gl / path) == digest, 'OpenGL SDK file differs: ' + name
 for name, digest in pins['sdk']['coreFileSha256'].items():
     assert sha(sdk / name) == digest, 'Payload SDK core differs: ' + name
-print('Build dependencies: OpenGL 1.0.1 and Payload SDK 0.44 verified')
+print(f"Build dependencies: OpenGL {pins['opengl']['version']} and Payload SDK {pins['sdk']['version']} verified")
