@@ -4,6 +4,9 @@ ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 python3 "$ROOT/tools/validate_display_metadata.py" "$ROOT/app/sce_sys/param.json"
 mkdir -p "$ROOT/test-output"
 bash "$ROOT/tests/startup.sh"
+bash "$ROOT/tests/lightbar.sh"
+bash "$ROOT/tests/console_lights.sh"
+bash "$ROOT/tests/settings_categories.sh"
 ${HOST_CXX:-g++} -std=c++20 -O1 -g -Wall -Wextra -Werror -pthread \
     -I"$ROOT/src" -I"$ROOT/third_party" "$ROOT/tests/account_host.cpp" \
     "$ROOT/src/nuvio_account.cpp" "$ROOT/src/watch_sync.cpp" "$ROOT/src/stremio.cpp" "$ROOT/src/http.cpp" "$ROOT/src/util.cpp" \
@@ -20,9 +23,11 @@ bash "$ROOT/tests/upstream.sh"
 bash "$ROOT/tests/experience.sh"
 bash "$ROOT/tests/display.sh"
 bash "$ROOT/tests/display_refresh.sh"
+bash "$ROOT/tests/presentation_timing.sh"
 bash "$ROOT/tests/hdr.sh"
 bash "$ROOT/tests/experimental_av.sh"
 bash "$ROOT/tests/playback_quality.sh"
+bash "$ROOT/tests/audio_pcm.sh"
 bash "$ROOT/tests/player_lifecycle.sh"
 bash "$ROOT/tests/video.sh"
 bash "$ROOT/tests/netstream.sh"

@@ -90,6 +90,7 @@ struct SettingRow
     };
     Kind kind = Kind::value;
     std::string label;
+    std::string category; // empty means General
     std::string value; // shown on the right
     bool on = false;   // for toggles
     bool subtitle_preview = false;

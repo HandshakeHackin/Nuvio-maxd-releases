@@ -137,3 +137,5 @@ in `app/licenses/`. Noto Sans CJK SC and Noto Sans Thai are bundled under SIL OF
 audio adapters are GPL-3.0-or-later.
 
 0.5.23 uses ps5-opengl SDK 1.0.2 at a519561626933257213d64a4a8bd5e02b55dceb2. Its runtime is rebuilt with Nuvio's existing driver-owned HDR extension. The toolkit's SDK consumption update follows dbf8286661224c7d8b01fdea62052251eec43eca; local UI adaptations remain. Stream reload selection behavior is independently implemented following NuvioTVSmart 1.2.4 (c003faf6a0641296c5d02914d9ca3b56a6988e9c). Startup stage timing follows ProsperoLight's diagnostics approach; no standalone player or privileged helper is bundled.
+
+0.5.24 adds an independent Nuvio logo lightbar animation. The vendored ps5-homebrew-ui pad wrapper gains bounded light updates, failure suppression, reconnect invalidation and reset-on-close; original notices remain.

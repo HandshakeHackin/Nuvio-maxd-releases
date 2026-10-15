@@ -34,7 +34,8 @@ Rect Settings::row_rect(int index, bool final_position) const
 void Settings::set_content(const SettingsContent *content)
 {
     content_ = content;
-    index_ = 0;
+    nav_ = {};
+    if(content_) nav_.refresh(*content_);
     shown_ = -1;
     switches_.assign(content ? content->rows.size() : 0, {});
     if (content)
@@ -49,33 +50,45 @@ void Settings::refresh()
 {
     if (!content_)
         return;
+    nav_.refresh(*content_);
     const std::size_t rows = content_->rows.size();
     const std::size_t before = switches_.size();
     switches_.resize(rows);
     for (std::size_t i = before; i < rows; ++i)
         switches_[i].snap(content_->rows[i].on ? 1.0f : 0.0f);
-    index_ = std::min(index_, std::max(0, static_cast<int>(rows) - 1));
+
+}
+
+void Settings::reset_navigation_animation() {
+    scroll_.position.snap(0); ring_.snap(row_rect(nav_.index,true)); shown_=-1;
 }
 
 void Settings::update(const hui::InputFrame &input, float dt)
 {
+    navigation_consumed_=false;
     tick(dt);
     if (!content_ || content_->rows.empty())
         return;
-    const int count = static_cast<int>(content_->rows.size());
-    if (!rail_input(input))
+    const int count = nav_.count();
+    if(!count) return;
+    if(input.is_pressed(hui::Action::back) && nav_.back(*content_)) {
+        rail_.focus(false); reset_navigation_animation(); navigation_consumed_=true;
+    } else if(!rail_.focused() && input.is_pressed(hui::Action::confirm) && nav_.open(*content_)) {
+        reset_navigation_animation(); navigation_consumed_=true;
+    }
+    if (!navigation_consumed_ && !rail_input(input))
     {
         if (input.nav == Direction::up)
-            index_ = std::max(0, index_ - 1);
+            nav_.index = std::max(0, nav_.index - 1);
         else if (input.nav == Direction::down)
-            index_ = std::min(count - 1, index_ + 1);
+            nav_.index = std::min(count - 1, nav_.index + 1);
         else if (input.nav == Direction::left)
             to_rail();
     }
-    const float top = static_cast<float>(index_) * kPitch;
+    const float top = static_cast<float>(nav_.index) * kPitch;
     scroll_.reveal(top, top + kRowH, 1080.0f - kTop - 60.0f, 14.0f);
     scroll_.update(dt, 18.0f);
-    ring_.target(row_rect(index_, true));
+    ring_.target(row_rect(nav_.index, true));
     ring_.update(dt, 22.0f);
     focus_on_.target = rail_.focused() ? 0.0f : 1.0f;
     focus_on_.update(dt, 16.0f);
@@ -84,9 +97,9 @@ void Settings::update(const hui::InputFrame &input, float dt)
         switches_[i].target = content_->rows[i].on ? 1.0f : 0.0f;
         switches_[i].update(dt, 22.0f);
     }
-    if (index_ != shown_)
+    if (nav_.index != shown_)
     {
-        shown_ = index_;
+        shown_ = nav_.index;
         swap_.start(0.28f);
     }
     swap_.update(dt);
@@ -125,7 +138,9 @@ void Settings::draw_help(hui::gfx::DrawList &list, const SettingRow &row) const
         draw_subtitle_block(list,env_.fonts,"Your subtitles look like this.",content_->subtitle_style,size,kHelp.cx(),kHelp.y+510,kHelp.w-90);
     }
     const char *verb = row.kind == SettingRow::Kind::toggle ? "Switch" : row.kind == SettingRow::Kind::action ? "Open" : "Change";
-    draw_chip(list, env_, hui::ui::Button::cross, verb, x, kHelp.y + kHelp.h - 62.0f, true);
+    const float hint_y=kHelp.y+kHelp.h-62.0f;
+    const float hint_w=draw_chip(list, env_, hui::ui::Button::cross, verb, x, hint_y, true);
+    draw_chip(list, env_, hui::ui::Button::circle, nav_.root()?"Home":"Categories", x+hint_w+16.0f, hint_y);
     list.pop_opacity();
     list.pop_opacity();
 }
@@ -137,7 +152,7 @@ void Settings::draw(hui::gfx::DrawList &list, hui::gfx::BackdropSpec &backdrop) 
         return;
     const float in = tween::stagger(age_, 0, 0.0f, 0.45f);
     list.push_opacity(in);
-    text(list, env_.fonts.semibold, "Settings", theme::kLeft, 158.0f, theme::kSubtitle + 4.0f, theme::ink_2);
+    text(list, env_.fonts.semibold, (nav_.root()?std::string("Settings"):std::string("Settings / ")+nav_.category), theme::kLeft, 158.0f, theme::kSubtitle + 4.0f, theme::ink_2);
     list.pop_opacity();
 
     list.push_clip({theme::kLeft - 44.0f, 188.0f, 1130.0f, 1080.0f - 188.0f});
@@ -148,13 +163,13 @@ void Settings::draw(hui::gfx::DrawList &list, hui::gfx::BackdropSpec &backdrop) 
         list.glow(ring, 24.0f, 26.0f, theme::accent.with_alpha(0.34f));
         list.pop_opacity();
     }
-    for (int i = 0; i < static_cast<int>(content_->rows.size()); ++i)
+    for (int i = 0; i < nav_.count(); ++i)
     {
         const Rect r = row_rect(i, false);
         if (r.y > 1080.0f || r.y + r.h < 180.0f)
             continue;
-        const SettingRow &row = content_->rows[i];
-        const bool focused = i == index_ && !rail_.focused();
+        const SettingRow row = row_at(i);
+        const bool focused = i == nav_.index && !rail_.focused();
         const float enter = tween::stagger(age_, i, 0.04f, 0.4f);
         list.push_opacity(enter);
         list.push_transform(1.0f, 0.0f, 0.0f, 0.0f, 14.0f * (1.0f - enter));
@@ -163,7 +178,7 @@ void Settings::draw(hui::gfx::DrawList &list, hui::gfx::BackdropSpec &backdrop) 
         const float right = r.x + r.w - 34.0f;
         if (row.kind == SettingRow::Kind::toggle)
         {
-            draw_switch(list, right - 34.0f, r.cy(), switches_[i].value);
+            draw_switch(list, right - 34.0f, r.cy(), switches_[nav_.rows[i]].value);
         }
         else
         {
@@ -182,8 +197,8 @@ void Settings::draw(hui::gfx::DrawList &list, hui::gfx::BackdropSpec &backdrop) 
     }
     list.pop_clip();
 
-    if (index_ >= 0 && index_ < static_cast<int>(content_->rows.size()))
-        draw_help(list, content_->rows[index_]);
+    if (nav_.index >= 0 && nav_.index < nav_.count())
+        draw_help(list, row_at(nav_.index));
 
     fade_down(list, theme::kRailWidth, 0.0f, theme::kScreenW, 118.0f, 0.62f);
     fade_up(list, theme::kRailWidth, 1000.0f, theme::kScreenW, 80.0f, 0.94f);

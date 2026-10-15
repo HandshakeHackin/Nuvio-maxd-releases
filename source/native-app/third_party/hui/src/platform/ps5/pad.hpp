@@ -47,6 +47,10 @@ class Pad
     bool owns_user_service_ = false;
     float rumble_left_ = 0.0f;
     std::uint32_t light_bar_ = 0xffffffffu;
+    std::int64_t light_bar_next_us_ = 0;
+    bool light_bar_failed_ = false;
+    bool connected_ = false;
+    std::uint8_t connected_count_ = 0;
 };
 
 } // namespace hui::ps5

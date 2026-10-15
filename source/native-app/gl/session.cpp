@@ -52,6 +52,7 @@ enum SettingIndex
     kInstallSource,
     kUpdates,
     kExit,
+    kConsoleLights,
     kSettingCount
 };
 
@@ -544,8 +545,8 @@ void Session::refresh_settings()
     set(kRefresh, Kind::value, "Display refresh", prefs_.display_refresh == 120 ? "Prefer 120 Hz" : "60 Hz",
         "120 Hz can make 24 fps films feel steadier on a compatible TV. Keeps the selected resolution; uses 60 Hz if unavailable. Close and reopen to apply.");
     set(kAudioMode, Kind::value, "Audio output", prefs_.audio_output_mode=="pcm"?"PCM":prefs_.audio_output_mode=="auto"?"Auto (experimental)":"Bitstream (experimental)",
-        "Auto checks your receiver; Bitstream tries Dolby Digital, Dolby Digital Plus or DTS core. Other formats use PCM. Applies to the next video.");
-    set(kAudioOutput, Kind::toggle, "Surround audio", "", "Prefer 7.1 PCM with stereo fallback. Turn off for stereo. Applies to the next video.", prefs_.surround_audio);
+        "Auto uses PCM with Surround off; with Surround on it checks HDMI capabilities. Bitstream forces a compressed-format attempt. Applies to the next video.");
+    set(kAudioOutput, Kind::toggle, "Surround audio", "", "Use 7.1 PCM for compatible HDMI surround systems. Keep off for TV speakers or optical stereo. Applies to the next video.", prefs_.surround_audio);
     set(kSubLangs, Kind::value, "Subtitle languages", prefs_.subtitle_langs.empty() ? "None" : prefs_.subtitle_langs,
         "Preferred order, for example \"gre, eng\".");
     set(kAutoSubs, Kind::toggle, "Subtitles on automatically", "", "Prefer matching subtitles inside the video file. Use addon subtitles when the file has no matching track.",
@@ -582,9 +583,25 @@ void Session::refresh_settings()
     set(kDonation, Kind::action, "Support on Ko-fi", "", "Optional support for development. Scan the QR code with your phone.");
     set(kInstallSource, Kind::value, "Install source", install_source_label(prefs_.install_source),
         "Where you installed Nuvio Max'd. Update reminders use this choice; change it if you switch install methods.");
-    set(kUpdates, Kind::value, "App updates", update.phase == AppUpdate::Phase::idle ? "Nuvio Max'd 0.5.23 (experimental)" : update.message,
+    set(kUpdates, Kind::value, "App updates", update.phase == AppUpdate::Phase::idle ? "Nuvio Max'd 0.5.27 (experimental)" : update.message,
         update_destination(prefs_.install_source));
     set(kExit, Kind::action, "Exit Nuvio Max'd", "", "Close the app and go back to the home screen.");
+    set(kConsoleLights, Kind::toggle, "Console light sync", "", "Fade the console lights with the controller while Nuvio is open. Console colours are approximate. Unsupported systems leave their lights unchanged. Turning off restores the previous state.", prefs_.console_light_sync);
+    const char* light_status = console_light_status_==ConsoleLights::Status::active ? "Sync active." :
+        console_light_status_==ConsoleLights::Status::unavailable ? "Console light access is unavailable on this system." :
+        console_light_status_==ConsoleLights::Status::system_owned ? "System lighting took priority; toggle off and on to retry." : "Waiting for Nuvio to be in front.";
+    if(prefs_.console_light_sync) settings.rows[kConsoleLights].help += std::string(" ")+light_status;
+    const auto group = [&](const char* name,std::initializer_list<int> ids) {
+        for(int id:ids) settings.rows[id].category=name;
+    };
+    group("Account & Services", {kAccount,kConnectedServices,kServer});
+    group("Video", {kDisplay,kRefresh,kHdr,kPlaybackEngine});
+    group("Audio", {kAudioMode,kAudioOutput,kAudioLangs});
+    group("Subtitles", {kSubLangs,kAutoSubs,kSubSize,kSubFont,kSubColour,kSubEffect,kSubBackground});
+    group("Playback", {kSeek,kShoulderSeek,kCountdown,kAutoplay,kSkipSegments});
+    group("Appearance & Lighting", {kReducedMotion,kHighContrast,kUiSounds,kCalmBackgrounds,kConsoleLights});
+    group("Addons", {kTorrents,kAddAddon,kReload});
+    group("App & Updates", {kReleaseNotes,kDiagnostics,kDonation,kInstallSource,kUpdates,kExit});
     changed_ |= kSettings;
 }
 
@@ -594,6 +611,8 @@ void Session::settings_activate(int row)
         confirm_sign_out_ = false;
     switch (row)
     {
+    case kConsoleLights:
+        prefs_.console_light_sync=!prefs_.console_light_sync; save_prefs(); cue(hui::audio::Cue::toggle); break;
     case kConnectedServices:
         services_menu();
         break;

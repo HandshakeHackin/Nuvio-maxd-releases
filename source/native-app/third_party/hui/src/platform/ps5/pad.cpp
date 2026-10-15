@@ -66,6 +66,7 @@ extern "C"
     int scePadSetVibrationMode(int handle, int mode);
     int scePadSetVibration(int handle, const PadVibration *vibration);
     int scePadSetLightBar(int handle, const PadColor *color);
+    int scePadResetLightBar(int handle);
 }
 
 namespace hui::ps5
@@ -113,13 +114,17 @@ void Pad::set_light_bar(std::uint8_t r, std::uint8_t g, std::uint8_t b)
 {
     const std::uint32_t packed =
         (static_cast<std::uint32_t>(r) << 16) | (static_cast<std::uint32_t>(g) << 8) | b;
-    if (handle_ < 0 || packed == light_bar_)
+    if (handle_ < 0 || light_bar_failed_ || packed == light_bar_)
         return;
-    light_bar_ = packed;
+    const auto now = sys::monotonic_us();
+    if (now < light_bar_next_us_) return;
+    light_bar_next_us_ = now + 33333; // at most 30 updates per second
     const PadColor color{r, g, b, 0};
     const int result = scePadSetLightBar(handle_, &color);
-    if (result != 0)
+    if (result != 0) {
+        light_bar_failed_ = true; // retry after a controller reconnect, not every frame
         sys::log("[HUI] pad scePadSetLightBar=0x%08x", static_cast<unsigned>(result));
+    } else light_bar_ = packed;
 }
 
 void Pad::rumble(float strength, float seconds)
@@ -154,9 +159,15 @@ void Pad::close()
     {
         const PadVibration stop{0, 0};
         scePadSetVibration(handle_, &stop);
+        if (light_bar_ != 0xffffffffu) scePadResetLightBar(handle_);
         scePadClose(handle_);
     }
     handle_ = -1;
+    light_bar_ = 0xffffffffu;
+    light_bar_next_us_ = 0;
+    light_bar_failed_ = false;
+    connected_ = false;
+    connected_count_ = 0;
     if (owns_user_service_)
         sceUserServiceTerminate();
     owns_user_service_ = false;
@@ -179,6 +190,14 @@ std::size_t Pad::read(std::span<PadSample> out)
     for (int index = 0; index < count; ++index)
     {
         const RawPadSample &r = raw[index];
+        const bool connected = r.connected != 0;
+        if (connected && (!connected_ || r.connected_count != connected_count_)) {
+            light_bar_ = 0xffffffffu;
+            light_bar_next_us_ = 0;
+            light_bar_failed_ = false;
+        }
+        connected_ = connected;
+        connected_count_ = r.connected_count;
         PadSample &s = out[static_cast<std::size_t>(index)];
         s.buttons = r.buttons;
         s.left_x = r.left_x;

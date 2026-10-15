@@ -20,6 +20,12 @@ int main() {
  assert(sx::should_show_release_notes("","0.5.17") && sx::should_show_release_notes("0.5.16","0.5.17"));
  assert(!sx::should_show_release_notes("0.5.17","0.5.17"));
  sx::ExperiencePreferences defaults;
+ assert(defaults.console_light_sync);
+ sx::load_experience({{"console_light_sync",false}},defaults); assert(!defaults.console_light_sync);
+ nlohmann::json lighting; sx::save_experience(lighting,defaults); sx::ExperiencePreferences lighting_loaded;
+ sx::load_experience(lighting,lighting_loaded); assert(!lighting_loaded.console_light_sync);
+ sx::load_experience({{"console_light_sync","bad"}},lighting_loaded); assert(!lighting_loaded.console_light_sync);
+
  assert(defaults.install_source.empty() && defaults.audio_output_mode=="pcm");
  sx::load_experience({{"audio_output_mode","invalid"}},defaults);assert(defaults.audio_output_mode=="pcm");
  for(const std::string mode : {"pcm","auto","bitstream"}) {

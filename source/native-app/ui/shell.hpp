@@ -12,6 +12,7 @@
 #include "discover.hpp"
 #include "library.hpp"
 #include "overlays.hpp"
+#include "logo_animation.hpp"
 #include "player.hpp"
 #include "settings.hpp"
 #include "../gl/session.hpp"
@@ -37,6 +38,9 @@ class Shell
         boot_t_ = seconds;
     }
     void draw(hui::gfx::DrawList &list, hui::gfx::BackdropSpec &backdrop) const;
+    LogoLight logo_light_bar() const {
+        return logo_animation(boot_t_, boot_out_ < 0 ? 0 : boot_out_ / kBootOut).light;
+    }
 
     // Where the cursor is, for the session to load artwork around it.
     Session::Cursor cursor() const;

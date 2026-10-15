@@ -4,6 +4,7 @@
 
 #include "cards.hpp"
 #include "page.hpp"
+#include "settings_navigation.hpp"
 
 #include <vector>
 
@@ -24,15 +25,20 @@ class Settings : public PageBase
     // The row under the cursor, or -1 while the rail has the focus.
     int cursor_row() const
     {
-        return rail_.focused() ? -1 : index_;
+        return rail_.focused() ? -1 : (nav_.root() ? -2-nav_.index : nav_.source_row());
     }
+
+    bool navigation_consumed() const { return navigation_consumed_; }
 
   private:
     hui::gfx::Rect row_rect(int index, bool final_position) const;
     void draw_help(hui::gfx::DrawList &list, const SettingRow &row) const;
 
     const SettingsContent *content_ = nullptr;
-    int index_ = 0;
+    SettingsNavigation nav_;
+    bool navigation_consumed_=false;
+    const SettingRow row_at(int visible) const { return nav_.root() ? nav_.category_row(*content_,visible) : content_->rows[nav_.rows[visible]]; }
+    void reset_navigation_animation();
     hui::ui::Scroller scroll_;
     hui::ui::SpringRect ring_;
     hui::tween::Spring focus_on_;

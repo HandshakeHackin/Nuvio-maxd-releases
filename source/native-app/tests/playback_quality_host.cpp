@@ -36,10 +36,10 @@ static void wait_for(const std::function<bool()>& f) {
 }
 int main(int argc,char** argv) try {
     require(argc==2,"font dir missing");
-    test("surround negotiates float PCM, consumes media samples, and holds during pause",[]{
+    test("surround negotiates S16 PCM, consumes media samples, and holds during pause",[]{
         PcmOut out; require(out.open(true),"audio open failed");
-        require(out.channels()==8 && out.floating_point() && format_seen==5,"float surround not selected");
-        std::vector<float> pcm(2048*8,.25f); require(out.queue(pcm.data(),pcm.size()*4),"queue rejected PCM");
+        require(out.channels()==8 && !out.floating_point() && format_seen==2,"S16 surround not selected");
+        std::vector<int16_t> pcm(2048*8,8192); require(out.queue(pcm.data(),pcm.size()*2),"queue rejected PCM");
         require(out.played_frames()==0,"paused audio clock advanced"); out.pause(false);
         wait_for([&]{return out.played_frames()>=1024;}); out.pause(true);
         std::this_thread::sleep_for(std::chrono::milliseconds(10)); auto held=out.played_frames();

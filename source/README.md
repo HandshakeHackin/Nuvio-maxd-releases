@@ -12,7 +12,7 @@ PS5 and pick up where you left off on another Nuvio device.
 
 **Current release: [v0.5.23 native experimental](https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/tag/v0.5.23-native-experimental).**
 
-0.5.23 updates OpenGL to 1.0.2 with logging-stall, cache and shader/submission fixes. Stream reloads preserve the selected source while addons answer, and startup-stage timings improve diagnostics. The startup hotfix and experimental HDR/HDMI bitstream audio are retained.
+**Local test build 0.5.27 (not published):** grouped Settings, a slow teal/white/pink-purple controller fade, and optional console light sync with approximate colours. Retains measured video flip timing and the PCM/stereo audio changes. See [local test notes](native-app/TESTING-0.5.27.txt). Console compatibility and playback quality still need PS5 testing.
 Download `PPSA99288.zip` or `NuvioMaxd-0.5.23-native.ffpfsc`. The validation report,
 matching source archive and `SHA256SUMS` are included. The development repository
 stays private; the source for each released version is available with its public

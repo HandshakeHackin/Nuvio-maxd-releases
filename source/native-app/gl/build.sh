@@ -113,6 +113,7 @@ read -r -a DEPS <<< "$("$SDK/bin/prospero-pkg-config" --static --libs libcurl li
 	--wrap=posix_memalign --wrap=memalign --wrap=aligned_alloc --wrap=valloc --wrap=malloc_usable_size \
 	--wrap=sceSystemServiceHideSplashScreen \
 	--wrap=sceVideoOutRegisterBuffers2 --wrap=sceVideoOutClose \
+	--wrap=sceAgcDcbSetFlip --wrap=sceVideoOutSubmitFlip \
 	--allow-multiple-definition \
 	--defsym=__cxa_thread_atexit_impl=0 --defsym=__syscall=0 \
 	-u ps5_agc_gate2_run \

@@ -3,6 +3,8 @@
 // what the screens show is gl/session.cpp.
 
 #include "chrome.hpp"
+#include "console_lights.hpp"
+#include "system_status.hpp"
 #include "core/input.hpp"
 #include "dynamic_font.hpp"
 #include "display_output.h"
@@ -134,12 +136,15 @@ int main()
     const std::int64_t boot_t0 = sys::monotonic_us();
     const auto boot_seconds = [&] { return static_cast<float>(sys::monotonic_us() - boot_t0) / 1e6f; };
     bool splash_hidden = false;
+    ps5::Pad pad;
+    bool pad_attempted = false;
     const auto boot_frame = [&] {
+        const float boot_age = boot_seconds();
         const sx::Env boot_env{fonts, icons};
         gfx::DrawList list;
         gfx::BackdropSpec backdrop;
-        sx::apply_page_backdrop(backdrop, boot_seconds());
-        sx::draw_boot(list, boot_env, boot_seconds(), 0.0f);
+        sx::apply_page_backdrop(backdrop, boot_age);
+        sx::draw_boot(list, boot_env, boot_age, 0.0f);
         renderer.begin();
         renderer.backdrop(backdrop);
         renderer.draw(list);
@@ -155,6 +160,9 @@ int main()
             splash_hidden = true;
             sys::log("[SX] first picture; splash hidden: %d", sys::hide_splash_screen() ? 1 : 0);
         }
+        if (!pad_attempted) { pad_attempted = true; pad.open(); }
+        const auto light = sx::logo_animation(boot_age, 0).light;
+        pad.set_light_bar(light.r, light.g, light.b);
     };
     boot_frame();
     startup_stage("first-picture");
@@ -200,8 +208,6 @@ int main()
     shell.start_sound(root + "/sounds"); // the interface's sounds
     shell.start_boot_at(boot_seconds()); // the animation goes on from where the frames above left it
 
-    ps5::Pad pad;
-    pad.open();
     startup_stage("input-ready");
     InputTracker tracker;
     PadSample samples[64];
@@ -213,6 +219,9 @@ int main()
     float worst_ms = 0.0f;
     unsigned frame_hitches = 0;
     sx::FramePacer pacer;
+    sx::ConsoleLights console_lights;
+    sx::SystemStatus lighting_system;
+    std::int64_t lighting_status_at=0;
     sx::HdrCompositor hdr_compositor;
     std::int64_t restore_retry_at = 0;
     for (;;)
@@ -230,10 +239,19 @@ int main()
 
         const std::size_t count = pad.read(samples);
         const InputFrame input = tracker.update(std::span<const PadSample>(samples, count), static_cast<std::uint64_t>(now));
+        session.poll_presentation_timing();
         session.update(dt, shell.cursor());
         env.clock = session.clock;
         shell.update(input, dt);
+        const auto light = shell.logo_light_bar();
+        pad.set_light_bar(light.r, light.g, light.b);
+        if(session.console_light_sync() && now>=lighting_status_at) { lighting_system=sx::read_system_status(); lighting_status_at=now+250000; }
+        console_lights.update(session.console_light_sync() && lighting_system.valid &&
+            !lighting_system.background && !lighting_system.overlaid,light.r,light.g,light.b);
+        session.set_console_light_status(console_lights.status());
         if (session.wants_exit()) {
+            console_lights.stop();
+            pad.close();
             session.shutdown();
             if (sx::HdrOutput::active()) {
                 glFinish();
@@ -275,6 +293,7 @@ int main()
         shell.draw(list, backdrop);
         if (session.calm_backgrounds() || session.reduced_motion()) backdrop.time = 0.0f;
         sx::sync_fonts(renderer, ui_fonts, fonts);
+        session.arm_presentation_timing();
         renderer.begin();
         renderer.backdrop(backdrop);
         renderer.draw(list);
@@ -286,15 +305,18 @@ int main()
             if (!hdr_compositor.present(renderer,video ? session.video_texture : 0,rect,0,&error,sx::HdrOutput::bgr())) {
                 sys::log("[HDR] fatal: %s",error.c_str());
                 nuvio_diagnostics::record({{"phase","fatal"}});
+                console_lights.stop();
                 sys::park();
             }
         } else renderer.present(0, display.width(), display.height());
         if (!display.swap())
         {
+            console_lights.stop();
             sys::log("[SX] fatal: swap failed at frame %llu", static_cast<unsigned long long>(frames));
             nuvio_diagnostics::record({{"phase","fatal"}});
             sys::park();
         }
+        sx::presentation::disarm();
         sx::HdrOutput::presented();
         ++frames;
         if (frames == 1)

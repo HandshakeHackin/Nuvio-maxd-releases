@@ -19,6 +19,8 @@
 #include "connected_preparer.h"
 #include "overlays.hpp"
 #include "player.h"
+#include "presentation_timing.hpp"
+#include "console_lights.hpp"
 #include "video_surface.hpp"
 #include "subtitles.h"
 #include "tasks.h"
@@ -81,6 +83,8 @@ class Session
     }
     void set_display_configuration(unsigned width, unsigned height, bool fallback);
     void fail_video_output(const std::string& error);
+    void poll_presentation_timing();
+    void arm_presentation_timing();
 
     unsigned take_changed()
     {
@@ -109,6 +113,10 @@ class Session
         v.swap(cues_);
         return v;
     }
+    void set_console_light_status(ConsoleLights::Status status) {
+        if(console_light_status_!=status) { console_light_status_=status; refresh_settings(); }
+    }
+    bool console_light_sync() const { return prefs_.console_light_sync; }
     bool reduced_motion() const { return prefs_.reduced_motion; }
     bool high_contrast() const { return prefs_.high_contrast; }
     bool calm_backgrounds() const { return prefs_.calm_backgrounds; }
@@ -446,7 +454,10 @@ class Session
     int search_gen_ = 0, search_pending_ = 0;
 
     // playing
+    ConsoleLights::Status console_light_status_=ConsoleLights::Status::idle;
     Player player_;
+    PresentationTiming::Picture timing_picture_;
+    uint64_t timing_picture_id_=0;
     GLuint subtitle_texture_=0;
     int subtitle_width_=0, subtitle_height_=0;
     VideoSurface video_surface_;

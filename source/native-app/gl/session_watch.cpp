@@ -770,8 +770,25 @@ void Session::watch_update()
     }
 }
 
+void Session::poll_presentation_timing() {
+    if (!watching || launch_open || !video_texture || player_.paused() || player_.buffering() ||
+        player_.state()!=Player::State::Playing || player_.picture_serial()!=player_.video_serial()) {
+        presentation::reset(); timing_picture_={}; player_.set_video_lead(0);
+        return;
+    }
+    player_.set_video_lead(presentation::poll());
+}
+
+void Session::arm_presentation_timing() {
+    if (watching && !launch_open && video_texture && !player_.paused() && !player_.buffering() &&
+        player_.state()==Player::State::Playing && player_.picture_serial()==player_.video_serial())
+        presentation::arm(timing_picture_);
+    else presentation::disarm();
+}
+
 void Session::upload_video()
 {
+    const int64_t selected_us = int64_t(now_seconds()*1000000);
     const Player::Picture *pic = player_.present();
     if (!pic)
         return;
@@ -800,6 +817,7 @@ void Session::upload_video()
                  pic->hdr_peak_nits);
     }
     if(!video_texture || pic->w!=video_w || pic->h!=video_h) nuvio_diagnostics::record({{"sourceWidth",pic->w},{"sourceHeight",pic->h},{"sourceTenBit",pic->format==VideoFormat::Nv12_10}});
+    timing_picture_ = {++timing_picture_id_, selected_us};
     video_texture = video_surface_.texture();
     video_hdr = hdr;
     video_w = pic->w; video_h = pic->h; video_sar = pic->sar;
@@ -844,6 +862,7 @@ void Session::watch_stop(bool ended)
     if(subtitle_texture_) glDeleteTextures(1,&subtitle_texture_);
     subtitle_texture_=0; subtitle_width_=subtitle_height_=0;
     video_surface_.reset();
+    presentation::reset(); timing_picture_={};
     video_texture = 0;
     video_hdr = false;
     video_w = video_h = 0;

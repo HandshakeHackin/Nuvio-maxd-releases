@@ -80,7 +80,7 @@ int main(int argc, char** argv) {
     }
     else if(mode=="install-source" || mode=="store-update" || mode=="github-update") {
         sx::DropdownState d;
-        d.title=mode=="install-source" ? "Install source" : "New release: 0.5.23";
+        d.title=mode=="install-source" ? "Install source" : "New release: 0.5.27";
         d.options=mode=="install-source" ? std::vector<std::string>{"Homebrew Store","GitHub / manual download","Not sure"} :
             mode=="store-update" ? std::vector<std::string>{"Close","Change install source"} :
             std::vector<std::string>{"Download update in app","GitHub update instructions","Later"};
@@ -91,7 +91,7 @@ int main(int argc, char** argv) {
             "Update from github.com/HandshakeHackin/Nuvio-maxd-releases/releases, or download the verified image here.";
         sx::draw_dropdown(list,env,d,1);
     }
-    else if(mode=="subtitle-preview" || mode=="subtitle-preview-high-contrast") {
+    else if(mode=="subtitle-preview" || mode=="subtitle-preview-high-contrast" || mode=="settings-categories" || mode=="settings-lighting") {
         sx::SettingsContent content;
         content.subtitle_style=mode=="subtitle-preview" ? sx::SubtitleStyle{} : sx::SubtitleStyle{2,1,2,75};
         content.subtitle_size=1;
@@ -101,7 +101,18 @@ int main(int argc, char** argv) {
         const char* values[]={"Bold","White","Outline","Off","10 s","60 s","10 s"};
         for(int i=0;i<7;++i) { sx::SettingRow row; row.label=labels[i]; row.value=values[i]; row.help="Choose your preferred style. The preview uses the same renderer as video playback."; row.subtitle_preview=i<4;content.rows.push_back(row); }
         if(mode=="subtitle-preview-high-contrast") { content.rows[0].value="Display";content.rows[1].value="Yellow";content.rows[2].value="Shadow";content.rows[3].value="75%"; }
+        if(mode=="settings-categories" || mode=="settings-lighting") {
+            content.rows.clear();
+            const char* categories[]={"Video","Audio","Subtitles","Playback","Appearance & Lighting","Account & Services","Addons","App & Updates"};
+            for(const auto* category:categories) {sx::SettingRow row;row.category=category;row.label="Options";content.rows.push_back(row);}
+            auto& row=content.rows[4];row.label="Console light sync";row.kind=sx::SettingRow::Kind::toggle;row.on=true;
+            row.help="Fade the console lights with the controller while Nuvio is open. Console colours are approximate. Turning off restores the previous state. Sync active.";
+        }
         sx::Settings settings(env);settings.set_content(&content);settings.enter();hui::InputFrame input;
+        if(mode!="settings-categories") {
+            if(mode=="settings-lighting") { input.nav=hui::Direction::down;for(int i=0;i<4;++i)settings.update(input,1.0f/60);input.nav=hui::Direction::none; }
+            input.pressed=hui::action_bit(hui::Action::confirm);settings.update(input,1.0f/60);input.pressed=0;
+        }
         for(int i=0;i<120;++i) settings.update(input,1.0f/60);
         hui::gfx::BackdropSpec backdrop;settings.draw(list,backdrop);
     }

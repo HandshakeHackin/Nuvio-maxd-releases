@@ -1,4 +1,4 @@
-// Sound out: negotiated 48 kHz stereo or 7.1 PCM; floating point preferred.
+// Sound out: negotiated 48 kHz stereo or 7.1 PCM; 16-bit PCM preferred.
 //
 // On the console it is sceAudioOut, one 256-frame grain at a time from a thread
 // of its own (the call blocks for each grain, which paces the thread). Elsewhere

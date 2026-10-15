@@ -2,6 +2,7 @@
 #include "bitstream.h"
 #include "evo_backend.h"
 #include "frame_selection.h"
+#include "audio_pcm.h"
 
 extern "C" {
 #include <libavcodec/avcodec.h>
@@ -167,6 +168,7 @@ void Player::open(const Options& opts) {
 	heavy_window_dropped_ = heavy_window_decoded_ = 0;
 	video_drained_ = audio_drained_ = false;
 	have_picture_ = false;
+	video_lead_ = 0;
 	seek_req_ = false;
 	vdrop_ = adrop_ = opts.start > 0 ? opts.start : -1;
 	audio_base_pts_ = audio_end_pts_ = -1;
@@ -1007,6 +1009,12 @@ double Player::queued_audio_seconds() const {
 void Player::open_audio_output(int stream, bool pcm_only) {
     const auto* p=fmt_->streams[stream]->codecpar;
     const int kind=bitstream::kind(p);
+    // HDMI EDID cannot describe a TV's downstream optical connection. Honor
+    // the user's stereo choice rather than sending compressed surround there.
+    if (!pcm_only && opts_.audio_mode=="auto" && !opts_.surround) {
+        pcm_only=true;
+        dlog("audio: Auto honors stereo output; using PCM instead of HDMI passthrough");
+    }
     if(!pcm_only && opts_.audio_mode!="pcm" && kind && pcm_.open_bitstream(kind,opts_.audio_mode!="bitstream")) return;
     if(!pcm_only && opts_.audio_mode!="pcm") dlog("audio: %s uses PCM fallback",avcodec_get_name(p->codec_id));
     if(!pcm_.open(opts_.surround)) dlog("player: can't open the audio output");
@@ -1020,6 +1028,7 @@ void Player::audio_thread() {
     int packed_serial=-1; double burst_pts=-1;
 	std::vector<uint8_t> out;
 	int swr_rate = 0, swr_fmt = -1;
+	PcmLevels levels;
 	AVChannelLayout swr_layout;
 	memset(&swr_layout, 0, sizeof(swr_layout));
 
@@ -1127,7 +1136,7 @@ void Player::audio_thread() {
 				av_channel_layout_default(&stereo, pcm_.channels());
 				swr_alloc_set_opts2(&swr_, &stereo, pcm_.floating_point() ? AV_SAMPLE_FMT_FLT : AV_SAMPLE_FMT_S16, kOutRate, &in_layout,
 				                    AVSampleFormat(frame->format), frame->sample_rate, 0, nullptr);
-				if (!swr_ || swr_init(swr_) < 0) {
+				if (!swr_ || !configure_pcm_mix(swr_) || swr_init(swr_) < 0) {
 					dlog("player: can't resample audio");
 					if (swr_) swr_free(&swr_);
 					av_channel_layout_uninit(&in_layout);
@@ -1136,6 +1145,12 @@ void Player::audio_thread() {
 				}
 				swr_rate = frame->sample_rate;
 				swr_fmt = frame->format;
+				char layout[128]{};
+				av_channel_layout_describe(&in_layout, layout, sizeof(layout));
+				dlog("audio: PCM conversion input=%s %d Hz %s output=%d channels %d Hz %s; explicit normalized downmix",
+				     layout, frame->sample_rate, av_get_sample_fmt_name(AVSampleFormat(frame->format)), pcm_.channels(), kOutRate,
+				     pcm_.floating_point() ? "float" : "S16");
+				levels = {};
 				av_channel_layout_uninit(&swr_layout);
 				av_channel_layout_copy(&swr_layout, &in_layout);
 			}
@@ -1159,6 +1174,11 @@ void Player::audio_thread() {
 			int trim = 0;
 			if (drop >= 0 && pts >= 0 && pts < drop) trim = std::min(n, int(std::ceil((drop - pts) * kOutRate)));
 			if (trim == n) continue;
+			levels.add(out.data() + size_t(trim)*pcm_.bytes_per_frame(), size_t(n-trim)*pcm_.channels(), pcm_.floating_point());
+			if (levels.samples >= size_t(kOutRate)*pcm_.channels()*5) {
+				dlog("audio: PCM levels peak=%.1f dBFS rms=%.1f dBFS queued=%.1f ms", levels.peak_db(), levels.rms_db(), pcm_.queued_seconds()*1000);
+				levels = {};
+			}
 			const double first_pts = pts >= 0 ? pts + double(trim) / kOutRate : std::max(0.0, audio_end_pts_);
 			if (audio_base_pts_ < 0) audio_base_pts_ = first_pts;
 			if (!pcm_.queue(out.data() + size_t(trim) * pcm_.bytes_per_frame(), size_t(n-trim) * pcm_.bytes_per_frame())) {
@@ -1283,6 +1303,7 @@ void Player::seek(double t) {
 	seek_req_ = true;
 	seek_target_ = t;
 	have_picture_ = false;
+	video_lead_ = 0;
 	if (state_ == State::Ended) state_ = State::Playing;
 }
 
@@ -1293,7 +1314,7 @@ const Player::Picture* Player::present() {
 		double clk;
 		{
 			std::lock_guard<std::mutex> lock(clock_m_);
-			clk = clock_locked();
+			clk = clock_locked() + ((!paused_ && !buffering_) ? video_lead_ : 0);
 		}
 		std::lock_guard<std::mutex> lock(fq_m_);
 		int cur = vq_.serial();

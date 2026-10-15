@@ -1,5 +1,6 @@
 #include "overlays.hpp"
 #include "release_notes.hpp"
+#include "logo_animation.hpp"
 
 #include "cards.hpp"
 
@@ -362,13 +363,13 @@ void draw_boot_mark(hui::gfx::DrawList &list, const Env &env, float glow, float 
 void draw_boot(hui::gfx::DrawList &list, const Env &env, float t, float out)
 {
     const float W = theme::kScreenW;
-    const float leave = hui::tween::cubic_out(hui::tween::clamp01(out));
+    const auto animation = logo_animation(t, out);
+    const float leave = animation.leave;
     // Draw over the same backdrop as the Board; bring in the glow and loading bar.
-    const float in = hui::tween::cubic_out(hui::tween::clamp01((t - 0.35f) / 0.7f));
-    const float breathe = 0.5f + 0.5f * std::sin(t * 2.6f);
+    const float in = animation.enter;
     const float cx = W * 0.5f, cy = 470.0f;
     list.push_opacity(1.0f - leave);
-    draw_boot_mark(list, env, in * (0.12f + 0.10f * breathe), 1.0f + 0.05f * leave);
+    draw_boot_mark(list, env, animation.glow, 1.0f + 0.05f * leave);
     {
         list.push_opacity(in);
         // A short bar that travels back and forth: the app is working, and it is not stuck.

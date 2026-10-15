@@ -52,7 +52,7 @@ public:
 		// A direct link (not the streaming server): a big file may be
 		// downloaded over several connections (netstream.h).
 		bool parallel = false;
-		bool surround = true;
+		bool surround = false;
 		std::string audio_mode = "pcm"; // experimental passthrough is opt-in
 		bool evo = false; // EVO Player 0.12.0 decoder and presentation core
 	};
@@ -90,6 +90,10 @@ public:
 	// UI thread, every frame: picks the frame due now. Returns it when it is a new
 	// one, nullptr when the one already shown is still the right one.
 	const Picture* present();
+    // UI-thread only. Lead advances video selection, never the audio/progress clock.
+    void set_video_lead(double seconds) { video_lead_ = seconds >= 0 && seconds <= 0.04 ? seconds : 0; }
+    int picture_serial() const { return current_.serial; }
+    int video_serial() const { return vq_.serial(); }
 
 	nlohmann::json diagnostic_snapshot();
 	std::string stats();
@@ -209,6 +213,7 @@ private:
 	Frame current_;  // the picture on show
 	Picture pic_;
 	bool have_picture_ = false;
+	double video_lead_ = 0;
 	SwsContext* sws_ = nullptr;
 
 	// Audio

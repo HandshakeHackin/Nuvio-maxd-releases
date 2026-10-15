@@ -1,5 +1,6 @@
 #include "pcm_out.h"
 #include "bitstream.h"
+#include "audio_pcm.h"
 
 #include <algorithm>
 #include <cstring>
@@ -32,7 +33,7 @@ std::atomic<bool> AudioPort::ui_holds{false};
 bool PcmOut::open(bool surround) {
 	if (open_) return true;
     if(!bitstream::ensure_pcm()) {dlog("audio: PCM restore refused; output stays silent");return false;}
-	channels_ = surround ? 8 : 2; floating_ = true;
+	channels_ = surround ? 8 : 2; floating_ = false;
 	rate_=kRate;grain_frames_=kGrainFrames;bitstream_kind_=0;
 #ifdef PLATFORM_PS5_NATIVE
 	// The interface may have the port: say we want it, and give it up to 1.5 s to let go.
@@ -47,9 +48,9 @@ bool PcmOut::open(bool surround) {
 		AudioPort::player_wants = false;
 		return false;
 	}
-	// Public AudioOut format IDs: float stereo=4, float 8ch=5; S16 stereo=1, 8ch=2.
-	// Keep surround if floating-point is unavailable before falling back to stereo.
-	for (int candidate : (surround ? std::vector<int>{5, 2, 4, 1} : std::vector<int>{4, 1})) {
+	// Prefer the S16 path used by the PS5 media players. Keep float as a last
+	// stereo fallback only when the console refuses both compatible S16 ports.
+	for (int candidate : (surround ? std::vector<int>{2, 1, 4} : std::vector<int>{1, 4})) {
 		handle_ = sceAudioOutOpen(kSystemUser, kPortMain, 0, kGrainFrames, kRate, unsigned(candidate));
 		if (handle_ >= 0) {
 			channels_ = candidate == 5 || candidate == 2 ? 8 : 2;
@@ -93,6 +94,7 @@ bool PcmOut::start_thread() {
 		return false;
 	}
 	dlog("audio: output %s", description().c_str());
+	if (!bitstream_kind_) dlog("audio: PCM clock accounts for two output grains (%.2f ms estimate)", 2000.0*grain_frames_.load()/rate_.load());
 	open_ = true;
 	return true;
 }
@@ -133,7 +135,8 @@ double PcmOut::played_seconds() const {
     // Interpolate within the current grain, bounded by real queued media.
     // This removes 5.3 ms clock steps at 120 Hz without advancing through silence.
     const double fraction=paused_ ? 0 : std::clamp(now_seconds()-grain_started_,0.0,double(inflight_frames_)/rate_.load());
-    return double(played_frames_.load())/rate_.load()+fraction;
+    return pcm_audible_seconds(double(played_frames_.load())/rate_.load()+fraction,
+                              rate_.load(), grain_frames_.load(), bitstream_kind_.load()!=0);
 }
 
 void PcmOut::clear() {

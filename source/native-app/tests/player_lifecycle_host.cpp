@@ -98,7 +98,11 @@ int main(int argc,char** argv) try {
     hardware=true;p.open(o);
     run_until(p,[&]{return failed_hardware && p.codec_summary().find("(software)")!=std::string::npos && !p.buffering() && p.position()>.8;});
     p.close();std::cout<<"Playback lifecycle: hardware failure reseek to software without an A/V wait cycle passed\n";
-    hardware=false;o.url=argv[2];o.audio_mode="auto";p.open(o);
+    hardware=false;o.url=argv[2];o.audio_mode="auto";o.surround=false;p.open(o);
+    run_until(p,[&]{return !p.buffering() && p.position()>.25;});
+    require(p.audio_output()=="stereo PCM 16-bit","Auto ignored stereo route and selected passthrough");
+    p.close();std::cout<<"Playback lifecycle: Auto stereo policy avoids HDMI passthrough passed\n";
+    o.surround=true;p.open(o);
     run_until(p,[&]{return !p.buffering() && p.position()>.25;});
     require(p.audio_output().find("Dolby Digital bitstream")!=std::string::npos,"AC3 did not use compressed output");
     p.set_paused(true);std::this_thread::sleep_for(std::chrono::milliseconds(15));const double bs_paused=p.position();

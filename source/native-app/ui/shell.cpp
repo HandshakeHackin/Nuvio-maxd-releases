@@ -1,6 +1,7 @@
 #include "shell.hpp"
 
 #include <algorithm>
+#include <cmath>
 
 namespace sx
 {
@@ -254,6 +255,7 @@ void Shell::route_page(const hui::InputFrame &input, float dt)
         break;
     default:
         settings_.update(input, dt);
+        if(settings_.navigation_consumed()) return;
         on_rail = settings_.rail_focused();
         cursor = settings_.rail_cursor();
         if (confirm && settings_.cursor_row() >= 0)
@@ -387,8 +389,8 @@ void Shell::update(const hui::InputFrame &input, float dt)
     // The pop-ups hold the controller while they are up; the screens underneath keep moving.
     // The first moments: the mark is up until the first screen has its catalogs and posters; the
     // screens underneath are idle, and start their entrance when it lifts.
-    if (boot_out_ < kBootOut)
-        boot_t_ += dt;
+    boot_t_ += dt; // also drives the controller palette after the boot screen closes
+    if(boot_out_>=kBootOut && boot_t_>=18.0f) boot_t_=std::fmod(boot_t_,18.0f);
     if (!s_.boot_ready())
     {
         boot_out_ = -1.0f;
