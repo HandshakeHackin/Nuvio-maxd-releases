@@ -1,0 +1,37 @@
+Nuvio Max'd 0.5.27 — EXPERIMENTAL TESTING GUIDE
+
+Settings now opens a category list. Cross opens a category, Circle returns to
+that list, and Circle from the category list returns Home. Setting changes and
+background refreshes retain focus. Saved setting keys are unchanged.
+
+The controller lightbar makes a smooth 18-second teal → white → pink/purple
+loop. It dims after boot. Reduced Motion holds steady teal.
+
+Appearance & Lighting → Console light sync enables or disables the console
+case-light effect immediately. The preference is saved locally and initially
+on. A worker checks access to /dev/icc_indicator and validates its state layout
+before writing. Supported consoles approximate the controller's RGB colour using
+blue/white/amber channels, at up to five updates per second. This is not true RGB.
+No additional payload is installed and no kernel patch is applied.
+
+The worker leaves unsupported, inaccessible or ambiguous devices unchanged and
+reports the status beside the setting. It restores the captured channel levels
+when disabled, the PS menu opens, the app goes into the background, or on normal
+app exit, provided the system has not already changed the lights. It backs off
+instead of fighting system lighting. Toggle off and on to retry. Unexpected
+process termination cannot guarantee restoration; console hardware compatibility
+has not been verified in this build.
+
+Keep the prior image for comparison, outside folders scanned by ShadowMountPlus.
+Close Nuvio before replacing the active PPSA99288 image. Do not scan duplicate
+images with the same title ID. Folder installations use PPSA99288.zip.
+
+Check each Settings category with the D-pad, Cross and Circle. Change console
+sync, leave/reopen Settings, close/reopen the app, and confirm the choice stays.
+Check Reduced Motion and both controller colors and console lighting. Open the
+PS menu and return. Disable sync and confirm the previous console lighting.
+
+For playback comparison use Native, PCM, Surround Sound off; check genuine stereo
+and multichannel sources, dialogue/music, lip sync, pause/resume and seeks.
+The earlier video timing and S16 PCM/downmix fixes are retained. EVO allocation/
+green-picture problems and optical bitstream compatibility are not claimed fixed.
