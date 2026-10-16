@@ -1,0 +1,89 @@
+name: Publish verified release assets
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing version tag
+        required: true
+        type: string
+      asset_ref:
+        description: Temporary release-assets branch containing verified files
+        required: true
+        type: string
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      RELEASE_TAG: ${{ inputs.tag }}
+      ASSET_REF: ${{ inputs.asset_ref }}
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - name: Validate version inputs
+        shell: bash
+        run: |
+          [[ "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+-native-experimental$ ]]
+          [[ "$ASSET_REF" == "release-assets/$RELEASE_TAG" ]]
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.asset_ref }}
+          persist-credentials: false
+      - name: Verify files and upload to draft
+        shell: bash
+        run: |
+          sha256sum --check SHA256SUMS
+          version=${RELEASE_TAG#v}
+          version=${version%-native-experimental}
+          python3 - "$version" <<'PY'
+          import hashlib,json,sys,tarfile,zipfile
+          from pathlib import Path
+          version=sys.argv[1]
+          report=json.loads(Path('native-validation.json').read_text())
+          assert report['version']==version+'-native-experimental'
+          assert report['hostTestEvidence']['conclusion']=='success'
+          assert report['hostToolsEvidence']['conclusion']=='success'
+          assert report['vlcHostTestEvidence']['conclusion']=='success'
+          assert report['containerErrors']==0 and report['allExtractedFileHashesMatch']
+          assert hashlib.sha256(Path(f'NuvioMaxd-{version}-native.ffpfsc').read_bytes()).hexdigest()==report['imageSha256']
+          with zipfile.ZipFile('PPSA99288.zip') as z:
+              assert z.testzip() is None
+              files={n.removeprefix('PPSA99288/'):hashlib.sha256(z.read(n)).hexdigest() for n in z.namelist() if not n.endswith('/')}
+              assert files==report['fileSha256']
+              assert json.loads(z.read('PPSA99288/sce_sys/param.json'))['contentVersion']==report['contentVersion']
+          with tarfile.open(f'NuvioMaxd-{version}-source.tar.gz') as t:
+              prefix=f'NuvioMaxd-{version}-source/'
+              manifest=json.load(t.extractfile(prefix+'source-archive.json'))
+              assert manifest['sourceCommit']==report['sourceCommit']
+              for n,h in manifest['fileSha256'].items():
+                  assert hashlib.sha256(t.extractfile(prefix+n).read()).hexdigest()==h,n
+          PY
+          test "$(gh release view "$RELEASE_TAG" --json isDraft --jq .isDraft)" = true
+          gh release upload "$RELEASE_TAG" \
+            "NuvioMaxd-$version-native.ffpfsc" PPSA99288.zip \
+            "NuvioMaxd-$version-source.tar.gz" native-validation.json \
+            TESTING.txt TEST_RESULTS.txt RELEASE_NOTES.md catalog-scan.log SHA256SUMS
+      - name: Verify published asset digests and publish prerelease
+        shell: bash
+        run: |
+          gh api "repos/$GH_REPO/releases/tags/$RELEASE_TAG" > release-upload.json
+          python3 - <<'PY'
+          import hashlib,json
+          from pathlib import Path
+          expected={n:h for h,n in (line.split('  ',1) for line in Path('SHA256SUMS').read_text().splitlines())}
+          expected['SHA256SUMS']=hashlib.sha256(Path('SHA256SUMS').read_bytes()).hexdigest()
+          release=json.loads(Path('release-upload.json').read_text())
+          assert release['draft']
+          actual={a['name']:a for a in release['assets']}
+          assert set(actual)==set(expected)
+          for n,h in expected.items():
+              assert actual[n]['digest']=='sha256:'+h,n
+              assert actual[n]['size']==Path(n).stat().st_size,n
+          print('All nine GitHub asset digests and sizes match.')
+          PY
+          version=${RELEASE_TAG#v}
+          version=${version%-native-experimental}
+          gh release edit "$RELEASE_TAG" --draft=false --prerelease \
+            --title "Nuvio Max'd $version — VLC player (testing needed)" --notes-file RELEASE_NOTES.md
