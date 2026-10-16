@@ -2,6 +2,7 @@
 #include "../third_party/json.hpp"
 
 #include "pcm_out.h"
+#include "vlc_backend.h"
 #include "packet_storage.h"
 #include "subtitle_renderer.h"
 
@@ -54,6 +55,9 @@ public:
 		bool parallel = false;
 		bool surround = false;
 		std::string audio_mode = "pcm"; // experimental passthrough is opt-in
+		int initial_audio_stream = -1; // retained only for a necessary seek reopen
+		bool start_paused = false;
+		bool vlc = false;
 		bool evo = false; // EVO Player 0.12.0 decoder and presentation core
 	};
 	enum class State { Idle, Opening, Playing, Ended, Failed };
@@ -64,20 +68,21 @@ public:
 	void open(const Options& opts);
 	void close();
 
-	State state() const { return state_.load(); }
+	State state() const { return vlc_ ? State(vlc_->state()) : state_.load(); }
 	std::string error() const;
 
-	bool paused() const { return paused_; }
+	bool paused() const { return vlc_ ? vlc_->paused() : paused_.load(); }
 	void set_paused(bool p);
 	bool buffering(int* percent = nullptr) const;
 
 	double position();  // seconds; the seek target while a seek is pending
-	double duration() const { return duration_; }
+	double duration() const { return vlc_ ? vlc_->duration() : duration_; }
 	void seek(double t);
 
 	std::vector<Track> audio_tracks() const;
-	int audio_stream() const { return audio_stream_.load(); }
+	int audio_stream() const { return vlc_ ? vlc_->audio_stream() : audio_stream_.load(); }
 	void select_audio(int stream);
+	void select_embedded_subtitle(int stream, double delay) { if(vlc_) vlc_->select_subtitle(stream,delay); }
 
 	// Text and bitmap subtitles inside the file (SRT/ASS/WebVTT/mov_text).
 	std::vector<Track> subtitle_tracks() const;
@@ -92,16 +97,16 @@ public:
 	const Picture* present();
     // UI-thread only. Lead advances video selection, never the audio/progress clock.
     void set_video_lead(double seconds) { video_lead_ = seconds >= 0 && seconds <= 0.04 ? seconds : 0; }
-    int picture_serial() const { return current_.serial; }
-    int video_serial() const { return vq_.serial(); }
+    int picture_serial() const { return vlc_ ? vlc_->picture_serial() : current_.serial; }
+    int video_serial() const { return vlc_ ? vlc_->serial() : vq_.serial(); }
 
 	nlohmann::json diagnostic_snapshot();
 	std::string stats();
 	std::string codec_summary() const;
 	// Every 30 s while playing: frame rate shown, drops, buffer, decoder (to the log).
 	void log_stats();
-	std::string audio_output() const { return pcm_.is_open() ? pcm_.description() : "unavailable"; }
-	bool too_heavy() const { return too_heavy_; }
+	std::string audio_output() const { return vlc_ ? vlc_->audio_output() : pcm_.is_open() ? pcm_.description() : "unavailable"; }
+	bool too_heavy() const { return vlc_ ? false : too_heavy_.load(); }
 
 private:
 	class PacketQueue {
@@ -159,6 +164,7 @@ private:
 	void set_clock_running(bool running);
 	std::string track_label(int stream) const;
 
+	std::unique_ptr<VlcBackend> vlc_;
 	Options opts_;
 	std::atomic<State> state_{State::Idle};
 	mutable std::mutex err_m_;
@@ -194,6 +200,14 @@ private:
 	// Seeking
 	std::mutex seek_m_;
 	bool seek_req_ = false;
+	std::atomic<bool> seek_pending_{false};
+	std::atomic<bool> demux_reading_{false};
+	std::atomic<bool> seek_refill_{false};
+	std::atomic<double> reopen_target_{-1};
+	std::atomic<int> displayed_serial_{-1};
+	// UI-thread seek diagnostics, never used to drive the media clock.
+	double seek_started_at_ = 0, seek_first_picture_ms_ = -1, seek_log_target_ = 0;
+	int seek_log_serial_ = -1;
 	double seek_target_ = 0;
 	// Accurate seeking: each decoder discards output before its target.
 	std::atomic<double> vdrop_{-1}, adrop_{-1};

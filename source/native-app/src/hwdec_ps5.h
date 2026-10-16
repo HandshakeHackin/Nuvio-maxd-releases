@@ -29,6 +29,7 @@ public:
 
 	// Loads the decoder module; call once at start-up (before the first frame is drawn).
 	static void load_module();
+	static bool module_loaded();
 
 	// A decoder for this stream, or nullptr (why says so) when the hardware
 	// can't take it.

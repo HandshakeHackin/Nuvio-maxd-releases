@@ -7,15 +7,15 @@
 <p align="center"><strong>Your Nuvio library, addons and watch progress. Now on PS5.</strong></p>
 
 <p align="center">
-  <a href="https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/download/v0.5.27-native-experimental/PPSA99288.zip"><img src="https://img.shields.io/badge/Download-ZIP_folder-00B8E8?style=for-the-badge" alt="Download the PS5 app as a ZIP folder"></a>
-  <a href="https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/download/v0.5.27-native-experimental/NuvioMaxd-0.5.27-native.ffpfsc"><img src="https://img.shields.io/badge/Download-FFPFSC_image-8B5CF6?style=for-the-badge" alt="Download the PS5 app as an FFPFSC image"></a>
+  <a href="https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/download/v0.5.28-native-experimental/PPSA99288.zip"><img src="https://img.shields.io/badge/Download-ZIP_folder-00B8E8?style=for-the-badge" alt="Download the PS5 app as a ZIP folder"></a>
+  <a href="https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/download/v0.5.28-native-experimental/NuvioMaxd-0.5.28-native.ffpfsc"><img src="https://img.shields.io/badge/Download-FFPFSC_image-8B5CF6?style=for-the-badge" alt="Download the PS5 app as an FFPFSC image"></a>
   <a href="https://ko-fi.com/handshakehackin"><img src="https://img.shields.io/badge/Ko--fi-Support-FF5E5B?style=for-the-badge&logo=kofi&logoColor=white" alt="Support on Ko-fi — optional donation"></a>
   <a href="https://homebrew.page/app/PPSA99288/"><img src="https://img.shields.io/badge/ProsperoStore-Available-22C55E?style=for-the-badge" alt="Nuvio Max'd is available in ProsperoStore"></a>
 </p>
 
 <p align="center">
-  <strong>Available to download now</strong> · v0.5.27 experimental<br>
-  <a href="USER_GUIDE.md">User guide</a> · <a href="https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/tag/v0.5.27-native-experimental">Release notes</a> · <a href="https://homebrew.page/app/PPSA99288/">ProsperoStore listing</a>
+  <strong>Available to download now</strong> · v0.5.28 experimental<br>
+  <a href="USER_GUIDE.md">User guide</a> · <a href="https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/tag/v0.5.28-native-experimental">Release notes</a> · <a href="https://homebrew.page/app/PPSA99288/">ProsperoStore listing</a>
 </p>
 
 Bring your Nuvio setup to the big screen. Sign in with your phone, browse your
@@ -23,8 +23,9 @@ addons and saved library, and keep your movie and episode progress in sync with
 your other Nuvio devices. Nuvio Max'd runs directly on a jailbroken PS5, with a
 built-in player and a controller-friendly interface.
 
-**Version 0.5.27 is available from the GitHub downloads above.**
-Categorized Settings, logo-color lighting, playback timing and PCM/stereo improvements are included.
+**Version 0.5.28 is available from the GitHub downloads above.**
+VLC 3.0.24 is now available as an optional experimental player. **VLC requires PS5 testing.**
+Enable it under **Settings → Video → Playback engine → VLC 3.0.24 (experimental)**, then stop and reopen your video. Native remains the default.
 The [ProsperoStore listing](https://homebrew.page/app/PPSA99288/) may receive this
 update later than GitHub; the catalog submission and merge are separate.
 
@@ -47,15 +48,15 @@ update later than GitHub; the catalog submission and merge are separate.
 | **Experimental HDR10** | Native HDR10 output for compatible sources and displays, with an explicit HDR-to-SDR option in Settings. |
 | **Updates from the app** | Check the public release feed in Settings. Verified FFPFSC installation through the bundled helper is experimental; ZIP installs use manual replacement. |
 
-## What changed in 0.5.27
+## What changed in 0.5.28
 
-- Eight Settings categories make options easier to find. Cross opens a category; Circle returns.
-- The controller lightbar slowly fades through teal, white and pink/purple. Reduced Motion holds steady teal.
-- Optional console light sync has a saved switch under Settings → Appearance & Lighting. Console colors are approximate and compatibility needs PS5 testing.
-- Playback uses completed display flips to improve frame timing, with PCM/stereo downmix improvements and clearer diagnostics.
-- Previous startup fixes and experimental HDR changes are retained. EVO green-picture/allocation issues and optical bitstream compatibility remain under investigation.
+- Added optional VLC 3.0.24 alongside Native and EVO, connected to playback controls, audio tracks, embedded subtitles and PCM audio.
+- Added VLC Matroska and MPEG-TS/HLS support, including authenticated requests and redirected playlists.
+- Fixed rapid network seeks that could read the wrong byte position; retained Native HLS and seeking improvements.
 
-Host checks, native build and package verification passed. End-to-end console playback and lighting still need testing. For audio comparison, start with Native, PCM and Surround Sound off.
+**To try VLC:** open **Settings → Video → Playback engine → VLC 3.0.24 (experimental)**. Stop and reopen the video. Switch back to **Nuvio native** in the same menu if needed.
+
+**PS5 testing is required.** Host playback tests, native compilation/import checks and package verification passed. Console playback, 4K performance, audio/video timing and surround output remain unverified. VLC uses decoded PCM and the existing HDR output path; it does not fix rejected HDR10 pixel formats. Start with SDR and compare Native and VLC on the same video.
 
 ## Download and get started
 
@@ -68,8 +69,8 @@ tools work. **Firmware below 9.00 needs testing.** Console feedback so far cover
 
 | Download | Install it this way |
 | --- | --- |
-| [**ZIP folder — PPSA99288.zip**](https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/download/v0.5.27-native-experimental/PPSA99288.zip) | Extract it and place the `PPSA99288/` folder inside a `/homebrew/` folder scanned by ShadowMount+, such as `/data/homebrew/`. |
-| [**FFPFSC image — NuvioMaxd-0.5.27-native.ffpfsc**](https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/download/v0.5.27-native-experimental/NuvioMaxd-0.5.27-native.ffpfsc) | Place the image inside a `/homebrew/` folder on storage scanned by ShadowMount+. |
+| [**ZIP folder — PPSA99288.zip**](https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/download/v0.5.28-native-experimental/PPSA99288.zip) | Extract it and place the `PPSA99288/` folder inside a `/homebrew/` folder scanned by ShadowMount+, such as `/data/homebrew/`. |
+| [**FFPFSC image — NuvioMaxd-0.5.28-native.ffpfsc**](https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/download/v0.5.28-native-experimental/NuvioMaxd-0.5.28-native.ffpfsc) | Place the image inside a `/homebrew/` folder on storage scanned by ShadowMount+. |
 
 Let ShadowMount+ finish scanning, open **Nuvio Max'd**, and scan the sign-in QR
 code with your phone. Configure your addon through your usual Nuvio setup. For cached-file resolution,

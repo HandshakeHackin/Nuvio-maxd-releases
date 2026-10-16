@@ -10,14 +10,14 @@ This native adaptation incorporates [Sp9nky/unofficial-stremio-ps5-port](https:/
 ## Code included in this repository
 
 | Where | What | License |
-| `gl/update_channel.cpp`, `update/helper.cpp` | Bundled helper handoff follows BlackBearReloaded's [ProsperoEden](https://github.com/blackbearreloaded/ProsperoEden/tree/868669fe63d44cf41ffe3412aeaac2527cff5f57/headless/update_check), commit `868669fe63d44cf41ffe3412aeaac2527cff5f57`, and the native app kit. The FFPFSC transaction is specific to Nuvio; it uses the documented public HTTP API of [ShadowMount+ 1.7](https://github.com/drakmor/ShadowMountPlus/blob/4cde42a2293756132735d8e4280eb71f089865ee/docs/api.md), rather than its private control protocol. | GPL-3.0-or-later |
 | --- | --- | --- |
+| `gl/update_channel.cpp`, `update/helper.cpp` | Bundled helper handoff follows BlackBearReloaded's [ProsperoEden](https://github.com/blackbearreloaded/ProsperoEden/tree/868669fe63d44cf41ffe3412aeaac2527cff5f57/headless/update_check), commit `868669fe63d44cf41ffe3412aeaac2527cff5f57`, and the native app kit. The FFPFSC transaction is specific to Nuvio; it uses the documented public HTTP API of [ShadowMount+ 1.7](https://github.com/drakmor/ShadowMountPlus/blob/4cde42a2293756132735d8e4280eb71f089865ee/docs/api.md), rather than its private control protocol. | GPL-3.0-or-later |
 | `src/display_output.h`, `src/display_output.cpp`, `tests/display_output_host.cpp` | PS5 output-resolution selection and probe tests adapted from [LoZazaMastro/Stremio-Plus](https://github.com/LoZazaMastro/Stremio-Plus/tree/64d1bfb5b78b3c6a37e013973402f3239bee5df0), commit `64d1bfb5b78b3c6a37e013973402f3239bee5df0`; the VideoOut ABI follows BlackBearReloaded's ProsperoLight, with its attribution retained | GPL-3.0-or-later |
 | `native/console_curl.c`, `native/console_curl.h` | libcurl support for PS5 native titles, from [ps5-native-app-boilerplate](https://github.com/blackbearreloaded/ps5-native-app-boilerplate) (BlackBearReloaded; its `gmtime_r` follows Howard Hinnant's public-domain `civil_from_days`) | GPL-3.0-or-later |
 | `native/ps5-app.ld` | linker layout, from ps5-native-app-boilerplate's `tooling/native/ps5-pie.ld`, with unwind-table symbols added | GPL-3.0-or-later |
 | `native/heap.c`, `native/posix_fixes.c`, `native/ps5_modules.c` | approach and parts adapted from the [Kodi port for PS5](https://github.com/VivaLaVent/kodi-ps5) (Team Kodi / VivaLaVent: `shims/native-app/heap_dmem.c`, `thread_stack.c`, `pipe_fallback.c`, `PS5ImeDialog.cpp`) | GPL-2.0-or-later |
 | `native/dlmalloc.c` | Doug Lea's malloc 2.8.6 | MIT-0 |
-| `third_party/hui/` | [ps5-homebrew-ui](https://github.com/blackbearreloaded/ps5-homebrew-ui) (BlackBearReloaded), the OpenGL interface toolkit: renderer, controller input, text and shape drawing, glyphs, PS5 display and pad code; vendored at commit `4bd9425` (see `third_party/hui/VERSION.txt`) with a small addition (a texture-update call for video frames). Its own notices are `third_party/hui/THIRD_PARTY_NOTICES.md`; the shape shader follows Inigo Quilez's published 2D distance functions (MIT); `stb_truetype` and `stb_image_write` (Sean Barrett, public domain / MIT) are in it and are used only by host tools, not linked into the app | GPL-3.0-or-later |
+| `third_party/hui/` | [ps5-homebrew-ui](https://github.com/blackbearreloaded/ps5-homebrew-ui) (BlackBearReloaded), the OpenGL interface toolkit: renderer, controller input, text and shape drawing, glyphs, PS5 display and pad code; vendored at commit `4bd9425` (see `third_party/hui/VERSION.txt`) with local texture updates, display-mode selection and optional refresh requests/readback. Its own notices are `third_party/hui/THIRD_PARTY_NOTICES.md`; the shape shader follows Inigo Quilez's published 2D distance functions (MIT); `stb_truetype` and `stb_image_write` (Sean Barrett, public domain / MIT) are in it and are used only by host tools, not linked into the app | GPL-3.0-or-later |
 | `native/hui_runtime_shims.c` | process-level runtime shims for the OpenGL runtime, from ps5-homebrew-ui's `src/runtime/runtime_shims.c` (itself adapted from ps5-opengl's `native-app/runtime_shims.c`) | GPL-3.0-or-later |
 | `third_party/qrcodegen.c`, `third_party/qrcodegen.h` | [Nayuki QR Code generator](https://github.com/nayuki/QR-Code-generator), C library; license embedded in both files | MIT |
 | `third_party/json.hpp` | [nlohmann/json](https://github.com/nlohmann/json) 3.11.3 (Niels Lohmann) | MIT |
@@ -25,8 +25,10 @@ This native adaptation incorporates [Sp9nky/unofficial-stremio-ps5-port](https:/
 | `src/hwdec_ps5.cpp` (hardware video decoding), `native/stubs/videodec2.c` | ported from [Nuvio PS5](https://github.com/theghostonline/Nuvio-PS5) (`app/engine/media/src/evo_vdec_native.c`, Husam Osman, itself built on an open-source GPL-3.0 PS5 media player); the libSceVideodec2 structures and call sequence come from there and from [ProsperoLight](https://github.com/blackbearreloaded/ProsperoLight) (BlackBearReloaded) and [SharpProspero](https://github.com/SvenGDK/SharpProspero) (SvenGDK) | GPL-3.0-or-later |
 | HEVC Main10 smaller-pipeline retry in `src/hwdec_ps5.cpp` | adapted from [EVO Player's native decoder](https://github.com/sainsaji/EVO-PLAYER-PS5/blob/21524a4a6effa65312be2026042e44a96efca4c6/projects/evoplayer/media/src/evo_vdec_native.c), commit `21524a4a6effa65312be2026042e44a96efca4c6` | GPL-3.0-or-later |
 | `gl/hdr_output.cpp` (in-place HDR10 VideoOut transitions) | call sequence and VideoOut ABI adapted from [EVO Player's native AGC renderer](https://github.com/sainsaji/EVO-PLAYER-PS5/blob/9715f6ee9bf9b53461d6fdf9a2e11b4c48357783/projects/evoplayer/media/src/evo_agc_runtime.c), commit `9715f6ee9bf9b53461d6fdf9a2e11b4c48357783`; VideoOut type definitions credited there to SharpProspero (SvenGDK) | GPL-3.0-or-later |
+| `gl/hdr_output.cpp`, `gl/hdr_compositor.cpp` (RGB HDR10 scanout token and channel layout) | [ProsperoLight's shared VideoOut format definitions](https://github.com/blackbearreloaded/ProsperoLight/blob/a6e56cf4e8e9e469d5bc5cc06ff71ad4ca16a6a9/include/ps5_videoout_formats.h), commit `a6e56cf4e8e9e469d5bc5cc06ff71ad4ca16a6a9`; its [validation notes](https://github.com/blackbearreloaded/ProsperoLight/blob/a6e56cf4e8e9e469d5bc5cc06ff71ad4ca16a6a9/docs/VALIDATION.md) record native HDR10 hardware acceptance | GPL-3.0-or-later |
 | `src/netstream.cpp` (several connections for big files) | the approach and sizes of Nuvio PS5's `evo_parallel_io.c` | GPL-3.0-or-later |
 | `gl/session_watch.cpp` (torrent stream set-up) | follows the behaviour of `createTorrent` in [stremio-video](https://github.com/Stremio/stremio-video) (Stremio) | MIT |
+| `third_party/evo/` | EVO Player 0.12.0 video decoder, native decoder, presentation core and clock, commit `9ee9a5420c73b5be448610e5f0a90a29a75592f3`. Unmodified upstream files are listed in `UPSTREAM.json`; Nuvio host integration and limitations are described in `INTEGRATION.md`. | GPL-3.0 |
 
 ## Linked into the app (downloaded at build time, not included here)
 
@@ -41,7 +43,7 @@ license:
 | ps5-payload-sdk `libc.a`, start-up code and system-module stubs | GPL-3.0-or-later; FreeBSD-derived parts BSD |
 | ps5-native-app-boilerplate start-up code (`tooling/native/app_crt.cpp`) and the clean-room `sce_module/libc.prx` loader shim shipped with the app | GPL-3.0-or-later |
 | [LLVM](https://llvm.org/) libc++, libc++abi, libunwind | Apache-2.0 WITH LLVM-exception |
-| [ps5-opengl](https://github.com/blackbearreloaded/ps5-opengl) SDK (BlackBearReloaded), v1.0.0: OpenGL 4.6 on the PS5, with [Mesa](https://mesa3d.org/) and OpenGNM PSBC components. Downloaded at build time (checksum-verified); its license texts and notices are copied into the app (`licenses/ps5-opengl/`) | GPL-3.0-or-later; Mesa MIT; the other parts as stated in the SDK |
+| [ps5-opengl](https://github.com/blackbearreloaded/ps5-opengl) SDK (BlackBearReloaded), v1.0.2: OpenGL 4.6 on the PS5, with [Mesa](https://mesa3d.org/) and OpenGNM PSBC components. Downloaded at build time (checksum-verified); its license texts and notices are copied into the app (`licenses/ps5-opengl/`) | GPL-3.0-or-later; Mesa MIT; the other parts as stated in the SDK |
 | [miniupnpc](https://github.com/miniupnp/miniupnp) (Thomas Bernard): the built-in torrent engine's port mapping | BSD-3-Clause |
 | [dht](https://github.com/jech/dht) (Juliusz Chroboczek): the built-in torrent engine's DHT | MIT |
 | [FFmpeg](https://ffmpeg.org/) (libavformat, libavcodec, libavutil, libswresample, libswscale), built with `--enable-gpl --enable-version3` | GPL-3.0-or-later |
@@ -116,3 +118,42 @@ ID and season/episode numbers (or a movie flag); no account tokens, playable
 URLs or provider headers are sent. Coverage and release timing accuracy vary.
 The native implementation validates timings and preserves known post-credit
 scenes before automatic transitions.
+
+## 0.5.16 adaptations
+
+Unicode-safe wrapping in `third_party/hui/src/gfx/font.cpp` follows ps5-homebrew-ui commit `aed286b81cdf70a814d3059f54633ba34844e46e` (BlackBearReloaded, GPL-3.0-or-later). The vendored base remains in `VERSION.txt`; only the wrapping function was ported. Native frame-selection principles and the display declaration follow ProsperoLight commit `91c0cf8b6bc6c9cbb2d48c8cc6994fbccaa2d61f` (BlackBearReloaded, GPL-3.0-or-later). Background logging is an independent implementation inspired by ProsperoEden; its reference pin appears in `dependencies.json`. See `UPSTREAM_REFRESH.md` for scope.
+
+## 0.5.17 experience improvements
+
+The preference choices and user-facing features were informed by [Stremio-Plus 0.5.6](https://github.com/LoZazaMastro/Stremio-Plus/tree/64d1bfb5b78b3c6a37e013973402f3239bee5df0) (LoZazaMastro, GPL-3.0). Their integration here is specific to Nuvio. The vendored hui `core/tween.hpp` adds a local UI-only reduced-motion override; original copyright and licensing remain. Subtitle styling uses Nuvio's existing dynamic Unicode font chains and shared preview/playback drawing.
+
+### Subtitle rendering additions (0.5.18)
+
+The native subtitle adapter uses libass 0.17.3 (ISC), HarfBuzz 9.0.0 (MIT-style),
+FreeType (FTL), fontconfig (MIT-style), Expat (MIT) and libpng (PNG Reference
+Library License), supplied by the pinned homebrew SDK. Exact license texts are
+in `app/licenses/`. Noto Sans CJK SC and Noto Sans Thai are bundled under SIL OFL
+1.1; file hashes are recorded in `dependencies.json`. New local playback/subtitle/
+audio adapters are GPL-3.0-or-later.
+
+0.5.23 uses ps5-opengl SDK 1.0.2 at a519561626933257213d64a4a8bd5e02b55dceb2. Its runtime is rebuilt with Nuvio's existing driver-owned HDR extension. The toolkit's SDK consumption update follows dbf8286661224c7d8b01fdea62052251eec43eca; local UI adaptations remain. Stream reload selection behavior is independently implemented following NuvioTVSmart 1.2.4 (c003faf6a0641296c5d02914d9ca3b56a6988e9c). Startup stage timing follows ProsperoLight's diagnostics approach; no standalone player or privileged helper is bundled.
+
+0.5.24 adds an independent Nuvio logo lightbar animation. The vendored ps5-homebrew-ui pad wrapper gains bounded light updates, failure suppression, reconnect invalidation and reset-on-close; original notices remain.
+
+### Optional VLC engine (0.5.28)
+
+libVLC 3.0.24 (VideoLAN/VLC authors, LGPL-2.1-or-later) and its selected GPL
+plugins are built statically for the existing SDK's FFmpeg 7 ABI. PS5 patches,
+compatibility code and the hardware decoder module are from
+[ZiZc3/VLC v0.4](https://github.com/ZiZc3/VLC/tree/d46be6a68f4244466b041c2dc1b640915ac1a983)
+under their original GPL-2.0-or-later notices. libdvbpsi 1.3.3
+(VideoLAN/libdvbpsi authors, LGPL-2.1-or-later) supplies MPEG-TS tables for HLS.
+Source URLs, hashes, local changes, and the plugin manifest are retained in
+`third_party/vlc/`; build with `tools/build_vlc.sh`. The new Nuvio bridges are
+GPL-3.0-or-later. License texts travel in `licenses/vlc/` with the app.
+No VLC application's Vulkan renderer is bundled.
+
+VLC's native Matroska module uses libebml 1.4.6 and libmatroska 1.7.2
+(Matroska project contributors, LGPL-2.1-or-later), plus utf8cpp 3.2.5
+(Nemanja Trifunovic and contributors, Boost Software License 1.0). Pinned
+release sources and full license texts are included with the test distribution.

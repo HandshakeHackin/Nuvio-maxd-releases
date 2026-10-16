@@ -147,6 +147,15 @@ Player::~Player() { close(); }
 
 void Player::open(const Options& opts) {
 	close();
+	if(opts.vlc) {
+        subtitle_renderer_.clear();
+        {std::lock_guard<std::mutex> lock(sub_m_);embedded_.clear();}
+		opts_=opts;
+		vlc_=std::make_unique<VlcBackend>();
+		VlcBackend::Options v{opts.url,opts.headers,opts.audio_langs,opts.start,opts.surround,opts.start_paused};
+		v.audio=opts.initial_audio_stream;vlc_->open(v);
+		return;
+	}
 	opts_ = opts;
 	evo_presenter_ = opts.evo ? std::make_unique<EvoPresenter>() : nullptr;
 	evo_presenter_serial_ = -1;
@@ -154,7 +163,7 @@ void Player::open(const Options& opts) {
 	abort_ = false;
 	quick_ = false;
 	eof_ = false;
-	paused_ = false;
+	paused_ = opts.start_paused;
 	buffering_ = true;
 	buffer_percent_ = 0;
 	dropped_ = decoded_ = shown_ = 0;
@@ -170,6 +179,9 @@ void Player::open(const Options& opts) {
 	have_picture_ = false;
 	video_lead_ = 0;
 	seek_req_ = false;
+	seek_pending_ = demux_reading_ = seek_refill_ = false;
+	reopen_target_ = -1; displayed_serial_ = -1;
+	seek_started_at_ = 0; seek_first_picture_ms_ = -1;
 	vdrop_ = adrop_ = opts.start > 0 ? opts.start : -1;
 	audio_base_pts_ = audio_end_pts_ = -1;
 	wall_base_pts_ = opts.start;
@@ -196,6 +208,7 @@ void Player::open(const Options& opts) {
 }
 
 void Player::close() {
+	if(vlc_) {vlc_->close();vlc_.reset();}
 	abort_ = true;
 	vq_.abort();
 	aq_.abort();
@@ -220,16 +233,16 @@ void Player::fail(const std::string& msg) {
 }
 
 std::string Player::error() const {
+	if(vlc_) return vlc_->error();
 	std::lock_guard<std::mutex> lock(err_m_);
 	return error_;
 }
 
 int Player::interrupt_cb(void* opaque) {
 	auto* p = static_cast<Player*>(opaque);
-	// Only when the player is closed: the network input (NetStream) gives up
-	// by itself after two minutes without data. A time limit here was what
-	// cut slow torrents off ("Immediate exit requested").
-	return p->abort_ ? 1 : 0;
+	// Interrupt a packet read for a pending seek, not the seek operation itself.
+	// There is no wall deadline that cuts a slow stream off.
+	return p->abort_ || (p->demux_reading_ && p->seek_pending_) ? 1 : 0;
 }
 
 double Player::to_sec(int64_t ts, double tb) const {
@@ -291,6 +304,9 @@ void Player::demux_run() {
 	av_dict_set(&dict, "rw_timeout", "120000000", 0);
 	av_dict_set(&dict, "tls_verify", "0", 0);
 	av_dict_set(&dict, "seekable", "-1", 0);
+	// HLS keepalive assumes FFmpeg-owned URLContexts; our AVIOs belong to
+	// NetStream. Open each playlist/segment through the hooks instead.
+	av_dict_set(&dict, "http_persistent", "0", 0);
 	if (!http_ca_bundle().empty()) av_dict_set(&dict, "ca_file", http_ca_bundle().c_str(), 0);
 
 	fmt_ = avformat_alloc_context();
@@ -303,6 +319,7 @@ void Player::demux_run() {
 	// and whatever the demuxer opens later (HLS) through the hooks.
 	io_hooks_.headers = opts_.headers;
 	io_hooks_.abort = &abort_;
+	io_hooks_.read_interrupt = &seek_pending_;
 	NetStream::install(fmt_, &io_hooks_);
 	dlog("player: opening stream");
 	bool torrent = TorrentStream::is_url(opts_.url);
@@ -318,6 +335,7 @@ void Player::demux_run() {
 			if (!abort_) fail("Could not open the stream (" + err + ")");
 			return;
 		}
+		NetStream::set_read_interrupt(main_pb_, &seek_pending_);
 		fmt_->pb = main_pb_;
 		fmt_->flags |= AVFMT_FLAG_CUSTOM_IO;
 		// Matroska keeps tags, attachments and its index at the end of the
@@ -364,6 +382,9 @@ void Player::demux_run() {
 		}
 		if (as >= 0) break;
 	}
+	if (opts_.initial_audio_stream >= 0 && opts_.initial_audio_stream < int(fmt_->nb_streams) &&
+	    fmt_->streams[opts_.initial_audio_stream]->codecpar->codec_type == AVMEDIA_TYPE_AUDIO)
+		as = opts_.initial_audio_stream;
 	if (as < 0) as = av_find_best_stream(fmt_, AVMEDIA_TYPE_AUDIO, -1, vs, nullptr, 0);
 	if (vs < 0 && as < 0) {
 		avformat_close_input(&fmt_);
@@ -498,6 +519,7 @@ void Player::demux_run() {
 			if (seek_req_) {
 				target = seek_target_;
 				seek_req_ = false;
+				seek_pending_ = false;
 			}
 		}
 		int sw = audio_switch_.exchange(-1);
@@ -526,7 +548,10 @@ void Player::demux_run() {
             delay_ms(10); continue;
         }
 
+		demux_reading_ = true;
 		r = av_read_frame(fmt_, pkt);
+		demux_reading_ = false;
+		if (seek_pending_) { av_packet_unref(pkt); continue; }
 		if (r < 0) {
 			if (abort_) break;
 			// The download gave up (not the end of the video): say so,
@@ -597,21 +622,47 @@ void Player::demux_run() {
 }
 
 void Player::do_seek(double target) {
+	const bool short_refill = state_ == State::Playing && !recovering_;
+	// Promote a quick Matroska open to a seekable input on its demux thread.
+	// FFmpeg can load deferred cues here without discarding the decoders/tracks.
+	const bool was_quick = quick_.exchange(false);
+	if (was_quick && main_pb_) main_pb_->seekable = AVIO_SEEKABLE_NORMAL;
+	if (fmt_->pb) { fmt_->pb->error = 0; fmt_->pb->eof_reached = 0; }
 	int64_t ts = int64_t((target + start_offset_) * AV_TIME_BASE);
+	// A playlist may begin its video a few milliseconds after its audio.
+	// HLS refuses timestamps before its first video packet, even for target 0.
+	const int index = video_stream_ >= 0 ? video_stream_.load() : audio_stream_.load();
+	if (index >= 0 && fmt_->streams[index]->start_time != AV_NOPTS_VALUE)
+		ts = std::max(ts, av_rescale_q(fmt_->streams[index]->start_time,
+		    fmt_->streams[index]->time_base, AV_TIME_BASE_Q));
 	int r = avformat_seek_file(fmt_, -1, INT64_MIN, ts, ts, 0);
 	if (r < 0) r = av_seek_frame(fmt_, -1, ts, AVSEEK_FLAG_BACKWARD);
 	if (r < 0) {
 		dlog("player: seek to %.1f failed: %s", target, av_err(r).c_str());
+		if (seek_pending_) return; // a newer request superseded this attempt
+		if (was_quick && !recovering_) {
+			// Some Matroska inputs cannot load their index in place. The UI
+			// performs the old reopen fallback; never join this demux thread here.
+			reopen_target_ = target;
+			return;
+		}
 		if(recovering_.exchange(false)) { fail("Decoder recovery could not seek this source. Choose another stream."); return; }
-		vdrop_ = adrop_ = -1; buffering_ = false; apply_run_state(); return;
+		vdrop_ = adrop_ = -1; seek_refill_ = false; buffering_ = false; apply_run_state(); return;
 	}
 	subtitle_renderer_.seek();
 	{ std::lock_guard<std::mutex> lock(sub_m_); embedded_.clear(); }
-	vq_.flush();
+	{
+		std::lock_guard<std::mutex> lock(fq_m_);
+		vdrop_ = video_stream_ >= 0 ? target : -1;
+		vq_.flush();
+		for (auto& f : frames_) pool_.push_back(std::move(f));
+		frames_.clear();
+	}
+	fq_cv_.notify_all();
 	aq_.flush();
+	for (auto& entry : sctx_) avcodec_flush_buffers(entry.second);
 	eof_ = false;
 	video_drained_ = audio_drained_ = false;
-	vdrop_ = video_stream_ >= 0 ? target : -1;
 	adrop_ = target;
 	{
 		std::lock_guard<std::mutex> lock(clock_m_);
@@ -621,6 +672,7 @@ void Player::do_seek(double target) {
 		pcm_.clear();
 	}
 	recovering_=false;
+	seek_refill_ = short_refill;
 	buffering_ = true;
 	buffer_percent_ = 0;
 	apply_run_state();
@@ -1218,40 +1270,43 @@ void Player::set_clock_running(bool running) {
 }
 
 void Player::apply_run_state() {
-	bool run = !paused_ && !buffering_ && vdrop_ < 0 && state_ == State::Playing;
+	bool run = !paused_ && !buffering_ && !seek_pending_ && reopen_target_ < 0 && vdrop_ < 0 && state_ == State::Playing;
 	pcm_.pause(!run);
 	set_clock_running(run);
 }
 
 void Player::set_paused(bool p) {
+	if(vlc_) {vlc_->set_paused(p);return;}
 	paused_ = p;
 	apply_run_state();
 }
 
 bool Player::buffering(int* percent) const {
+	if(vlc_) return vlc_->buffering(percent);
 	if (percent) *percent = buffer_percent_;
 	return state_ == State::Opening || (state_ == State::Playing && buffering_);
 }
 
 void Player::update_buffering() {
-	if (state_ != State::Playing || recovering_) return;
+	if (state_ != State::Playing || recovering_ || seek_pending_ || reopen_target_ >= 0) return;
 	if(pcm_.failed() && !pcm_.bitstream_kind()) { fail("The PS5 audio output stopped. Try stereo audio output in Settings."); return; }
 	bool has_v = video_stream_ >= 0, has_a = audio_stream_ >= 0 && pcm_.is_open();
 	if (buffering_) {
-		double target = std::max(kBufferTargets[stalls_], start_target_);
+		double target = seek_refill_ ? 0.5 : std::max(kBufferTargets[stalls_], start_target_);
 		double vbuf = has_v ? vq_.duration() : 1e9, abuf = has_a ? aq_.duration() : 1e9;
 		double buf = std::min(vbuf, abuf);
 		buffer_percent_ = int(std::min(100.0, buf / target * 100));
 		bool have_frame;
 		{
 			std::lock_guard<std::mutex> lock(fq_m_);
-			have_frame = !has_v || !frames_.empty();
+			have_frame = !has_v || !frames_.empty() || displayed_serial_ == vq_.serial();
 		}
 		// Also go on when memory is nearly full (a very high bitrate).
-		if (have_frame && vdrop_ < 0 && (!has_a || queued_audio_seconds()>0 || audio_drained_) &&
+		if (have_frame && (!seek_refill_ || !has_v || displayed_serial_ == vq_.serial()) && vdrop_ < 0 && (!has_a || queued_audio_seconds()>0 || audio_drained_) &&
 		    (eof_ || buf >= target || vq_.bytes() + aq_.bytes() > kMaxQueueBytes * 9 / 10)) {
 			if (stalls_ > 0) dlog("player: buffered %.1f s, playing again", buf);
 			buffering_ = false;
+			seek_refill_ = false;
 			apply_run_state();
 		}
 		return;
@@ -1276,6 +1331,7 @@ void Player::update_buffering() {
 }
 
 double Player::position() {
+	if(vlc_) return vlc_->position();
 	{
 		std::lock_guard<std::mutex> lock(seek_m_);
 		if (seek_req_) return seek_target_;
@@ -1287,30 +1343,34 @@ double Player::position() {
 }
 
 void Player::seek(double t) {
+	if(vlc_) {vlc_->seek(t);return;}
 	if (duration_ > 0) t = std::min(t, std::max(0.0, duration_ - 2));
 	t = std::max(0.0, t);
-	if (quick_) {
-		// Opened without the file's index (see demux_run): open again,
-		// properly this time, at the new spot. Same file, same tracks.
-		dlog("player: first seek, reopening at %.1fs with the index", t);
-		Options o = opts_;
-		o.start = t;
-		open(o);
-		return;
-	}
+	if (state_ != State::Playing && state_ != State::Ended) return;
+	seek_started_at_ = now_seconds(); seek_first_picture_ms_ = -1;
+	seek_log_target_ = t; seek_log_serial_ = vq_.serial();
 	buffering_ = true; pcm_.pause(true);
 	std::lock_guard<std::mutex> lock(seek_m_);
 	seek_req_ = true;
 	seek_target_ = t;
-	have_picture_ = false;
+	seek_pending_ = true;
 	video_lead_ = 0;
 	if (state_ == State::Ended) state_ = State::Playing;
 }
 
 const Player::Picture* Player::present() {
+	if(vlc_) return vlc_->present();
+	const double reopen = reopen_target_.exchange(-1);
+	if (reopen >= 0 && !seek_pending_ && !abort_) {
+		Options o = opts_; o.start = reopen; o.start_paused = paused_;
+		o.initial_audio_stream = audio_stream_;
+		dlog("player: seek reopen target=%.3f (index unavailable in place)", reopen);
+		open(o);
+		return nullptr;
+	}
 	const Picture* out = nullptr;
 	if (state_ == State::Playing) update_buffering();
-	if (state_ == State::Playing || state_ == State::Ended) {
+	if ((state_ == State::Playing || state_ == State::Ended) && !seek_pending_) {
 		double clk;
 		{
 			std::lock_guard<std::mutex> lock(clock_m_);
@@ -1322,15 +1382,16 @@ const Player::Picture* Player::present() {
 			pool_.push_back(std::move(frames_.front()));
 			frames_.pop_front();
 		}
+		const bool same_timeline = have_picture_ && current_.serial == cur;
 		int pick = -1;
 		if (evo_presenter_) {
 			if (cur != evo_presenter_serial_) { evo_presenter_->reset(); evo_presenter_serial_ = cur; }
 			// EVO consumes frames in PTS order instead of jumping to the newest
 			// queued frame on every UI tick. Its clock drops only genuinely late
 			// frames; paused/buffering playback holds the owned current picture.
-			while (!frames_.empty() && (!have_picture_ || (!paused_ && !buffering_))) {
+			while (!frames_.empty() && (!same_timeline || (!paused_ && !buffering_))) {
 				Frame& f = frames_.front();
-				if (have_picture_ && f.pts > clk) break;
+				if (same_timeline && f.pts > clk) break;
 				int decision = evo_presenter_->publish(f.picture(), f.pts, clk);
 				if (decision == 0) { pick = 0; break; }
 				if (decision == 2) break;
@@ -1339,7 +1400,7 @@ const Player::Picture* Player::present() {
 				pool_.push_back(std::move(frames_.front())); frames_.pop_front(); fq_cv_.notify_all();
 			}
 		} else {
-			pick = select_video_frame(frames_, clk, have_picture_, paused_ || buffering_, fps_);
+			pick = select_video_frame(frames_, clk, same_timeline, paused_ || buffering_, fps_);
 		}
 		if (pick >= 0) {
 			Frame& f = frames_[pick];
@@ -1361,6 +1422,12 @@ const Player::Picture* Player::present() {
 				frames_.pop_front();
 			}
 			pic_ = current_.picture();
+			displayed_serial_ = current_.serial;
+			if (seek_started_at_ > 0 && current_.serial > seek_log_serial_ && seek_first_picture_ms_ < 0) {
+				seek_first_picture_ms_ = (now_seconds() - seek_started_at_) * 1000;
+				dlog("player: seek inline target=%.3f landed=%.3f first_picture_ms=%.1f paused=%d",
+				     seek_log_target_, current_.pts, seek_first_picture_ms_, int(paused_.load()));
+			}
 			out = &pic_;
 			fq_cv_.notify_all();
 		}
@@ -1372,6 +1439,11 @@ const Player::Picture* Player::present() {
 			state_ = State::Ended;
 	}
 
+	if (seek_started_at_ > 0 && seek_first_picture_ms_ >= 0 && !paused_ && !buffering_) {
+		dlog("player: seek playing target=%.3f first_picture_ms=%.1f playing_ms=%.1f",
+		     seek_log_target_, seek_first_picture_ms_, (now_seconds() - seek_started_at_) * 1000);
+		seek_started_at_ = 0;
+	}
 	double now = now_seconds();
 	if (now - heavy_window_start_ > 8) {
 		if (!paused_ && !buffering_ && heavy_window_decoded_ > 60 && heavy_window_dropped_ * 4 > heavy_window_decoded_)
@@ -1406,6 +1478,7 @@ std::string Player::track_label(int stream) const {
 }
 
 std::vector<Player::Track> Player::audio_tracks() const {
+	if(vlc_) {std::vector<Track> out;for(const auto& t:vlc_->tracks(false))out.push_back({t.stream,t.label,t.lang,t.is_default,false,false});return out;}
 	std::vector<Track> out;
 	if (!fmt_ || state_ != State::Playing) return out;
 	for (unsigned i = 0; i < fmt_->nb_streams; i++) {
@@ -1418,6 +1491,7 @@ std::vector<Player::Track> Player::audio_tracks() const {
 }
 
 std::vector<Player::Track> Player::subtitle_tracks() const {
+	if(vlc_) {std::vector<Track> out;for(const auto& t:vlc_->tracks(true))out.push_back({t.stream,t.label,t.lang,t.is_default,false,false});return out;}
 	std::vector<Track> out;
 	if (!fmt_ || state_ != State::Playing) return out;
 	for (auto& kv : sctx_) {
@@ -1430,9 +1504,10 @@ std::vector<Player::Track> Player::subtitle_tracks() const {
 	return out;
 }
 
-void Player::select_audio(int stream) { audio_switch_ = stream; }
+void Player::select_audio(int stream) { if(vlc_) vlc_->select_audio(stream);else audio_switch_ = stream; }
 
 std::string Player::embedded_subtitle(int stream, double t) {
+	if(vlc_) return "";
 	std::lock_guard<std::mutex> lock(sub_m_);
 	auto it = embedded_.find(stream);
 	if (it == embedded_.end()) return "";
@@ -1440,6 +1515,7 @@ std::string Player::embedded_subtitle(int stream, double t) {
 }
 
 std::string Player::codec_summary() const {
+	if(vlc_) return vlc_->codec_summary();
 	if (!fmt_ || state_ != State::Playing) return "";
 	std::vector<std::string> parts;
 	int vs = video_stream_, as = audio_stream_;
@@ -1456,6 +1532,7 @@ std::string Player::codec_summary() const {
 }
 
 void Player::log_stats() {
+	if(vlc_) {vlc_->log_stats();return;}
 	double now = now_seconds();
 	if (state_ != State::Playing || paused_ || buffering_) {
 		log_at_ = 0;
@@ -1481,6 +1558,7 @@ void Player::log_stats() {
 }
 
 nlohmann::json Player::diagnostic_snapshot() {
+	if(vlc_) return {{"engine","vlc"},{"paused",vlc_->paused()},{"buffering",vlc_->buffering()},{"positionSeconds",vlc_->position()},{"durationSeconds",vlc_->duration()}};
     const double now=now_seconds(); const int shown=shown_.load();
     nlohmann::json context={{"sourceFps",fps_},{"shownFrames",shown},{"decodedFrames",decoded_.load()},
             {"droppedFrames",dropped_.load()},{"bufferedSeconds",std::max(vq_.duration(),aq_.duration())},
@@ -1490,6 +1568,7 @@ nlohmann::json Player::diagnostic_snapshot() {
 }
 
 std::string Player::stats() {
+	if(vlc_) return vlc_->stats();
 	if (state_ != State::Playing) return "";
 	char buf[256];
 	snprintf(buf, sizeof(buf), "%s · %.3g fps · buffered %.1fs · dropped %d of %d%s", codec_summary().c_str(), fps_,

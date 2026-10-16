@@ -29,3 +29,17 @@ jobs:
         run: bash native-app/tests/preview.sh
       - name: Check whitespace
         run: git diff --check
+  vlc-playback:
+    runs-on: ubuntu-latest
+    # Match the tested 3.0.23 host ABI, close to the PS5 target's 3.0.24.
+    # Ubuntu 24.04 still supplies 3.0.20 with older adaptive seek behavior.
+    container: debian:trixie
+    timeout-minutes: 10
+    steps:
+      - name: Install real VLC and codec development libraries
+        run: |
+          apt-get update -qq
+          apt-get install -y git ca-certificates python3 g++ pkg-config ffmpeg libcurl4-openssl-dev libavformat-dev libavcodec-dev libavutil-dev libswresample-dev libvlc-dev libvlccore-dev vlc-plugin-base
+      - uses: actions/checkout@v4
+      - name: Test VLC file playback, authenticated HTTP/HLS, seeking and cancellation
+        run: bash native-app/tests/vlc_host.sh

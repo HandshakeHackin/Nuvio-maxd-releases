@@ -1,7 +1,11 @@
 {
   "nativeBase": {
     "repository": "https://github.com/Sp9nky/unofficial-stremio-ps5-port",
-    "commit": "a4b12fb515a3044f073f4befba0dd90d8244eddd"
+    "commit": "a4b12fb515a3044f073f4befba0dd90d8244eddd",
+    "hlsCompatibilityUpdate": {
+      "commit": "b8444a661b0b304d1298463151065297840c15e9",
+      "scope": "Disable HLS persistent HTTP URLContext reuse with app-owned AVIO hooks"
+    }
   },
   "boilerplate": {
     "repository": "https://github.com/blackbearreloaded/ps5-native-app-boilerplate",
@@ -74,6 +78,11 @@
     "startupTimingReference": {
       "commit": "136ac41bdac09196e7ba4bb95ce96686b7df5757",
       "scope": "Independent Nuvio startup-stage timing diagnostics"
+    },
+    "seekingReference": {
+      "repository": "https://github.com/blackbearreloaded/ProsperoTV",
+      "commit": "be4d83c47496a1498a4d8b075b0521cb56a5d935",
+      "scope": "Adapted seek-preview, short refill, cancellable reads and seek timing diagnostics to the existing FFmpeg player; no transport-remux backend imported"
     }
   },
   "loggingReference": {
@@ -118,5 +127,17 @@
     },
     "patch": "gl/scanout_driver_extension.inc",
     "hardwareVerified": false
+  },
+  "vlc": {
+    "version": "3.0.24",
+    "ps5PortVersion": "0.4",
+    "repository": "https://github.com/ZiZc3/VLC",
+    "commit": "d46be6a68f4244466b041c2dc1b640915ac1a983",
+    "sourceSha256": "e7cab503d1d7d5849b89d2cf0e1ee60d0ef6d012407791b644b9cfc0cc225fdf",
+    "ffmpeg": "SDK 7 (shared ABI with Native/EVO)",
+    "renderer": "Nuvio OpenGL YUV bridge",
+    "audio": "decoded PCM, 48 kHz, stereo or 7.1",
+    "hardwareVerified": false,
+    "nativeMatroskaDemux": true
   }
 }

@@ -7,7 +7,7 @@ thumbnails, descriptions and watch-progress indicators. Films show their poster
 beside metadata and stream cards. These layouts follow the artwork-focused
 approach in [Stremio-Plus](https://github.com/LoZazaMastro/Stremio-Plus).
 
-This folder contains the Nuvio Max'd source for the **v0.5.14 native experimental
+This folder contains the Nuvio Max'd source for the **v0.5.28 native experimental
 release**. The OpenGL
 interface, addon requests and player run together in one process and are
 packaged as a single FFPFSC image.
@@ -19,6 +19,31 @@ button shown on the selected card to confirm.
 For downloads, installation, debrid setup and Watch Progress settings, start
 with the [main README](../README.md). This guide covers how the native app works,
 how to build it and what the tests verify.
+
+## Playback and accessibility settings
+
+v0.5.17 adds subtitle styling with a live preview, custom D-pad and shoulder-button seek intervals, an adjustable next-episode countdown, reduced motion, higher contrast and private runtime/crash diagnostics. See [EXPERIENCE_UPDATES.md](EXPERIENCE_UPDATES.md) for settings, diagnostic files and verification limits.
+
+## Experimental EVO video engine
+
+v0.5.15 includes the video decoder and presentation core from the latest EVO
+Player release, **0.12.0**, pinned to commit `9ee9a5420c73b5be448610e5f0a90a29a75592f3`.
+Choose **Settings → Playback engine → EVO Player 0.12.0 (experimental)**,
+then open a stream. The saved choice applies to the next stream; Nuvio native
+remains the default and can be selected again from the same menu.
+
+Nuvio keeps stream selection, controls, audio, subtitles, progress sync and its
+HDR/display output. This does not include EVO's standalone interface, audio
+passthrough, interpolation or automatic refresh switching. Both video engines
+use the PS5 hardware decoder service. Dolby Vision Profile 5 is rejected;
+compatible HDR10 base layers are supported. See [integration details](third_party/evo/INTEGRATION.md).
+
+For console testing, compare the same SDR and HDR10 streams on both engines.
+Check camera pans, pause/resume, seeking, Skip Intro, audio/subtitle selection
+and next episode. Try Prefer 120 Hz where supported. The log names the engine
+and records shown fps, dropped frames and buffering. Host tests cover real SDR
+and 10-bit HEVC decoding, B-frame draining, seek flushing, owned buffers and
+24/120 presentation timing; console hardware and native HDR still need testing.
 
 ## Accounts, addons and Watch Progress
 
@@ -189,8 +214,7 @@ console test. Output errors now include the failure stage and return code.
 
 The v0.5.13 console test still rejected that RGB format on firmware 11.00.
 The v0.5.14 package corrects the missing main application attribute: it now uses
-`0x62000000`, with `attribute2=0` and `attribute3=0x80040`, as in ProsperoLight
-and EVO Player. [ProsperoLight's porting documentation](https://github.com/blackbearreloaded/ProsperoLight/blob/a6e56cf4e8e9e469d5bc5cc06ff71ad4ca16a6a9/docs/PORTING.md)
+`0x62000000`, with `attribute2=0` and `attribute3=0x40040`, following ProsperoLight 01.000.095 for older-firmware compatibility. [ProsperoLight's porting documentation](https://github.com/blackbearreloaded/ProsperoLight/blob/a6e56cf4e8e9e469d5bc5cc06ff71ad4ca16a6a9/docs/PORTING.md)
 identifies the main attribute as required for the public HDR-capable VideoOut
 profile. The game category and direct-memory budget remain the same. A shared
 validator runs before compilation, in host checks, when recording build info,
@@ -221,21 +245,23 @@ Use the versions and checksums in [dependencies.json](dependencies.json).
 You'll need LLVM/Clang/lld 18 or newer, g++, zlib development headers, Python 3,
 git and zip, plus these components:
 
-1. **PS5 payload SDK 0.43**, including its playback and networking libraries.
+1. **PS5 payload SDK 0.44**, including its playback and networking libraries.
 2. **ps5-native-app-boilerplate** at the recorded commit. Build
    `build/host/ps5-native-tool`, reproduce `runtime/libc.prx` with
    `tools/rebuild-libc.sh` and check the runtime checksum.
-3. **ps5-homebrew-ui** at the recorded commit. Run `tools/fetch-opengl-sdk.sh`
-   to download and verify the pinned OpenGL SDK.
-4. **MkPFS**, set up with the boilerplate's
-   `tools/setup-packaging-dependencies.sh ffpfsc`.
+3. **ps5-homebrew-ui** at the recorded vendored base, with the local adaptations.
+   `native-app/tools/fetch_opengl_sdk.sh` downloads verified OpenGL 1.0.1; the
+   build validates the manifest and every SDK file even when GL_SDK is supplied.
+4. **MkPFS 1.1.0** at the recorded revision. Install its Python dependencies and
+   set MKPFS to a wrapper invoking that version. The older boilerplate toolchain
+   remains pinned for native SELF/libc generation.
 
 From the repository root, set the paths to your toolchain and build:
 
 ```sh
 export PS5_PAYLOAD_SDK=/path/to/ps5-payload-sdk
 export BOILERPLATE_DIR=/path/to/ps5-native-app-boilerplate
-export GL_SDK=/path/to/ps5-opengl-sdk-1.0.0/sdk
+export GL_SDK=/path/to/ps5-opengl-sdk-1.0.1/sdk
 export LLVM_CONFIG=llvm-config-19
 export MKPFS=/path/to/ps5-native-app-boilerplate/.deps/MkPFS/.mkpfs-run-linux
 bash native-app/gl/build.sh PPSA99288 "Nuvio Max'd"
@@ -256,7 +282,7 @@ need checking on the console.
 ## Run the host checks
 
 Install g++, pkg-config, OpenSSL/curl development packages, the FFmpeg CLI and
-avcodec/avutil/avformat development packages, EGL/GL development packages and
+avcodec/avutil/avformat/swscale development packages, EGL/GL development packages and
 Mesa. From the repository root:
 
 ```sh

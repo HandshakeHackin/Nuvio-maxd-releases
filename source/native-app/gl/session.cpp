@@ -191,6 +191,7 @@ void Session::load_prefs()
         prefs_.display_refresh = jnum(j, "display_refresh", 60) == 120 ? 120 : 60;
         prefs_.native_hdr = jbool(j, "native_hdr", true);
         prefs_.evo_player = jstr(j, "playback_engine") == "evo";
+        prefs_.vlc_player = jstr(j, "playback_engine") == "vlc";
         prefs_.user_email = jstr(j, "user_email");
         const json &ex = jobj(j, "extra_addons");
         if (ex.is_array())
@@ -217,7 +218,7 @@ void Session::save_prefs()
     j["display_output"] = prefs_.display_output;
     j["display_refresh"] = prefs_.display_refresh;
     j["native_hdr"] = prefs_.native_hdr;
-    j["playback_engine"] = prefs_.evo_player ? "evo" : "native";
+    j["playback_engine"] = prefs_.vlc_player ? "vlc" : prefs_.evo_player ? "evo" : "native";
     j["extra_addons"] = prefs_.extra_addons;
     j["user_email"] = prefs_.user_email;
     if (!save_json(data_dir_ + "/settings.json", j))
@@ -540,12 +541,12 @@ void Session::refresh_settings()
         "Follow the PS5's output resolution, or choose an override. Close and reopen Nuvio Max'd to apply a change.");
     set(kHdr, Kind::value, "HDR playback", prefs_.native_hdr ? "Native HDR10 (experimental)" : "Convert HDR to SDR",
         "Native HDR10 keeps PQ colour and highlights on a compatible TV. SDR conversion changes the colour range. Applies to the next stream.");
-    set(kPlaybackEngine, Kind::value, "Playback engine", prefs_.evo_player ? "EVO Player 0.12.0 (experimental)" : "Nuvio native",
+    set(kPlaybackEngine, Kind::value, "Playback engine", prefs_.vlc_player ? "VLC 3.0.24 (experimental)" : prefs_.evo_player ? "EVO Player 0.12.0 (experimental)" : "Nuvio native",
         "Choose the video engine. Applies to the next stream; subtitles and Watch Progress stay available.");
     set(kRefresh, Kind::value, "Display refresh", prefs_.display_refresh == 120 ? "Prefer 120 Hz" : "60 Hz",
         "120 Hz can make 24 fps films feel steadier on a compatible TV. Keeps the selected resolution; uses 60 Hz if unavailable. Close and reopen to apply.");
-    set(kAudioMode, Kind::value, "Audio output", prefs_.audio_output_mode=="pcm"?"PCM":prefs_.audio_output_mode=="auto"?"Auto (experimental)":"Bitstream (experimental)",
-        "Auto uses PCM with Surround off; with Surround on it checks HDMI capabilities. Bitstream forces a compressed-format attempt. Applies to the next video.");
+    set(kAudioMode, Kind::value, "Audio output", prefs_.vlc_player?"PCM (VLC)":prefs_.audio_output_mode=="pcm"?"PCM":prefs_.audio_output_mode=="auto"?"Auto (experimental)":"Bitstream (experimental)",
+        prefs_.vlc_player ? "VLC currently uses decoded PCM. Auto and Bitstream apply to Native/EVO playback." : "Auto uses PCM with Surround off; with Surround on it checks HDMI capabilities. Bitstream forces a compressed-format attempt. Applies to the next video.");
     set(kAudioOutput, Kind::toggle, "Surround audio", "", "Use 7.1 PCM for compatible HDMI surround systems. Keep off for TV speakers or optical stereo. Applies to the next video.", prefs_.surround_audio);
     set(kSubLangs, Kind::value, "Subtitle languages", prefs_.subtitle_langs.empty() ? "None" : prefs_.subtitle_langs,
         "Preferred order, for example \"gre, eng\".");
@@ -583,7 +584,7 @@ void Session::refresh_settings()
     set(kDonation, Kind::action, "Support on Ko-fi", "", "Optional support for development. Scan the QR code with your phone.");
     set(kInstallSource, Kind::value, "Install source", install_source_label(prefs_.install_source),
         "Where you installed Nuvio Max'd. Update reminders use this choice; change it if you switch install methods.");
-    set(kUpdates, Kind::value, "App updates", update.phase == AppUpdate::Phase::idle ? "Nuvio Max'd 0.5.27 (experimental)" : update.message,
+    set(kUpdates, Kind::value, "App updates", update.phase == AppUpdate::Phase::idle ? "Nuvio Max'd 0.5.28 (experimental)" : update.message,
         update_destination(prefs_.install_source));
     set(kExit, Kind::action, "Exit Nuvio Max'd", "", "Close the app and go back to the home screen.");
     set(kConsoleLights, Kind::toggle, "Console light sync", "", "Fade the console lights with the controller while Nuvio is open. Console colours are approximate. Unsupported systems leave their lights unchanged. Turning off restores the previous state.", prefs_.console_light_sync);
@@ -675,14 +676,17 @@ void Session::settings_activate(int row)
             save_prefs(); refresh_settings(); cue(hui::audio::Cue::saved);
         });
         break;
-    case kPlaybackEngine:
-        open_dropdown("Playback engine", {"Nuvio native", "EVO Player 0.12.0 (experimental)"},
-                      prefs_.evo_player ? 1 : 0, [this](int i) {
-            if (i != 0 && i != 1) return;
-            prefs_.evo_player = i == 1;
+    case kPlaybackEngine: {
+        std::vector<std::string> engines={"Nuvio native", "EVO Player 0.12.0 (experimental)"};
+        if(VlcBackend::available())engines.push_back("VLC 3.0.24 (experimental)");
+        open_dropdown("Playback engine", engines,
+                      prefs_.vlc_player && VlcBackend::available() ? 2 : prefs_.evo_player ? 1 : 0, [this](int i) {
+            if(i<0 || i>2 || (i==2 && !VlcBackend::available()))return;
+            prefs_.evo_player=i==1;prefs_.vlc_player=i==2;
             save_prefs(); refresh_settings(); cue(hui::audio::Cue::saved);
         });
         break;
+    }
     case kSubFont: {
         static constexpr int values[] = {0,1,2};
         int selected=0; for(int i=0;i<3;++i) if(prefs_.subtitle_style.font==values[i]) selected=i;

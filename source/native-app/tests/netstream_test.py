@@ -70,6 +70,12 @@ class NetworkTests(unittest.TestCase):
         result = self.run_stream('/video', 'seek')
         self.assertTrue(result['correct']); self.assertTrue(result['seek_correct']); self.assertEqual(result['error'], '')
 
+    def test_second_seek_before_reconnect_starts_keeps_byte_position(self):
+        result=self.run_stream('/video','rapid-single')
+        self.assertTrue(result['correct'])
+        self.assertTrue(result['seek_correct'])
+        self.assertEqual(result['error'],'')
+
     def test_server_outage_has_shared_cooldown_and_bounded_requests(self):
         result = self.run_stream('/outage')
         requests = [r for r in self.server.requests if r[2]]

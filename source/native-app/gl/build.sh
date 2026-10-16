@@ -49,19 +49,31 @@ EVO="$ROOT/third_party/evo"
 EVO_INCLUDES=(-I"$EVO/media/include" -I"$EVO/media/src" -I"$EVO/pp/include" -I"$EVO/include")
 FLAGS+=("${EVO_INCLUDES[@]}")
 
+VLC_WORK=${VLC_BUILD_ROOT:-$ROOT/build/vlc}
+export VLC_BUILD_ROOT=$VLC_WORK
+bash "$ROOT/tools/build_vlc.sh"
+VLC_BUILD=$VLC_WORK/build-vlc-ps5
+VLC_SRC=$VLC_WORK/src/vlc-3.0.24
+VLC_STATIC=$VLC_WORK/static-ps5
+FLAGS+=(-DNUVIO_HAVE_VLC -DNUVIO_VLC_STATIC -I"$VLC_SRC/include")
+
 echo ">> compiling"
 sources=("$ROOT"/ui/*.cpp "$ROOT"/gl/*.cpp "$ROOT/update/core.cpp"
 	"$ROOT/src/nuvio_account.cpp" "$ROOT/src/watch_sync.cpp" "$ROOT/src/connected_services.cpp" "$ROOT/src/connected_preparer.cpp" "$ROOT/src/bidi.cpp" "$ROOT/src/stremio.cpp" "$ROOT/src/http.cpp" "$ROOT/src/util.cpp" "$ROOT/src/tasks.cpp"
-	"$ROOT/src/packet_storage.cpp" "$ROOT/src/diagnostics.cpp" "$ROOT/src/player.cpp" "$ROOT/src/netstream.cpp" "$ROOT/src/hwdec_ps5.cpp" "$ROOT/src/yuv_convert.cpp" "$ROOT/src/video_frame.cpp" "$ROOT/src/display_output.cpp"
+	"$ROOT/src/packet_storage.cpp" "$ROOT/src/diagnostics.cpp" "$ROOT/src/player.cpp" "$ROOT/src/vlc_backend.cpp" "$ROOT/src/netstream.cpp" "$ROOT/src/hwdec_ps5.cpp" "$ROOT/src/yuv_convert.cpp" "$ROOT/src/video_frame.cpp" "$ROOT/src/display_output.cpp"
 	"$ROOT/src/evo_backend.cpp" "$ROOT/src/evo_runtime.cpp"
 	"$ROOT/src/subtitle_renderer.cpp" "$ROOT/src/subtitles.cpp" "$ROOT/src/pcm_out.cpp" "$ROOT/src/bitstream.cpp" "$ROOT"/src/torrent/*.cpp
 	"$HUI"/src/gfx/*.cpp "$HUI"/src/audio/{mixer,cues,wav}.cpp "$HUI/src/platform/ps5/audio_out.cpp" "$HUI/src/core/save_file.cpp" "$HUI/src/core/input.cpp" "$HUI/src/ui/glyphs.cpp"
 	"$HUI/src/platform/ps5/display_egl.cpp" "$HUI/src/platform/ps5/system.cpp" "$HUI/src/platform/ps5/pad.cpp")
 objs=()
 compile_pids=()
+flags_key=$(printf '%s\0' "$CXX" "${FLAGS[@]}" | sha256sum | cut -d' ' -f1)
 for f in "${sources[@]}"; do
 	o="$B/obj/$(echo "${f#"$ROOT/"}" | tr '/' '_').o"
-	if [ ! -f "$o" ] || [ "$f" -nt "$o" ] || [ -n "$(find "$ROOT/gl" "$ROOT/ui" "$ROOT/src" "$ROOT/update" "$ROOT/third_party" -type f \( -name "*.h" -o -name "*.hpp" \) -newer "$o" -print -quit)" ]; then
+    if [ -f "$o" ] && [ ! -f "$o.d" ]; then
+        "$CXX" "${FLAGS[@]}" -MM -MT "$o" -MF "$o.d" "$f"
+    fi
+    if python3 "$ROOT/tools/object_needs_rebuild.py" "$o" "$o.d" "$o.flags" "$flags_key"; then
 		compile_flags=("${FLAGS[@]}")
 		if [ "$f" = "$ROOT/gl/main.cpp" ]; then
 			compile_flags=()
@@ -70,7 +82,7 @@ for f in "${sources[@]}"; do
 			done
 			compile_flags+=(-Werror=misleading-indentation)
 		fi
-		"$CXX" "${compile_flags[@]}" -c "$f" -o "$o" &
+		( "$CXX" "${compile_flags[@]}" -MMD -MT "$o" -MF "$o.d" -c "$f" -o "$o" && printf '%s\n' "$flags_key" > "$o.flags" ) &
 		compile_pids+=("$!")
 	fi
 	objs+=("$o")
@@ -89,6 +101,19 @@ for f in "$EVO/media/src/evo_vdec_ffmpeg.c" "$EVO/media/src/evo_vdec_native.c" \
         -I"$SDK/target/user/homebrew/include" -c "$f" -o "$o"
     objs+=("$o")
 done
+# VLC's private C bridge and static module table share the exact core headers.
+vlc_flags=(-O2 -fPIC -DHAVE_CONFIG_H -I"$VLC_BUILD" -I"$VLC_SRC/include" -I"$SDK/target/user/homebrew/include" -I"$ROOT/src")
+for f in "$ROOT/src/vlc_colour.c" "$ROOT/third_party/vlc/modules/ps5vdec.c" \
+         "$ROOT/third_party/vlc/compat/vlc_missing.c" "$ROOT/third_party/vlc/compat/vlc_search.c" "$VLC_STATIC/static_modules.c"; do
+    o="$B/obj/vlc_$(basename "$f").o"
+    "$CC" -std=gnu11 "${vlc_flags[@]}" -c "$f" -o "$o"
+    objs+=("$o")
+done
+"$CXX" -std=c++20 -DNUVIO_VLC_STATIC "${vlc_flags[@]}" -c "$ROOT/src/vlc_http.cpp" -o "$B/obj/vlc_http.o"
+objs+=("$B/obj/vlc_http.o")
+# gen-static-modules emits compiler-driver flags; this link calls lld directly.
+sed '/^-Wl,--start-group$/d; /^-Wl,--end-group$/d; s/^-Wl,//' "$VLC_STATIC/link.rsp" > "$B/vlc-link.rsp"
+
 for o in "${objs[@]}"; do [ -f "$o" ] || { echo "compile failed ($o)"; exit 1; }; done
 
 "$CXX" -std=c++20 -O2 -fno-exceptions -fno-rtti -c "$BP/tooling/native/app_crt.cpp" -o "$B/app_crt.o"
@@ -114,13 +139,15 @@ read -r -a DEPS <<< "$("$SDK/bin/prospero-pkg-config" --static --libs libcurl li
 	--wrap=sceSystemServiceHideSplashScreen \
 	--wrap=sceVideoOutRegisterBuffers2 --wrap=sceVideoOutClose \
 	--wrap=sceAgcDcbSetFlip --wrap=sceVideoOutSubmitFlip \
-	--allow-multiple-definition \
+	--defsym=vlc_ps5_big_alloc=0 --defsym=vlc_ps5_big_free=0 \
+	--defsym=vlc_ps5_copy_plane=0 --defsym=vlc_ps5_copy_plane_shift=0 --defsym=vlc_ps5_split_plane16=0 \
+	--allow-multiple-definition --exclude-libs=ALL --defsym=__isthreaded=vlc_ps5_isthreaded \
 	--defsym=__cxa_thread_atexit_impl=0 --defsym=__syscall=0 \
 	-u ps5_agc_gate2_run \
 	"$B/app_crt.o" "$B/shims.o" "$B/console_curl.o" "$B/ps5_modules.o" "$B/heap.o" "$B/posix_fixes.o" "$B/kernel_mem.o" "$B/hui_runtime_shims.o" \
 	"${objs[@]}" \
 	--start-group \
-	"$GL/lib/libPS5OpenGL.a" "$HB/libdht.a" "$HB/libminiupnpc.a" "$HB/libfribidi.a" "${DEPS[@]}" \
+	@"$B/vlc-link.rsp" "$GL/lib/libPS5OpenGL.a" "$HB/libdht.a" "$HB/libminiupnpc.a" "$HB/libfribidi.a" "${DEPS[@]}" \
 	"$SDK/target/lib/libc++.a" "$SDK/target/lib/libc++abi.a" "$SDK/target/lib/libunwind.a" "$SDK/target/lib/libc.a" \
 	"$COMPILER_RT" \
 	--end-group \
@@ -166,6 +193,8 @@ cp "$ROOT/../ps5/account-config.json" "$APP/"
 # contains (app/licenses/README.txt), and the notices of the toolkit and the OpenGL SDK.
 cp -r "$ROOT/app/licenses" "$APP/"
 cp "$ROOT/LICENSE" "$ROOT/THIRD_PARTY.md" "$APP/"
+mkdir -p "$APP/licenses/vlc"
+cp "$ROOT/third_party/vlc/"{COPYING,COPYING.LIB,COPYING.dvbpsi,COPYING.ebml,COPYING.matroska,COPYING.utf8cpp,UPSTREAM.json,README.md} "$APP/licenses/vlc/"
 mkdir -p "$APP/licenses/evo-player"
 cp "$EVO/LICENSE" "$EVO/UPSTREAM.json" "$EVO/INTEGRATION.md" "$APP/licenses/evo-player/"
 cp "$ROOT/third_party/qrcodegen.h" "$APP/licenses/"

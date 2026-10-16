@@ -60,11 +60,12 @@ int io_open_cb(AVFormatContext* s, AVIOContext** pb, const char* url, int flags,
 	auto* hooks = static_cast<NetStream::IoHooks*>(s->opaque);
 	if ((flags & AVIO_FLAG_WRITE) || !is_http(url)) return hooks->default_open(s, pb, url, flags, options);
 	std::string err;
-	*pb = NetStream::open_avio(url, hooks->headers, hooks->abort, &err);
+	*pb = NetStream::open_avio(url, hooks->headers, hooks->abort, &err, false, hooks->read_interrupt);
 	if (!*pb) {
 		dlog("net: request failed");
 		return err == "cancelled" ? AVERROR_EXIT : AVERROR(EIO);
 	}
+	NetStream::set_read_interrupt(*pb, hooks->read_interrupt);
 	return 0;
 }
 
@@ -135,7 +136,7 @@ bool NetStream::start() {
 	gen_++;
 	thread_ = std::thread([this] { run(); });
 	while (!headers_done_ && error_.empty() && !eof_) {
-		if (abort_ && abort_->load()) {
+		if ((abort_ && abort_->load()) || (read_interrupt_ && read_interrupt_->load())) {
 			error_ = "cancelled";
 			break;
 		}
@@ -332,7 +333,7 @@ void NetStream::worker() {
 
 int NetStream::read_parallel(std::unique_lock<std::mutex>& lock, uint8_t* buf, int n) {
 	for (;;) {
-		if (abort_ && abort_->load()) return AVERROR_EXIT;
+		if ((abort_ && abort_->load()) || (read_interrupt_ && read_interrupt_->load())) return AVERROR_EXIT;
 		if (pos_ >= size_) return AVERROR_EOF;
 		int64_t idx = pos_ / kChunk;
 		// The window follows the reader, one chunk kept behind it for short
@@ -476,6 +477,7 @@ size_t NetStream::on_header(char* data, size_t size, size_t n, void* self) {
 	auto* s = static_cast<NetStream*>(self);
 	std::string line(data, size * n);
 	std::lock_guard<std::mutex> lock(s->m_);
+    if(s->cur_gen_ != s->gen_)return 0; // a superseded response cannot publish headers
 	if (starts_with(line, "HTTP/")) {
 		size_t sp = line.find(' ');
 		s->status_ = sp == std::string::npos ? 0 : std::atol(line.c_str() + sp + 1);
@@ -512,6 +514,13 @@ size_t NetStream::on_data(char* data, size_t size, size_t n, void* self) {
 	std::unique_lock<std::mutex> lock(s->m_);
 	if (s->stop_ || s->cur_gen_ != s->gen_) return 0;  // closed or seeked: abort this transfer
 	if (!s->header_ok_) return size * n;               // a redirect's body
+	// Read-ahead full: wait for the player to catch up.
+	while (s->buf_.size() - s->head_ >= kMaxBuffered) {
+		if (s->stop_ || s->cur_gen_ != s->gen_ || (s->abort_ && s->abort_->load())) return 0;
+		s->cv_.wait_for(lock, std::chrono::milliseconds(100));
+	}
+	if (s->cur_gen_ != s->gen_) return 0;
+	// A seek can change discard_ while the full-buffer wait releases m_.
 	if (s->discard_ > 0) {
 		size_t drop = size_t(std::min<int64_t>(s->discard_, int64_t(len)));
 		s->discard_ -= int64_t(drop);
@@ -519,12 +528,6 @@ size_t NetStream::on_data(char* data, size_t size, size_t n, void* self) {
 		len -= drop;
 		if (len == 0) return size * n;
 	}
-	// Read-ahead full: wait for the player to catch up.
-	while (s->buf_.size() - s->head_ >= kMaxBuffered) {
-		if (s->stop_ || s->cur_gen_ != s->gen_ || (s->abort_ && s->abort_->load())) return 0;
-		s->cv_.wait_for(lock, std::chrono::milliseconds(100));
-	}
-	if (s->cur_gen_ != s->gen_) return 0;
 	if (s->head_ > (4u << 20) && s->head_ * 2 > s->buf_.size()) {
 		s->buf_.erase(s->buf_.begin(), s->buf_.begin() + s->head_);
 		s->head_ = 0;
@@ -548,7 +551,7 @@ int NetStream::read(uint8_t* buf, int n) {
 	std::unique_lock<std::mutex> lock(m_);
 	if (parallel_) return read_parallel(lock, buf, n);
 	for (;;) {
-		if (abort_ && abort_->load()) return AVERROR_EXIT;
+		if ((abort_ && abort_->load()) || (read_interrupt_ && read_interrupt_->load())) return AVERROR_EXIT;
 		size_t avail = buf_.size() - head_;
 		if (avail > 0) {
 			size_t k = std::min(avail, size_t(n));
@@ -586,6 +589,8 @@ std::string NetStream::peek(size_t n) {
 	return std::string(reinterpret_cast<const char*>(buf_.data() + head_), k);
 }
 
+std::string NetStream::effective_url() { std::lock_guard<std::mutex> lock(m_);return final_url_.empty()?url_:final_url_; }
+
 std::string NetStream::failure() {
 	std::lock_guard<std::mutex> lock(m_);
 	return error_;
@@ -617,8 +622,11 @@ int64_t NetStream::seek(int64_t offset, int whence) {
 		cv_.notify_all();
 		return target;
 	}
-	if (target > end && target - end < kSkipWindow && error_.empty() && !eof_) {
-		// A little further on: keep the connection and drop what's between.
+	if (target > end && target - end < kSkipWindow && error_.empty() && !eof_ &&
+        cur_gen_ == gen_ && cur_curl_ && header_ok_) {
+		// Only skip on an active response. A pending request still has to
+        // initialise its range/discard state; otherwise it can overwrite this
+        // skip and label earlier bytes as the new position.
 		buf_.clear();
 		head_ = 0;
 		discard_ += target - end;
@@ -649,8 +657,10 @@ int64_t NetStream::seek(int64_t offset, int whence) {
 // FFmpeg glue
 
 AVIOContext* NetStream::open_avio(const std::string& url, const std::vector<std::string>& headers,
-                                  const std::atomic<bool>* abort, std::string* error, bool parallel) {
+                                  const std::atomic<bool>* abort, std::string* error, bool parallel,
+                                  const std::atomic<bool>* read_interrupt) {
 	auto* ns = new NetStream(url, headers, abort, parallel);
+	ns->read_interrupt_ = read_interrupt;
 	if (!ns->start()) {
 		if (error) *error = ns->error();
 		delete ns;
@@ -668,6 +678,10 @@ AVIOContext* NetStream::open_avio(const std::string& url, const std::vector<std:
 	pb->seekable = ns->size() > 0 ? AVIO_SEEKABLE_NORMAL : 0;
 	dlog("net: opened stream (%lld bytes)", (long long)ns->size());
 	return pb;
+}
+
+void NetStream::set_read_interrupt(AVIOContext* pb, const std::atomic<bool>* pending) {
+	if (auto* ns = of(pb)) ns->read_interrupt_ = pending;
 }
 
 bool NetStream::is_ours(AVIOContext* pb) { return pb && pb->read_packet == read_cb; }
