@@ -7,11 +7,11 @@ inline bool should_show_release_notes(std::string_view seen, std::string_view cu
     return !current.empty() && seen != current;
 }
 inline constexpr std::array<const char*,6> release_note_items = {
-    "Settings are organised into easy-to-browse categories.",
-    "Controller lightbar fades teal, white and pink/purple.",
-    "Optional console light sync is in Appearance & Lighting.",
-    "Console sync uses approximate colours and restores system lighting.",
-    "Reduced Motion keeps lighting steady.",
-    "Video timing, PCM audio and stereo downmix improvements are retained."
+    "VLC 3.0.24 is available as an optional experimental player.",
+    "Choose Native, EVO or VLC in Settings > Video.",
+    "VLC supports our playback menus, file subtitles and PCM audio.",
+    "Network headers and cancellable downloads are retained for VLC.",
+    "Rapid network seeks now keep the correct byte position.",
+    "Native remains the default; this build needs PS5 testing."
 };
 }

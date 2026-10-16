@@ -27,16 +27,21 @@ extern "C" int sceAudioOutExOpen(int,int){return 47;}
 extern "C" int sceAudioOutExClose(int){return 0;}
 extern "C" int sceAudioOutExConfigureOutput(int,unsigned,int,int,uint64_t){return 0;}
 extern "C" int sceAudioOutSysGetHdmiMonitorInfo(int,void* ptr,unsigned n){std::memset(ptr,0,n);static_cast<uint8_t*>(ptr)[0x98]=2;return 0;}
+#ifndef NUVIO_TEST_REAL_NETWORK
 const std::string& http_ca_bundle(){static const std::string empty;return empty;}
 const char* kUserAgent="NuvioTest";
+#endif
 std::string language_name(const std::string& s){return s;}
 std::string language_to_iso639_2(const std::string& s){return s;}
+#ifndef NUVIO_TEST_REAL_NETWORK
+void NetStream::set_read_interrupt(AVIOContext*,const std::atomic<bool>*){}
 void NetStream::install(AVFormatContext*,IoHooks*){}
 NetStream* NetStream::of(AVIOContext*){return nullptr;}
-AVIOContext* NetStream::open_avio(const std::string&,const std::vector<std::string>&,const std::atomic<bool>*,std::string*,bool){return nullptr;}
+AVIOContext* NetStream::open_avio(const std::string&,const std::vector<std::string>&,const std::atomic<bool>*,std::string*,bool,const std::atomic<bool>*){return nullptr;}
 void NetStream::close_avio(AVIOContext**){}
 std::string NetStream::peek(size_t){return "";}
 std::string NetStream::failure(){return "";}
+#endif
 AVIOContext* TorrentStream::open_avio(const std::string&,const std::atomic<bool>*,std::string*){return nullptr;}
 bool TorrentStream::is_ours(AVIOContext*){return false;}
 TorrentStream* TorrentStream::of(AVIOContext*){return nullptr;}
@@ -113,5 +118,14 @@ int main(int argc,char** argv) try {
     run_until(p,[&]{return p.audio_output().find("PCM")!=std::string::npos && !p.buffering() && p.position()>2.35;});
     p.close();fail_bitstream=false;
     std::cout<<"Playback lifecycle: bitstream pause/seek and failed-port recovery to PCM passed\n";
+#ifdef NUVIO_HAVE_VLC
+    o.url=std::string("file://")+argv[1];o.vlc=true;o.surround=false;o.audio_mode="pcm";
+    p.open(o);run_until(p,[&]{return p.state()==Player::State::Playing && p.position()>.3;},15);
+    require(p.codec_summary().find("VLC")==0,"VLC selection did not dispatch to libVLC");
+    p.close();o.vlc=false;o.url=argv[1];p.open(o);
+    run_until(p,[&]{return !p.buffering()&&p.position()>.25;});
+    require(p.codec_summary().find("VLC")!=0,"switching back left VLC active");p.close();
+    std::cout<<"Playback lifecycle: Native -> VLC -> Native dispatch and port cleanup passed\n";
+#endif
     return 0;
 } catch(const std::exception& e) { std::cerr<<"FAIL: "<<e.what()<<'\n';return 1; }

@@ -33,6 +33,7 @@ public:
 	// (see error()).
 	bool start();
 	const std::string& error() const { return error_; }  // after start(), same thread
+	std::string effective_url(); // resolved URL, for relative adaptive playlists
 	std::string failure();  // any time: why downloading stopped, if it did
 	int64_t size() const { return size_; }  // -1 when unknown
 
@@ -50,14 +51,18 @@ public:
 	static void set_cache_dir(const std::string& dir);
 
 	static AVIOContext* open_avio(const std::string& url, const std::vector<std::string>& headers,
-	                              const std::atomic<bool>* abort, std::string* error, bool parallel = false);
+	                              const std::atomic<bool>* abort, std::string* error, bool parallel = false,
+	                              const std::atomic<bool>* read_interrupt = nullptr);
 	static bool is_ours(AVIOContext* pb);
+	// Interrupt a blocked reader for a seek without cancelling its downloader.
+	static void set_read_interrupt(AVIOContext* pb, const std::atomic<bool>* pending);
 	static void close_avio(AVIOContext** pb);
 
 	// AVFormatContext.io_open / io_close2 for the files a demuxer opens
 	// itself (HLS playlists and segments). opaque must point at the
 	// player's IoHooks.
 	struct IoHooks {
+		const std::atomic<bool>* read_interrupt = nullptr;
 		std::vector<std::string> headers;
 		const std::atomic<bool>* abort = nullptr;
 		int (*default_open)(AVFormatContext*, AVIOContext**, const char*, int, AVDictionary**) = nullptr;
@@ -107,6 +112,7 @@ private:
 	std::string url_;
 	std::vector<std::string> headers_;
 	const std::atomic<bool>* abort_;
+	const std::atomic<bool>* read_interrupt_ = nullptr;
 
 	std::mutex m_;
 	std::condition_variable cv_;

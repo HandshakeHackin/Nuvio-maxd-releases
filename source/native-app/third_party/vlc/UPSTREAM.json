@@ -1,0 +1,69 @@
+{
+  "repository": "https://github.com/ZiZc3/VLC",
+  "commit": "d46be6a68f4244466b041c2dc1b640915ac1a983",
+  "version": "0.4",
+  "libvlcVersion": "3.0.24",
+  "sourceUrl": "https://download.videolan.org/pub/videolan/vlc/3.0.24/vlc-3.0.24.tar.xz",
+  "sourceSha256": "e7cab503d1d7d5849b89d2cf0e1ee60d0ef6d012407791b644b9cfc0cc225fdf",
+  "ffmpeg": "SDK FFmpeg 7 (single ABI shared by Native/EVO/VLC)",
+  "fileSha256": {
+    "COPYING": "8177f97513213526df2cf6184d8ff986c675afb514d4e68a404010521b880643",
+    "COPYING.LIB": "dc626520dcd53a22f727af3ee42c770e56c97a64fe3adb063799d8ab032fe551",
+    "COPYING.dvbpsi": "dc626520dcd53a22f727af3ee42c770e56c97a64fe3adb063799d8ab032fe551",
+    "COPYING.ebml": "dc626520dcd53a22f727af3ee42c770e56c97a64fe3adb063799d8ab032fe551",
+    "COPYING.matroska": "dc626520dcd53a22f727af3ee42c770e56c97a64fe3adb063799d8ab032fe551",
+    "COPYING.utf8cpp": "c9bff75738922193e67fa726fa225535870d2aa1059f91452c411736284ad566",
+    "README.md": "c5ab0d1f7a876b15e242bde0d17943103152fc0354347c294e7fcbfa49ec5d41",
+    "compat/vlc_missing.c": "9d6f91d73b3c0d568042c581b1fc195c7419189c584b59ad6f20e6dffb6b93d4",
+    "compat/vlc_search.c": "66919eae5710298ed152ddbc4751ca6521f8f9e34493a68512bfa5a29c5a4134",
+    "disabled.txt": "516314977d8432be11cb5301d73575b2033242ca2ee8203f15aba256c61d7bcd",
+    "gen-static-modules.sh": "3b62236dc19dc79594cde43e6abcf43eb623ebdc7bae0fa81a4253abd1f022f5",
+    "modules/ps5vdec.c": "7a0ee4a287170a5b1b54bc8fae11e46a0c6ede177eb35c79c829eda4a06e5600",
+    "patches/0001-freetype-ps5-default-fonts.patch": "dac7605901f1413c58c041b10609458f536ea233317aed1178767f903381b19e",
+    "patches/0002-posix-error-ps5-no-strerror_l.patch": "54a2bccff4967765ac673bc491db730796bc8f9ff39bd6729b6db2bcfb32d2cf",
+    "patches/0003-interrupt-ps5-sliced-poll.patch": "dd3ad19a6839dd17042c78ea5fe2943c8f4ed2510e622ed9347d2f02f0eb19ff",
+    "patches/0004-thread-ps5-cpu-count.patch": "b1588b151a54024ba7ab302ceaf945bf2b87955c9fd0992166d94f2c23e80bdd",
+    "patches/0005-freetype-ps5-fallback-fonts.patch": "d236815ab4b2af3bb58ffa07ee408f94bb98a763fc30abf788c345f47ec3793a",
+    "patches/0006-netconf-ps5-no-proxy-helper.patch": "bd495438362b11c5138599039c30109e183687981f430d29ba4ab6cdb0e770df",
+    "patches/0007-no-named-locales-ps5.patch": "07bd10c786c144ec98cc2c1d8a81541ee9df408314ded0646f7338ccf711ef12",
+    "patches/0008-libass-ps5-default-font.patch": "eb5ca0e8eb62a37ecbba2e5aedc333e61d12e4259eba3532725f0277b1445cfa",
+    "patches/0009-dvdnav-ps5-stream-demux.patch": "aba70016c03bcf178f9c8645465f8781636bc393a556860e877efd8a2e38a7da",
+    "patches/0010-bluray-ps5-menu-state.patch": "9d12e8ef167af62286411d2dda18e4a06b70e35364b210a0c3401e5ba380382d",
+    "patches/0011-freetype-ps5-utf8-without-iconv.patch": "06b1be96da9e5db56c26ef5ab3e37bb3b729583f429396053eb4ad101302008a",
+    "patches/0012-adaptive-ps5-http-res-malloc.patch": "fb2b555cb224f0edeccdc887ef9ca6f37db3230e94ea3f3b5017a4c929202423",
+    "patches/0013-avcodec-opus-bare-header.patch": "01892d88705d1a3ff9e92dee3fc275858c7164250ba81fbdb0ea145c20e22375",
+    "patches/0014-vmem-ps5-colour-info.patch": "5ec6d7da78fb1c5aab57663a1e481135b22302bb8dcd23c2cb954317bc0f7009",
+    "patches/0015-picture-ps5-big-pictures-direct-memory.patch": "d9a241931bc790badf6df768a11f809f1719f415b98dcf06b4ee5f364b28594f",
+    "patches/0016-vmem-ps5-parallel-copy.patch": "4f93747f50a7416b1e7616afaf02ca1945d35ee26e00e52e10314940242c16e8",
+    "patches/0017-smb2-ps5-bigger-reads.patch": "a4ae4582c64f099564dff7f502b5e950834ad92eac6dd81bdf6376cbbb4b1b03",
+    "patches/0018-nuvio-track-default.patch": "1d3a6bd24fe4c60baeda99bdf30a1cfedab47fce29576fd53116ad0218247c3c",
+    "patches/0019-nuvio-bundled-font-fallbacks.patch": "ba3c99cdd7efd1de73da1a1799c5098f237d7d75b41ba1713a1e6da5dd113d3e",
+    "patches/0020-nuvio-amem-float-fallback.patch": "8064afd62a1f4b339b2e5c714c715df4cad8dd9a07db99048c8a1d8a6215417e",
+    "pkg-config": "f7eff3f1d31b8ec753707265761aedbec62f7a1082161ecdfa8ac5527143e290",
+    "plugins.txt": "a1ea18955eb5588a0a433387a365fe082fc4e12e8613ea30945a41c8c0b4b34c"
+  },
+  "libdvbpsi": {
+    "version": "1.3.3",
+    "sourceUrl": "https://download.videolan.org/pub/libdvbpsi/1.3.3/libdvbpsi-1.3.3.tar.bz2",
+    "sourceSha256": "02b5998bcf289cdfbd8757bedd5987e681309b0a25b3ffe6cebae599f7a00112",
+    "license": "LGPL-2.1-or-later"
+  },
+  "libebml": {
+    "version": "1.4.6",
+    "sourceUrl": "https://dl.matroska.org/downloads/libebml/libebml-1.4.6.tar.xz",
+    "sourceSha256": "d06cf1d5ad89390389eeb1eb7d50f70b55ac7538b19aeac8859eed3f2a9908dc",
+    "license": "LGPL-2.1-or-later"
+  },
+  "libmatroska": {
+    "version": "1.7.2",
+    "sourceUrl": "https://dl.matroska.org/downloads/libmatroska/libmatroska-1.7.2.tar.xz",
+    "sourceSha256": "f3e4d406daf7f1399962c43940e4a87de089474d5bcfbf2e6ca516e98bb87cfc",
+    "license": "LGPL-2.1-or-later"
+  },
+  "utf8cpp": {
+    "version": "3.2.5",
+    "sourceUrl": "https://github.com/nemtrif/utfcpp/archive/refs/tags/v3.2.5.tar.gz",
+    "sourceSha256": "14fd1b3c466814cb4c40771b7f207b61d2c7a0aa6a5e620ca05c00df27f25afd",
+    "license": "BSL-1.0"
+  }
+}

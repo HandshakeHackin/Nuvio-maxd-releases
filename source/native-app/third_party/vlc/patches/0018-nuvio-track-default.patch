@@ -1,0 +1,20 @@
+--- a/lib/media.c
++++ b/lib/media.c
+@@ -1285,3 +1285,17 @@
+     }
+     free( pp_slaves );
+ }
++
++/* Nuvio's embedded subtitle chooser needs the source's default disposition.
++ * Keep private VLC structures inside libVLC; callers see only an integer. */
++int nuvio_vlc_track_default(libvlc_media_t *media, int id)
++{
++    input_item_t *item = media->p_input_item;
++    int selected = 0;
++    vlc_mutex_lock(&item->lock);
++    for (int i = 0; i < item->i_es; ++i)
++        if (item->es[i]->i_id == id)
++            selected = item->es[i]->i_priority > ES_PRIORITY_SELECTABLE_MIN;
++    vlc_mutex_unlock(&item->lock);
++    return selected;
++}

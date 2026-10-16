@@ -32,7 +32,7 @@ display_profile = validate_display_metadata(json.loads(
     (Path(sys.argv[1]).parent / 'sce_sys/param.json').read_text()))
 info = {
     'name': "Nuvio Max'd",
-    'version': '0.5.27-native-experimental',
+    'version': '0.5.28-native-experimental',
     'titleId': sys.argv[2],
     'architecture': 'single native OpenGL app with integrated playback',
     'sourceCommit': source_commit,
@@ -45,6 +45,7 @@ info = {
     'consoleLightSync': {'default': True, 'setting': 'Appearance & Lighting', 'channels': ['blue','white','amber'], 'approximateLogoColours': True, 'backgroundWorker': True, 'maxUpdatesPerSecond': 5, 'restoreOnDisableAndExit': True, 'respectSystemOwnership': True, 'hardwareVerified': False},
     'settingsCategories': True,
     'presentationTiming': {'source': 'VideoOut completed flip process timestamp', 'paths': ['GPU command', 'CPU submit'], 'minimumSamples': 3, 'maximumVideoLeadMs': 40, 'maximumSampleDelayMs': 100, 'staleAfterMs': 1000, 'physicalTvReceiverLatencyMeasured': False, 'hardwareVerified': False},
+    'vlc': json.loads((root/'third_party/vlc/UPSTREAM.json').read_text()),
     'hardwareVerified': False,
     'controllerLightbar': {'logoPalette': 'teal/white/pink-purple', 'cycleSeconds': 18, 'sharedBootEnvelope': True, 'steadyAfterBoot': False, 'steadyWithReducedMotion': True, 'reducedMotion': True, 'maxUpdatesPerSecond': 30, 'reconnectRecovery': True, 'systemResetOnClose': True, 'hardwareVerified': False},
     'graphicsRefresh': {'opengl': '1.0.2', 'periodicDriverStatistics': 'opt-in; teardown summary retained', 'streamReloadSelection': True, 'startupStageTiming': True, 'hardwareVerified': False},
@@ -79,7 +80,7 @@ info = {
     'displaySelection': 'PS5 configured resolution by default; 1080p, 1440p and 2160p overrides',
     'displayRefresh': {'default': 60, 'optional': 120, 'restartRequired': True, 'acceptedRateReadback': True, 'resolutionReducedForRefresh': False, 'hardwareVerified': False},
     'hdrToSdr': {'toneMap': 'luminance extended Reinhard', 'outputResponse': 'BT.1886 ideal black (2.4)', 'gamut': 'BT.2020 to BT.709 with luminance-preserving neutral-axis fitting', 'sourcePeak': 'MaxCLL, mastering display, otherwise 1000 nits', 'exposureGain': 1, 'hardwareVerified': False},
-    'playbackEngines': {'default': 'native', 'optional': 'EVO Player 0.12.0', 'scope': 'video decoder and presentation core', 'hardwareVerified': False},
+    'playbackEngines': {'default': 'native', 'optional': ['EVO Player 0.12.0', 'VLC 3.0.24'], 'scope': 'integrated optional playback engines', 'hardwareVerified': False},
     'videoConversion': 'Native-resolution YUV to RGB10_A2; compatible PQ/BT.2020 sources use experimental 10-bit HDR10 output',
     'nativeHdr': {
         'default': True,

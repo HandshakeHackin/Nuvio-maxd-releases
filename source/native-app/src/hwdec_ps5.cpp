@@ -9,6 +9,7 @@
 #ifndef PLATFORM_PS5_NATIVE
 
 void HwDecoder::load_module() {}
+bool HwDecoder::module_loaded() {return false;}
 HwDecoder* HwDecoder::open(const AVCodecParameters*, std::string* why) {
 	if (why) *why = "no hardware decoder on this platform";
 	return nullptr;
@@ -756,6 +757,8 @@ struct HwDecoder::Impl {
 		return 0;
 	}
 };
+
+bool HwDecoder::module_loaded() {return g_module_loaded;}
 
 void HwDecoder::load_module() {
 	int r = sceSysmoduleLoadModule(kSysmoduleVideodec2);

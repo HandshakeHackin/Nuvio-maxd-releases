@@ -139,3 +139,21 @@ audio adapters are GPL-3.0-or-later.
 0.5.23 uses ps5-opengl SDK 1.0.2 at a519561626933257213d64a4a8bd5e02b55dceb2. Its runtime is rebuilt with Nuvio's existing driver-owned HDR extension. The toolkit's SDK consumption update follows dbf8286661224c7d8b01fdea62052251eec43eca; local UI adaptations remain. Stream reload selection behavior is independently implemented following NuvioTVSmart 1.2.4 (c003faf6a0641296c5d02914d9ca3b56a6988e9c). Startup stage timing follows ProsperoLight's diagnostics approach; no standalone player or privileged helper is bundled.
 
 0.5.24 adds an independent Nuvio logo lightbar animation. The vendored ps5-homebrew-ui pad wrapper gains bounded light updates, failure suppression, reconnect invalidation and reset-on-close; original notices remain.
+
+### Optional VLC engine (0.5.28)
+
+libVLC 3.0.24 (VideoLAN/VLC authors, LGPL-2.1-or-later) and its selected GPL
+plugins are built statically for the existing SDK's FFmpeg 7 ABI. PS5 patches,
+compatibility code and the hardware decoder module are from
+[ZiZc3/VLC v0.4](https://github.com/ZiZc3/VLC/tree/d46be6a68f4244466b041c2dc1b640915ac1a983)
+under their original GPL-2.0-or-later notices. libdvbpsi 1.3.3
+(VideoLAN/libdvbpsi authors, LGPL-2.1-or-later) supplies MPEG-TS tables for HLS.
+Source URLs, hashes, local changes, and the plugin manifest are retained in
+`third_party/vlc/`; build with `tools/build_vlc.sh`. The new Nuvio bridges are
+GPL-3.0-or-later. License texts travel in `licenses/vlc/` with the app.
+No VLC application's Vulkan renderer is bundled.
+
+VLC's native Matroska module uses libebml 1.4.6 and libmatroska 1.7.2
+(Matroska project contributors, LGPL-2.1-or-later), plus utf8cpp 3.2.5
+(Nemanja Trifunovic and contributors, Boost Software License 1.0). Pinned
+release sources and full license texts are included with the test distribution.

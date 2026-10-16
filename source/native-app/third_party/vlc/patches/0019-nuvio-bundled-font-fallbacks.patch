@@ -1,0 +1,11 @@
+--- a/modules/text_renderer/freetype/freetype.c
++++ b/modules/text_renderer/freetype/freetype.c
+@@ -1452,7 +1452,7 @@
+     const char *psz_default = p_sys->p_default_style->psz_fontname;
+     const char *psz_slash = psz_default ? strrchr( psz_default, '/' ) : NULL;
+     if( psz_slash &&
+-        asprintf( &psz_dir, "%.*s/fallback", (int)( psz_slash - psz_default ), psz_default ) < 0 )
++        asprintf( &psz_dir, "%.*s", (int)( psz_slash - psz_default ), psz_default ) < 0 )
+         psz_dir = NULL;
+ 
+     char **ppsz_names = NULL;

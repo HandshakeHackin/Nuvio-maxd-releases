@@ -448,12 +448,13 @@ void Session::watch_start(const std::string &url, const std::vector<std::string>
     o.url = url;
     o.parallel = direct;
     o.evo = prefs_.evo_player;
+    o.vlc = prefs_.vlc_player;
     o.surround = prefs_.surround_audio;
     o.audio_mode=prefs_.audio_output_mode;
     o.headers = headers;
     o.start = start;
     o.audio_langs = pref_langs(prefs_.audio_langs);
-    nuvio_diagnostics::record({{"evo",o.evo},{"nativeHdr",prefs_.native_hdr},{"phase","playback"},{"playing",false}});
+    nuvio_diagnostics::record({{"engine",o.vlc?"vlc":o.evo?"evo":"native"},{"evo",o.evo},{"nativeHdr",prefs_.native_hdr},{"phase","playback"},{"playing",false}});
     player_.open(o);
 
     playing.title = title;
@@ -681,6 +682,9 @@ void Session::watch_update()
         else if (!ws.cues.empty())
             sub = cues_at(ws.cues, t);
     }
+    int embedded_stream=-1;
+    if(w_sub_active_>=0 && w_sub_active_<int(w_subs_.size())) embedded_stream=w_subs_[size_t(w_sub_active_)].embedded;
+    player_.select_embedded_subtitle(embedded_stream,w_sub_delay_);
     const auto& style=prefs_.subtitle_style;
     auto overlay=player_.subtitle_renderer().render(rich_id,pos-w_sub_delay_,video_w,video_h,video_sar,
         playing.controls?125.0f:0.0f,style.font,style.colour,style.effect,style.background,

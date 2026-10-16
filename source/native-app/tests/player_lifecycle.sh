@@ -16,7 +16,7 @@ ffmpeg -hide_banner -loglevel error -y -f lavfi -i 'testsrc2=size=192x108:rate=2
 ffmpeg -hide_banner -loglevel error -y -i "$ROOT/test-output/lifecycle.mp4" -map 0 -c copy -c:a ac3 "$ROOT/test-output/lifecycle-ac3.mp4"
 ${HOST_CXX:-g++} -std=c++20 -O0 -g -Wall -Wextra -Werror -Wno-misleading-indentation -pthread -DHAVE_FRIBIDI -DPLATFORM_PS5_NATIVE=1 -DNUVIO_HOST_BITSTREAM_API=1 \
     -I"$ROOT/src" -I"$ROOT/third_party" -I"$EVO/media/include" -I"$EVO/pp/include" -I"$EVO/include" "${cflags[@]}" \
-    "$ROOT/tests/player_lifecycle_host.cpp" "$ROOT/src/player.cpp" "$ROOT/src/pcm_out.cpp" "$ROOT/src/bitstream.cpp" "$ROOT/src/packet_storage.cpp" \
+    "$ROOT/tests/player_lifecycle_host.cpp" "$ROOT/src/player.cpp" "$ROOT/src/vlc_backend.cpp" "$ROOT/src/pcm_out.cpp" "$ROOT/src/bitstream.cpp" "$ROOT/src/packet_storage.cpp" \
     "$ROOT/src/subtitle_renderer.cpp" "$ROOT/src/subtitles.cpp" "$ROOT/src/video_frame.cpp" "$ROOT/src/yuv_convert.cpp" \
     "$ROOT/src/util.cpp" "$ROOT/src/bidi.cpp" "${libs[@]}" -o "$ROOT/test-output/player-lifecycle-host"
 "$ROOT/test-output/player-lifecycle-host" "$ROOT/test-output/lifecycle.mp4" "$ROOT/test-output/lifecycle-ac3.mp4"

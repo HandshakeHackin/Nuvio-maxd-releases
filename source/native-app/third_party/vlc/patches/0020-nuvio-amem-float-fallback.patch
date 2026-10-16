@@ -1,0 +1,20 @@
+--- a/modules/audio_output/amem.c
++++ b/modules/audio_output/amem.c
+@@ -190,7 +190,7 @@
+     /* Ensure that format is supported */
+     if (fmt->i_rate == 0 || fmt->i_rate > AMEM_SAMPLE_RATE_MAX
+      || channels == 0 || channels > AOUT_CHAN_MAX
+-     || strcmp(format, "S16N") /* TODO: amem-format */)
++     || (strcmp(format, "S16N") && strcmp(format, "FL32")))
+     {
+         msg_Err (aout, "format not supported: %s, %u channel(s), %u Hz",
+                  format, channels, fmt->i_rate);
+@@ -232,7 +232,7 @@
+             vlc_assert_unreachable();
+     }
+ 
+-    fmt->i_format = VLC_CODEC_S16N;
++    fmt->i_format = !strcmp(format, "FL32") ? VLC_CODEC_FL32 : VLC_CODEC_S16N;
+     fmt->channel_type = AUDIO_CHANNEL_TYPE_BITMAP;
+     return VLC_SUCCESS;
+ }
