@@ -72,6 +72,13 @@ int main(int argc, char** argv) {
             state.qr_modules[y*state.qr_size+x]=qrcodegen_getModule(donation_qr,x,y);
         sx::draw_sign_in(list,env,state,0,1);
     }
+    else if(mode=="providers-middle" || mode=="providers-last") {
+        sx::DropdownState d; d.title="Provider repository"; d.active=-1;
+        for(int i=0;i<32;++i) d.options.push_back("Off: Provider "+std::to_string(i+1));
+        d.options.push_back("Remove repository"); d.options.push_back("Cancel");
+        d.selected=mode=="providers-last" ? 33 : 18;
+        sx::draw_dropdown(list,env,d,1);
+    }
     else if(mode=="release-notes") sx::draw_release_notes(list,env,nuvio_update::current_version);
     else if(mode=="audio-output") {
         sx::DropdownState d;d.title="Audio output";d.options={"PCM","Auto (experimental)","Bitstream (experimental)"};

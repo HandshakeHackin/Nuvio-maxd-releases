@@ -32,7 +32,7 @@ display_profile = validate_display_metadata(json.loads(
     (Path(sys.argv[1]).parent / 'sce_sys/param.json').read_text()))
 info = {
     'name': "Nuvio Max'd",
-    'version': '0.5.29-native-experimental',
+    'version': '0.5.30-native-experimental',
     'titleId': sys.argv[2],
     'providerPlugins': {'engine': 'QuickJS 2026-06-04', 'repositories': True, 'perProviderOptIn': True, 'hardwareVerified': False},
     'mediaRemote': {'hdmiCec': True, 'hardwareVerified': False},
@@ -56,13 +56,13 @@ info = {
     'firmwareTarget': '9.00 and above where required jailbreak and homebrew tools work; below 9.00 untested',
     'verifiedFirmwares': [],
     'applicationDisplayProfile': display_profile,
-    'accountProfile': 1,
+    'accountProfiles': {'maximum': 6, 'selection': True, 'create': True, 'pinVerification': 'Nuvio RPC', 'isolatedLocalData': True, 'sourceInheritance': True, 'sourceSyncQueue': True, 'watchedItemsSync': True, 'hardwareVerified': False},
     'cloudProgressSync': True,
     'connectedServices': {
         'providers': ['torbox', 'premiumize'],
         'torboxAuthentication': ['device QR', 'API key', 'Nuvio Sync import'],
         'premiumizeAuthentication': ['API key', 'Nuvio Sync import'],
-        'sync': 'explicit read-only credential import from Nuvio profile 1',
+        'sync': 'explicit read-only credential import from selected Nuvio profile',
         'clientResolve': True,
         'cachedFilesOnly': True,
         'fileQuality': 'original provider file; no provider transcoded stream link',

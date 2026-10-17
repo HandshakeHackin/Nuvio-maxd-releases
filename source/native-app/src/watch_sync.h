@@ -8,7 +8,7 @@
 class WatchSync {
 public:
     using Rpc = std::function<HttpResponse(const std::string&, const json&)>;
-    WatchSync(const std::string& dir, const std::string& owner);
+    WatchSync(const std::string& dir, const std::string& owner, int profile = 1);
     const std::string& owner() const { return owner_; }
     json pull(const Rpc& rpc, double now);
     bool write(const json& changes, const Rpc& rpc, double now, int64_t updated, std::string& error);
@@ -16,6 +16,7 @@ public:
 private:
     bool save();
     void synchronize(const Rpc& rpc, double now);
+    int profile_ = 1;
     std::string path_, owner_, client_;
     json state_;
     double retry_at_ = 0;

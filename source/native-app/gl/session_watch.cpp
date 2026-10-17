@@ -969,6 +969,7 @@ void Session::watch_save_progress(bool final, bool force_finished)
         s["watched"] = nullptr;
     if (finished && final)
     {
+        sync_watched_mark(w_video_id_, w_item_.name, true, w_item_.id, w_season_, w_episode_number_);
         s["timesWatched"] = static_cast<int>(jnum(s, "timesWatched")) + 1;
         if (w_item_.type == "movie")
             s["flaggedWatched"] = 1;

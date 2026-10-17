@@ -52,28 +52,29 @@ network failures preserve the session; a revoked refresh token requires signing
 in again. Pairing and token expiry use server time so an incorrect console clock
 doesn't immediately expire a valid code. Signing out clears the account caches.
 
-Enabled standard addons and the saved library load from Nuvio's **primary
+Enabled standard addons and the saved library load from Nuvio's **selected
 profile**. Cached addons remain available during a sync outage. Manifest,
 catalog, metadata, search, stream and subtitle requests keep the addon's
 configuration path and query parameters intact.
 
-Watch Progress uses Nuvio Sync for **profile 1**, through
+Watch Progress uses Nuvio Sync for the **selected account profile**, through
 `sync_pull_watch_progress`, `sync_push_watch_progress` and
 `sync_delete_watch_progress`. Movie and episode resume positions, duration and
-completion are shared with other devices using the same account, primary
+completion are shared with other devices using the same account, selected
 profile and Nuvio Sync progress source.
 
 Progress is written every 30 seconds during playback, on pause and on stop.
 Remote progress is checked at startup/sign-in, every minute while idle and
-through Settings → Watch Progress. Offline updates are saved in an account-scoped
+through Settings → Watch Progress. Offline updates are saved in an account/profile-scoped
 queue, with a two-minute retry backoff or a fresh attempt after restart.
 
 Newer remote updates win conflicts. Pushes merge the profile snapshot to retain
 other devices' entries; an empty or unreadable response never triggers an empty
 replacement. Removing a title from Continue Watching uses the delete RPC.
 Only portable progress fields are uploaded. Stream URLs, playback headers and
-addon credentials aren't included. Guest progress stays local; secondary
-profiles and Trakt/Simkl progress sources aren't supported yet.
+addon credentials aren't included. Guest progress stays local. Profiles keep separate history and addon/plugin repository lists.
+Individual scraper switches remain local per profile. Trakt/Simkl progress sources
+are not implemented here. See [0.5.30 profile and provider testing](TESTING-0.5.30.md).
 
 ## Connected Services
 
@@ -335,8 +336,8 @@ come from [NuvioTVSmart](https://github.com/NuvioMedia/NuvioTVSmart).
 This is an unofficial client. See [LICENSE](LICENSE) and
 [THIRD_PARTY.md](THIRD_PARTY.md) for component details.
 
-## JavaScript provider repositories (0.5.29 test build)
+## JavaScript provider repositories
 
 Standard Stremio addons remain supported. Settings > Addons > **Add addon or plugin URL** also accepts a raw Nuvio provider manifest with a `scrapers` list. Select its repository on the Addons page to enable individual providers, then open a title. Providers start disabled and run separately from normal addon requests. Movie/episode IDs are mapped to TMDB through metadata rather than passing IMDb IDs to TMDB scrapers.
 
-The isolated QuickJS runtime includes common HTML, cryptography and URL helpers. Providers requiring unsupported APIs, custom settings or browser challenges may not work. See [testing and limitations](TESTING-0.5.29.md). Console compatibility remains unverified until tested on PS5.
+The isolated QuickJS runtime includes common HTML, cryptography and URL helpers. Providers requiring unsupported APIs, custom settings or browser challenges may not work. See [testing and limitations](TESTING-0.5.30.md). Console compatibility remains unverified until tested on PS5.

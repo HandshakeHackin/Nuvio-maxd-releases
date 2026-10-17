@@ -7,15 +7,15 @@
 <p align="center"><strong>Your Nuvio library, addons and watch progress. Now on PS5.</strong></p>
 
 <p align="center">
-  <a href="https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/download/v0.5.29-native-experimental/PPSA99288.zip"><img src="https://img.shields.io/badge/Download-ZIP_folder-00B8E8?style=for-the-badge" alt="Download the PS5 app as a ZIP folder"></a>
-  <a href="https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/download/v0.5.29-native-experimental/NuvioMaxd-0.5.29-native.ffpfsc"><img src="https://img.shields.io/badge/Download-FFPFSC_image-8B5CF6?style=for-the-badge" alt="Download the PS5 app as an FFPFSC image"></a>
+  <a href="https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/download/v0.5.30-native-experimental/PPSA99288.zip"><img src="https://img.shields.io/badge/Download-ZIP_folder-00B8E8?style=for-the-badge" alt="Download the PS5 app as a ZIP folder"></a>
+  <a href="https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/download/v0.5.30-native-experimental/NuvioMaxd-0.5.30-native.ffpfsc"><img src="https://img.shields.io/badge/Download-FFPFSC_image-8B5CF6?style=for-the-badge" alt="Download the PS5 app as an FFPFSC image"></a>
   <a href="https://ko-fi.com/handshakehackin"><img src="https://img.shields.io/badge/Ko--fi-Support-FF5E5B?style=for-the-badge&logo=kofi&logoColor=white" alt="Support on Ko-fi — optional donation"></a>
   <a href="https://homebrew.page/app/PPSA99288/"><img src="https://img.shields.io/badge/ProsperoStore-Available-22C55E?style=for-the-badge" alt="Nuvio Max'd is available in ProsperoStore"></a>
 </p>
 
 <p align="center">
-  <strong>Available to download now</strong> · v0.5.29 experimental<br>
-  <a href="USER_GUIDE.md">User guide</a> · <a href="https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/tag/v0.5.29-native-experimental">Release notes</a> · <a href="https://homebrew.page/app/PPSA99288/">ProsperoStore listing</a>
+  <strong>Available to download now</strong> · v0.5.30 experimental<br>
+  <a href="USER_GUIDE.md">User guide</a> · <a href="https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/tag/v0.5.30-native-experimental">Release notes</a> · <a href="https://homebrew.page/app/PPSA99288/">ProsperoStore listing</a>
 </p>
 
 Bring your Nuvio setup to the big screen. Sign in with your phone, browse your
@@ -23,20 +23,23 @@ addons and saved library, and keep your movie and episode progress in sync with
 your other Nuvio devices. Nuvio Max'd runs directly on a jailbroken PS5, with a
 built-in player and a controller-friendly interface.
 
-**Version 0.5.29 is available from the GitHub downloads above.**
-Provider/plugin repositories are now supported alongside standard addons. Add a raw manifest URL under **Settings → Addons**, then enable individual providers on the **Addons** page. Provider compatibility needs PS5 testing. Native remains the default player.
-The [ProsperoStore listing](https://homebrew.page/app/PPSA99288/) may receive this
-update later than GitHub; the catalog submission and merge are separate.
+**Version 0.5.30 adds account profiles and provider-list fixes.**
+Choose a profile after sign-in or use **Settings → Account & Services → Profiles**.
+Provider lists now scroll and stay open while toggling. The script-download change
+is a possible fix that needs PS5 confirmation. See the [changelog and linked issue reports](CHANGELOG.md).
+The [ProsperoStore listing](https://homebrew.page/app/PPSA99288/) may receive an
+update later than GitHub; catalog submission and live deployment are separate.
 
 ## Key features
 
 | Feature | What you get |
 | --- | --- |
 | **Easy sign-in** | Scan a QR code with your phone. Your login stays saved between launches. |
-| **Your addons and library** | Load enabled standard addons and saved titles from your primary Nuvio profile, including setups using AIOMetadata and AIOStreams. Add manifests in Settings. |
+| **Account profiles** | Choose, import or create up to six profiles, with separate sources and history. Real-account and cross-device testing remain outstanding. |
+| **Your addons and library** | Load enabled standard addons and saved titles from your selected Nuvio profile, including setups using AIOMetadata and AIOStreams. Add manifests in Settings. |
 | **Provider plugins** | Add raw Nuvio provider repository manifests and enable individual scrapers. Live compatibility needs PS5 testing. |
 | **Browse and search** | Explore addon catalogs, find films and series, and open your saved library. |
-| **Nuvio Sync watch progress** | Resume movies and episodes across Nuvio devices using the same account and primary profile. Progress saved offline syncs when you reconnect. |
+| **Nuvio Sync watch progress** | Resume movies and episodes across Nuvio devices using the same account and selected profile. Progress saved offline syncs when you reconnect. |
 | **Direct and debrid playback** | Play addon links or connect TorBox/Premiumize to resolve cached original files. Prepare links while browsing; peer-to-peer torrents are off by default. |
 | **Clear stream cards** | Compare file size, language, quality, HDR, video codec and audio badges when the addon provides those details. Filter results by addon. |
 | **Artwork made for TV** | Smooth poster carousels, large artwork, gentle transitions and translucent playback controls. |
@@ -48,15 +51,16 @@ update later than GitHub; the catalog submission and merge are separate.
 | **Experimental HDR10** | Native HDR10 output for compatible sources and displays, with an explicit HDR-to-SDR option in Settings. |
 | **Updates from the app** | Check the public release feed in Settings. Verified FFPFSC installation through the bundled helper is experimental; ZIP installs use manual replacement. |
 
-## What changed in 0.5.29
+## What changed in 0.5.30
 
-- Added provider/plugin repositories with individual provider switches, title-ID mapping and cancellable searches.
-- Added PS5 Media Remote/HDMI-CEC navigation and playback controls.
-- Added adjustable Native/EVO read-ahead and prioritized title details.
+- Added multiple account profiles with separate history, progress and source sync ([#4](https://github.com/HandshakeHackin/Nuvio-maxd-releases/issues/4)).
+- Fixed scrolling and selection in long provider menus ([#3](https://github.com/HandshakeHackin/Nuvio-maxd-releases/issues/3)).
+- Added a possible provider-download fix and specific HTTP/network error messages ([#3](https://github.com/HandshakeHackin/Nuvio-maxd-releases/issues/3)).
 
-**Enable plugins:** open **Settings → Addons → Add addon or plugin URL**, add the raw `manifest.json` URL, then select the repository on the **Addons** page to enable providers. Providers start disabled.
-
-**Testing is required.** Some providers need unsupported APIs, extra settings or browser challenges. This may address missing plugin sources, but does not guarantee streams for every title. Native stays the default; VLC remains experimental and its HLS seeking test required a CI rerun. No new native HDR or graphics-driver fix is claimed. See [testing notes](native-app/TESTING-0.5.29.md).
+See the [full changelog](CHANGELOG.md) for testing instructions and limits.
+Individual provider enable switches remain local per profile. Real-account,
+PIN, cross-device and PS5 provider compatibility testing are still needed.
+Native remains the default player. See [testing notes](native-app/TESTING-0.5.30.md).
 
 ## Download and get started
 
@@ -69,8 +73,8 @@ tools work. **Firmware below 9.00 needs testing.** Console feedback so far cover
 
 | Download | Install it this way |
 | --- | --- |
-| [**ZIP folder — PPSA99288.zip**](https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/download/v0.5.29-native-experimental/PPSA99288.zip) | Extract it and place the `PPSA99288/` folder inside a `/homebrew/` folder scanned by ShadowMount+, such as `/data/homebrew/`. |
-| [**FFPFSC image — NuvioMaxd-0.5.29-native.ffpfsc**](https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/download/v0.5.29-native-experimental/NuvioMaxd-0.5.29-native.ffpfsc) | Place the image inside a `/homebrew/` folder on storage scanned by ShadowMount+. |
+| [**ZIP folder — PPSA99288.zip**](https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/download/v0.5.30-native-experimental/PPSA99288.zip) | Extract it and place the `PPSA99288/` folder inside a `/homebrew/` folder scanned by ShadowMount+, such as `/data/homebrew/`. |
+| [**FFPFSC image — NuvioMaxd-0.5.30-native.ffpfsc**](https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/download/v0.5.30-native-experimental/NuvioMaxd-0.5.30-native.ffpfsc) | Place the image inside a `/homebrew/` folder on storage scanned by ShadowMount+. |
 
 Let ShadowMount+ finish scanning, open **Nuvio Max'd**, and scan the sign-in QR
 code with your phone. Configure your addon through your usual Nuvio setup. For cached-file resolution,
@@ -88,7 +92,7 @@ source, checksums and a validation report.
 
 ## Keep your place across devices
 
-Sign in to the **same Nuvio account** and use the **primary profile** on each
+Sign in to the **same Nuvio account** and use the **same selected profile** on each
 device. On your other Nuvio device, select **Nuvio Sync** as the Watch Progress
 source. The PS5 saves and syncs while you watch, and when you pause or stop.
 
@@ -105,8 +109,9 @@ for refresh controls and offline behavior.
   empty AIOMetadata home rows, choppy 1080p HEVC and haze reported in some 4K
   playback. A stream's badges describe its source; they do not guarantee the
   same HDR or audio format at the TV.
-- **Watch Progress supports the primary Nuvio profile.** Guest progress stays on
-  the PS5; secondary profiles and Trakt/Simkl progress sources are not supported.
+- **Watch Progress is scoped to the selected Nuvio profile.** Guest progress stays on
+  the PS5. Real-account and cross-device profile testing remain outstanding;
+  Trakt/Simkl progress sources are not implemented here.
 - **Episode skipping depends on IntroDB coverage.** Missing timings leave the
   episode playing normally.
 

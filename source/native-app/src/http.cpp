@@ -33,6 +33,8 @@ static int on_socket(void*, curl_socket_t s, curlsocktype) {
 #endif
 
 void http_setup_handle(void* curl) {
+	// All clients, including JavaScript providers, must use the console DNS route.
+	curl_easy_setopt(static_cast<CURL*>(curl), CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
 #ifdef PLATFORM_PS5_NATIVE
 	curl_easy_setopt(static_cast<CURL*>(curl), CURLOPT_SOCKOPTFUNCTION, on_socket);
 #else
@@ -91,8 +93,6 @@ static HttpResponse perform(const std::string& url, const std::string* post_body
 	curl_easy_setopt(c, CURLOPT_CONNECTTIMEOUT, 10L);
 	curl_easy_setopt(c, CURLOPT_TIMEOUT, timeout_s);
 	curl_easy_setopt(c, CURLOPT_NOSIGNAL, 1L);
-	// The PS5 has no IPv6 route; don't let an AAAA record fail the connect.
-	curl_easy_setopt(c, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
 	curl_easy_setopt(c, CURLOPT_ERRORBUFFER, errbuf);
 	curl_easy_setopt(c, CURLOPT_WRITEFUNCTION, write_cb);
 	curl_easy_setopt(c, CURLOPT_WRITEDATA, &r.body);

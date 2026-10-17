@@ -75,18 +75,30 @@ bool public_address(const sockaddr *address) {
   }
   return false;
 }
-curl_socket_t open_socket(void *, curlsocktype purpose,
-                          struct curl_sockaddr *a) {
-  if (purpose != CURLSOCKTYPE_IPCXN || !public_address(&a->addr))
-    return CURL_SOCKET_BAD;
-  return socket(a->family, a->socktype, a->protocol);
-}
 struct Transfer {
   Execution *execution;
   std::string body;
   json headers = json::object();
   bool overflow = false;
+  bool blocked_address = false;
 };
+curl_socket_t open_socket(void *opaque, curlsocktype purpose,
+                          struct curl_sockaddr *a) {
+  auto &t = *static_cast<Transfer *>(opaque);
+  if (purpose != CURLSOCKTYPE_IPCXN || !public_address(&a->addr)) {
+    t.blocked_address = true;
+    return CURL_SOCKET_BAD;
+  }
+  return socket(a->family, a->socktype, a->protocol);
+}
+// Never include curl's error buffer: it can contain a signed URL or token.
+std::string transport_error(CURLcode rc, const Transfer &t) {
+  if (t.overflow) return "Provider response exceeds 4 MB";
+  if (t.blocked_address) return "Provider destination is not a public address";
+  if (t.execution->stopped()) return "Provider request cancelled or deadline reached";
+  return "Provider request failed: " + std::string(curl_easy_strerror(rc)) +
+         " (curl " + std::to_string(static_cast<int>(rc)) + ")";
+}
 size_t write_body(char *p, size_t s, size_t n, void *v) {
   try {
 
@@ -174,7 +186,7 @@ json request(Execution &e, json req) {
     auto *c = curl_easy_init();
     if (!c)
       return {{"error", "Could not initialize provider request"}};
-    Transfer t{&e, {}, json::object(), false};
+    Transfer t{&e, {}, json::object(), false, false};
     struct curl_slist *list = nullptr;
     if (headers.is_object())
       for (auto it = headers.begin(); it != headers.end(); ++it)
@@ -195,6 +207,7 @@ json request(Execution &e, json req) {
     curl_easy_setopt(c, CURLOPT_PROXY,
                      ""); // Always validate the actual resolved destination.
     curl_easy_setopt(c, CURLOPT_OPENSOCKETFUNCTION, open_socket);
+    curl_easy_setopt(c, CURLOPT_OPENSOCKETDATA, &t);
     curl_easy_setopt(c, CURLOPT_FOLLOWLOCATION, 0L);
     curl_easy_setopt(c, CURLOPT_NOSIGNAL, 1L);
     curl_easy_setopt(c, CURLOPT_CONNECTTIMEOUT_MS, 5000L);
@@ -230,8 +243,7 @@ json request(Execution &e, json req) {
     curl_slist_free_all(list);
     curl_easy_cleanup(c);
     if (rc != CURLE_OK)
-      return {{"error", t.overflow ? "Provider response exceeds 4 MB"
-                                   : "Provider request failed or timed out"}};
+      return {{"error", transport_error(rc, t)}};
     auto location = jstr(t.headers, "location");
     if (status >= 300 && status < 400 && !location.empty() &&
         jstr(req, "redirect") != "manual") {
@@ -607,7 +619,12 @@ Result streams(const Addon &repository, const std::string &type,
     auto url = resolve_url(repository.transport_url, p.filename);
     auto response = request(e, {{"url", url}});
     if (!jstr(response, "error").empty() || jnum(response, "status") != 200) {
-      out.error = "Could not download provider script";
+      const auto reason = jstr(response, "error");
+      out.error = p.name + ": Could not download provider script (" +
+                  (reason.empty() ? "HTTP " + std::to_string(static_cast<int>(jnum(response, "status"))) : reason) + ")";
+      // Provider identity + status only; never log the URL or request headers.
+      dlog("provider: script download failed id=%s status=%d reason=%s", p.id.c_str(),
+           static_cast<int>(jnum(response, "status")), reason.c_str());
       continue;
     }
     auto encoded = jstr(response, "body");
