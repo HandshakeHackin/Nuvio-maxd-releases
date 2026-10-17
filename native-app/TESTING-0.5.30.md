@@ -1,6 +1,6 @@
-# 0.5.30 profile test build
+# 0.5.30 profiles and provider testing
 
-Not published. Install over the existing app while preserving app data. A backup
+Experimental release. Install over the existing app while preserving app data. A backup
 of the `/download0/nuvio` data folder is useful before migration testing.
 
 ## Changes

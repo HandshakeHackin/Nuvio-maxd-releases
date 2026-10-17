@@ -27,3 +27,5 @@ Individual scraper enable switches stay local to each profile; addon/plugin repo
 69 account/HTTPS/sync tests, provider download/runtime and scrolling tests, rendered UI checks, native compilation and package verification pass. All 412 imports resolve, and all 145 extracted files match the ZIP. This remains an experimental release: PS5 and real-account testing are outstanding. Native remains the default player; EVO and VLC remain optional. No new HDR, decoder, graphics-driver or audio fix is claimed.
 
 Preserve your app data when updating. Downloads include the ZIP, FFPFSC, matching source and verification evidence.
+
+CI note: the optional VLC HLS test and compressed-audio seek check each failed on their initial run, then passed unchanged on rerun. These results are retained in the validation evidence; they do not establish PS5 playback reliability.
