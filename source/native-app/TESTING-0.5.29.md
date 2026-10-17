@@ -1,0 +1,10 @@
+# 0.5.29 test build
+
+- **Provider plugins:** Settings > Addons > Add addon or plugin URL accepts a raw Nuvio provider `manifest.json` as well as standard Stremio addon manifests. On the Addons page, select the repository and turn on individual providers. They start off; enable a small number you use. Open a title to search. Returned direct streams retain their headers and can play with Native, EVO or VLC. Next-episode searches use the same providers. Existing addons and Nuvio addon sync remain supported.
+- **Remote controls:** PS5 Media Remote / HDMI-CEC navigation, confirm/back/menu, play/pause and repeated seek controls. Requires console/TV CEC configuration where applicable; verify on real hardware. Input is suppressed while the system menu covers the app.
+- **Read-ahead:** Settings > Playback offers 30 seconds, 1 minute (default), 2 minutes or 5 minutes for Native/EVO. Takes effect on the next video. Existing memory caps can shorten the buffer, particularly for high-bitrate 4K. VLC retains its own caching policy. Startup does not wait to fill this entire buffer.
+- **Title loading:** A reserved worker prioritizes metadata; leaving/replacing a title cancels its metadata and stream searches. Plugins use separate workers so slow scrapers do not occupy normal addon workers.
+
+Test a normal addon first, then one enabled provider. Test movie and episode IDs, provider filter selection, leaving a search, resume/seek, next-episode matching, pause and shutdown. Provider HTML selectors, cryptography, URL parsing, timers, cancellation and representative real-world script loading are host-tested. Live sites, challenges and PS5 networking still require testing. Some providers need APIs/settings or browser capabilities this initial runtime does not expose; they may fail or return no streams. Provider repositories are third-party code and their availability can change.
+
+This build does not claim universal provider compatibility or a native HDR fix. The draft OpenGL multiple-render-target clear change does not target our single-color video path. Linux/hypervisor work is not a drop-in native-app video driver. Neither was imported into this build.

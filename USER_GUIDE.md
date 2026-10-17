@@ -10,8 +10,8 @@ Sign in with a QR code to load your addons and saved library from your primary
 Nuvio profile. **Watch Progress now uses Nuvio Sync**, so you can pause on the
 PS5 and pick up where you left off on another Nuvio device.
 
-**Current release: [v0.5.28 native experimental](https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/tag/v0.5.28-native-experimental).**
-Download `PPSA99288.zip` or `NuvioMaxd-0.5.28-native.ffpfsc`. The validation report,
+**Current release: [v0.5.29 native experimental](https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/tag/v0.5.29-native-experimental).**
+Download `PPSA99288.zip` or `NuvioMaxd-0.5.29-native.ffpfsc`. The validation report,
 matching source archive and `SHA256SUMS` are included. The development repository
 stays private; the source for each released version is available with its public
 downloads.
@@ -20,20 +20,16 @@ Nuvio Max'd is also available in the
 [ProsperoStore homebrew shop](https://homebrew.page/app/PPSA99288/).
 Find **Nuvio Max'd** in the store to install it, or use the GitHub downloads.
 
-## New in 0.5.28: optional VLC player
+## New in 0.5.29: provider plugins and playback controls
 
-VLC 3.0.24 has been added alongside Native and EVO. Native remains the default.
+1. Open **Settings → Addons → Add addon or plugin URL**.
+2. Enter the repository's raw `manifest.json` URL.
+3. Open the **Addons** page and select the repository.
+4. Enable the providers you want; they start disabled. Open a title to search.
 
-1. Open **Settings → Video → Playback engine**.
-2. Select **VLC 3.0.24 (experimental)**.
-3. Stop and reopen the video to apply the choice.
+Standard Stremio addons remain supported. Plugin repositories are added locally by URL; existing addon/account sync does not automatically import plugin repositories. Some providers need unsupported APIs/settings or browser capabilities. A missing stream can also be caused by title IDs, provider availability or account configuration; plugin support is a possible fix, not a guarantee.
 
-To switch back, select **Nuvio native** in the same menu and reopen the video.
-VLC supports the playback controls, audio tracks, embedded subtitles and decoded PCM audio. It uses the existing HDR output path; this does not resolve the PS5 HDR10 pixel-format rejection.
-
-**VLC needs PS5 testing.** Host tests and native package validation passed, but console playback, 4K performance, audio/video timing and surround output remain unverified. Try ordinary SDR first; compare Native and VLC with the same source, then test pause/resume, seeking, audio and subtitles. Use **Settings → App & Updates → Playback diagnostics** for diagnostics if you encounter problems.
-
-Categorized Settings and the lighting/audio improvements from 0.5.27 are retained. For optical stereo audio testing, keep Surround Sound off.
+Media Remote/HDMI-CEC controls and **Settings → Playback → Read-ahead (Native/EVO)** are new. Memory limits may shorten long buffers. VLC retains its own buffering policy and remains optional under **Settings → Video → Playback engine**. Native stays the default. Test these features on PS5 before relying on them; VLC HLS seeking had an initial CI timeout before passing on rerun. This release does not add a native HDR fix.
 
 ## Included installation reminders from 0.5.20
 
@@ -104,12 +100,12 @@ Let ShadowMount+ finish scanning, then open **Nuvio Max'd**.
 
 ### FFPFSC image
 
-1. Download `NuvioMaxd-0.5.28-native.ffpfsc` and put it in a `/homebrew/` folder
+1. Download `NuvioMaxd-0.5.29-native.ffpfsc` and put it in a `/homebrew/` folder
    on storage that ShadowMount+ scans, just like your other homebrew apps.
    For a USB drive, that might be:
 
    ```text
-   /mnt/usb0/homebrew/NuvioMaxd-0.5.28-native.ffpfsc
+   /mnt/usb0/homebrew/NuvioMaxd-0.5.29-native.ffpfsc
    ```
 
    Leave the image in that folder so ShadowMount+ can identify it automatically.
@@ -249,7 +245,7 @@ This includes the playback changes from 0.5.12:
   Restart the app after changing it. Resolution stays as selected and the player
   shows the accepted refresh rate; unsupported outputs retain 60 Hz.
 
-The public download and updater offer 0.5.28 as an experimental release.
+The public download and updater offer 0.5.29 as an experimental release.
 
 ### Public 0.5.9
 

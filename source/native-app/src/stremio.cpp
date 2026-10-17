@@ -67,20 +67,34 @@ std::string normalize_addon_url(std::string url) {
 }
 
 bool parse_addon(const json& m, const std::string& transport_url, Addon& a) {
-	if (!m.is_object() || jstr(m, "id").empty()) return false;
+	if (!m.is_object()) return false;
+    const bool repository = jobj(m,"scrapers").is_array() && !jstr(m,"name").empty();
+    if (!repository && jstr(m,"id").empty()) return false;
+    a = Addon{};
+    a.provider_repository = repository;
 	a.manifest = m;
 	a.transport_url = transport_url;
 	const size_t query_start = transport_url.find('?');
 	a.query = query_start == std::string::npos ? "" : transport_url.substr(query_start);
 	a.base = transport_url.substr(0, query_start);
 	if (ends_with(lower(a.base), "/manifest.json")) a.base.resize(a.base.size() - 14);
-	a.id = jstr(m, "id");
+	a.id = jstr(m, "id", "provider:" + transport_url);
 	a.name = jstr(m, "name", a.id);
 	a.version = jstr(m, "version");
 	a.description = jstr(m, "description");
 	a.types = str_array(jobj(m, "types"));
 	a.id_prefixes = str_array(jobj(m, "idPrefixes"));
 
+    if (repository) {
+        a.types={"movie","series"};
+        for (const auto& entry : m["scrapers"]) {
+            ProviderScript p; p.id=jstr(entry,"id");p.name=jstr(entry,"name",p.id);p.filename=jstr(entry,"filename");
+            p.types=str_array(jobj(entry,"supportedTypes"));
+            if(!p.id.empty() && !p.filename.empty() && p.filename.size()<2048 && a.providers.size()<256)
+                a.providers.push_back(std::move(p));
+        }
+        return !a.providers.empty();
+    }
 	const json& res = jobj(m, "resources");
 	if (res.is_array()) {
 		for (auto& r : res) {
@@ -139,6 +153,12 @@ bool parse_addon(const json& m, const std::string& transport_url, Addon& a) {
 }
 
 bool Addon::supports(const std::string& resource, const std::string& type, const std::string& id) const {
+    if(provider_repository) {
+        if(resource!="stream") return false;
+        for(const auto& p:providers) if(p.enabled && (p.types.empty() || std::find(p.types.begin(),p.types.end(),type)!=p.types.end() ||
+           (type=="series" && std::find(p.types.begin(),p.types.end(),"tv")!=p.types.end()))) return true;
+        return false;
+    }
 	for (auto& r : resources) {
 		if (r.name != resource) continue;
 		const auto& types_ = r.types.empty() ? types : r.types;
@@ -190,6 +210,11 @@ Meta parse_meta(const json& j) {
 	Meta m;
 	m.id = jstr(j, "id", jstr(j, "imdb_id"));
 	m.imdb_id = jstr(j, "imdb_id", jstr(j, "imdbId"));
+    for(const char* key:{"moviedb_id","tmdb_id","tmdbId"}) {
+        const auto& v=jobj(j,key);
+        auto id=v.is_number_integer()?std::to_string(v.get<long long>()):v.is_string()?v.get<std::string>():"";
+        if(!id.empty() && id!="0" && id.find_first_not_of("0123456789")==std::string::npos){m.tmdb_id=id;break;}
+    }
 	m.type = jstr(j, "type");
 	m.name = jstr(j, "name");
 	m.poster = jstr(j, "poster");

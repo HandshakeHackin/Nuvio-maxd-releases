@@ -42,7 +42,7 @@ COMPILER_RT=${COMPILER_RT:-$("$CC" -print-resource-dir)/lib/linux/libclang_rt.bu
 mkdir -p "$B/obj" "$B/stubs"
 export LLVM_NM=${LLVM_NM:-$("${LLVM_CONFIG:-llvm-config}" --bindir)/llvm-nm}
 FLAGS=(-std=c++20 -O2 -w -DGL_GLEXT_PROTOTYPES=1 -DHAVE_FRIBIDI -DHAVE_WEBP
-	-DPLATFORM_PS5=1 -DPLATFORM_PS5_NATIVE=1 -DHAVE_DHT=1 -DHAVE_UPNP=1 -DMINIUPNP_STATICLIB
+	-DNUVIO_HAVE_PROVIDERS -I"$SDK/target/user/homebrew/include/quickjs" -DPLATFORM_PS5=1 -DPLATFORM_PS5_NATIVE=1 -DHAVE_DHT=1 -DHAVE_UPNP=1 -DMINIUPNP_STATICLIB
 	-I"$HUI/src" -I"$HUI/third_party/stb" -I"$ROOT/ui" -I"$ROOT/gl" -I"$ROOT/src" -I"$ROOT/third_party"
 	-I"$GL/include" -I"$SDK/target/user/homebrew/include")
 EVO="$ROOT/third_party/evo"
@@ -59,7 +59,7 @@ FLAGS+=(-DNUVIO_HAVE_VLC -DNUVIO_VLC_STATIC -I"$VLC_SRC/include")
 
 echo ">> compiling"
 sources=("$ROOT"/ui/*.cpp "$ROOT"/gl/*.cpp "$ROOT/update/core.cpp"
-	"$ROOT/src/nuvio_account.cpp" "$ROOT/src/watch_sync.cpp" "$ROOT/src/connected_services.cpp" "$ROOT/src/connected_preparer.cpp" "$ROOT/src/bidi.cpp" "$ROOT/src/stremio.cpp" "$ROOT/src/http.cpp" "$ROOT/src/util.cpp" "$ROOT/src/tasks.cpp"
+	"$ROOT/src/nuvio_account.cpp" "$ROOT/src/watch_sync.cpp" "$ROOT/src/connected_services.cpp" "$ROOT/src/connected_preparer.cpp" "$ROOT/src/bidi.cpp" "$ROOT/src/stremio.cpp" "$ROOT/src/providers.cpp" "$ROOT/src/http.cpp" "$ROOT/src/util.cpp" "$ROOT/src/tasks.cpp"
 	"$ROOT/src/packet_storage.cpp" "$ROOT/src/diagnostics.cpp" "$ROOT/src/player.cpp" "$ROOT/src/vlc_backend.cpp" "$ROOT/src/netstream.cpp" "$ROOT/src/hwdec_ps5.cpp" "$ROOT/src/yuv_convert.cpp" "$ROOT/src/video_frame.cpp" "$ROOT/src/display_output.cpp"
 	"$ROOT/src/evo_backend.cpp" "$ROOT/src/evo_runtime.cpp"
 	"$ROOT/src/subtitle_renderer.cpp" "$ROOT/src/subtitles.cpp" "$ROOT/src/pcm_out.cpp" "$ROOT/src/bitstream.cpp" "$ROOT"/src/torrent/*.cpp
@@ -147,7 +147,7 @@ read -r -a DEPS <<< "$("$SDK/bin/prospero-pkg-config" --static --libs libcurl li
 	"$B/app_crt.o" "$B/shims.o" "$B/console_curl.o" "$B/ps5_modules.o" "$B/heap.o" "$B/posix_fixes.o" "$B/kernel_mem.o" "$B/hui_runtime_shims.o" \
 	"${objs[@]}" \
 	--start-group \
-	@"$B/vlc-link.rsp" "$GL/lib/libPS5OpenGL.a" "$HB/libdht.a" "$HB/libminiupnpc.a" "$HB/libfribidi.a" "${DEPS[@]}" \
+	@"$B/vlc-link.rsp" "$HB/quickjs/libquickjs.a" "$GL/lib/libPS5OpenGL.a" "$HB/libdht.a" "$HB/libminiupnpc.a" "$HB/libfribidi.a" "${DEPS[@]}" \
 	"$SDK/target/lib/libc++.a" "$SDK/target/lib/libc++abi.a" "$SDK/target/lib/libunwind.a" "$SDK/target/lib/libc.a" \
 	"$COMPILER_RT" \
 	--end-group \
@@ -177,6 +177,10 @@ json.dump(p, open(sys.argv[2], "w"), indent=2)
 PY
 cp "$ROOT/app/sce_sys/icon0.png" "$APP/sce_sys/"
 bash "$BP/tools/validate-assets.sh" "$APP/sce_sys" >/dev/null
+mkdir -p "$APP/providers"
+cp "$ROOT/third_party/provider-runtime/runtime.js" "$APP/providers/"
+mkdir -p "$APP/licenses/provider-runtime"
+cp "$ROOT/third_party/provider-runtime/LICENSES.txt" "$APP/licenses/provider-runtime/"
 mkdir -p "$APP/fonts" "$APP/hui-fonts" "$APP/icons"
 cp "$ROOT"/app/fonts/{Inter-Regular,Inter-SemiBold,Montserrat-Medium,NotoSans-Regular,NotoSans-Bold,NotoNaskhArabicUI-Regular,NotoNaskhArabicUI-Bold,NotoSansThai-Regular,NotoSansCJKsc-Regular}.ttf "$APP/fonts/"
 # the fonts' license texts travel with them

@@ -6,6 +6,7 @@
 #include "release_notes.hpp"
 
 #include "http.h"
+#include "providers.h"
 #include "display_output.h"
 #include "nuvio_account.h"
 #include "qrcodegen.h"
@@ -37,8 +38,17 @@ enum SettingIndex
     kSubLangs,
     kAutoSubs,
     kSubSize,
-    kSubFont, kSubColour, kSubEffect, kSubBackground,
-    kSeek, kShoulderSeek, kCountdown, kReducedMotion, kHighContrast, kDiagnostics, kReleaseNotes,
+    kSubFont,
+    kSubColour,
+    kSubEffect,
+    kSubBackground,
+    kSeek,
+    kShoulderSeek,
+    kCountdown,
+    kReducedMotion,
+    kHighContrast,
+    kDiagnostics,
+    kReleaseNotes,
     kAudioMode,
     kAudioOutput,
     kAudioLangs,
@@ -53,6 +63,7 @@ enum SettingIndex
     kUpdates,
     kExit,
     kConsoleLights,
+    kReadAhead,
     kSettingCount
 };
 
@@ -117,6 +128,9 @@ bool Session::init(const std::string &base_dir, const std::string &data_dir, hui
     dlog("app: Nuvio Max'd %s (native experimental)", nuvio_update::current_version);
     http_init(base_dir_ + "/ca-bundle.crt");
     g_tasks.start(6);
+    provider_tasks_.start(2);
+    if (!providers::initialize(base_dir_ + "/providers/runtime.js"))
+        dlog("providers: runtime unavailable");
     boot_start_ = now_seconds();
     tex_.init(data_dir_ + "/art", renderer_, 6);
     // The app's storage holds the read-ahead: the built-in torrent engine's 6 GB
@@ -162,6 +176,10 @@ void Session::shutdown()
         watch_stop(false);
     player_.close();
     bt::Engine::get().shutdown();
+    *d_cancel_ = true;
+    *d_stream_cancel_ = true;
+    *w_episode_cancel_ = true;
+    provider_tasks_.stop();
     g_tasks.stop();
     tex_.shutdown();
     save_progress();
@@ -192,7 +210,12 @@ void Session::load_prefs()
         prefs_.native_hdr = jbool(j, "native_hdr", true);
         prefs_.evo_player = jstr(j, "playback_engine") == "evo";
         prefs_.vlc_player = jstr(j, "playback_engine") == "vlc";
+        const auto read_ahead = jnum(j, "read_ahead_seconds", 60);
+        prefs_.read_ahead_seconds = (read_ahead == 30 || read_ahead == 60 || read_ahead == 120 || read_ahead == 300)
+                                       ? static_cast<int>(read_ahead) : 60;
         prefs_.user_email = jstr(j, "user_email");
+        if (jobj(j, "provider_enabled").is_object())
+            prefs_.provider_enabled = j["provider_enabled"];
         const json &ex = jobj(j, "extra_addons");
         if (ex.is_array())
             for (const auto &v : ex)
@@ -219,7 +242,9 @@ void Session::save_prefs()
     j["display_refresh"] = prefs_.display_refresh;
     j["native_hdr"] = prefs_.native_hdr;
     j["playback_engine"] = prefs_.vlc_player ? "vlc" : prefs_.evo_player ? "evo" : "native";
+    j["read_ahead_seconds"] = prefs_.read_ahead_seconds;
     j["extra_addons"] = prefs_.extra_addons;
+    j["provider_enabled"] = prefs_.provider_enabled;
     j["user_email"] = prefs_.user_email;
     if (!save_json(data_dir_ + "/settings.json", j))
         say("Could not save settings to " + data_dir_, 5.0, true);
@@ -362,7 +387,12 @@ void Session::load_addons()
             }
             addons_.clear();
             for (const auto &a : r.addons)
-                addons_.push_back(std::make_unique<::Addon>(*a));
+            {
+                auto installed = std::make_unique<::Addon>(*a);
+                for (auto &p : installed->providers)
+                    p.enabled = jbool(jobj(prefs_.provider_enabled, a->transport_url.c_str()), p.id.c_str());
+                addons_.push_back(std::move(installed));
+            }
             if (!r.errors.empty())
                 say(r.errors.front(), 6.0, true);
             if (r.auth_failed)
@@ -454,6 +484,42 @@ void Session::addon_activate(int index)
     if (index < 0 || index >= static_cast<int>(addons_.size()))
         return;
     const std::string url = addons_[static_cast<std::size_t>(index)]->transport_url;
+    auto &selected = *addons_[static_cast<std::size_t>(index)];
+    if (selected.provider_repository)
+    {
+        std::vector<std::string> choices;
+        for (const auto &p : selected.providers)
+            choices.push_back(std::string(p.enabled ? "On: " : "Off: ") + p.name);
+        const int count = static_cast<int>(choices.size());
+        choices.push_back("Remove repository");
+        choices.push_back("Cancel");
+        open_dropdown(selected.name, choices, 0,
+                      [this, url, count](int pick)
+                      {
+                          ::Addon *a = nullptr;
+                          for (auto &candidate : addons_)
+                              if (candidate->transport_url == url)
+                                  a = candidate.get();
+                          if (!a || pick < 0 || pick > count)
+                              return;
+                          if (pick == count)
+                          {
+                              auto &ex = prefs_.extra_addons;
+                              ex.erase(std::remove(ex.begin(), ex.end(), url), ex.end());
+                              prefs_.provider_enabled.erase(url);
+                              save_prefs();
+                              load_addons();
+                              return;
+                          }
+                          auto &p = a->providers[static_cast<size_t>(pick)];
+                          p.enabled = !p.enabled;
+                          prefs_.provider_enabled[url][p.id] = p.enabled;
+                          save_prefs();
+                          refresh_addons();
+                          say(p.name + (p.enabled ? " enabled" : " disabled"));
+                      });
+        return;
+    }
     const auto it = std::find(prefs_.extra_addons.begin(), prefs_.extra_addons.end(), url);
     if (it == prefs_.extra_addons.end())
     {
@@ -485,6 +551,14 @@ void Session::refresh_addons()
         row.name = a->name;
         row.version = a->version.empty() ? "" : "v" + a->version;
         row.description = a->description;
+        if (a->provider_repository)
+        {
+            size_t enabled = 0;
+            for (const auto &p : a->providers)
+                enabled += p.enabled;
+            row.description = "Plugin repository · " + std::to_string(enabled) + " of " +
+                              std::to_string(a->providers.size()) + " providers enabled. Select to manage.";
+        }
         std::vector<std::string> types;
         for (const auto &t : a->types)
             types.push_back(t);
@@ -543,6 +617,9 @@ void Session::refresh_settings()
         "Native HDR10 keeps PQ colour and highlights on a compatible TV. SDR conversion changes the colour range. Applies to the next stream.");
     set(kPlaybackEngine, Kind::value, "Playback engine", prefs_.vlc_player ? "VLC 3.0.24 (experimental)" : prefs_.evo_player ? "EVO Player 0.12.0 (experimental)" : "Nuvio native",
         "Choose the video engine. Applies to the next stream; subtitles and Watch Progress stay available.");
+    set(kReadAhead, Kind::value, "Read-ahead (Native/EVO)", std::to_string(prefs_.read_ahead_seconds) + " s",
+        "How far to buffer ahead. Memory limits may shorten the target. Applies to the next Native/EVO stream; VLC "
+        "manages its own buffer.");
     set(kRefresh, Kind::value, "Display refresh", prefs_.display_refresh == 120 ? "Prefer 120 Hz" : "60 Hz",
         "120 Hz can make 24 fps films feel steadier on a compatible TV. Keeps the selected resolution; uses 60 Hz if unavailable. Close and reopen to apply.");
     set(kAudioMode, Kind::value, "Audio output", prefs_.vlc_player?"PCM (VLC)":prefs_.audio_output_mode=="pcm"?"PCM":prefs_.audio_output_mode=="auto"?"Auto (experimental)":"Bitstream (experimental)",
@@ -576,9 +653,10 @@ void Session::refresh_settings()
         "Use IntroDB episode timings for intros, recaps and credits. Availability varies by show and release.", prefs_.skip_segments);
     set(kCalmBackgrounds, Kind::toggle, "Calmer backgrounds", "", "Keep decorative menu backgrounds still. Video playback stays full quality.", prefs_.calm_backgrounds);
     set(kUiSounds, Kind::toggle, "Interface sounds", "", "A soft sound when you move around, go back or switch page.", prefs_.ui_sounds);
-    set(kAddAddon, Kind::value, "Add addon by URL", "",
-        prefs_.extra_addons.empty() ? "An addon's manifest URL. Remove added addons from the Addons page."
-                                    : std::to_string(prefs_.extra_addons.size()) + " added here.");
+    set(kAddAddon, Kind::value, "Add addon or plugin URL", "",
+        prefs_.extra_addons.empty()
+            ? "A Stremio addon or Nuvio provider manifest URL. Manage providers on the Addons page."
+            : std::to_string(prefs_.extra_addons.size()) + " added here.");
     set(kReload, Kind::action, "Reload addons and catalogs", "", "Fetch every addon and catalog again.");
     const auto update = updater_.status();
     set(kDonation, Kind::action, "Support on Ko-fi", "", "Optional support for development. Scan the QR code with your phone.");
@@ -599,7 +677,7 @@ void Session::refresh_settings()
     group("Video", {kDisplay,kRefresh,kHdr,kPlaybackEngine});
     group("Audio", {kAudioMode,kAudioOutput,kAudioLangs});
     group("Subtitles", {kSubLangs,kAutoSubs,kSubSize,kSubFont,kSubColour,kSubEffect,kSubBackground});
-    group("Playback", {kSeek,kShoulderSeek,kCountdown,kAutoplay,kSkipSegments});
+    group("Playback", {kSeek, kShoulderSeek, kCountdown, kAutoplay, kSkipSegments, kReadAhead});
     group("Appearance & Lighting", {kReducedMotion,kHighContrast,kUiSounds,kCalmBackgrounds,kConsoleLights});
     group("Addons", {kTorrents,kAddAddon,kReload});
     group("App & Updates", {kReleaseNotes,kDiagnostics,kDonation,kInstallSource,kUpdates,kExit});
@@ -685,6 +763,23 @@ void Session::settings_activate(int row)
             prefs_.evo_player=i==1;prefs_.vlc_player=i==2;
             save_prefs(); refresh_settings(); cue(hui::audio::Cue::saved);
         });
+        break;
+    }
+    case kReadAhead:
+    {
+        const std::vector<int> values = {30, 60, 120, 300};
+        const int selected =
+            static_cast<int>(std::find(values.begin(), values.end(), prefs_.read_ahead_seconds) - values.begin());
+        open_dropdown("Read-ahead", {"30 seconds", "1 minute", "2 minutes", "5 minutes"}, selected,
+                      [this, values](int i)
+                      {
+                          if (i < 0 || i >= static_cast<int>(values.size()))
+                              return;
+                          prefs_.read_ahead_seconds = values[i];
+                          save_prefs();
+                          refresh_settings();
+                          cue(hui::audio::Cue::saved);
+                      });
         break;
     }
     case kSubFont: {
@@ -780,13 +875,13 @@ void Session::settings_activate(int row)
             const std::string url = normalize_addon_url(v);
             if (trim(v).empty() || trim(v) == "https://")
                 return;
-            say("Loading addon...");
+            say("Loading addon or plugin repository...");
             bg<std::string>(
                 [url]() {
                     ::Addon a;
                     std::string err;
                     if (!fetch_addon(url, a, err))
-                        return "Could not add the addon: " + err;
+                        return "Could not add the addon or plugin: " + err;
                     return std::string();
                 },
                 [this, url](std::string &err) {
@@ -798,7 +893,7 @@ void Session::settings_activate(int row)
                     if (std::find(prefs_.extra_addons.begin(), prefs_.extra_addons.end(), url) == prefs_.extra_addons.end())
                         prefs_.extra_addons.push_back(url);
                     save_prefs();
-                    say("Addon added");
+                    say("Added. Open Addons to manage it and enable individual providers.", 7.0);
                     load_addons();
                     refresh_settings();
                 });
@@ -1055,6 +1150,7 @@ void Session::update(float dt, const Cursor &cursor)
 {
     (void)dt;
     g_tasks.drain();
+    provider_tasks_.drain();
     update_status();
     if (signed_in() && !nuvio_account_saved())
     {

@@ -52,6 +52,7 @@ public:
 		std::vector<std::string> audio_langs;  // preferred, ISO 639-2
 		// A direct link (not the streaming server): a big file may be
 		// downloaded over several connections (netstream.h).
+		int read_ahead_seconds = 60; // bounded by the existing packet byte budget
 		bool parallel = false;
 		bool surround = false;
 		std::string audio_mode = "pcm"; // experimental passthrough is opt-in

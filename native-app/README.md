@@ -7,7 +7,7 @@ thumbnails, descriptions and watch-progress indicators. Films show their poster
 beside metadata and stream cards. These layouts follow the artwork-focused
 approach in [Stremio-Plus](https://github.com/LoZazaMastro/Stremio-Plus).
 
-This folder contains the Nuvio Max'd source for the **v0.5.28 native experimental
+This folder contains the Nuvio Max'd source for the **v0.5.17 native experimental
 release**. The OpenGL
 interface, addon requests and player run together in one process and are
 packaged as a single FFPFSC image.
@@ -334,3 +334,9 @@ at commit `a4b12fb515a3044f073f4befba0dd90d8244eddd`. Nuvio branding and protoco
 come from [NuvioTVSmart](https://github.com/NuvioMedia/NuvioTVSmart).
 This is an unofficial client. See [LICENSE](LICENSE) and
 [THIRD_PARTY.md](THIRD_PARTY.md) for component details.
+
+## JavaScript provider repositories (0.5.29 test build)
+
+Standard Stremio addons remain supported. Settings > Addons > **Add addon or plugin URL** also accepts a raw Nuvio provider manifest with a `scrapers` list. Select its repository on the Addons page to enable individual providers, then open a title. Providers start disabled and run separately from normal addon requests. Movie/episode IDs are mapped to TMDB through metadata rather than passing IMDb IDs to TMDB scrapers.
+
+The isolated QuickJS runtime includes common HTML, cryptography and URL helpers. Providers requiring unsupported APIs, custom settings or browser challenges may not work. See [testing and limitations](TESTING-0.5.29.md). Console compatibility remains unverified until tested on PS5.

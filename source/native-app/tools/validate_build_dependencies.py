@@ -19,4 +19,7 @@ for line in (gl / 'manifest.sha256').read_text().splitlines():
     assert sha(gl / path) == digest, 'OpenGL SDK file differs: ' + name
 for name, digest in pins['sdk']['coreFileSha256'].items():
     assert sha(sdk / name) == digest, 'Payload SDK core differs: ' + name
+provider = pins['providerRuntime']
+assert sha(root / 'third_party/provider-runtime/runtime.js') == provider['bundleSha256'], 'Provider runtime bundle differs'
+assert sha(root / 'third_party/provider-runtime/package-lock.json') == provider['packageLockSha256'], 'Provider dependency lock differs'
 print(f"Build dependencies: OpenGL {pins['opengl']['version']} and Payload SDK {pins['sdk']['version']} verified")

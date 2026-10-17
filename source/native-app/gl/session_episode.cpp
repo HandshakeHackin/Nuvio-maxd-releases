@@ -1,5 +1,6 @@
 #include "session.hpp"
 #include "http.h"
+#include "providers.h"
 #include <algorithm>
 #include <cmath>
 
@@ -33,25 +34,35 @@ void Session::watch_prefetch_next() {
     const int gen = w_gen_, search = ++w_next_generation_;
     const auto cancel = w_episode_cancel_;
     const auto id = w_next_->id, type = w_item_.type;
-    for (const auto& addon : addons_) {
-        if (!addon->supports("stream", type, id)) continue;
+    std::vector<::Addon> sources;
+    for (const auto &addon : addons_)
+        for (auto source : providers::stream_sources(*addon, type, id))
+            sources.push_back(std::move(source));
+    for (const auto &source : sources)
+    {
         ++w_next_pending_;
-        const auto name = addon->name, url = addon->resource_url("stream", type, id);
-        bg<std::vector<::Stream>>([name, url, cancel] {
-            json result; std::string error;
-            if (!fetch_json(url, result, error, 30, cancel.get())) return std::vector<::Stream>();
-            return parse_streams(result, name);
-        }, [this, gen, search](auto& streams) {
-            if (!watching || gen != w_gen_ || search != w_next_generation_) return;
+        const auto meta = d_meta_;
+        auto work = [source, type, id, meta, cancel]
+        { return providers::fetch(source, type, id, meta, cancel.get()).streams; };
+        auto done = [this, gen, search](auto &streams)
+        {
+            if (!watching || gen != w_gen_ || search != w_next_generation_)
+                return;
             ++w_next_answered_;
-            for (auto& stream : streams) stream.debrid_resolvable = services_.can_resolve(stream);
+            for (auto& stream : streams)
+                stream.debrid_resolvable = services_.can_resolve(stream);
             w_next_streams_.insert(w_next_streams_.end(), streams.begin(), streams.end());
-            if (w_next_answered_ == w_next_pending_) {
+            if (w_next_answered_ == w_next_pending_)
+            {
                 w_next_fetched_ = now_seconds();
                 w_next_pick_ = episode_playback::select_stream(w_next_streams_, w_stream_);
                 dlog("next episode: %zu streams from %d addons", w_next_streams_.size(), w_next_answered_);
             }
-        });
+        };
+        if (source.provider_repository)
+            provider_tasks_.run<std::vector<::Stream>>(work, done);
+        else
+            bg<std::vector<::Stream>>(work, done);
     }
 }
 

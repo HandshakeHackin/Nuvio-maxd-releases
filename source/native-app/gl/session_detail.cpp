@@ -2,6 +2,7 @@
 // streams the addons offer for a film or an episode.
 
 #include "session.hpp"
+#include "providers.h"
 #include "stream_display.hpp"
 
 #include <algorithm>
@@ -80,6 +81,9 @@ void Session::detail_toggle_watched(int index)
 void Session::open_title(const Title &t, const std::string &streams_video)
 {
     detail_preparation_cancel();
+    *d_cancel_ = true;
+    *d_stream_cancel_ = true;
+    d_cancel_ = std::make_shared<std::atomic<bool>>(false);
     const Item *found = nullptr;
     const auto look = [&](const std::vector<Item> &items) {
         if (found)
@@ -138,6 +142,7 @@ void Session::open_title(const Title &t, const std::string &streams_video)
         if (a->supports("meta", it.type, it.id))
             urls.push_back(a->resource_url("meta", it.type, it.id));
     const int gen = d_meta_gen_;
+    const auto cancel = d_cancel_;
     struct Res
     {
         bool ok = false;
@@ -145,13 +150,14 @@ void Session::open_title(const Title &t, const std::string &streams_video)
         std::string error;
     };
     bg<Res>(
-        [urls]() {
+        [urls, cancel]()
+        {
             Res r;
             for (const auto &u : urls)
             {
                 json j;
                 std::string err;
-                if (!fetch_json(u, j, err))
+                if (!fetch_json(u, j, err, 10, cancel.get()))
                 {
                     r.error = err;
                     continue;
@@ -167,7 +173,8 @@ void Session::open_title(const Title &t, const std::string &streams_video)
                 r.error = "no addon has details for this";
             return r;
         },
-        [this, gen](Res &r) {
+        [this, gen](Res &r)
+        {
             if (gen != d_meta_gen_ || !d_open_)
                 return;
             if (!r.ok)
@@ -190,7 +197,8 @@ void Session::open_title(const Title &t, const std::string &streams_video)
             detail_apply_meta();
             if (resume_play_)
                 start_remembered_stream();
-        });
+        },
+        true);
 
     if (!detail.series)
         detail_load_streams(it.id, "Streams"); // a film: its streams right away
@@ -218,6 +226,8 @@ void Session::start_remembered_stream()
 }
 void Session::close_detail()
 {
+    *d_cancel_ = true;
+    *d_stream_cancel_ = true;
     detail_preparation_cancel();
     ++d_gen_;
     ++d_meta_gen_;
@@ -422,6 +432,8 @@ void Session::detail_load_streams(const std::string &video_id, const std::string
                                   const std::vector<::Stream>* prefetched)
 {
     detail_preparation_cancel();
+    *d_stream_cancel_ = true;
+    d_stream_cancel_ = std::make_shared<std::atomic<bool>>(false);
     const int gen = ++d_gen_;
     d_video_id_ = video_id;
     d_stream_heading_ = heading;
@@ -448,12 +460,12 @@ void Session::detail_load_streams(const std::string &video_id, const std::string
     std::string type = d_meta_loaded_ ? d_meta_.type : d_item_.type;
     if (type.empty())
         type = d_item_.type;
-    std::vector<std::pair<std::string, std::string>> sources; // addon name, url
+    std::vector<::Addon> sources;
     for (const auto &a : addons_)
-        if (a->supports("stream", type, video_id))
+        for (auto source : providers::stream_sources(*a, type, video_id))
         {
-            sources.push_back({a->name, a->resource_url("stream", type, video_id)});
-            detail.stream_addons.push_back(a->name);
+            detail.stream_addons.push_back(source.name);
+            sources.push_back(std::move(source));
         }
     d_pending_ = static_cast<int>(sources.size());
     detail.streams_loading = d_pending_ > 0;
@@ -469,38 +481,44 @@ void Session::detail_load_streams(const std::string &video_id, const std::string
     {
         autoplay_pending_ = false;
         detail.streams_status = addons_loading_ ? "Addons are still loading." :
-                                                  "None of your addons provide streams for this. Configure AIOStreams "
-                                                  "in Nuvio, then reload your addons in Settings.";
+                                                  "No enabled addons or plugins provide streams for this title. "
+                                                  "Manage addons and enable providers on the Addons page.";
         changed_ |= kDetail;
         return;
     }
-    detail.streams_status = "Loading streams... (0 of " + std::to_string(sources.size()) + " addons answered)";
+    detail.streams_status = "Loading streams... (0 of " + std::to_string(sources.size()) + " sources answered)";
     for (const auto &s : sources)
     {
-        const std::string name = s.first, url = s.second;
+        const std::string name = s.name;
+        const auto cancel = d_stream_cancel_;
+        const auto meta = d_meta_loaded_ ? d_meta_ : ::Meta{};
         struct Res
         {
             std::vector<::Stream> streams;
             std::string error;
         };
-        bg<Res>(
-            [name, url]() {
-                Res r;
-                json j;
-                if (fetch_json(url, j, r.error, 30))
-                    r.streams = parse_streams(j, name);
-                return r;
-            },
-            [this, gen, name](Res &r) {
-                if (gen != d_gen_)
-                    return;
-                ++d_answered_;
-                if (!r.error.empty())
-                    dlog("streams from %s: %s", name.c_str(), r.error.c_str());
-                for (auto &st : r.streams)
-                    d_found_.push_back(st);
-                detail_refresh_streams();
-            });
+        auto work = [s, type, video_id, meta, cancel]()
+        {
+            auto found = providers::fetch(s, type, video_id, meta, cancel.get());
+            return Res{std::move(found.streams), std::move(found.error)};
+        };
+        auto done = [this, gen, name](Res &r)
+        {
+            if (gen != d_gen_)
+                return;
+            ++d_answered_;
+            if (!r.error.empty())
+                dlog("streams from %s: %s", name.c_str(), r.error.c_str());
+            for (auto &st : r.streams)
+                d_found_.push_back(st);
+            detail_refresh_streams();
+            if (!r.error.empty() && d_streams_.empty())
+                say(name + ": " + r.error, 6.0, true);
+        };
+        if (s.provider_repository)
+            provider_tasks_.run<Res>(work, done);
+        else
+            bg<Res>(work, done);
     }
     changed_ |= kDetail;
 }
@@ -556,7 +574,7 @@ void Session::detail_refresh_streams()
     }
     if (d_answered_ < d_pending_)
         detail.streams_status = "Loading streams... (" + std::to_string(d_answered_) + " of " + std::to_string(d_pending_) +
-                                " addons answered)";
+                                " sources answered)";
     else if (detail.streams.empty())
         detail.streams_status = prefs_.builtin_torrents ? "No streams found. Check your stream addons in Nuvio." :
             "No playable streams returned. Check your addon setup or connect TorBox / Premiumize in Settings > Connected Services.";

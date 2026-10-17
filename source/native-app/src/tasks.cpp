@@ -5,6 +5,8 @@
 Tasks g_tasks;
 
 void Tasks::start(int workers) {
+	stopping_ = false;
+	threads_.emplace_back([this] { worker_loop(true); });
 	for (int i = 0; i < workers; i++) threads_.emplace_back([this] { worker_loop(); });
 }
 
@@ -13,6 +15,7 @@ void Tasks::stop() {
 		std::lock_guard<std::mutex> lock(mutex_);
 		stopping_ = true;
 		work_.clear();
+		foreground_.clear();
 	}
 	cv_.notify_all();
 	for (auto& t : threads_) t.join();
@@ -22,9 +25,15 @@ void Tasks::stop() {
 void Tasks::run(std::function<void()> work) {
 	{
 		std::lock_guard<std::mutex> lock(mutex_);
+		if (stopping_) return;
 		work_.push_back(std::move(work));
 	}
-	cv_.notify_one();
+	cv_.notify_all();
+}
+
+void Tasks::foreground(std::function<void()> fn) {
+	{ std::lock_guard<std::mutex> lock(mutex_); if (stopping_) return; foreground_.push_back(std::move(fn)); }
+	cv_.notify_all();
 }
 
 void Tasks::post(std::function<void()> fn) {
@@ -43,18 +52,19 @@ void Tasks::drain() {
 
 size_t Tasks::pending() const {
 	std::lock_guard<std::mutex> lock(mutex_);
-	return work_.size();
+	return work_.size() + foreground_.size();
 }
 
-void Tasks::worker_loop() {
+void Tasks::worker_loop(bool foreground_only) {
 	while (true) {
 		std::function<void()> job;
 		{
 			std::unique_lock<std::mutex> lock(mutex_);
-			cv_.wait(lock, [this] { return stopping_ || !work_.empty(); });
+			cv_.wait(lock, [this, foreground_only] { return stopping_ || !foreground_.empty() || (!foreground_only && !work_.empty()); });
 			if (stopping_) return;
-			job = std::move(work_.front());
-			work_.pop_front();
+			auto &queue = foreground_.empty() ? work_ : foreground_;
+			job = std::move(queue.front());
+			queue.pop_front();
 		}
 		try {
 			job();

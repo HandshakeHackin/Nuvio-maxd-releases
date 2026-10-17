@@ -23,6 +23,18 @@ jobs:
             sudo apt-get update -qq -o Acquire::Retries=0 -o Acquire::http::Timeout=20 -o Acquire::https::Timeout=20
             sudo apt-get install -y libcurl4-openssl-dev libssl-dev libavcodec-dev libavutil-dev libavformat-dev libswscale-dev libswresample-dev libass-dev libegl1-mesa-dev libgl1-mesa-dev libgl1-mesa-dri pkg-config openssl ffmpeg
           fi
+      - name: Build pinned QuickJS provider test engine
+        run: |
+          mkdir -p "$RUNNER_TEMP/quickjs"
+          curl --fail --location --proto '=https' --tlsv1.2 https://bellard.org/quickjs/quickjs-2026-06-04.tar.xz -o "$RUNNER_TEMP/quickjs/source.tar.xz"
+          python3 - "$RUNNER_TEMP/quickjs/source.tar.xz" <<'PY'
+          import hashlib, json, sys
+          pins = json.load(open('native-app/dependencies.json'))['providerRuntime']
+          assert hashlib.sha256(open(sys.argv[1], 'rb').read()).hexdigest() == pins['sourceSha256']
+          PY
+          tar -xf "$RUNNER_TEMP/quickjs/source.tar.xz" -C "$RUNNER_TEMP/quickjs"
+          make -C "$RUNNER_TEMP/quickjs/quickjs-2026-06-04" -j2 libquickjs.a
+          echo "QUICKJS_DIR=$RUNNER_TEMP/quickjs/quickjs-2026-06-04" >> "$GITHUB_ENV"
       - name: Test account, catalogs, stream cards, navigation, decoder setup and GPU video
         run: bash native-app/tests/run.sh
       - name: Render controller dialogs and update guidance

@@ -18,17 +18,19 @@ public:
 
 	// Runs `work` on a worker thread.
 	void run(std::function<void()> work);
+	void foreground(std::function<void()> work);
 
 	// Queues `fn` for the UI thread (callable from any thread).
 	void post(std::function<void()> fn);
 
 	// Convenience: compute a value on a worker, deliver it on the UI thread.
 	template <typename T>
-	void run(std::function<T()> work, std::function<void(T&)> done) {
-		run([this, work, done]() {
+	void run(std::function<T()> work, std::function<void(T&)> done, bool urgent = false) {
+		auto job = [this, work, done]() {
 			auto value = std::make_shared<T>(work());
 			post([value, done]() { done(*value); });
-		});
+		};
+		if (urgent) foreground(std::move(job)); else run(std::move(job));
 	}
 
 	// Called by the UI thread every frame.
@@ -37,11 +39,11 @@ public:
 	size_t pending() const;
 
 private:
-	void worker_loop();
+	void worker_loop(bool foreground_only = false);
 
 	mutable std::mutex mutex_;
 	std::condition_variable cv_;
-	std::deque<std::function<void()>> work_;
+	std::deque<std::function<void()>> work_, foreground_;
 	std::vector<std::thread> threads_;
 	bool stopping_ = false;
 

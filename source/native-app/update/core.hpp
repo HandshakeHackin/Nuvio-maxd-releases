@@ -10,7 +10,7 @@ using Json = nlohmann::json;
 inline constexpr const char* repository = "HandshakeHackin/Nuvio-maxd-releases";
 inline constexpr const char* feed = "https://api.github.com/repos/HandshakeHackin/Nuvio-maxd-releases/releases?per_page=20";
 inline constexpr const char* title_id = "PPSA99288";
-inline constexpr const char* current_version = "0.5.28";
+inline constexpr const char* current_version = "0.5.29";
 inline constexpr std::uint64_t max_image_bytes = 512ull << 20;
 struct Release { std::string version, tag, url, sha256, notes; std::uint64_t size = 0; };
 bool newer(const std::string& a, const std::string& b);

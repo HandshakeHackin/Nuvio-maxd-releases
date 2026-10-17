@@ -38,7 +38,9 @@
     "coreFileSha256": {
       "target/lib/libkernel.so": "c6579f2614d8b8f905a673f810a1b562f1432b07397d61c11e876b5648428753",
       "target/lib/libSceAgc.so": "5eaf8339858c134e2f28b2abd1a0b52542683be8a75ee0bca16147b0c76f485a",
-      "target/lib/libSceAgcDriver.so": "3b2cbfea6cbeee48f06bbd78a2c1f8b1f0e9066a9759130ff160cb3a8aa8eca6"
+      "target/lib/libSceAgcDriver.so": "3b2cbfea6cbeee48f06bbd78a2c1f8b1f0e9066a9759130ff160cb3a8aa8eca6",
+      "target/user/homebrew/include/quickjs/quickjs.h": "2165f47772af9faee1798999a599fa9de850d1bf0259502dade1c25d4a588316",
+      "target/user/homebrew/lib/quickjs/libquickjs.a": "99772f9e9999479d36151b4df31868f25f8264960432fe8616850a4f0d0a7b6e"
     }
   },
   "mkpfs": {
@@ -139,5 +141,14 @@
     "audio": "decoded PCM, 48 kHz, stereo or 7.1",
     "hardwareVerified": false,
     "nativeMatroskaDemux": true
+  },
+  "providerRuntime": {
+    "engine": "QuickJS",
+    "version": "2026-06-04",
+    "source": "https://bellard.org/quickjs/quickjs-2026-06-04.tar.xz",
+    "sourceSha256": "b376e839b322978313d929fd20663b11ba58b75df5a46c126dd19ea2fa70ad2a",
+    "sdkProvided": true,
+    "bundleSha256": "7075a472f310fc5c7338eab9d4aab087ea5b8fb39b0b9caff1ce29d34bd7496b",
+    "packageLockSha256": "06546b796f59a7b1c8b2218f44d1d17006724779d2bb6c1d093ecd178087398c"
   }
 }

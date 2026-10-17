@@ -220,6 +220,7 @@ class Session
     void sign_in_cancel();
     // The buttons while a stream starts or plays.
     void watch_input(const hui::InputFrame &input);
+    void media_transport(int action, int seek_direction);
     // Asks for a search with the console's keyboard.
     void begin_search();
     void start_search(const std::string &query); // searches for a text already typed
@@ -227,7 +228,8 @@ class Session
     void say(const std::string &message, double seconds = 4.0, bool error = false);
 
   private:
-    template <typename T> void bg(std::function<T()> work, std::function<void(T &)> done);
+    Tasks provider_tasks_;
+    template <typename T> void bg(std::function<T()> work, std::function<void(T &)> done, bool urgent = false);
 
     // persistence and account
     void load_prefs();
@@ -441,6 +443,8 @@ class Session
     std::vector<::Stream> d_found_;   // as the addons sent them
     int d_gen_ = 0, d_pending_ = 0, d_answered_ = 0, d_meta_gen_ = 0;
     bool d_open_ = false;
+    std::shared_ptr<std::atomic<bool>> d_stream_cancel_ = std::make_shared<std::atomic<bool>>(false);
+    std::shared_ptr<std::atomic<bool>> d_cancel_ = std::make_shared<std::atomic<bool>>(false);
     debrid::PreparedLinks::Scope d_prepare_scope_ = 0;
     std::string d_prepare_identity_, d_prepare_addon_;
     double d_prepare_at_ = 0, d_prepare_labels_at_ = 0;
@@ -505,9 +509,9 @@ class Session
     std::vector<std::string> addon_logos_;
 };
 
-template <typename T> void Session::bg(std::function<T()> work, std::function<void(T &)> done)
+template <typename T> void Session::bg(std::function<T()> work, std::function<void(T &)> done, bool urgent)
 {
-    g_tasks.run<T>(std::move(work), std::move(done));
+    g_tasks.run<T>(std::move(work), std::move(done), urgent);
 }
 
 } // namespace sx

@@ -3,6 +3,9 @@ set -euo pipefail
 ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 python3 "$ROOT/tools/validate_display_metadata.py" "$ROOT/app/sce_sys/param.json"
 mkdir -p "$ROOT/test-output"
+bash "$ROOT/tests/tasks.sh"
+bash "$ROOT/tests/media_remote.sh"
+if [ -n "${QUICKJS_DIR:-}" ]; then bash "$ROOT/tests/providers.sh"; fi
 bash "$ROOT/tests/startup.sh"
 bash "$ROOT/tests/lightbar.sh"
 bash "$ROOT/tests/console_lights.sh"

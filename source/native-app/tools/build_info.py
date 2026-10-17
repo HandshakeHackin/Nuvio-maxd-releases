@@ -32,8 +32,11 @@ display_profile = validate_display_metadata(json.loads(
     (Path(sys.argv[1]).parent / 'sce_sys/param.json').read_text()))
 info = {
     'name': "Nuvio Max'd",
-    'version': '0.5.28-native-experimental',
+    'version': '0.5.29-native-experimental',
     'titleId': sys.argv[2],
+    'providerPlugins': {'engine': 'QuickJS 2026-06-04', 'repositories': True, 'perProviderOptIn': True, 'hardwareVerified': False},
+    'mediaRemote': {'hdmiCec': True, 'hardwareVerified': False},
+    'readAheadSeconds': [30, 60, 120, 300],
     'architecture': 'single native OpenGL app with integrated playback',
     'sourceCommit': source_commit,
     'sourceDirty': source_dirty,

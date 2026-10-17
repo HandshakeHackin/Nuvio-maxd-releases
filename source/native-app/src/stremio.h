@@ -32,7 +32,13 @@ struct AddonResource {
 	std::vector<std::string> id_prefixes;  // empty: the manifest's idPrefixes (or any)
 };
 
+struct ProviderScript {
+ std::string id, name, filename; std::vector<std::string> types; bool enabled=false;
+};
+
 struct Addon {
+ bool provider_repository=false;
+ std::vector<ProviderScript> providers;
 	std::string transport_url;  // .../manifest.json
 	std::string base;           // transport_url without /manifest.json
 	std::string query;          // configured addon parameters, retained on resources
@@ -61,7 +67,7 @@ struct Video {
 };
 
 struct Meta {
-	std::string id, type, name, imdb_id;
+	std::string id, type, name, imdb_id, tmdb_id;
 	std::string poster, background, logo;
 	std::string description, release_info, runtime, imdb_rating, year;
 	std::vector<std::string> genres, cast, directors;

@@ -447,6 +447,7 @@ void Session::watch_start(const std::string &url, const std::vector<std::string>
     Player::Options o;
     o.url = url;
     o.parallel = direct;
+    o.read_ahead_seconds = prefs_.read_ahead_seconds;
     o.evo = prefs_.evo_player;
     o.vlc = prefs_.vlc_player;
     o.surround = prefs_.surround_audio;
@@ -987,6 +988,24 @@ void Session::watch_save_progress(bool final, bool force_finished)
 
 // ---------------------------------------------------------------------------
 // The buttons
+
+void Session::media_transport(int action, int direction)
+{
+    if (!watching || launch_open || !w_started_ || typing() || dropdown_open || sign_in_open)
+        return;
+    if (action)
+    {
+        player_.set_paused(action == 1 ? !player_.paused() : action == 3);
+        if (player_.paused())
+            watch_save_progress(false);
+        watch_show_info();
+    }
+    if (direction)
+    {
+        player_.seek(player_.position() + direction * prefs_.seek_seconds);
+        watch_show_info();
+    }
+}
 
 void Session::watch_input(const hui::InputFrame &in)
 {

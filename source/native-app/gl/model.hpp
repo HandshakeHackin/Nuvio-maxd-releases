@@ -58,9 +58,11 @@ struct Prefs : ExperiencePreferences
     std::string display_output = "ps5"; // follow console output; overrides apply on restart
     int display_refresh = 60; // 120 Hz is opt-in, applies on restart; SDK retains 60 if unsupported
     bool native_hdr = true; // PQ sources request HDR10; SDR conversion is an explicit setting
+    int read_ahead_seconds = 60;
     bool vlc_player = false;
     bool evo_player = false; // selectable experimental video engine
     std::vector<std::string> extra_addons;
+    json provider_enabled=json::object();
     std::string auth_key, user_email;
 };
 

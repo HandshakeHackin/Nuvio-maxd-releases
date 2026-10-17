@@ -4,6 +4,7 @@
 
 #include "chrome.hpp"
 #include "console_lights.hpp"
+#include "media_remote.hpp"
 #include "system_status.hpp"
 #include "core/input.hpp"
 #include "dynamic_font.hpp"
@@ -209,7 +210,8 @@ int main()
     shell.start_boot_at(boot_seconds()); // the animation goes on from where the frames above left it
 
     startup_stage("input-ready");
-    InputTracker tracker;
+    InputTracker tracker, remote_tracker;
+    sx::MediaRemote media_remote;
     PadSample samples[64];
 
     std::uint64_t frames = 0;
@@ -238,7 +240,11 @@ int main()
         dt = std::min(dt, 0.05f); // a hitch must not teleport the animations
 
         const std::size_t count = pad.read(samples);
-        const InputFrame input = tracker.update(std::span<const PadSample>(samples, count), static_cast<std::uint64_t>(now));
+        InputFrame input = tracker.update(std::span<const PadSample>(samples, count), static_cast<std::uint64_t>(now));
+        const auto remote = media_remote.poll(static_cast<std::uint64_t>(now));
+        input = sx::merge_remote(
+            input, remote_tracker.update(std::span<const PadSample>(&remote.pad, 1), static_cast<std::uint64_t>(now)));
+        session.media_transport(remote.transport, remote.seek);
         session.poll_presentation_timing();
         session.update(dt, shell.cursor());
         env.clock = session.clock;
@@ -251,6 +257,7 @@ int main()
         session.set_console_light_status(console_lights.status());
         if (session.wants_exit()) {
             console_lights.stop();
+            media_remote.close();
             pad.close();
             session.shutdown();
             if (sx::HdrOutput::active()) {

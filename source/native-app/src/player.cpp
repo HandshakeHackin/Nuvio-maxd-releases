@@ -544,7 +544,7 @@ void Player::demux_run() {
             (audio_stream_>=0 && aq_.duration()<0.5);
         if(queued>=kHardQueueBytes || (queued>=kMaxQueueBytes && !other_starving) ||
             vq_.count()+aq_.count()>65536 ||
-            ((vs<0 || vq_.duration()>60) && (audio_stream_<0 || aq_.duration()>60)) || eof_) {
+            ((vs<0 || vq_.duration()>std::clamp(opts_.read_ahead_seconds,30,300)) && (audio_stream_<0 || aq_.duration()>std::clamp(opts_.read_ahead_seconds,30,300))) || eof_) {
             delay_ms(10); continue;
         }
 
