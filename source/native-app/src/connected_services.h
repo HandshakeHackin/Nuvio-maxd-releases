@@ -1,4 +1,5 @@
-// Connected Services: original cached files from TorBox and Premiumize.
+// Connected Services: original cached files from TorBox and Premiumize, plus the
+// Anime-Skip client ID used only to look up episode timings.
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 #include "stremio.h"
@@ -9,6 +10,7 @@ namespace debrid {
 std::string provider_id(const std::string& value);
 std::string provider_name(const std::string& value);
 bool valid_key(const std::string& key);
+bool valid_client_id(const std::string& id);
 
 struct Credential { std::string key, sync_owner; };
 struct Settings {
@@ -16,6 +18,7 @@ struct Settings {
     int instant_limit = 2; // 0 disables background preparation; at most five candidates.
     std::string preferred;
     Credential torbox, premiumize;
+    Credential animeskip; // never used to resolve streams
     std::string key(const std::string& provider) const;
     std::string active_provider() const;
     bool can_resolve(const ::Stream& stream) const;

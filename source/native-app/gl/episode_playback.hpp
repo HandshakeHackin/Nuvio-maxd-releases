@@ -8,6 +8,34 @@ enum class Kind { recap, intro, credits, post_credits };
 struct Segment { Kind kind; double start, end; };
 std::vector<Segment> parse_segments(const json& data);
 std::string timing_url(const std::vector<std::string>& ids, int season, int episode, bool movie = false);
+
+// Anime timings are recorded against a file length and checked against the
+// playing file, so for anime they take priority over IntroDB, which fills gaps.
+// ARM (arm.haglund.dev) maps anime IDs without a key; AniSkip needs a MyAnimeList
+// ID, Anime-Skip an AniList ID and the user's own client ID. Every request carries
+// only public catalogue IDs.
+struct AnimeSource { std::string source; long id = 0; }; // ARM source name and numeric ID
+struct AnimeIds {
+    long mal = 0, anilist = 0;
+    int episode = 0; // numbered within the anime entry
+    bool any() const { return (mal > 0 || anilist > 0) && episode > 0; }
+};
+std::optional<AnimeSource> anime_source(const std::vector<std::string>& ids);
+std::string arm_ids_url(const AnimeSource& source);
+std::string arm_imdb_url(const std::vector<std::string>& ids);
+AnimeIds parse_arm_ids(const json& data, int episode);
+// Uses a TVDB season only when exactly one TV entry covers it; split seasons
+// cannot be numbered reliably without episode offsets.
+AnimeIds pick_arm_season(const json& data, int season, int episode);
+std::string aniskip_url(long mal, int episode, double duration);
+std::vector<Segment> parse_aniskip(const json& data, double duration);
+inline constexpr const char* animeskip_url = "https://api.anime-skip.com/graphql";
+std::string animeskip_shows_body(long anilist);
+std::vector<std::string> parse_animeskip_shows(const json& data);
+std::string animeskip_episodes_body(const std::string& show);
+std::vector<Segment> parse_animeskip(const json& data, int episode, double duration);
+// One segment per kind; earlier lists win. Post-credit scenes are always kept.
+std::vector<Segment> merge_segments(const std::vector<std::vector<Segment>>& by_priority);
 const Video* next_video(const std::vector<Video>& videos, const std::string& current, std::int64_t now_ms);
 int select_stream(const std::vector<::Stream>& streams, const ::Stream& previous);
 

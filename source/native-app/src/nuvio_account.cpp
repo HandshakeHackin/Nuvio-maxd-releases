@@ -431,7 +431,8 @@ ApiResult api_connected_services_pull() {
         ? "This Nuvio account does not offer provider credential sync yet. Connect a service here."
         : "Connected Services sync is unavailable. Your existing connections are unchanged.");
     json credentials = json::array();
-    for (const auto& r : rows) if (jstr(r, "provider") == "debrid:torbox" || jstr(r, "provider") == "debrid:premiumize")
+    for (const auto& r : rows) if (jstr(r, "provider") == "debrid:torbox" || jstr(r, "provider") == "debrid:premiumize" ||
+                                   jstr(r, "provider") == "animeskip")
         credentials.push_back(json{{"provider", jstr(r, "provider")}, {"credential_json", r.contains("credential_json") ? r["credential_json"] : jobj(r, "credentialJson")}});
     json result{{"owner_id", owner}, {"account_user_id", user_id}, {"credentials", credentials}};
     const json settings_body{{"p_profile_id", 1}, {"p_platform", "tv"}};

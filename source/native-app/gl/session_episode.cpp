@@ -6,20 +6,83 @@
 
 namespace sx {
 void Session::watch_load_segments(int season, int episode) {
+    w_anime_ = {}; w_anime_requested_ = false;
     if (!prefs_.skip_segments) return;
     const bool movie = w_item_.type == "movie";
-    const auto url = episode_playback::timing_url({d_meta_.imdb_id, d_meta_.id, w_item_.id, w_video_id_}, season, episode, movie);
-    if (url.empty()) { dlog("episode timings: no IMDb episode identity"); return; }
+    // Anime addons number each entry from 1; IntroDB needs the IMDb numbering.
+    int imdb_season = season, imdb_episode = episode;
+    for (const auto& v : d_meta_.videos)
+        if (v.id == w_video_id_ && v.imdb_season > 0 && v.imdb_episode > 0) { imdb_season = v.imdb_season; imdb_episode = v.imdb_episode; }
+    const std::vector<std::string> ids{d_meta_.imdb_id, d_meta_.id, w_item_.id, w_video_id_};
+    const auto url = episode_playback::timing_url(ids, imdb_season, imdb_episode, movie);
+    const auto anime = movie || episode <= 0 ? std::nullopt : episode_playback::anime_source(ids);
+    const auto arm = anime ? episode_playback::arm_ids_url(*anime) : movie ? std::string() : episode_playback::arm_imdb_url(ids);
+    if (url.empty() && arm.empty()) { dlog("episode timings: no IMDb or anime episode identity"); return; }
     const int gen = w_gen_;
     const auto cancel = w_episode_cancel_;
-    bg<std::vector<episode_playback::Segment>>([url, cancel] {
-        const auto response = http_get_https(url, 5, cancel.get());
-        if (!response.ok()) return std::vector<episode_playback::Segment>();
-        return episode_playback::parse_segments(json::parse(response.body, nullptr, false));
-    }, [this, gen](auto& segments) {
+    struct Found { std::vector<episode_playback::Segment> segments; episode_playback::AnimeIds anime; };
+    bg<Found>([url, arm, by_id = anime.has_value(), episode, imdb_season, imdb_episode, cancel] {
+        Found found;
+        if (!url.empty()) {
+            const auto response = http_get_https(url, 5, cancel.get());
+            if (response.ok()) found.segments = episode_playback::parse_segments(json::parse(response.body, nullptr, false));
+        }
+        // An IMDb title is looked up as anime only when IntroDB has no intro for it.
+        const bool needed = by_id || std::none_of(found.segments.begin(), found.segments.end(),
+            [](const auto& s) { return s.kind == episode_playback::Kind::intro; });
+        if (arm.empty() || !needed || (cancel && *cancel)) return found;
+        const auto response = http_get_https(arm, 5, cancel.get());
+        if (!response.ok()) return found;
+        const auto data = json::parse(response.body, nullptr, false);
+        found.anime = by_id ? episode_playback::parse_arm_ids(data, episode)
+                            : episode_playback::pick_arm_season(data, imdb_season, imdb_episode);
+        return found;
+    }, [this, gen](auto& found) {
         if (!watching || gen != w_gen_) return;
-        w_episode_.segments = std::move(segments);
-        dlog("episode timings: IntroDB returned %zu segments", w_episode_.segments.size());
+        w_episode_.segments = std::move(found.segments);
+        w_anime_ = found.anime;
+        dlog("episode timings: IntroDB returned %zu segments%s", w_episode_.segments.size(),
+             w_anime_.any() ? "; anime entry found" : "");
+    });
+}
+
+void Session::watch_load_anime_segments(double duration) {
+    w_anime_requested_ = true;
+    const auto anime = w_anime_;
+    const auto client_id = services_.animeskip.key;
+    const int gen = w_gen_;
+    const auto cancel = w_episode_cancel_;
+    struct Found { std::vector<episode_playback::Segment> animeskip, aniskip; };
+    bg<Found>([anime, client_id, duration, cancel] {
+        Found found;
+        if (!client_id.empty() && anime.anilist > 0) {
+            // The client ID goes only to Anime-Skip, over HTTPS without redirects, and is never logged.
+            const std::vector<std::string> headers{"X-Client-ID: " + client_id, "Accept: application/json"};
+            const auto body = episode_playback::animeskip_shows_body(anime.anilist);
+            const auto shows = http_provider_request(episode_playback::animeskip_url, &body, "application/json", headers, cancel.get());
+            if (!shows.ok()) dlog("episode timings: Anime-Skip unavailable (HTTP %ld)", shows.status);
+            else for (const auto& show : episode_playback::parse_animeskip_shows(json::parse(shows.body, nullptr, false))) {
+                if (cancel && *cancel) break;
+                const auto query = episode_playback::animeskip_episodes_body(show);
+                const auto episodes = http_provider_request(episode_playback::animeskip_url, &query, "application/json", headers, cancel.get());
+                if (!episodes.ok()) break;
+                found.animeskip = episode_playback::parse_animeskip(json::parse(episodes.body, nullptr, false), anime.episode, duration);
+                if (!found.animeskip.empty()) break;
+            }
+        }
+        const auto url = episode_playback::aniskip_url(anime.mal, anime.episode, duration);
+        if (!url.empty() && !(cancel && *cancel)) {
+            // AniSkip answers 404 when it has nothing for this episode and length.
+            const auto response = http_get_https(url, 5, cancel.get());
+            if (response.ok()) found.aniskip = episode_playback::parse_aniskip(json::parse(response.body, nullptr, false), duration);
+        }
+        return found;
+    }, [this, gen](auto& found) {
+        if (!watching || gen != w_gen_) return;
+        // Anime timings match this file's length; IntroDB keeps what they lack.
+        w_episode_.segments = episode_playback::merge_segments({found.animeskip, found.aniskip, w_episode_.segments});
+        dlog("episode timings: Anime-Skip returned %zu, AniSkip %zu; %zu segments in use",
+             found.animeskip.size(), found.aniskip.size(), w_episode_.segments.size());
     });
 }
 
@@ -70,6 +133,7 @@ bool Session::watch_episode_update(double now, double position, double duration,
     const double elapsed = now - w_episode_tick_;
     w_episode_tick_ = now;
     if (!w_started_ || duration <= 0) return false;
+    if (w_anime_.any() && !w_anime_requested_) watch_load_anime_segments(duration);
     if (w_next_ && position >= duration * 0.8 && !w_next_requested_) watch_prefetch_next();
     const bool complete = w_next_requested_ && w_next_answered_ >= w_next_pending_;
     const int pick = w_next_pick_;

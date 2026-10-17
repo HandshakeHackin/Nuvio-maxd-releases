@@ -151,6 +151,30 @@ try {
         cfg.clear_synced(); expect(cfg.premiumize.key.empty() && cfg.torbox.key == "torbox-test", "manual credentials erased on sign-out");
         expect(!debrid::import_snapshot(cfg, json{{"credentials", json::array()}}), "unscoped credentials accepted");
     });
+    check("Anime-Skip client ID imports from Nuvio Sync, saves privately and clears on sign-out", [] {
+        auto cfg = settings();
+        const json snapshot{{"owner_id", "owner"}, {"credentials", json::array({json{{"provider", "animeskip"},
+            {"credential_json", R"({"client_id":"anime-skip-test_1"})"}}})}};
+        expect(debrid::import_snapshot(cfg, snapshot) && cfg.animeskip.key == "anime-skip-test_1" && cfg.animeskip.sync_owner == "owner",
+               "Anime-Skip client ID not imported");
+        expect(cfg.torbox.key == "torbox-test" && cfg.active_provider() == "torbox", "Anime-Skip import changed stream resolving");
+        char folder[] = "/tmp/nuvio-animeskip-XXXXXX"; expect(mkdtemp(folder) != nullptr, "temporary folder failed");
+        const std::string path = std::string(folder) + "/connected-services.json";
+        expect(debrid::save(path, cfg), "credential save failed");
+        debrid::Settings restored; expect(debrid::load(path, restored) && restored.animeskip.key == cfg.animeskip.key, "client ID not restored");
+        unlink(path.c_str()); rmdir(folder);
+        cfg.clear_synced(); expect(cfg.animeskip.key.empty() && cfg.torbox.key == "torbox-test", "synced client ID survived sign-out");
+    });
+    check("invalid Anime-Skip client IDs are rejected without touching other connections", [] {
+        auto cfg = settings();
+        expect(!debrid::valid_client_id("") && !debrid::valid_client_id("has space") && !debrid::valid_client_id("a\nb") &&
+               debrid::valid_client_id("ExampleClientId0123456789abcdef"), "client ID validation wrong");
+        const json snapshot{{"owner_id", "owner"}, {"credentials", json::array({
+            json{{"provider", "debrid:torbox"}, {"credential_json", {{"api_key", "replacement"}}}},
+            json{{"provider", "animeskip"}, {"credential_json", {{"client_id", "bad id"}}}}})}};
+        expect(!debrid::import_snapshot(cfg, snapshot) && cfg.torbox.key == "torbox-test" && cfg.animeskip.key.empty(),
+               "invalid client ID import partially applied");
+    });
     check("TorBox QR flow handles pending, approved and expired codes", [] {
         int step = 0;
         debrid::Client client([&](const auto& url, const auto* body, auto&, const auto& headers, auto*) {

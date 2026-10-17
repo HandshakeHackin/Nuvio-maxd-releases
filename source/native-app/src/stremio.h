@@ -64,6 +64,9 @@ std::string normalize_addon_url(std::string url);
 struct Video {
 	std::string id, title, thumbnail, overview, released;
 	int season = 0, episode = 0;
+	// Anime addons such as Kitsu number each entry from 1 and supply the
+	// matching IMDb numbering separately; 0 when not supplied.
+	int imdb_season = 0, imdb_episode = 0;
 };
 
 struct Meta {
