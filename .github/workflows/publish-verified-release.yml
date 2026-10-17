@@ -68,8 +68,8 @@ jobs:
       - name: Verify published asset digests and publish prerelease
         shell: bash
         run: |
-          release_id=$(gh release view "$RELEASE_TAG" --json databaseId --jq .databaseId)
-          gh api "repos/$GH_REPO/releases/$release_id" > release-upload.json
+          release_api=$(gh release view "$RELEASE_TAG" --json apiUrl --jq .apiUrl)
+          gh api "$release_api" > release-upload.json
           python3 - <<'PY'
           import hashlib,json
           from pathlib import Path
