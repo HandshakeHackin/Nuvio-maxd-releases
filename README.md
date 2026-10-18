@@ -7,15 +7,15 @@
 <p align="center"><strong>Your Nuvio library, profiles, addons and watch progress. On PS5.</strong></p>
 
 <p align="center">
-  <a href="https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/download/v0.5.32-native-experimental/PPSA99288.zip"><img src="https://img.shields.io/badge/Download-ZIP_folder-00B8E8?style=for-the-badge" alt="Download the PS5 app as a ZIP folder"></a>
-  <a href="https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/download/v0.5.32-native-experimental/NuvioMaxd-0.5.32-native.ffpfsc"><img src="https://img.shields.io/badge/Download-FFPFSC_image-8B5CF6?style=for-the-badge" alt="Download the PS5 app as an FFPFSC image"></a>
+  <a href="https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/download/v0.5.34-native-experimental/PPSA99288.zip"><img src="https://img.shields.io/badge/Download-ZIP_folder-00B8E8?style=for-the-badge" alt="Download the PS5 app as a ZIP folder"></a>
+  <a href="https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/download/v0.5.34-native-experimental/NuvioMaxd-0.5.34-native.ffpfsc"><img src="https://img.shields.io/badge/Download-FFPFSC_image-8B5CF6?style=for-the-badge" alt="Download the PS5 app as an FFPFSC image"></a>
   <a href="https://prosperostore.net/app/PPSA99288/"><img src="https://img.shields.io/badge/ProsperoStore-Listing-22C55E?style=for-the-badge" alt="View the ProsperoStore listing; check its version before installing"></a>
   <a href="https://ko-fi.com/handshakehackin"><img src="https://img.shields.io/badge/Ko--fi-Support-FF5E5B?style=for-the-badge&logo=kofi&logoColor=white" alt="Optional support on Ko-fi"></a>
 </p>
 
 <p align="center">
-  <strong>Latest published build: 0.5.32 · experimental</strong><br>
-  <a href="https://github.com/HandshakeHackin/Nuvio-maxd-releases/blob/builds/v0.5.32/USER_GUIDE.md">User guide</a> · <a href="https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/tag/v0.5.32-native-experimental">Downloads and release notes</a> · <a href="https://github.com/HandshakeHackin/Nuvio-maxd-releases/issues">Report a problem</a>
+  <strong>Latest published build: 0.5.34 · experimental</strong><br>
+  <a href="https://github.com/HandshakeHackin/Nuvio-maxd-releases/blob/builds/v0.5.34/USER_GUIDE.md">User guide</a> · <a href="https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/tag/v0.5.34-native-experimental">Downloads and release notes</a> · <a href="https://github.com/HandshakeHackin/Nuvio-maxd-releases/issues">Report a problem</a>
 </p>
 
 Bring your Nuvio setup to the big screen. Sign in with your phone, choose a
@@ -23,12 +23,12 @@ profile, browse addon catalogs and your saved library, and keep movie and episod
 progress in sync with your other Nuvio devices. The interface and integrated
 players run directly on the console; you do not need a PC running a companion server.
 
-**0.5.32 brings the new MAX'D family icon and a shutdown crash fix for the in-app updater.**
-If your current version crashes after **Install and close**, install this update
-manually or through the store once it lists 0.5.32. Keep saved app data.
-The fix for [#7](https://github.com/HandshakeHackin/Nuvio-maxd-releases/issues/7)
-needs affected-console confirmation; Hebrew question-mark rendering remains open.
-See the [changelog](CHANGELOG.md) and [testing notes](native-app/TESTING-0.5.32.md).
+**0.5.34 adds playback recovery, safer profile PIN entry and more complete Continue Watching.**
+It includes the Hebrew/redirected-stream improvements from the 0.5.33 test build,
+plus HLS audio-group fixes, torrent recovery and optional VLC updates.
+The reporter confirmed Hebrew and Torrentio display improvements; the new
+buffering/history fixes still need affected-console confirmation.
+See the [changelog](CHANGELOG.md) and [testing guide](native-app/TESTING-0.5.34.md).
 
 ## Library, profiles and sources
 
@@ -107,27 +107,20 @@ not add motion interpolation or guarantee smooth playback.
   authorization headers and stream URLs before sharing logs.
 - **Optional support:** a Ko-fi link and QR code in Settings. Donations are optional.
 
-## What changed in 0.5.32
+## What changed in 0.5.34
 
-- **MAX'D family branding:** matching PS5, GitHub and store artwork, with NUVIO as
-  the edition label and its teal/white/pink-purple palette.
-- **Updater shutdown fix:** a missing episode-task flag could cause a crash before
-  the helper handoff on a fresh launch. The flag is now guarded
-  ([#7](https://github.com/HandshakeHackin/Nuvio-maxd-releases/issues/7)). The crash
-  was reproduced in a host boundary test; PS5 confirmation is pending.
-- **Manual/store installation may be needed once:** an older crashing updater
-  cannot repair itself just by downloading a new image.
+- Hebrew font fallbacks and redirected HLS fixes, carried forward from 0.5.33 testing.
+- Masked in-app numeric profile PIN keypad.
+- HLS audio-group selection and inactive-playlist fixes for Native playback.
+- Full Continue Watching list, corrected resume imports and tracker-outage preservation.
+- Stalled torrent recovery with retained downloaded pieces.
+- Updated optional VLC decoder, live buffering, cancellation and picture-memory handling.
 
-The 0.5.31 provider-download and profile resume fixes are retained; reporters
-confirmed both improvements. Broader provider compatibility remains open in
-[#3](https://github.com/HandshakeHackin/Nuvio-maxd-releases/issues/3). Hebrew
-question-mark rendering in #7 is still under investigation.
-
-Profiles, tracker choices, playback safeguards and other existing features remain
-available with their documented setup/testing limits. Trakt/SIMKL still need
-application credentials; see [tracking setup](native-app/TRACKING-0.5.31.md).
-See the [changelog](CHANGELOG.md), [testing guide](native-app/TESTING-0.5.32.md)
-and [release history](https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases).
+Candidate fixes for [#7](https://github.com/HandshakeHackin/Nuvio-maxd-releases/issues/7)
+require PS5 confirmation. Native remains the default; optional VLC is enabled in
+**Settings → Video → Playback engine**. Existing HDR output limitations remain.
+See the [changelog](CHANGELOG.md), [testing guide](native-app/TESTING-0.5.34.md)
+and [tracking setup](native-app/TRACKING-0.5.31.md).
 
 ## Download and install
 
@@ -138,10 +131,10 @@ Follow the loader's instructions for your firmware. The project targets firmware
 9.00 needs further testing. Homebrew loader compatibility does not establish
 HDR/audio compatibility.
 
-| Published 0.5.32 download | Installation |
+| Published 0.5.34 download | Installation |
 | --- | --- |
-| [**PPSA99288.zip**](https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/download/v0.5.32-native-experimental/PPSA99288.zip) | Extract and copy the complete `PPSA99288/` folder into a location scanned by ShadowMount+, such as `/data/homebrew/`. The executable should be `/data/homebrew/PPSA99288/eboot.bin`, with no extra folder level. |
-| [**NuvioMaxd-0.5.32-native.ffpfsc**](https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/download/v0.5.32-native-experimental/NuvioMaxd-0.5.32-native.ffpfsc) | Place the image in a homebrew folder on storage scanned by ShadowMount+. |
+| [**PPSA99288.zip**](https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/download/v0.5.34-native-experimental/PPSA99288.zip) | Extract and copy the complete `PPSA99288/` folder into a location scanned by ShadowMount+, such as `/data/homebrew/`. The executable should be `/data/homebrew/PPSA99288/eboot.bin`, with no extra folder level. |
+| [**NuvioMaxd-0.5.34-native.ffpfsc**](https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/download/v0.5.34-native-experimental/NuvioMaxd-0.5.34-native.ffpfsc) | Place the image in a homebrew folder on storage scanned by ShadowMount+. |
 
 Use one installation format at a time. Close the app before replacing an image
 or folder, preserve your app data, and let ShadowMount+ finish scanning before
@@ -153,7 +146,7 @@ resume, use the same Nuvio account/profile on each device and select Nuvio Sync
 as the progress source on the other device. Configure addons normally; connect
 TorBox/Premiumize separately if you want their cached-file resolution.
 
-The [published-build user guide](https://github.com/HandshakeHackin/Nuvio-maxd-releases/blob/builds/v0.5.32/USER_GUIDE.md)
+The [published-build user guide](https://github.com/HandshakeHackin/Nuvio-maxd-releases/blob/builds/v0.5.34/USER_GUIDE.md)
 covers controls, setup and troubleshooting. Check the version on the
 [ProsperoStore listing](https://prosperostore.net/app/PPSA99288/): catalog submission,
 maintainer approval and live deployment happen separately from a GitHub release.
@@ -167,8 +160,8 @@ include the complete `provider: script download failed` log line. Shared logs
 must exclude credentials and stream URLs. Please reply to an existing matching
 issue rather than opening a duplicate.
 
-See the published [playback limits](https://github.com/HandshakeHackin/Nuvio-maxd-releases/blob/builds/v0.5.32/source/native-app/PLAYBACK_QUALITY.md)
-and [update guide](https://github.com/HandshakeHackin/Nuvio-maxd-releases/blob/builds/v0.5.32/source/native-app/UPDATING.md).
+See the published [playback limits](https://github.com/HandshakeHackin/Nuvio-maxd-releases/blob/builds/v0.5.34/source/native-app/PLAYBACK_QUALITY.md)
+and [update guide](https://github.com/HandshakeHackin/Nuvio-maxd-releases/blob/builds/v0.5.34/source/native-app/UPDATING.md).
 
 ## Source and credits
 
@@ -177,9 +170,9 @@ affiliated with Nuvio, Stremio or Sony. The project is distributed under the
 [GPL-3.0 license](LICENSE); included components retain their own notices.
 
 Every published release includes its matching source archive. Browse the
-[0.5.32 source](https://github.com/HandshakeHackin/Nuvio-maxd-releases/tree/builds/v0.5.32/source/native-app),
-[build guide](https://github.com/HandshakeHackin/Nuvio-maxd-releases/blob/builds/v0.5.32/source/native-app/README.md)
-and [third-party notices](https://github.com/HandshakeHackin/Nuvio-maxd-releases/blob/builds/v0.5.32/source/native-app/THIRD_PARTY.md).
+[0.5.34 source](https://github.com/HandshakeHackin/Nuvio-maxd-releases/tree/builds/v0.5.34/source/native-app),
+[build guide](https://github.com/HandshakeHackin/Nuvio-maxd-releases/blob/builds/v0.5.34/source/native-app/README.md)
+and [third-party notices](https://github.com/HandshakeHackin/Nuvio-maxd-releases/blob/builds/v0.5.34/source/native-app/THIRD_PARTY.md).
 Versioned delivery branches use `builds/v<VERSION>`. The homepage may describe
 newer local work; the release tag and matching source identify each public build.
 
@@ -189,5 +182,5 @@ integrated player are adapted from
 [Sp9nky's unofficial Stremio port](https://github.com/Sp9nky/unofficial-stremio-ps5-port),
 using [BlackBearReloaded's Prospero UI](https://github.com/blackbearreloaded/ps5-homebrew-ui),
 the credited EVO/VLC and media libraries, and the other components listed in the
-notices. The 0.5.32 playback work also adapts ProsperoTube's scheduler and
+notices. The 0.5.34 playback work also adapts ProsperoTube's scheduler and
 output-lifetime approach with its source and license attribution retained.

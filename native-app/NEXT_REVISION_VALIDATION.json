@@ -1,0 +1,71 @@
+{
+  "status": "staged source only; not released",
+  "date": "2026-10-18",
+  "branch": "staged/next-playback-fixes",
+  "base": "c72df0f",
+  "checks": {
+    "accountProfiles": {
+      "tests": 80,
+      "result": "passed; includes percentage resume, mixed explicit/legacy units and short-video imports"
+    },
+    "trackerContracts": "passed",
+    "episodeFlow": {
+      "tests": 37,
+      "result": "passed"
+    },
+    "gpuPresentation": {
+      "tests": 24,
+      "result": "passed"
+    },
+    "hdrTransitions": {
+      "tests": 10,
+      "result": "passed"
+    },
+    "nativeHttpHls": "passed after restricting inactive-audio discard changes to HLS; HLS/MP4/Matroska playback, audio switching, paused/rapid/backward seeks, EOF/replay, live/redirected HLS, headers, HTML rejection and blocked-read cancellation",
+    "nativeLifecycle": "passed",
+    "optionalVlcHttpHls": "passed with production bridge and host libVLC; includes seeks, EOF/replay, redirects, headers, cancellation",
+    "torrentRecovery": "passed; metadata/read-demand gating, backoff, cancellation and partial data retention",
+    "pictureMemory": "passed; injected map/unmap/release failures, reserve/cap and ownership",
+    "decoderParsers": "passed; production parser extraction with ASan/UBSan; local LeakSanitizer disabled because ptrace unsupported",
+    "profilePin": "passed",
+    "shutdown": "passed",
+    "ps5TargetSyntax": "passed for changed application, decoder module and adaptive/vmem/clock sources; existing VLC input_clock_SetJitter warning",
+    "vendorHashes": "passed",
+    "patchApplication": "five patches apply to the prior patched VLC source tree",
+    "newKernelImports": "sceKernelAvailableFlexibleMemorySize, sceKernelMunmap and sceKernelReleaseDirectMemory present in pinned SDK",
+    "ps5Hardware": "not run",
+    "fullPs5Build": "not run; no installers produced",
+    "continueWatching": "passed with production UI helper; 120 distinct titles, ordering, metadata, guest history, removals and Next Up deduplication",
+    "hlsRenditionGroups": "passed with production Player/FFmpeg/HTTP; compatible initial audio, first picture, incompatible switch rejection; shared-group/audio-only/file compatibility checks",
+    "initialNetworkAttempt": "failed at Matroska seek after EOF with all-format inactive audio discard; narrowed change to HLS and added timeout diagnostics before successful final run; does not establish exact cause of initial timeout",
+    "reporterAcceptance": "pending; exact stream/rendition grouping and missing-title IDs unavailable",
+    "ps5TargetSyntaxFollowup": "passed for player.cpp, watch_sync.cpp, continue_watching.cpp and session_browse.cpp; full PS5 build/hardware not run"
+  },
+  "logs": {
+    "pin.log": "d582249edcd8358d8b85495f02dec9a20a6d71d2d5af10f964c7322141ffa72c",
+    "recovery.log": "7c83afd23ec0ccd8257812fae81afdfcf75d6db789c5c8495e57f11b0f5f5e32",
+    "episode.log": "0e6819be36967bcd8239ee5d4fb28fc62038b252de2f0057bfe4a5c6b42c6223",
+    "hdr.log": "52cd40edd8861a81e52b1998c141aad35f5be86cdc051ec41c18e52854656779",
+    "tracking.log": "e33f311aa2033d201864af87b79e6d203da9bf64f346f510d7ffbe8995126f45",
+    "vlc.log": "5f0aa5860035bf87282d61f4c76f6c7b8ec68caceab742266e10dba6ae73171f",
+    "video.log": "7688818661b8dbe78142b352f039c46ec16c53f3afa1b29851877a50d70407b7",
+    "picture-memory.log": "ccf97ec5c1bc612c70c9804bea1cc8b9490caca928911579380550b628f2936d",
+    "decoder-headers.log": "b4c5fd6225b77776eb5afadbc882073e39445a868259082896acf66ece725715",
+    "lifecycle.log": "4b3fa2572e828326d514a4f341ca42bd51be2d1599314db07f4cd380528bcdf5",
+    "account.log": "6d4f8eb4edd7707e365aefcb1e83e626c4f2ba7830f9860168b24482e98bd1b5",
+    "target-compile.log": "d7760a250a13607606daa687f6075ee7dc48e363ee520576d6ba5b7e39e41b59",
+    "network.log": "7d48483f3016f6e004243a08b12879e4b5c0466ebae3111a5b78e19ae131b7f0",
+    "shutdown.log": "77b6433b79cbf1d66c58e924e03ff74df8f6c89e75eecbc456519d6719c75a69"
+  },
+  "followupLogs": {
+    "hls-before.log": "7df5d69e099b1e93e43a51d5729ab0f2095ba83f5682fc738bc3912743b3046f",
+    "hls-after.log": "9f92c5cad6cf57f1a4e36f5d2b6021d311ef7d969bdfb1bcbe284b686d93ab4b",
+    "history-before.log": "59dc7f6e6deab8337d9a6742ab98efe3aec9d86defc69772b56c0ffaa3503dc3",
+    "history-after.log": "3990633ca6616b5c6cf915a8e8c13fbdf866ee1cb46a53e39fdc3f6e92fd018e",
+    "progress-before.log": "d28a246c332fdc966d585acd4f6b54e47230dfc359eb53ef20b2409ee799475f",
+    "progress-after.log": "a838991536fbb00513e5e0c9fb954f9ab95f433d871e16cf684de47da68167f8",
+    "network-after.log": "47a42052c02ffb43eec674e4928c9c9646472a626a454eb2f4dee2c42c6f5b3c",
+    "network-after-scoped.log": "06a3c872e531e9e247a193e1b44d68b876cf843b69f4a44040adbf5947978dbc",
+    "target-final.log": "04c30746269f0ec413359942def6649ae4a550cc62851389e11229780ee9c147"
+  }
+}

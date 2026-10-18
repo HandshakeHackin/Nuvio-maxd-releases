@@ -161,3 +161,25 @@ release sources and full license texts are included with the test distribution.
 ## JavaScript provider runtime
 
 QuickJS 2026-06-04 (MIT), linked from Payload SDK 0.44, and a pinned browser bundle of cheerio-without-node-native, CryptoJS, whatwg-url, Buffer and their dependencies. Source/build recipe, lockfile, provenance and notices are in `third_party/provider-runtime/`; notices are copied into the app's licenses folder. Provider host integration is implemented locally.
+
+Noto Sans Hebrew (google/fonts, pinned in dependencies.json) is bundled for UI and subtitle fallback under SIL OFL 1.1; see app/fonts/NotoSansHebrew-LICENSE.txt and NotoSansHebrew-NOTICE.txt.
+
+
+### Staged next revision playback updates
+
+The optional VLC integration retains VideoLAN libVLC 3.0.24 and our SDK's shared
+FFmpeg 7 ABI. The console decoder module is updated from
+[ZiZc3/VLC 0.4.5](https://github.com/ZiZc3/VLC/releases/tag/v0.4.5), with selected
+vmem, adaptive buffering/cancellation and input-clock patches. The exact upstream
+commit and all vendor hashes are recorded in `third_party/vlc/UPSTREAM.json`;
+existing VideoLAN and port license notices remain in place.
+
+The blocked-reader torrent recovery and dedicated picture-memory design were
+adapted with reference to
+[Stremio-Plus 0.5.11](https://github.com/LoZazaMastro/Stremio-Plus/releases/tag/0.5.11)
+(GPL-3.0). Completion and tracker-outage behavior follow
+[NuvioTVSmart 1.2.7](https://github.com/NuvioMedia/NuvioTVSmart/releases/tag/1.2.7).
+The HDR packing audit follows
+[ProsperoTV's channel-order correction](https://github.com/blackbearreloaded/ProsperoTV/commit/f984b545).
+These are targeted adaptations to Nuvio's existing integration, not imported app
+frontends. See `dependencies.json` and `NEXT_REVISION.md` for scope and validation.
