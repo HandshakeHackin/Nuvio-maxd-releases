@@ -12,11 +12,12 @@ download repository's publication commit, so it has a different commit ID.
 The development repository stays private; code for released builds is available
 without an account through the matching archives here.
 
-A browsable copy of this branch's released source is in [`source/`](source/README.md).
-This branch contains 0.5.31; `source/source-archive.json` identifies its exact
-development commit and original file hashes. The main and build branches
-retain their respective release versions. GitHub's language statistics count this
-app source, excluding vendored libraries and release-only verification scripts.
+The current release's browsable source is on
+[`builds/v0.5.31/source/`](https://github.com/HandshakeHackin/Nuvio-maxd-releases/tree/builds/v0.5.31/source).
+Its `source-archive.json` identifies the development commit and original hashes.
+This main-page documentation update does not change the older source snapshot
+under main; use the versioned branch or matching release archive to build 0.5.31.
+GitHub's language statistics exclude vendored libraries and release-only scripts.
 
 The project is GPL-3.0-or-later. Components retain their own notices and license
 texts in the source and packaged app. The native UI and player build on
