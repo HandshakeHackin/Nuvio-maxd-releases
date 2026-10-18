@@ -1,0 +1,30 @@
+Nuvio Max'd 0.5.32 experimental release
+Source: 2db91144fac9aa79ca5a879d7d2883c7e77072de
+
+PASS: Matching-source native account/transport and real VLC playback CI.
+PASS: Matching-source PS5 host protocol and packaging tools CI.
+PASS: Fresh-launch shutdown regression; before-fix test crashed with SIGSEGV.
+PASS: 28 updater transaction/feed tests.
+PASS: Native FFPFSC zero errors/warnings; deep extraction and ZIP digests match.
+PASS: Package version 05.000.032, clean source commit, new icon and dependencies.
+PASS: Matching source archive with 681 independently checked file digests.
+
+Two VLC HLS EOF/replay CI attempts failed on the earlier source, and the initial
+VLC job on this source also timed out after reaching the near-end seek. The test could issue its second
+seek before the rewind completed because position() exposes a pending target.
+The final test requires a displayed frame from the rewind epoch before the
+next seek, retaining EOF and playback checks. This did not eliminate every
+CI timeout. The full real-VLC test passed locally; a failed-job CI retry was
+run without changing code. This intermittent HLS EOF/replay behavior remains
+a testing limitation, not a claimed player fix. Final CI evidence is in JSON.
+
+Prior targeted 0.5.31 development evidence is retained only for unchanged
+rendering, HDR, EVO, provider, account and tracker code. Current release CI
+reruns the configured suites. No new real-account acceptance test was run.
+
+Store scanner output is provided separately. Helper approval, payload loader
+and console-lighting notices require maintainer review and are not hidden.
+
+PS5 updater handoff/mount/exit, physical HDR, cadence, receivers and tracker
+cross-device writes remain unverified. Hebrew question marks are not fixed.
+Native remains the default; EVO and VLC are optional experimental players.

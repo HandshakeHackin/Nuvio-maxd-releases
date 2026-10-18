@@ -1,0 +1,50 @@
+## Release scan: PPSA99288
+
+**This app can leave the sandbox.** Review how, below, before listing it.
+
+Archive: 164 entries, 107,963,095 bytes unpacked, sha256 `093b27d8f545ef8264c46fc67659b67001d53b56d2db95f7c2b7bda500c0a975`. Nothing from it was run.
+
+| Level | Finding |
+| --- | --- |
+| warning | `PPSA99288/nuvio-updater.elf` is a payload: code the payload loader runs outside the sandbox (sha256 `dd52828ec76fe2f6f45bb0991ed3aff42639f54af1dddbecd129ba622a19fec6`) |
+| warning | `PPSA99288/eboot.bin` holds the loader's address (127.0.0.1 and its port) as data |
+| warning | `PPSA99288/eboot.bin` names raw memory, flash or disk devices: `/dev/icc` |
+| warning | `PPSA99288/nuvio-updater.elf` is NOT on the approved helper list (sha256 `dd52828ec76fe2f6f45bb0991ed3aff42639f54af1dddbecd129ba622a19fec6`): read its source before listing, then add it to `helpers/approved.json` |
+| notice | `PPSA99288/nuvio-updater.elf`, as a payload: contains the payload SDK's kernel read/write routines; can change a process's credentials (authority ID, capabilities, jail or root directory); names system folders; mentions jailbreak tools or the loader by name |
+| notice | `PPSA99288/eboot.bin` names system folders: `/system/`, `/system_ex/`, `/preinst/` |
+| notice | `PPSA99288/eboot.bin` mentions jailbreak tools or the loader by name: `payload loader`, `ps5-payload` |
+| notice | `PPSA99288/eboot.bin` carries a full table of system call stubs (235), as a statically linked system library does; which ones it uses can't be told |
+
+### `PPSA99288/nuvio-updater.elf` (payload, 8,930,024 bytes)
+
+- Links to: libkernel_web.sprx, libSceLibcInternal.sprx, libSceNet.sprx
+- Imports 204 system function(s)
+  - network: `accept`, `bind`, `connect`, `listen`, `recvfrom`, `send`, `sendto`, `socket`
+  - system state: `ioctl`, `sysctl`
+- Hosts named in URLs: 127.0.0.1, curl.se, github.com
+
+### `PPSA99288/eboot.bin` (title executable, 68,607,147 bytes)
+
+- Links to: libSceAgc, libSceAgcDriver, libSceAudioOut, libSceImeDialog, libSceLibcInternal, libSceNet, libScePad, libSceSysmodule, libSceSystemService, libSceUserService, libSceVideoOut, libSceVideodec2, libkernel
+- Imports 412 system function(s)
+  - makes memory executable: `sceKernelMprotect`
+  - network: `accept`, `bind`, `connect`, `listen`, `recvfrom`, `sceNetConnect`, `sceNetSend`, `sceNetSocket`, `send`, `sendto`, `socket`
+  - starts or controls processes: `sceSystemServiceLoadExec`
+  - system state: `ioctl`, `sysctl`, `sysctlbyname`
+- 235 system call instruction(s) of its own (numbers: 2×1, 7×1, 9×1, 13×1, 14×1, 16×1, 26×1, 41×1, 45×1, 50×1, 51×1, 55×1, 56×1, 57×1, 58×1, 60×1, 61×1, 66×1, 69×1, 70×1, 72×1, 81×1, 82×1, 85×1, 123×1, 132×1, 140×1, 147×1, 148×1, 154×1, 155×1, 160×1, 161×1, 166×1, 169×1, 170×1, 171×1, 175×1, 176×1, 181×1, 191×1, 192×1, 205×1, 207×1, 221×1, 222×1, 225×1, 226×1, 227×1, 228×1, 230×1, 231×1, 241×1, 242×1, 243×1, 244×1, 247×1, 248×1, 250×1, 251×1, 254×1, 255×1, 256×1, 257×1, 274×1, 276×1, 278×1, 279×1, 280×1, 298×1, 299×1, 300×1, 301×1, 302×1, 303×1, 304×1, 305×1, 306×1, 307×1, 308×1, 309×1, 311×1, 312×1, 314×1, 315×1, 316×1, 317×1, 321×1, 335×1, 337×1, 338×1, 339×1, 347×1, 348×1, 349×1, 350×1, 351×1, 352×1, 353×1, 354×1, 355×1, 356×1, 357×1, 358×1, 359×1, 360×1, 361×1, 371×1, 372×1, 373×1, 374×1, 376×1, 377×1, 384×1, 385×1, 386×1, 387×1, 388×1, 389×1, 390×1, 391×1, 394×1, 395×1, 396×1, 397×1, 398×1, 409×1, 410×1, 411×1, 412×1, 413×1, 414×1, 415×1, 424×1, 425×1, 426×1, 427×1, 428×1, 430×1, 431×1, 432×1, 433×1, 436×1, 437×1, 438×1, 439×1, 442×1, 443×1, 444×1, 445×1, 446×1, 447×1, 448×1, 449×1, 450×1, 451×1, 452×1, 453×1, 455×1, 457×1, 458×1, 459×1, 460×1, 461×1, 462×1, 463×1, 464×1, 465×1, 471×1, 472×1, 473×1, 474×1, 477×2, 481×1, 484×1, 485×1, 489×1, 490×1, 491×1, 492×1, 493×1, 494×1, 495×1, 496×1, 497×1, 498×1, 499×1, 500×1, 501×1, 502×1, 503×1, 504×1, 505×1, 506×1, 507×1, 508×1, 509×1, 510×1, 511×1, 512×1, 513×1, 515×1, 516×1, 517×1, 518×1, 519×1, 520×1, 523×1, 524×1, 525×1, 526×1, 527×1, 528×1, 529×1, 530×1, 531×1, 532×1, 533×1, 534×1, 535×1, 536×1, 537×1, 538×1, 539×1, 540×1, 543×1, 544×1, 545×1, 546×1, 547×1, 548×1, 549×1)
+- Hosts named in URLs: api.github.com, api.introdb.app, api.mdblist.com, api.simkl.com, api.torbox.app, api.trakt.tv, cbloomrants.blogspot.com, curl.se, dashif.org, en.wikipedia.org, fgiesen.wordpress.com, github.com and 22 more
+
+### `PPSA99288/sce_module/libc.prx` (module, 1,284,674 bytes)
+
+- Links to: libSceLibcInternalExt, libSceSysmodule, libkernel
+- Imports 102 system function(s); none on the watch list
+
+A scan like this can't prove an app is harmless: code can hide from every check here. It shows what honest code does, in the same way for every release.
+
+warning: /workspace/nuvio-test-0.5.32/PPSA99288.zip: PPSA99288/nuvio-updater.elf is a payload: code the payload loader runs outside the sandbox (sha256 dd52828ec76fe2f6f45bb0991ed3aff42639f54af1dddbecd129ba622a19fec6)
+warning: /workspace/nuvio-test-0.5.32/PPSA99288.zip: PPSA99288/eboot.bin holds the loader's address (127.0.0.1 and its port) as data
+warning: /workspace/nuvio-test-0.5.32/PPSA99288.zip: PPSA99288/eboot.bin names raw memory, flash or disk devices: /dev/icc
+warning: /workspace/nuvio-test-0.5.32/PPSA99288.zip: PPSA99288/nuvio-updater.elf is NOT on the approved helper list (sha256 dd52828ec76fe2f6f45bb0991ed3aff42639f54af1dddbecd129ba622a19fec6): read its source before listing, then add it to helpers/approved.json
+notice: /workspace/nuvio-test-0.5.32/PPSA99288.zip: release scan: this app can leave the sandbox; the full report is in the job summary
+Release scan passed (0 error(s), 4 warning(s), 1 notice(s)).
+Scanned.
