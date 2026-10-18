@@ -10,33 +10,32 @@ Sign in with a QR code to load your addons and saved library from your selected
 Nuvio profile. **Watch Progress now uses Nuvio Sync**, so you can pause on the
 PS5 and pick up where you left off on another Nuvio device.
 
-**Current release: [v0.5.31 native experimental](https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/tag/v0.5.31-native-experimental).**
-Download `PPSA99288.zip` or `NuvioMaxd-0.5.31-native.ffpfsc`. The validation report,
+**Current release: [v0.5.32 native experimental](https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/tag/v0.5.32-native-experimental).**
+Download `PPSA99288.zip` or `NuvioMaxd-0.5.32-native.ffpfsc`. The validation report,
 matching source archive and `SHA256SUMS` are included. The development repository
 stays private; the source for each released version is available with its public
 downloads.
 
 Nuvio Max'd is also available in the
-[ProsperoStore homebrew shop](https://homebrew.page/app/PPSA99288/).
+[ProsperoStore homebrew shop](https://prosperostore.net/app/PPSA99288/).
 Find **Nuvio Max'd** in the store to install it, or use the GitHub downloads.
 
-## New in 0.5.31: Continue Watching and tracker choices
+## New in 0.5.32: icon and updater shutdown fix
 
-Continue Watching can now keep valid entries from a partially unreadable sync
-response. A PS5 socket-mode fix targets provider script downloads failing with
-curl 1. Both changes need confirmation from affected console users; see
-[CHANGELOG.md](CHANGELOG.md) for the linked issues and playback changes.
+The new app icon follows the MAX'D family branding with Nuvio colours. A guarded
+shutdown flag fixes a reproduced crash that could prevent an in-app update from
+reaching its helper. If your current updater crashes, install this release
+manually or from the store once available. Keep existing saved data.
 
-Open **Settings → Account & Services → Tracking accounts** to connect Trakt,
-SIMKL or MDBList. **Library Source** controls saved-library reads; **Watch Progress**
-controls resume/Continue Watching and new playback progress. Both default to
-Nuvio. A tracker becomes selectable after connection; connecting does not change
-these choices. Connections, choices, caches and queued progress stay per profile.
-Trakt/SIMKL need registered application credentials; MDBList takes a personal API
-key. See [tracking setup](native-app/TRACKING-0.5.31.md) for details and limits.
+The automatic installer supports compatible FFPFSC installations through the
+payload loader and ShadowMount+ API; a folder install uses store/manual updates.
+The [testing guide](native-app/TESTING-0.5.32.md) describes PS5 confirmation and
+logs to collect. Hebrew question-mark rendering remains open in
+[issue #7](https://github.com/HandshakeHackin/Nuvio-maxd-releases/issues/7).
 
-Keep selecting the same Nuvio profile on both devices. Stop playback before
-switching profiles or progress sources. See [testing instructions](native-app/TESTING-0.5.31.md).
+Tracker accounts and independent source settings from 0.5.31 remain available.
+Nuvio is default; Trakt/SIMKL require application credentials. See
+[tracking setup](native-app/TRACKING-0.5.31.md).
 
 ## Included installation reminders from 0.5.20
 
@@ -107,12 +106,12 @@ Let ShadowMount+ finish scanning, then open **Nuvio Max'd**.
 
 ### FFPFSC image
 
-1. Download `NuvioMaxd-0.5.31-native.ffpfsc` and put it in a `/homebrew/` folder
+1. Download `NuvioMaxd-0.5.32-native.ffpfsc` and put it in a `/homebrew/` folder
    on storage that ShadowMount+ scans, just like your other homebrew apps.
    For a USB drive, that might be:
 
    ```text
-   /mnt/usb0/homebrew/NuvioMaxd-0.5.31-native.ffpfsc
+   /mnt/usb0/homebrew/NuvioMaxd-0.5.32-native.ffpfsc
    ```
 
    Leave the image in that folder so ShadowMount+ can identify it automatically.
@@ -252,7 +251,7 @@ This includes the playback changes from 0.5.12:
   Restart the app after changing it. Resolution stays as selected and the player
   shows the accepted refresh rate; unsupported outputs retain 60 Hz.
 
-The public download and updater offer 0.5.31 as an experimental release.
+The public download and updater offer 0.5.32 as an experimental release.
 
 ### Public 0.5.9
 

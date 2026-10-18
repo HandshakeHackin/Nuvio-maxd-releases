@@ -110,9 +110,15 @@ int main(int argc, char **argv) try {
         wait(b, [&] { return b.position() > 6.2; });
         std::cerr << "resumed " << b.position() << "\n";
         b.seek(2);
-        wait(b, [&] { return b.position() >= 1.9 && b.position() < 3; });
+        // position() reports the pending target before VLC completes its seek.
+        // Wait for a picture from this epoch before issuing another seek.
+        wait(b, [&] {
+            return b.picture_serial() == b.serial() && b.position() >= 1.9 && b.position() < 3;
+        });
+        std::cerr << "rewound " << b.position() << "\n";
         b.seek(1000000);
         wait(b, [&] { return b.picture_serial() == b.serial() && b.position() >= b.duration() - 2.1; });
+        std::cerr << "near end " << b.position() << " dur " << b.duration() << "\n";
         wait(b, [&] { return b.state() == 3; }, 8);
         b.seek(2);
         wait(b, [&] {

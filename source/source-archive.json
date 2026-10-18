@@ -1,5 +1,5 @@
 {
-  "sourceCommit": "69ac63b84b0a6480c90317ea6d01acb98e570925",
+  "sourceCommit": "2db91144fac9aa79ca5a879d7d2883c7e77072de",
   "version": "0.5.32",
   "fileSha256": {
     ".github/workflows/native-checks.yml": "f43b3abe7f3e04c3e4d8bc5f2d5cfd38e769f98050df4e9908ecea9a4f2451c4",
@@ -327,7 +327,7 @@
     "native-app/tests/video_safety.sh": "08e2fa1fccd8f7ef379bc4cbc88430a948b259dd8046411848a25880c73bcc3d",
     "native-app/tests/video_surface_lifetime_host.cpp": "9942e6e235d02d89176d45994d60e337f8cceb0da3445c7a45ca1ac9027f35cf",
     "native-app/tests/vlc_fixtures.sh": "cce1836e0ed52b04670303dd638e68413efcb28d2e9367314332e4843834351c",
-    "native-app/tests/vlc_host.cpp": "8f34a459943c1ff278c097cb0eef4c823d74875fa3899bff3dfffab37e8f0b26",
+    "native-app/tests/vlc_host.cpp": "73498dd6eb6858c0e7ff328749414590e30955e4a110de803ebdc99fcf5ba686",
     "native-app/tests/vlc_host.sh": "5da0ed6953763fe9ffc0150dc7d7647c901f3b181a45a26e33865501d3860d76",
     "native-app/tests/vlc_network_test.py": "90f01a74b7c2cd9e231c3c134a5973c6c60dcc570052d293a3b393f6cf585a6c",
     "native-app/third_party/evo/INTEGRATION.md": "63bcdfc713e25fb161d87b060471918002582a9cf049c6c1da794abca1c75400",
