@@ -242,7 +242,10 @@ struct VlcBackend::Impl {
             return -1;
         std::lock_guard<std::mutex> guard(s.mutex);
         if (!s.pcm.open(s.options.surround && *channels > 2)) {
-            s.fail("VLC could not open PCM audio");
+            // This callback already owns mutex; fail() would lock it again.
+            s.failure = "VLC could not open PCM audio";
+            s.failed = true;
+            s.cv.notify_all();
             return -1;
         }
         std::memcpy(format, s.pcm.floating_point() ? "FL32" : "S16N", 4);
@@ -637,11 +640,16 @@ const VideoPicture *VlcBackend::present() {
             libvlc_video_set_spu_delay(d_->player, int64_t(d_->options.subtitle_delay * 1000000));
         }
     }
+    // VLC may hold its input lock while invoking our audio/video callbacks.
+    // Read its clock before taking the callback mutex to avoid lock inversion
+    // while a seek is waiting for its first picture.
+    const double playback_time = d_->seek_target >= 0 && d_->player
+        ? double(libvlc_media_player_get_time(d_->player)) / 1000 : 0;
     std::lock_guard<std::mutex> g(d_->mutex);
     if (!d_->ready_valid)
         return nullptr;
     const double target = d_->seek_target;
-    if (target >= 0 && std::abs(double(libvlc_media_player_get_time(d_->player)) / 1000 - target) > 2)
+    if (target >= 0 && std::abs(playback_time - target) > 2)
         return nullptr;
     std::swap(d_->current, d_->ready);
     d_->seek_target = -1;

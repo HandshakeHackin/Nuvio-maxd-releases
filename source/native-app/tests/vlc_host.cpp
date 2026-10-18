@@ -9,11 +9,12 @@
 #include <thread>
 static std::atomic<unsigned> audio_writes{0};
 static std::atomic<int> audio_peak{0};
+static std::atomic<bool> fail_audio_open{false};
 extern "C" int sceAudioOutInit() {
     return 0;
 }
 extern "C" int sceAudioOutOpen(int, int, int, unsigned, unsigned, unsigned) {
-    return 42;
+    return fail_audio_open ? -1 : 42;
 }
 extern "C" int sceAudioOutClose(int) {
     return 0;
@@ -59,6 +60,20 @@ template <class F> void wait(VlcBackend &b, F f, double seconds = 12) {
 }
 int main(int argc, char **argv) try {
     require(argc >= 2, "fixture missing");
+    {
+        fail_audio_open = true;
+        VlcBackend failed;
+        VlcBackend::Options o;
+        o.url = std::string("file://") + argv[1];
+        require(failed.open(o), "audio failure fixture did not open");
+        const double until = now_seconds() + 3;
+        while (now_seconds() < until && failed.state() != 4)
+            std::this_thread::sleep_for(std::chrono::milliseconds(3));
+        require(failed.state() == 4, "audio open failure did not report an error");
+        failed.close();
+        fail_audio_open = false;
+        std::cerr << "VLC audio open failure reports and closes without deadlock\n";
+    }
     for (int i = 1; i < argc; ++i) {
         if (std::string(argv[i]).find("stall-") != std::string::npos) {
             VlcBackend blocked;
