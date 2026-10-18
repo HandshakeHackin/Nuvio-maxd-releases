@@ -24,3 +24,7 @@ PS5 audio/UI/loader/mount boundaries. All 28 updater transaction tests pass.
 Hebrew question-mark rendering remains under investigation. If affected,
 report whether it occurs in UI titles, subtitles or both, with subtitle format
 and a sanitized example. This release does not claim to fix that part of #7.
+
+## VLC verification limitation
+
+The HLS EOF/replay host check timed out intermittently in CI, including after strengthening its seek synchronization. The full test passed locally. A passing retry does not establish that the intermittent behavior is fixed. Native remains the default; please report VLC end-of-stream/replay failures separately.
