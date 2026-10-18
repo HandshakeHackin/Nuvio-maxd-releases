@@ -1,72 +1,41 @@
-Nuvio Max'd 0.5.31 tracker, profile and playback release
+Nuvio Max'd 0.5.31 experimental release
 Source: 56ebf21e1d765f2cb1d62febbd5f22c9e24c7d1f
 
-PASS: 10 HDR transition tests: BGR preference, RGB fallback, refused/busy output,
-post-flip confirmation, timeout, restore and handle lifetime.
-PASS: Production scanout extension: in-place HDR/SDR changes, refusal preserves
-registration, no unregister/re-register fallback, busy queue rejection.
-PASS: Production presentation adapter/scheduler: GPU/CPU flip tracking,
-timestamp guards, repeat suppression, low-rate/120-Hz gating, seek/reset,
-late GPU completion and bounded wait.
-PASS: GPU texture lifetime boundary: completion releases, timeout/failure retains
-fence, repeat submissions and failed-fence creation fallback.
-PASS: 23 software-GL packing/presentation tests, including HDR composition,
-10-bit planes, color conversion, native dimensions and decoder regression.
-PASS: EVO SDR/10-bit B-frame decode, EOF, seeking/reopen, owned planes,
-24/120 cadence, early/late frame handling and Dolby Vision P5 rejection.
-PASS: Bitstream framing/capabilities/fallback/pacing/seek epoch/port recovery.
-PASS: Player lifecycle pause/seek, Auto stereo, failed-bitstream recovery to PCM,
-including a deliberately delayed closed-port transition.
-PASS: Matching source archive: all 678 file hashes independently verified.
+PASS: Release CI — native account/transport and VLC playback jobs.
+PASS: Release CI — PS5 host packaging/protocol tools.
+CI ran against the matching source commit; full job/step evidence is included
+in native-validation.json. Both release workflows passed on their initial run.
 
-The unchanged tracker/account implementation retains the prior 0.5.31 base's
-74 account/HTTP/profile/progress tests, tracker contract fixture results and
-application-registration validation. Those suites were not repeated for this
-playback-only revision.
+PASS: 76 local production account/HTTPS/profile/tracker/progress tests rerun.
+Includes partial snapshots retaining readable resume, offline restart and
+profile isolation, plus pending/cache protection without a partial cloud upload.
+PASS: Read-only real Nuvio account sign-in and profile resume reads matched the
+expected latest cloud entries. No unreadable rows were found in that account;
+it did not reproduce the reporter's exact failure. No history writes/deletes
+were requested. Temporary diagnostic credentials and snapshots were removed.
+PASS: Release-note persistence and user-experience checks rerun.
 
-No physical PS5, HDMI HDR, TV smoothness or receiver-audio acceptance was done
-for this revision. The low-rate scheduler uses ProsperoTube's measured 119.88-Hz
-calibration when Prefer 120 Hz is accepted. Console comparison is required.
-The package contains no Trakt/SIMKL application registration; see TRACKING.md.
-Native remains default; EVO/VLC retain their stated experimental limitations.
-PASS: Native PS5 compile/link: all 412 imports resolved.
-PASS: FFPFSC verification: 0 errors, 0 warnings.
-PASS: Deep extraction and ZIP: all 146 staged files match exactly; safe ZIP
-paths and 0777 permissions. Version 05.000.031 and source commit match.
-See BUILD-VERIFICATION.json for artifact hashes and metadata.
+Targeted development checks retained in this release:
+PASS: Exact pinned SDK curl object reproduces the restricted fcntl/readback
+failure; the replacement handles direct SO_NBIO and genuine setter errors.
+PASS: Native curl socket-open callsite uses the replacement shim.
+PASS: Provider runtime/download pipeline and security/transport checks.
+PASS: HDR transitions, in-place output switching and refusal handling.
+PASS: Presentation adapter/scheduler and GPU texture lifetime boundaries.
+PASS: 23 software-GL packing/rendering checks, EVO integration and PCM recovery.
+The full native release CI reruns the configured regression suites as recorded
+in its job evidence; hardware acceptance is not inferred from these tests.
 
-Provider fix verification in this revision:
-PASS: Actual PS5 SDK curl nonblocking object + production platform shim fixture:
-old sandbox fcntl/readback path fails; direct SO_NBIO enables/disables mode;
-real setter errors remain failures with errno retained.
-PASS: Provider runtime/download pipeline, including execution, relative URLs,
-HTTP/timeout errors, HTTPS downgrade rejection and private-address blocking.
-These are code-path/simulated-sandbox results. Retesting the reporter's PS5
-with Yoru's Repo / 4KHDHub remains necessary. See PROVIDER_DOWNLOAD.md.
-Earlier rendering, HDR, EVO, tracker and audio tests listed above are retained
-from the preceding 0.5.31 revision; they were not repeated for this socket fix.
+PASS: All 412 native imports resolve.
+PASS: FFPFSC container: zero errors and warnings.
+PASS: All 146 files match deep extraction and ZIP; safe paths, 0777 permissions.
+PASS: 05.000.031 version and source commit match package metadata.
+PASS: Source archive: 678 file digests independently verified.
+PASS: Store record validation and full local scan: zero errors.
+Store scan retains four warnings and one notice for the update helper/loader
+and console lighting access; maintainer helper approval remains outstanding.
 
-PASS: Updated native image: direct curl socket shim call verified; all 412 imports
-resolve. Image verification: 0 errors, 0 warnings. All 146 files match deep
-extraction and the safe 0777 ZIP. Source/version/transport metadata verified.
-
-Continue Watching fix verification (source 56ebf21):
-PASS: Reproduced missing secondary-profile resume entry before the change.
-PASS: 76 production account/HTTPS/profile/tracker/progress tests rerun.
-Includes readable entries beside an unsupported row, resume outside Library,
-offline restart, switching to the primary profile without leaking history,
-and partial snapshots preserving cached/pending progress without cloud upload.
-The secondary-profile settings fixture assertion was corrected as well.
-Log: /workspace/nuvio-0.5.31-continue-account-final.log
-No real-account or physical PS5 acceptance for issue #4 has been performed.
-PASS: Experience/release-note persistence checks rerun for the changelog change.
-PASS: Matching source archive independently checked: 678 file digests.
-PASS: Updated native build: all 412 imports resolved.
-PASS: Install image: 0 errors, 0 warnings; 146 staged files match deep
-extraction and safe ZIP; version/source commit and transport metadata match.
-
-PASS: Approved real-account device pairing and four profile-scoped reads.
-Resume title sets exactly match latest cloud progress for each profile.
-No unreadable rows in this account; reporter failure not reproduced live.
-No history writes/deletes; diagnostic session signed out and private data removed.
-PS5 UI/playback acceptance remains pending. See LIVE_ACCOUNT_CHECK.txt.
+PS5 UI, affected-reporter provider/profile cases, physical HDR, output cadence,
+receiver routing, tracker authorization and cross-device writes remain unverified.
+Native is the default; EVO/VLC remain optional. Shared Trakt/SIMKL application
+registrations are not bundled. Read the release notes and testing guide.
