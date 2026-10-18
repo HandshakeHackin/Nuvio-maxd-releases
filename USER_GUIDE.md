@@ -6,12 +6,12 @@ a **ZIP folder** for ProsperoStore and ShadowMountPlus, and an **FFPFSC** image
 for people who prefer image installs. You don't need a PC running a companion
 Nuvio server. This is an unofficial client, previously named Nuvio PS5.
 
-Sign in with a QR code to load your addons and saved library from your primary
+Sign in with a QR code to load your addons and saved library from your selected
 Nuvio profile. **Watch Progress now uses Nuvio Sync**, so you can pause on the
 PS5 and pick up where you left off on another Nuvio device.
 
-**Current release: [v0.5.29 native experimental](https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/tag/v0.5.29-native-experimental).**
-Download `PPSA99288.zip` or `NuvioMaxd-0.5.29-native.ffpfsc`. The validation report,
+**Current release: [v0.5.31 native experimental](https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/tag/v0.5.31-native-experimental).**
+Download `PPSA99288.zip` or `NuvioMaxd-0.5.31-native.ffpfsc`. The validation report,
 matching source archive and `SHA256SUMS` are included. The development repository
 stays private; the source for each released version is available with its public
 downloads.
@@ -20,16 +20,23 @@ Nuvio Max'd is also available in the
 [ProsperoStore homebrew shop](https://homebrew.page/app/PPSA99288/).
 Find **Nuvio Max'd** in the store to install it, or use the GitHub downloads.
 
-## New in 0.5.29: provider plugins and playback controls
+## New in 0.5.31: Continue Watching and tracker choices
 
-1. Open **Settings → Addons → Add addon or plugin URL**.
-2. Enter the repository's raw `manifest.json` URL.
-3. Open the **Addons** page and select the repository.
-4. Enable the providers you want; they start disabled. Open a title to search.
+Continue Watching can now keep valid entries from a partially unreadable sync
+response. A PS5 socket-mode fix targets provider script downloads failing with
+curl 1. Both changes need confirmation from affected console users; see
+[CHANGELOG.md](CHANGELOG.md) for the linked issues and playback changes.
 
-Standard Stremio addons remain supported. Plugin repositories are added locally by URL; existing addon/account sync does not automatically import plugin repositories. Some providers need unsupported APIs/settings or browser capabilities. A missing stream can also be caused by title IDs, provider availability or account configuration; plugin support is a possible fix, not a guarantee.
+Open **Settings → Account & Services → Tracking accounts** to connect Trakt,
+SIMKL or MDBList. **Library Source** controls saved-library reads; **Watch Progress**
+controls resume/Continue Watching and new playback progress. Both default to
+Nuvio. A tracker becomes selectable after connection; connecting does not change
+these choices. Connections, choices, caches and queued progress stay per profile.
+Trakt/SIMKL need registered application credentials; MDBList takes a personal API
+key. See [tracking setup](native-app/TRACKING-0.5.31.md) for details and limits.
 
-Media Remote/HDMI-CEC controls and **Settings → Playback → Read-ahead (Native/EVO)** are new. Memory limits may shorten long buffers. VLC retains its own buffering policy and remains optional under **Settings → Video → Playback engine**. Native stays the default. Test these features on PS5 before relying on them; VLC HLS seeking had an initial CI timeout before passing on rerun. This release does not add a native HDR fix.
+Keep selecting the same Nuvio profile on both devices. Stop playback before
+switching profiles or progress sources. See [testing instructions](native-app/TESTING-0.5.31.md).
 
 ## Included installation reminders from 0.5.20
 
@@ -71,7 +78,7 @@ have cadence judder; 120 Hz is optional where the console/display accept it.
 ## What you can do
 
 - Sign in with your phone and keep your login between launches.
-- Bring in enabled standard addons from your primary profile, including
+- Bring in enabled standard addons from your selected profile, including
   AIOMetadata and AIOStreams, or add a manifest yourself in Settings.
 - Browse addon catalogs, search for titles and open your saved library.
 - Play direct and debrid links using the built-in player. Debrid comes from
@@ -100,12 +107,12 @@ Let ShadowMount+ finish scanning, then open **Nuvio Max'd**.
 
 ### FFPFSC image
 
-1. Download `NuvioMaxd-0.5.29-native.ffpfsc` and put it in a `/homebrew/` folder
+1. Download `NuvioMaxd-0.5.31-native.ffpfsc` and put it in a `/homebrew/` folder
    on storage that ShadowMount+ scans, just like your other homebrew apps.
    For a USB drive, that might be:
 
    ```text
-   /mnt/usb0/homebrew/NuvioMaxd-0.5.29-native.ffpfsc
+   /mnt/usb0/homebrew/NuvioMaxd-0.5.31-native.ffpfsc
    ```
 
    Leave the image in that folder so ShadowMount+ can identify it automatically.
@@ -138,7 +145,7 @@ helper when the public feed and required local services are available.
 ## Set up Watch Progress across devices
 
 1. Sign in to the **same Nuvio account** on the PS5 and your other device.
-2. Use the **primary profile** on both devices. On your other device, choose
+2. Use the **same selected profile** on both devices. On your other device, choose
    **Nuvio Sync** as the Watch Progress source.
 3. Play a movie or episode, then pause or stop it. Open that title on the other
    device and check its resume position.
@@ -149,8 +156,8 @@ minute while you're browsing. For an immediate refresh, open **Settings → Watc
 Progress** and press Cross.
 
 If you're offline, updates are saved on the PS5 and retry when the service is
-available. Guest progress stays on the console. Secondary profiles and
-Trakt/Simkl progress sources aren't supported yet. Playable stream URLs and
+available. Guest progress stays on the console. Profile history and sources sync independently. Individual scraper switches remain local per profile.
+Optional tracker progress sources are available; Nuvio Sync remains the default. See the tracking setup guide. Playable stream URLs and
 playback headers aren't included in progress uploads.
 
 ## Use your debrid addons
@@ -168,7 +175,7 @@ want only direct/debrid results.
 Open **Settings → Connected Services**. Connect TorBox with a
 phone QR code or API key, or Premiumize with an API key. If you've already
 connected them in Nuvio, choose **Import connections from Nuvio Sync** while
-signed in to copy the connections from your primary profile.
+signed in to copy the connections from your selected profile.
 
 Enable **Resolve playable links** and choose **Resolve with** to prefer TorBox
 or Premiumize. AIOStreams results that ask the client to resolve a cached file
@@ -245,7 +252,7 @@ This includes the playback changes from 0.5.12:
   Restart the app after changing it. Resolution stays as selected and the player
   shows the accepted refresh rate; unsupported outputs retain 60 Hz.
 
-The public download and updater offer 0.5.29 as an experimental release.
+The public download and updater offer 0.5.31 as an experimental release.
 
 ### Public 0.5.9
 
