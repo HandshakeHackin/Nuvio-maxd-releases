@@ -203,7 +203,7 @@ void Session::shutdown()
     bt::Engine::get().shutdown();
     *d_cancel_ = true;
     *d_stream_cancel_ = true;
-    *w_episode_cancel_ = true;
+    if (w_episode_cancel_) *w_episode_cancel_ = true;
     provider_tasks_.stop();
     g_tasks.stop();
     tex_.shutdown();

@@ -1,6 +1,6 @@
 # Next build: 0.5.32 — MAX'D family icon
 
-Staged app source: `4a3b225b7a7871e9e1c1fcc7f2a48e09f86bd68b`, source
+Staged app source: `69ac63b84b0a6480c90317ea6d01acb98e570925`, source
 repository branch `builds/v0.5.32`. This public branch stages matching source,
 package metadata and GitHub artwork. No 0.5.32 binary or tag is published yet.
 
@@ -22,3 +22,16 @@ https://prosperostore.net/app/PPSA99288/ before claiming store availability.
 Existing 0.5.31 tags/assets stay immutable. The staged store record still points
 to 0.5.31 until the next verified ZIP/digest exists; do not submit that record as
 0.5.32 before the package is published.
+
+## Updater shutdown candidate fix — issue #7
+
+A fresh-launch shutdown could dereference the null episode-task cancellation
+flag before sending the updater's exit handoff. The optional flag is now guarded.
+The exact production shutdown body crashes in the boundary fixture before the
+fix and passes afterward; all 28 updater transaction tests also pass. The actual
+session source passed a compiler check. PS5 loader/mount/UI acceptance and the
+reporter's exact failure still require confirmation.
+
+See [the investigation](source/native-app/UPDATER_INVESTIGATION_0.5.32.md).
+Install the fixed version through the store or manually once when it is released;
+a downloaded image cannot repair the old updater that is currently running.
