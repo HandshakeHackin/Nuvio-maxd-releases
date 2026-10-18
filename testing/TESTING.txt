@@ -1,0 +1,35 @@
+Nuvio Max'd 0.5.33 — issue-fix test build
+
+This package is for testing; the published release remains 0.5.32.
+Use Native playback when checking the changes below.
+
+Implemented:
+- Bundled Hebrew regular/bold glyph fallbacks for all UI fonts and libass.
+- Correct final URL base after HTTP redirects for relative HLS segment links.
+- Explicit HTML-response error instead of a generic invalid-data failure.
+- Explain the count of raw torrent results hidden while peer-to-peer is off.
+- Per-source result-count diagnostics without stream URLs or request headers.
+
+Check on PS5:
+1. Hebrew titles, descriptions, source labels and mixed Hebrew/English text.
+2. Hebrew embedded and addon subtitles; confirm letters, order and timing.
+3. The previously failing source with Native playback, then another direct file.
+4. Torrentio: if results are hidden, choose peer-to-peer or a configured compatible
+   debrid service intentionally. This build does not enable peer-to-peer itself.
+5. Exit from Settings; retain the updater shutdown fix from 0.5.32.
+
+Known limits:
+- The reporter's HTTP 403, DNS failures, provider timeouts and script HTTP 404
+  errors are separate. This build does not claim to fix all those failures.
+- Invalid-data in the supplied log does not prove HTML or a redirected playlist;
+  the actual affected response is still needed to confirm its exact cause.
+- The optional VLC HLS EOF/replay CI check remains intermittent/failing as seen
+  in 0.5.32. It is not part of the Native transport fix. Prefer Native here.
+- No physical PS5 acceptance is inferred from host tests.
+- Keep saved app data when installing. Automatic updater acceptance still needs
+  a compatible image/loader/ShadowMount setup and a genuine subsequent update.
+
+Report the version, selected player, addon/provider and sanitized error lines.
+Do not include passwords, tokens, request headers or signed stream URLs.
+
+Verification: the full account/transport/render CI job passed for runtime commit 230821c2cc35977f152a781482810c14798f7b7d. The final commit changes only the font-copy and font-hash packaging steps, verified against the extracted image. Final-source full CI was still running when this local test package was finalized; no fully green release CI is claimed. Packaging-tools CI passed on the final commit. Optional VLC HLS EOF/replay checks failed and remain documented.

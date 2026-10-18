@@ -184,7 +184,14 @@ cp "$ROOT/third_party/provider-runtime/runtime.js" "$APP/providers/"
 mkdir -p "$APP/licenses/provider-runtime"
 cp "$ROOT/third_party/provider-runtime/LICENSES.txt" "$APP/licenses/provider-runtime/"
 mkdir -p "$APP/fonts" "$APP/hui-fonts" "$APP/icons"
-cp "$ROOT"/app/fonts/{Inter-Regular,Inter-SemiBold,Montserrat-Medium,NotoSans-Regular,NotoSans-Bold,NotoNaskhArabicUI-Regular,NotoNaskhArabicUI-Bold,NotoSansThai-Regular,NotoSansCJKsc-Regular}.ttf "$APP/fonts/"
+cp "$ROOT"/app/fonts/{Inter-Regular,Inter-SemiBold,Montserrat-Medium,NotoSans-Regular,NotoSans-Bold,NotoSansHebrew-Regular,NotoSansHebrew-Bold,NotoNaskhArabicUI-Regular,NotoNaskhArabicUI-Bold,NotoSansThai-Regular,NotoSansCJKsc-Regular}.ttf "$APP/fonts/"
+# Every pinned fallback must actually ship, not only exist in the source tree.
+python3 - "$ROOT/dependencies.json" "$APP/fonts" <<'PYFONTS'
+import hashlib,json,sys
+from pathlib import Path
+for name,digest in json.load(open(sys.argv[1]))['subtitleStack']['newFonts'].items():
+    assert hashlib.sha256((Path(sys.argv[2])/name).read_bytes()).hexdigest()==digest,name
+PYFONTS
 # the fonts' license texts travel with them
 cp "$ROOT"/app/fonts/*.txt "$APP/fonts/" 2>/dev/null || true
 cp "$HUI"/assets/fonts/*.huifont "$HUI"/assets/fonts/*LICENSE*.txt "$APP/hui-fonts/"

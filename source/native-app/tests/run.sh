@@ -10,6 +10,7 @@ if [ -n "${QUICKJS_DIR:-}" ]; then bash "$ROOT/tests/providers.sh"; fi
 if [ -n "${PS5_PAYLOAD_SDK:-}" ]; then bash "$ROOT/tests/curl_socket.sh"; fi
 bash "$ROOT/tests/startup.sh"
 bash "$ROOT/tests/shutdown.sh"
+bash "$ROOT/tests/hebrew.sh"
 bash "$ROOT/tests/lightbar.sh"
 bash "$ROOT/tests/console_lights.sh"
 bash "$ROOT/tests/settings_categories.sh"

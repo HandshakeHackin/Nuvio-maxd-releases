@@ -292,6 +292,7 @@ void Player::demux_thread() {
 }
 
 void Player::demux_run() {
+	std::string input_url = opts_.url;
 	AVDictionary* dict = nullptr;
 	av_dict_set(&dict, "user_agent", kUserAgent, 0);
 	if (!opts_.headers.empty()) av_dict_set(&dict, "headers", (join(opts_.headers, "\r\n") + "\r\n").c_str(), 0);
@@ -343,8 +344,19 @@ void Player::demux_run() {
 		// the part the server has least of, so it could take minutes before
 		// the first frame. Start from the beginning instead, without them;
 		// the first seek opens the file again with the index (see seek()).
-		std::string magic = torrent ? TorrentStream::of(main_pb_)->peek(4) : NetStream::of(main_pb_)->peek(4);
-		if (opts_.start <= 0 && magic == "\x1A\x45\xDF\xA3") {
+		std::string magic = torrent ? TorrentStream::of(main_pb_)->peek(4) : NetStream::of(main_pb_)->peek(64);
+		if (!torrent) {
+			input_url = NetStream::of(main_pb_)->effective_url();
+			std::string prefix = lower(trim(magic));
+			if (starts_with(prefix, "<!doctype html") || starts_with(prefix, "<html")) {
+				avformat_free_context(fmt_);
+				fmt_ = nullptr;
+				av_dict_free(&dict);
+				if (!abort_) fail("The source returned a web page instead of video. Refresh the source or choose another stream.");
+				return;
+			}
+		}
+		if (opts_.start <= 0 && starts_with(magic, "\x1A\x45\xDF\xA3")) {
 			main_pb_->seekable = 0;
 			quick_ = true;
 			// Matroska describes its tracks in the header, so a short look
@@ -354,7 +366,7 @@ void Player::demux_run() {
 			dlog("player: Matroska, starting without reading the end of the file");
 		}
 	}
-	int r = avformat_open_input(&fmt_, opts_.url.c_str(), nullptr, &dict);
+	int r = avformat_open_input(&fmt_, input_url.c_str(), nullptr, &dict);
 	av_dict_free(&dict);
 	if (r < 0) {
 		fmt_ = nullptr;  // freed by avformat_open_input on failure

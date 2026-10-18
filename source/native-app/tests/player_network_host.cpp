@@ -77,6 +77,18 @@ int main(int argc,char** argv) try {
         p.close();
         std::cout<<"Matroska seek: refused inline seek safely reopens with pause/audio preserved\n";
     }
+    {
+        Player p;Player::Options o;o.url=base+"/watch";o.headers={"X-Playback-Test: required"};p.open(o);
+        run_until(p,[&]{return !p.buffering() && p.position()>2.2;});p.close();
+        std::cout<<"Redirected HLS: extensionless entry, relative segments and request headers passed\n";
+    }
+    {
+        Player p;Player::Options o;o.url=base+"/html-error";p.open(o);
+        const double deadline=now_seconds()+5;
+        while(p.state()!=Player::State::Failed && now_seconds()<deadline)std::this_thread::sleep_for(std::chrono::milliseconds(5));
+        require(p.state()==Player::State::Failed && p.error().find("web page")!=std::string::npos,"HTML response was not identified");p.close();
+        std::cout<<"Non-media HTML: actionable error instead of demux failure passed\n";
+    }
     std::atomic<bool> stop{false}, pending{false};std::string error;
     auto* pb=NetStream::open_avio(base+"/stall-read",{},&stop,&error);
     require(pb!=nullptr,"stalled stream could not open");

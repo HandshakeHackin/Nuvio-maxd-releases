@@ -161,3 +161,5 @@ release sources and full license texts are included with the test distribution.
 ## JavaScript provider runtime
 
 QuickJS 2026-06-04 (MIT), linked from Payload SDK 0.44, and a pinned browser bundle of cheerio-without-node-native, CryptoJS, whatwg-url, Buffer and their dependencies. Source/build recipe, lockfile, provenance and notices are in `third_party/provider-runtime/`; notices are copied into the app's licenses folder. Provider host integration is implemented locally.
+
+Noto Sans Hebrew (google/fonts, pinned in dependencies.json) is bundled for UI and subtitle fallback under SIL OFL 1.1; see app/fonts/NotoSansHebrew-LICENSE.txt and NotoSansHebrew-NOTICE.txt.

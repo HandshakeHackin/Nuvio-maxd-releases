@@ -111,7 +111,9 @@
     "fontProvider": "bundled fonts; no system font provider",
     "newFonts": {
       "NotoSansCJKsc-Regular.ttf": "3012a9b63f5eca3e3b38f23a1be5ed504675e394abf8e7a4fa981506582c04aa",
-      "NotoSansThai-Regular.ttf": "404ddfb5ed0aaa6b6ec8a85700d682978992062d67da93903967b56cbd9a4acc"
+      "NotoSansThai-Regular.ttf": "404ddfb5ed0aaa6b6ec8a85700d682978992062d67da93903967b56cbd9a4acc",
+      "NotoSansHebrew-Regular.ttf": "5fb2e1fc38c242d64f9fc5f77e026473f288b9791762d80df98a3ec762d5bbdf",
+      "NotoSansHebrew-Bold.ttf": "2aea024b57ba381f7ce84547e35fa4b39ef75d824284ce632a204eb61756f531"
     },
     "cjkPreparation": {
       "sourceCommit": "f8d157532fbfaeda587e826d4cd5b21a49186f7c",
@@ -119,6 +121,20 @@
       "sourceSha256": "990c807e79c25662a5a9ecf7f971baeb2bf2eab9a559e5ecf15cdfdb8561d21f",
       "fontTools": "4.61.1",
       "weight": 400
+    },
+    "hebrewPreparation": {
+      "repository": "google/fonts",
+      "commit": "8b0a1d0f5983c89bc2b93f1b5fb55f9e252744b5",
+      "sourcePath": "ofl/notosanshebrew/NotoSansHebrew[wdth,wght].ttf",
+      "sourceSha256": "7ef36a2c3593758cdb622e1bdef4f84523e92fbc3ccc667438dd80ff54c2de88",
+      "fontTools": "4.61.1",
+      "axes": {
+        "wdth": 100,
+        "wght": [
+          400,
+          700
+        ]
+      }
     }
   },
   "experimentalHdrDriver": {

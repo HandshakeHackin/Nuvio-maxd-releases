@@ -1,6 +1,6 @@
 """Real HLS/custom-AVIO and first Matroska seek regression on local HTTP."""
 from pathlib import Path
-import http.server,threading,subprocess,functools,time,re
+import http.server,threading,subprocess,functools,time,re,shutil
 root=Path(__file__).resolve().parent.parent
 fixtures=root/'test-output/player-network'
 (fixtures/'captions.srt').write_text('1\n00:00:01,000 --> 00:00:11,000\nEmbedded captions\n')
@@ -8,11 +8,21 @@ subprocess.run(['ffmpeg','-hide_banner','-loglevel','error','-y','-f','lavfi','-
 subprocess.run(['ffmpeg','-hide_banner','-loglevel','error','-y','-i',str(fixtures/'fixture.mp4'),'-map','0','-c','copy','-c:s','srt',str(fixtures/'fixture.mkv')],check=True)
 subprocess.run(['ffmpeg','-hide_banner','-loglevel','error','-y','-i',str(fixtures/'fixture.mp4'),'-map','0:v','-map','0:a:0','-c','copy','-f','hls','-hls_time','2','-hls_playlist_type','vod',str(fixtures/'fixture.m3u8')],check=True)
 (fixtures/'live.m3u8').write_text((fixtures/'fixture.m3u8').read_text().replace('#EXT-X-PLAYLIST-TYPE:VOD\n','').replace('#EXT-X-ENDLIST\n',''))
+nested=fixtures/'nested';nested.mkdir(exist_ok=True)
+for f in fixtures.iterdir():
+    if f.is_file():shutil.copyfile(f,nested/f.name)
 requests=[]
 class Handler(http.server.SimpleHTTPRequestHandler):
     def log_message(self,*args): pass
     def do_GET(self):
         requests.append(self.path)
+        if self.path=='/watch':
+            self.send_response(302);self.send_header('Location','/nested/fixture.m3u8');self.end_headers();return
+        if self.path.startswith('/nested/') and self.headers.get('X-Playback-Test')!='required':
+            self.send_error(403);return
+        if self.path=='/html-error':
+            data=b'<!DOCTYPE html><html><body>Source login required</body></html>'
+            self.send_response(200);self.send_header('Content-Type','text/html');self.send_header('Content-Length',str(len(data)));self.end_headers();self.wfile.write(data);return
         if self.path=='/stall-headers':
             time.sleep(1)
             self.send_response(200);self.send_header('Content-Length','0');self.end_headers()
@@ -47,6 +57,7 @@ try:
         print(e.stdout,flush=True);print(e.stderr,flush=True);raise
     print(result.stdout);print(result.stderr)
     assert result.returncode==0,'production player/network fixture failed'
+    assert any(p.startswith('/nested/') and p.endswith('.ts') for p in requests),'redirected HLS did not preserve its playlist base'
     assert len({p for p in requests if p.endswith('.ts')})>=3,'did not cross HLS segment boundaries'
     assert (result.stdout+result.stderr).count('player: seek reopen')==1,'expected only the deliberately refused Matroska seek to reopen'
     print('HLS crossed multiple custom-AVIO segments; MP4/Matroska seek stayed in the open session.')

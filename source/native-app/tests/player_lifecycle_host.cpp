@@ -46,6 +46,7 @@ AVIOContext* NetStream::open_avio(const std::string&,const std::vector<std::stri
 void NetStream::close_avio(AVIOContext**){}
 std::string NetStream::peek(size_t){return "";}
 std::string NetStream::failure(){return "";}
+std::string NetStream::effective_url(){return "";}
 #endif
 AVIOContext* TorrentStream::open_avio(const std::string&,const std::atomic<bool>*,std::string*){return nullptr;}
 bool TorrentStream::is_ours(AVIOContext*){return false;}

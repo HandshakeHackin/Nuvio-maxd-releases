@@ -1,0 +1,5 @@
+Noto Sans Hebrew — SIL Open Font License 1.1. See NotoSansHebrew-LICENSE.txt.
+Source: google/fonts commit 8b0a1d0f5983c89bc2b93f1b5fb55f9e252744b5
+ofl/notosanshebrew/NotoSansHebrew[wdth,wght].ttf
+Source SHA-256: 7ef36a2c3593758cdb622e1bdef4f84523e92fbc3ccc667438dd80ff54c2de88
+Static instances made with fontTools 4.61.1, wdth=100 and wght=400/700.

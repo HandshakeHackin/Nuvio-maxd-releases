@@ -6,8 +6,9 @@ namespace sx {
 inline bool should_show_release_notes(std::string_view seen, std::string_view current) {
     return !current.empty() && seen != current;
 }
-inline constexpr std::array<const char*,2> release_note_items = {
-    "New MAX'D family app icon with Nuvio teal, white and pink/purple colours.",
-    "Fixed a shutdown crash that could cancel an in-app update before any playback."
+inline constexpr std::array<const char*,3> release_note_items = {
+    "Hebrew text now has bundled font fallbacks for menus, titles and subtitles.",
+    "Fixed relative HLS segment links after a stream redirects to another address.",
+    "Clearer errors for web pages returned as video and hidden torrent results."
 };
 }
