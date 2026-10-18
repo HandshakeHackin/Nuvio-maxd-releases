@@ -1,13 +1,11 @@
 # ProsperoStore listing
 
-Release: [0.5.32-native-experimental](https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/tag/v0.5.32-native-experimental).
+[0.5.32 is published on GitHub](https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/tag/v0.5.32-native-experimental). The verified catalog update is pushed to `HandshakeHackin:update-nuvio-maxd-0.5.32`.
 
-The catalog proposal uses the release's immutable ZIP/digest and the matching
-MAX'D icon pinned to its tag. Tagged/package contentVersion is 05.000.032.
-This update adds the MAX'D family icon and updater shutdown candidate fix.
-See [CHANGELOG.md](../CHANGELOG.md) and [testing notes](../native-app/TESTING-0.5.32.md).
+**Pull request creation is blocked:** GitHub returned HTTP 403, `Resource not accessible by integration`, through both API connections. No store submission or deployment is claimed.
 
-The catalog update is submitted after publishing and verifying the assets.
-The submission outcome will be linked here. A submitted or merged PR is separate
-from deployment; check the [live store](https://prosperostore.net/app/PPSA99288/).
-Catalog: https://github.com/darkxex/ps5-homebrew-catalog
+[Open the prepared catalog pull request](https://github.com/darkxex/ps5-homebrew-catalog/compare/main...HandshakeHackin:ps5-homebrew-catalog:update-nuvio-maxd-0.5.32?expand=1&title=Update+Nuvio+Max%27d+to+0.5.32&body=Update+Nuvio+Max%27d+to+0.5.32-native-experimental.%0A%0A-+Add+the+new+MAX%27D+Nuvio+icon%2C+pinned+to+the+matching+immutable+release+tag.%0A-+Fix+a+reproduced+fresh-launch+shutdown+null+dereference+that+could+prevent+the+updater%27s+exit+handoff%3B+candidate+fix+for+HandshakeHackin%2FNuvio-maxd-releases%237%2C+pending+PS5+confirmation.%0A-+Raise+packaged+and+tagged+contentVersion+to+05.000.032%3B+retain+title+ID+PPSA99288.%0A%0AValidation%3A+catalog+record+check%2C+full+local+ZIP+scan+%280+errors%3B+4+warnings+and+1+notice%29%2C+native+image%2FZIP+deep+hash+verification%2C+matching+source+archive+and+release+CI.+The+ZIP+hash+is+checked+against+the+published+GitHub+asset+digest.%0A%0AThe+scanner+reports+the+updater+helper%2Fpayload+loader+and+%2Fdev%2Ficc+console-lighting+access.+Helper+approval+remains+maintainer-owned%3B+this+PR+does+not+alter+helpers%2Fapproved.json.+Native+is+the+default%3B+EVO%2FVLC+and+HDR+remain+experimental.+The+Hebrew+text+portion+of+issue+%237+is+not+fixed.%0A) and select **Create pull request**. This is the actual upstream comparison form, not a README.
+
+Validation: catalog check and published ZIP SHA-256/icon/contentVersion verification passed. Full ZIP scan: zero errors, four warnings and one notice; the helper approval list remains maintainer-owned. Tagged and packaged contentVersion is `05.000.032`, with the new MAX'D icon.
+
+The live [ProsperoStore listing](https://prosperostore.net/app/PPSA99288/) still shows 0.5.31 at this check. Maintainers must merge the request and deploy before the store updates.
