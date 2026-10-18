@@ -6,6 +6,7 @@
 #include "config.h"
 #endif
 #include "netstream.h"
+#include "vlc_cancel.h"
 #include <vlc_common.h> // must precede other VLC private headers
 
 #include <vlc_access.h>
@@ -27,6 +28,7 @@ extern "C" {
 }
 struct NuvioHttp {
     AVIOContext *input = nullptr;
+    long serial = 0;
     std::atomic<bool> stop{false}, interrupt{false};
 #ifdef NUVIO_VLC_STATIC
     bool torrent = false;
@@ -69,6 +71,7 @@ static void interrupt(void *opaque) {
 }
 static ssize_t read(stream_t *access, void *bytes, size_t count) {
     auto &s = *static_cast<NuvioHttp *>(access->p_sys);
+    if (nuvio_vlc_stream_cancelled(s.serial)) { errno = EINTR; return -1; }
     s.interrupt = false;
     vlc_interrupt_register(interrupt, &s);
     const int n = s.read_data(static_cast<uint8_t *>(bytes), int(std::min(count, size_t(INT32_MAX))));
@@ -83,6 +86,7 @@ static ssize_t read(stream_t *access, void *bytes, size_t count) {
 }
 static int seek(stream_t *access, uint64_t position) {
     auto &s = *static_cast<NuvioHttp *>(access->p_sys);
+    if (nuvio_vlc_stream_cancelled(s.serial)) return VLC_EGENERIC;
     s.interrupt = false;
     vlc_interrupt_register(interrupt, &s);
     const bool ok = position <= INT64_MAX && s.seek_data(int64_t(position)) >= 0;
@@ -131,6 +135,8 @@ static int Open(vlc_object_t *object) {
     auto *s = new (std::nothrow) NuvioHttp;
     if (!s)
         return VLC_ENOMEM;
+    s->serial = long(var_InheritInteger(access, "nuvio-stream-serial"));
+    if (nuvio_vlc_stream_cancelled(s->serial)) { delete s; return VLC_EGENERIC; }
     std::vector<std::string> headers;
     char *encoded = var_InheritString(access, "nuvio-http-headers");
     if (encoded) {
@@ -186,4 +192,5 @@ static int Open(vlc_object_t *object) {
 vlc_module_begin() set_shortname("Nuvio HTTP") set_description("HTTP/HTTPS through Nuvio's network input")
     set_capability("access", 400) add_shortcut("http", "https", "torrent")
         add_string("nuvio-http-headers", "", "HTTP headers", "Private per-media headers", true)
+        add_integer("nuvio-stream-serial", 0, "Stream generation", "Private cancellation generation", true)
             set_callbacks(Open, Close) vlc_module_end()

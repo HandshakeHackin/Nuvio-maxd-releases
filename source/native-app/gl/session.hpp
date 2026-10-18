@@ -161,10 +161,14 @@ class Session
     unsigned configured_w_ = 0, configured_h_ = 0;
     bool typing() const
     {
-        return ime_.active();
+        return ime_.active() || pin_open;
     }
 
     // ---- pop-ups ----
+    bool pin_open = false;
+    PinEntry pin_entry;
+    void profile_pin_input(const hui::InputFrame&);
+    void profile_pin_cancel();
     bool dropdown_open = false;
     DropdownState dropdown;
     bool sign_in_open = false;
@@ -361,6 +365,7 @@ class Session
     std::set<std::string> source_attempted_;
     unsigned profile_generation_ = 0, watched_revision_ = 0;
     bool profile_ready_ = false, profiles_loading_ = false, profile_prompt_pending_ = false;
+    std::function<void(const std::string&)> profile_pin_submit_;
     bool inherit_addons_ = false, inherit_plugins_ = false;
 
     hui::gfx::Renderer *renderer_ = nullptr;

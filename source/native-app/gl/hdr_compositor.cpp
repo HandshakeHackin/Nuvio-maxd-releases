@@ -51,7 +51,8 @@ void main() {
     }
     uvec3 v = uvec3(floor(clamp(signal,0.0,1.0)*1023.0+0.5));
     // RGB10A2: red bits 0..9, green 10..19, blue 20..29, alpha 30..31.
-    // Matches VideoOut's Rgb10A2Bt2100Pq, including its RGB-order token.
+    // The accepted VideoOut token selects the layout: BGR puts blue low,
+    // RGB (0x22000000 order bits) puts red low. Do not force one order.
     // EGL's BGRA8 attachment transports these four bytes unchanged. Each
     // float below is an exact 8-bit byte, not an 8-bit picture component.
     if(bgrOrder!=0) v=v.bgr;

@@ -3,8 +3,8 @@
 // ASCII-only atlases. Titles, names and subtitles come from addons in any
 // language, so a face is a chain: the first file that has a character draws it.
 //
-//   regular   Inter Regular   -> Noto Sans -> Noto Naskh Arabic UI
-//   semibold  Inter SemiBold  -> Noto Sans Bold -> Noto Naskh Arabic UI Bold
+//   regular   Inter Regular   -> Noto Sans -> Noto Sans Hebrew -> Noto Naskh Arabic UI
+//   semibold  Inter SemiBold  -> Noto Sans Bold -> Noto Sans Hebrew -> Noto Naskh Arabic UI Bold
 //   display   Montserrat      -> Inter SemiBold -> Noto Sans Bold -> Naskh Bold
 //
 // Right-to-left text (Arabic, Hebrew) is reordered and its letters joined by

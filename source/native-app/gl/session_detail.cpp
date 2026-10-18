@@ -516,6 +516,7 @@ void Session::detail_load_streams(const std::string &video_id, const std::string
             ++d_answered_;
             if (!r.error.empty())
                 dlog("streams from %s: %s", name.c_str(), r.error.c_str());
+            dlog("streams: source %s returned %zu playable candidates", name.c_str(), r.streams.size());
             for (auto &st : r.streams)
                 d_found_.push_back(st);
             detail_refresh_streams();
@@ -540,6 +541,7 @@ void Session::detail_refresh_streams()
     detail.streams_loading = d_answered_ < d_pending_;
     // Direct/debrid streams first. Raw torrents appear only when enabled.
     std::vector<std::size_t> order;
+    std::size_t hidden_torrents = 0;
     for (std::size_t i = 0; i < d_found_.size(); ++i)
     {
         auto& stream = d_found_[i];
@@ -547,6 +549,7 @@ void Session::detail_refresh_streams()
         stream.debrid_service = stream.debrid_resolvable ? (stream.client_resolve.is_object()
             ? debrid::provider_id(jstr(stream.client_resolve, "service")) : services_.active_provider()) : "";
         if (stream.allowed(prefs_.builtin_torrents) || stream.debrid_resolvable) order.push_back(i);
+        else if (stream.torrent() && !prefs_.builtin_torrents) ++hidden_torrents;
     }
     std::stable_sort(order.begin(), order.end(), [&](std::size_t a, std::size_t b) {
         if (d_found_[a].direct_http() != d_found_[b].direct_http())
@@ -582,6 +585,9 @@ void Session::detail_refresh_streams()
     if (d_answered_ < d_pending_)
         detail.streams_status = "Loading streams... (" + std::to_string(d_answered_) + " of " + std::to_string(d_pending_) +
                                 " sources answered)";
+    else if (detail.streams.empty() && hidden_torrents)
+        detail.streams_status = std::to_string(hidden_torrents) +
+            " torrent results hidden. Enable Peer-to-peer torrents in Settings, or connect a compatible debrid service.";
     else if (detail.streams.empty())
         detail.streams_status = prefs_.builtin_torrents ? "No streams found. Check your stream addons in Nuvio." :
             "No playable streams returned. Check your addon setup or connect TorBox / Premiumize in Settings > Connected Services.";

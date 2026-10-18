@@ -86,6 +86,11 @@
       "repository": "https://github.com/blackbearreloaded/ProsperoTV",
       "commit": "be4d83c47496a1498a4d8b075b0521cb56a5d935",
       "scope": "Adapted seek-preview, short refill, cancellable reads and seek timing diagnostics to the existing FFmpeg player; no transport-remux backend imported"
+    },
+    "hdrPackingAudit": {
+      "repository": "https://github.com/blackbearreloaded/ProsperoTV",
+      "commit": "f984b545994bec4b248c2a677b72c1d950695ae9",
+      "scope": "Existing accepted-token RGB/BGR packing retained; added independent GPU primary-colour checks"
     }
   },
   "loggingReference": {
@@ -103,6 +108,12 @@
       "commit": "c003faf6a0641296c5d02914d9ca3b56a6988e9c",
       "version": "1.2.4",
       "scope": "Preserve selected stream across asynchronous reload responses; existing stale-request generation guards retained"
+    },
+    "nextRevisionUpdates": {
+      "repository": "https://github.com/NuvioMedia/NuvioTVSmart",
+      "commit": "ecaa047f5ec6988e6171b20324dde097d528c059",
+      "version": "1.2.7",
+      "scope": "Sticky playback completion and preserving source-scoped cached resume on tracker outage; existing bounded Skip Intro and redirected HLS handling audited"
     }
   },
   "subtitleStack": {
@@ -111,7 +122,9 @@
     "fontProvider": "bundled fonts; no system font provider",
     "newFonts": {
       "NotoSansCJKsc-Regular.ttf": "3012a9b63f5eca3e3b38f23a1be5ed504675e394abf8e7a4fa981506582c04aa",
-      "NotoSansThai-Regular.ttf": "404ddfb5ed0aaa6b6ec8a85700d682978992062d67da93903967b56cbd9a4acc"
+      "NotoSansThai-Regular.ttf": "404ddfb5ed0aaa6b6ec8a85700d682978992062d67da93903967b56cbd9a4acc",
+      "NotoSansHebrew-Regular.ttf": "5fb2e1fc38c242d64f9fc5f77e026473f288b9791762d80df98a3ec762d5bbdf",
+      "NotoSansHebrew-Bold.ttf": "2aea024b57ba381f7ce84547e35fa4b39ef75d824284ce632a204eb61756f531"
     },
     "cjkPreparation": {
       "sourceCommit": "f8d157532fbfaeda587e826d4cd5b21a49186f7c",
@@ -119,6 +132,20 @@
       "sourceSha256": "990c807e79c25662a5a9ecf7f971baeb2bf2eab9a559e5ecf15cdfdb8561d21f",
       "fontTools": "4.61.1",
       "weight": 400
+    },
+    "hebrewPreparation": {
+      "repository": "google/fonts",
+      "commit": "8b0a1d0f5983c89bc2b93f1b5fb55f9e252744b5",
+      "sourcePath": "ofl/notosanshebrew/NotoSansHebrew[wdth,wght].ttf",
+      "sourceSha256": "7ef36a2c3593758cdb622e1bdef4f84523e92fbc3ccc667438dd80ff54c2de88",
+      "fontTools": "4.61.1",
+      "axes": {
+        "wdth": 100,
+        "wght": [
+          400,
+          700
+        ]
+      }
     }
   },
   "experimentalHdrDriver": {
@@ -141,7 +168,12 @@
     "renderer": "Nuvio OpenGL YUV bridge",
     "audio": "decoded PCM, 48 kHz, stereo or 7.1",
     "hardwareVerified": false,
-    "nativeMatroskaDemux": true
+    "nativeMatroskaDemux": true,
+    "appliedUpdates": {
+      "version": "0.4.5",
+      "commit": "b981880d092fb9330d9c8b09d63d46f6048c10e0",
+      "scope": "Updated console decoder plus selected adaptive streaming, cancellation, clock and visible-frame patches; retain libVLC 3.0.24 / FFmpeg 7 ABI"
+    }
   },
   "providerRuntime": {
     "engine": "QuickJS",
@@ -151,5 +183,11 @@
     "sdkProvided": true,
     "bundleSha256": "7075a472f310fc5c7338eab9d4aab087ea5b8fb39b0b9caff1ce29d34bd7496b",
     "packageLockSha256": "06546b796f59a7b1c8b2218f44d1d17006724779d2bb6c1d093ecd178087398c"
+  },
+  "playbackRecoveryReference": {
+    "repository": "https://github.com/LoZazaMastro/Stremio-Plus",
+    "commit": "8d2a0614d4abe370fdbb27a2f3c90fc7fd23841a",
+    "version": "0.5.11",
+    "scope": "Adapted blocked-reader torrent recovery and bounded picture-memory ownership; existing cache/scheduler retained"
   }
 }

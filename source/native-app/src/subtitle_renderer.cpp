@@ -36,6 +36,7 @@ const char* family(const std::string& lang) {
     const auto l=lower(lang);
     if(starts_with(l,"ar")||starts_with(l,"fa")||starts_with(l,"per")||starts_with(l,"ur")) return "Noto Naskh Arabic UI";
     if(starts_with(l,"ja")||starts_with(l,"jp")||starts_with(l,"ko")||starts_with(l,"zh")||starts_with(l,"chi")||starts_with(l,"cmn")||starts_with(l,"yue")) return "Noto Sans CJK SC";
+    if(l=="he"||l=="heb"||l=="iw"||starts_with(l,"he-")) return "Noto Sans Hebrew";
     if(starts_with(l,"th")) return "Noto Sans Thai";
     return "Inter";
 }
@@ -80,6 +81,7 @@ void SubtitleRenderer::configure(const std::string& fonts) {
     ass_set_message_cb(d_->library,ass_message,nullptr);
     // Bundle fonts: no system provider or redistributed console fonts required.
     for(const char* name:{"Inter-Regular.ttf","Inter-SemiBold.ttf","NotoSans-Regular.ttf","NotoSans-Bold.ttf",
+        "NotoSansHebrew-Regular.ttf","NotoSansHebrew-Bold.ttf",
         "NotoNaskhArabicUI-Regular.ttf","NotoNaskhArabicUI-Bold.ttf","NotoSansCJKsc-Regular.ttf","NotoSansThai-Regular.ttf"}) {
         std::ifstream f(fonts+"/"+name,std::ios::binary);
         std::string data((std::istreambuf_iterator<char>(f)),{});

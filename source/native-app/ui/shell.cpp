@@ -362,10 +362,13 @@ void Shell::update(const hui::InputFrame &input, float dt)
         return f;
     }();
 
+    const bool pin_held=s_.pin_open;
     const bool release_notes_held=s_.release_notes_open;
     if (s_.release_notes_open) {
         if(boot_out_>=0.35f && (input.is_pressed(Action::confirm) || input.is_pressed(Action::back))) s_.release_notes_dismiss();
     }
+    else if (s_.pin_open)
+        s_.profile_pin_input(input);
     else if (s_.dropdown_open)
     {
         DropdownState &d = s_.dropdown;
@@ -406,7 +409,7 @@ void Shell::update(const hui::InputFrame &input, float dt)
         boot_out_ += dt;
     }
     const bool booting = boot_out_ < 0.35f;
-    const bool held = release_notes_held || s_.dropdown_open || s_.sign_in_open || dropdown_t_.value > 0.3f || typing_hold_ > 0.0f || booting;
+    const bool held = pin_held || s_.pin_open || release_notes_held || s_.dropdown_open || s_.sign_in_open || dropdown_t_.value > 0.3f || typing_hold_ > 0.0f || booting;
     const hui::InputFrame &in = held ? idle : input;
 
     if (s_.watching)
@@ -515,6 +518,7 @@ void Shell::draw(hui::gfx::DrawList &list, hui::gfx::BackdropSpec &backdrop) con
         draw_sign_in(list, env_, s_.sign_in, clock_, sign_in_t_.value);
     if (toast_t_.value > 0.01f)
         draw_toast(list, env_, s_.toast, toast_t_.value);
+    if (s_.pin_open) draw_pin_entry(list,env_,s_.pin_entry);
     if (s_.release_notes_open) draw_release_notes(list,env_,s_.release_notes_version);
     if (boot_out_ < kBootOut)
         draw_boot(list, env_, boot_t_, boot_out_ < 0.0f ? 0.0f : boot_out_ / kBootOut);

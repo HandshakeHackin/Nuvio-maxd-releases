@@ -46,6 +46,7 @@ AVIOContext* NetStream::open_avio(const std::string&,const std::vector<std::stri
 void NetStream::close_avio(AVIOContext**){}
 std::string NetStream::peek(size_t){return "";}
 std::string NetStream::failure(){return "";}
+std::string NetStream::effective_url(){return "";}
 #endif
 AVIOContext* TorrentStream::open_avio(const std::string&,const std::atomic<bool>*,std::string*){return nullptr;}
 bool TorrentStream::is_ours(AVIOContext*){return false;}
@@ -90,7 +91,7 @@ void run_until(Player& p,const std::function<bool()>& ready,double timeout=8) {
         if(ready())return;
         std::this_thread::sleep_for(std::chrono::milliseconds(3));
     }
-    throw std::runtime_error("player timed out: "+p.stats());
+    throw std::runtime_error("player timed out: "+p.stats()+" diagnostics="+p.diagnostic_snapshot().dump());
 }
 int main(int argc,char** argv) try {
     require(argc==3,"fixtures missing");

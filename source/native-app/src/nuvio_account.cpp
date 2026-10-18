@@ -570,19 +570,21 @@ ApiResult api_library_get(const std::string& key) {
         notice = "Library tracker is disconnected. Using Nuvio Library until it reconnects.";
     // Resume is independently selected, and never inherited from library membership.
     if (progress_source != "nuvio") for (auto& item : remote) item.erase("state");
+    bool progress_unavailable = progress_source != "nuvio";
     json progress_rows;
     if (trackers.source(true) != "nuvio" && trackers.progress(progress_rows, tracker_error)) {
+        progress_unavailable = false;
         apply_watch_progress(remote, progress_rows);
     } else {
         if (auto* progress = account_progress()) apply_watch_progress(remote, progress->pull(progress_rpc, now_seconds()));
         if (progress_source != "nuvio") notice += (notice.empty() ? "" : " ") +
             (tracker_error.empty() ? tracking::name(progress_source)+" is disconnected." : tracker_error) + " Using Nuvio Sync until it reconnects.";
     }
-    // Preserve unsent local progress for the chosen source without copying it to
-    // a different service. Remote membership is not changed by these temporary rows.
+    // Preserve source-scoped local progress during tracker outages, including
+    // previously synced resume entries. Never upload it to the fallback service. Remote membership is not changed by these temporary rows.
     if (tracking::provider(progress_source)) for (const auto& item : local) {
         const auto& state = jobj(item, "state");
-        if (jnum(state, "lastWatchedMs") <= 0 || !trackers.unsent(item)) continue;
+        if (jnum(state, "lastWatchedMs") <= 0 || (!progress_unavailable && !trackers.unsent(item))) continue;
         auto it = std::find_if(remote.begin(), remote.end(), [&](const auto& r) { return jstr(r, "_id") == jstr(item, "_id"); });
         if (it != remote.end() && jnum(jobj(*it, "state"), "lastWatchedMs") >= jnum(state, "lastWatchedMs")) continue;
         if (it == remote.end()) { auto extra = item; extra["removed"] = true; extra["temp"] = true; remote.push_back(extra); }

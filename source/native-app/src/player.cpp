@@ -1,4 +1,5 @@
 #include "player.h"
+#include "player_streams.hpp"
 #include "bitstream.h"
 #include "evo_backend.h"
 #include "frame_selection.h"
@@ -292,6 +293,7 @@ void Player::demux_thread() {
 }
 
 void Player::demux_run() {
+	std::string input_url = opts_.url;
 	AVDictionary* dict = nullptr;
 	av_dict_set(&dict, "user_agent", kUserAgent, 0);
 	if (!opts_.headers.empty()) av_dict_set(&dict, "headers", (join(opts_.headers, "\r\n") + "\r\n").c_str(), 0);
@@ -343,8 +345,19 @@ void Player::demux_run() {
 		// the part the server has least of, so it could take minutes before
 		// the first frame. Start from the beginning instead, without them;
 		// the first seek opens the file again with the index (see seek()).
-		std::string magic = torrent ? TorrentStream::of(main_pb_)->peek(4) : NetStream::of(main_pb_)->peek(4);
-		if (opts_.start <= 0 && magic == "\x1A\x45\xDF\xA3") {
+		std::string magic = torrent ? TorrentStream::of(main_pb_)->peek(4) : NetStream::of(main_pb_)->peek(64);
+		if (!torrent) {
+			input_url = NetStream::of(main_pb_)->effective_url();
+			std::string prefix = lower(trim(magic));
+			if (starts_with(prefix, "<!doctype html") || starts_with(prefix, "<html")) {
+				avformat_free_context(fmt_);
+				fmt_ = nullptr;
+				av_dict_free(&dict);
+				if (!abort_) fail("The source returned a web page instead of video. Refresh the source or choose another stream.");
+				return;
+			}
+		}
+		if (opts_.start <= 0 && starts_with(magic, "\x1A\x45\xDF\xA3")) {
 			main_pb_->seekable = 0;
 			quick_ = true;
 			// Matroska describes its tracks in the header, so a short look
@@ -354,7 +367,7 @@ void Player::demux_run() {
 			dlog("player: Matroska, starting without reading the end of the file");
 		}
 	}
-	int r = avformat_open_input(&fmt_, opts_.url.c_str(), nullptr, &dict);
+	int r = avformat_open_input(&fmt_, input_url.c_str(), nullptr, &dict);
 	av_dict_free(&dict);
 	if (r < 0) {
 		fmt_ = nullptr;  // freed by avformat_open_input on failure
@@ -376,16 +389,23 @@ void Player::demux_run() {
 	for (auto& want : opts_.audio_langs) {
 		for (unsigned i = 0; i < fmt_->nb_streams && as < 0; i++) {
 			AVStream* st = fmt_->streams[i];
-			if (st->codecpar->codec_type != AVMEDIA_TYPE_AUDIO) continue;
+			if (st->codecpar->codec_type != AVMEDIA_TYPE_AUDIO || !playback_streams::compatible_audio(fmt_, vs, int(i))) continue;
 			AVDictionaryEntry* e = av_dict_get(st->metadata, "language", nullptr, 0);
 			if (e && language_to_iso639_2(e->value) == want) as = int(i);
 		}
 		if (as >= 0) break;
 	}
 	if (opts_.initial_audio_stream >= 0 && opts_.initial_audio_stream < int(fmt_->nb_streams) &&
-	    fmt_->streams[opts_.initial_audio_stream]->codecpar->codec_type == AVMEDIA_TYPE_AUDIO)
+	    fmt_->streams[opts_.initial_audio_stream]->codecpar->codec_type == AVMEDIA_TYPE_AUDIO &&
+        playback_streams::compatible_audio(fmt_, vs, opts_.initial_audio_stream))
 		as = opts_.initial_audio_stream;
 	if (as < 0) as = av_find_best_stream(fmt_, AVMEDIA_TYPE_AUDIO, -1, vs, nullptr, 0);
+    if (as >= 0 && !playback_streams::compatible_audio(fmt_, vs, as)) {
+        as = -1;
+        for (unsigned i = 0; i < fmt_->nb_streams; ++i)
+            if (fmt_->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_AUDIO &&
+                playback_streams::compatible_audio(fmt_, vs, int(i))) { as = int(i); break; }
+    }
 	if (vs < 0 && as < 0) {
 		avformat_close_input(&fmt_);
 		fail("No video or audio in this stream");
@@ -471,10 +491,14 @@ void Player::demux_run() {
 				keep = true;
 			}
 		}
-		// Other audio tracks stay readable so they can be switched to.
-		if (st->codecpar->codec_type == AVMEDIA_TYPE_AUDIO) keep = true;
+		// Keep ordinary file tracks readable for switching. For HLS, inactive
+        // audio playlists must not compete with the selected video.
+        if (st->codecpar->codec_type == AVMEDIA_TYPE_AUDIO)
+            keep = !playback_streams::is_hls(fmt_) || int(i) == as;
 		st->discard = keep ? AVDISCARD_DEFAULT : AVDISCARD_ALL;
 	}
+    if (playback_streams::is_hls(fmt_))
+        dlog("player: HLS selected video=%d audio=%d programs=%u; unused audio playlists disabled",vs,as,fmt_->nb_programs);
 	video_stream_ = vs;
 	audio_stream_ = as;
 	if (vs < 0) vdrop_ = -1;
@@ -523,12 +547,18 @@ void Player::demux_run() {
 			}
 		}
 		int sw = audio_switch_.exchange(-1);
-		if (sw >= 0 && sw != audio_stream_) {
+		if (sw >= 0 && sw < int(fmt_->nb_streams) && sw != audio_stream_ &&
+            fmt_->streams[sw]->codecpar->codec_type == AVMEDIA_TYPE_AUDIO &&
+            playback_streams::compatible_audio(fmt_, vs, sw)) {
 			AVCodecContext* nc = nullptr;
 			if (open_stream_codec(sw, &nc)) {
 				std::lock_guard<std::mutex> lock(actx_m_);
 				avcodec_free_context(&actx_);
 				actx_ = nc;
+                if (playback_streams::is_hls(fmt_)) {
+                    if (audio_stream_ >= 0) fmt_->streams[audio_stream_]->discard = AVDISCARD_ALL;
+                    fmt_->streams[sw]->discard = AVDISCARD_DEFAULT;
+                }
 				audio_stream_ = sw;
                 { std::lock_guard<std::mutex> clock(clock_m_); pcm_.close(false); open_audio_output(sw); }
 				// Without the index (quick_) it just carries on from here.
@@ -1491,7 +1521,7 @@ std::vector<Player::Track> Player::audio_tracks() const {
 	if (!fmt_ || state_ != State::Playing) return out;
 	for (unsigned i = 0; i < fmt_->nb_streams; i++) {
 		AVStream* st = fmt_->streams[i];
-		if (st->codecpar->codec_type != AVMEDIA_TYPE_AUDIO) continue;
+		if (st->codecpar->codec_type != AVMEDIA_TYPE_AUDIO || !playback_streams::compatible_audio(fmt_, video_stream_, int(i))) continue;
 		AVDictionaryEntry* lang = av_dict_get(st->metadata, "language", nullptr, 0);
 		out.push_back(Track{int(i), track_label(int(i)), lang ? language_to_iso639_2(lang->value) : ""});
 	}

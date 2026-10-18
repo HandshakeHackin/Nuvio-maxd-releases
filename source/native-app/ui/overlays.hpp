@@ -5,6 +5,7 @@
 
 #include "chrome.hpp"
 #include "content.hpp"
+#include "pin_entry.hpp"
 
 #include <cstdint>
 #include <string>
@@ -38,6 +39,8 @@ struct DropdownState
     float progress = -1.0f;   // 0..1, negative for none
 };
 void draw_dropdown(hui::gfx::DrawList &list, const Env &env, const DropdownState &state, float t);
+
+void draw_pin_entry(hui::gfx::DrawList&, const Env&, const PinEntry&);
 
 struct SignInState
 {

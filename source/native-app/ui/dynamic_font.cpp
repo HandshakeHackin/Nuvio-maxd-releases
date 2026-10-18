@@ -145,13 +145,13 @@ bool load_ui_fonts(hui::gfx::Renderer &renderer, const std::string &font_dir, co
     // three scripts sit at the same visual size in a line.
     const bool ok =
         make(renderer, &out->regular, &out->regular_chain, font_dir,
-             {{"Inter-Regular.ttf"}, {"NotoSans-Regular.ttf"}, {"NotoNaskhArabicUI-Regular.ttf", 1.12f}, {"NotoSansCJKsc-Regular.ttf"}, {"NotoSansThai-Regular.ttf"}},
+             {{"Inter-Regular.ttf"}, {"NotoSans-Regular.ttf"}, {"NotoSansHebrew-Regular.ttf"}, {"NotoNaskhArabicUI-Regular.ttf", 1.12f}, {"NotoSansCJKsc-Regular.ttf"}, {"NotoSansThai-Regular.ttf"}},
              &fonts->regular) &&
         make(renderer, &out->semibold, &out->semibold_chain, font_dir,
-             {{"Inter-SemiBold.ttf"}, {"NotoSans-Bold.ttf"}, {"NotoNaskhArabicUI-Bold.ttf", 1.12f}, {"NotoSansCJKsc-Regular.ttf"}, {"NotoSansThai-Regular.ttf"}},
+             {{"Inter-SemiBold.ttf"}, {"NotoSans-Bold.ttf"}, {"NotoSansHebrew-Bold.ttf"}, {"NotoNaskhArabicUI-Bold.ttf", 1.12f}, {"NotoSansCJKsc-Regular.ttf"}, {"NotoSansThai-Regular.ttf"}},
              &fonts->semibold) &&
         make(renderer, &out->display, &out->display_chain, font_dir,
-             {{"Montserrat-Medium.ttf"}, {"Inter-SemiBold.ttf"}, {"NotoSans-Bold.ttf"},
+             {{"Montserrat-Medium.ttf"}, {"Inter-SemiBold.ttf"}, {"NotoSans-Bold.ttf"}, {"NotoSansHebrew-Bold.ttf"},
               {"NotoNaskhArabicUI-Bold.ttf", 1.12f}, {"NotoSansCJKsc-Regular.ttf"}, {"NotoSansThai-Regular.ttf"}},
              &fonts->display);
     if (!ok)

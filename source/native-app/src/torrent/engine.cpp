@@ -21,6 +21,7 @@
 #include <deque>
 #include <map>
 #include <mutex>
+#include <new>
 #include <set>
 #include <thread>
 
@@ -199,7 +200,7 @@ struct Peer {
 	sockaddr_in addr{};
 	uint64_t key = 0;
 	enum State { Connecting, Handshaking, Active } state = Connecting;
-	double since = 0, last_data = 0, last_send = 0, choked_since = 0;
+	double since = 0, last_data = 0, last_send = 0, choked_since = 0, payload_at = 0;
 	bool got_any = false;  // sent us at least one block
 	bool incoming = false;  // it connected to us: our handshake goes after theirs
 	std::string in;
@@ -288,6 +289,11 @@ struct Torrent {
 	// Readers: id -> byte position in the torrent
 	std::map<int, int64_t> readers;
 	int next_reader = 1;
+    struct Waiting { double since; int piece; const std::atomic<bool>* cancel; };
+    std::map<int, Waiting> waiting_readers;
+    double metadata_progress_at = 0;
+    double last_payload = 0, last_recovery = 0, next_recovery = 0, allocation_retry_at = 0;
+    unsigned recovery_attempts = 0;
 	double last_reader = 0;
 
 	// Download order, refreshed when readers move
@@ -515,7 +521,7 @@ void update_interest(Torrent* t, Peer* p) {
 }
 
 void pick(Torrent* t, Peer* p, double now) {
-	if (!t->has_meta || p->peer_choking || p->state != Peer::Active || p->dead) return;
+	if (!t->has_meta || p->peer_choking || p->state != Peer::Active || p->dead || now < t->allocation_retry_at) return;
 	if (t->wanted_dirty) refresh_wanted(t);
 	int room = std::min(p->max_reqs, p->reqq) - int(p->reqs.size());
 	if (room <= 0) return;
@@ -527,10 +533,17 @@ void pick(Torrent* t, Peer* p, double now) {
 		if (it == t->active.end()) {
 			if (t->active.size() >= max_active && wi >= 2) continue;
 			Piece pc;
-			pc.data.resize(size_t(t->piece_size(piece)));
-			pc.got.assign(size_t(t->blocks(piece)), 0);
-			pc.asked.assign(size_t(t->blocks(piece)), 0);
-			it = t->active.emplace(piece, std::move(pc)).first;
+            try {
+                pc.data.resize(size_t(t->piece_size(piece)));
+                pc.got.assign(size_t(t->blocks(piece)), 0);
+                pc.asked.assign(size_t(t->blocks(piece)), 0);
+                it = t->active.emplace(piece, std::move(pc)).first;
+            } catch (const std::bad_alloc&) {
+                // No requests or reservations have been committed yet.
+                t->allocation_retry_at = now + 1;
+                dlog("torrent: piece allocation deferred; existing transfer retained");
+                return;
+            }
 		}
 		Piece& pc = it->second;
 		int nb = t->blocks(piece);
@@ -780,6 +793,7 @@ void on_metadata_msg(Torrent* t, Peer* p, const char* data, size_t n, double now
 		if (n - used != want || t->meta_got[size_t(piece)]) return;
 		memcpy(&t->meta[off], data + used, want);
 		t->meta_got[size_t(piece)] = 1;
+        t->metadata_progress_at = p->payload_at = now;
 		if (std::all_of(t->meta_got.begin(), t->meta_got.end(), [](uint8_t g) { return g != 0; })) metadata_done(t);
 	} else if (type == 2 && piece >= 0 && size_t(piece) < t->meta_asked.size()) {
 		t->meta_asked[size_t(piece)] = 0;  // rejected: ask someone else
@@ -842,6 +856,7 @@ void on_block(Torrent* t, Peer* p, uint32_t piece, uint32_t begin, const char* d
 	if (int64_t(begin) + int64_t(len) > int64_t(pc.data.size()) ||
 	    int64_t(len) != std::min<int64_t>(kBlock, t->piece_size(int(piece)) - begin))
 		return;
+	t->last_payload = p->payload_at = now;
 	memcpy(&pc.data[begin], data, len);
 	pc.got[b] = 1;
 	pc.got_count++;
@@ -1182,6 +1197,45 @@ void close_peer(Torrent* t, Peer* p, double now) {
 // ---------------------------------------------------------------------------
 // Upkeep, a few times a second
 
+// Recovery follows actual blocked readers, never an idle zero-rate display.
+// Adapted from Stremio-Plus 0.5.11; Nuvio keeps its existing cache and scheduler.
+void recover_stalled_torrent(Torrent* t, double now) {
+    if (t->stopped || t->idle || now < t->allocation_retry_at) return;
+    double since = now;
+    bool waiting = false;
+    int64_t active_bytes = 0;
+    for (const auto& entry : t->active) active_bytes += int64_t(entry.second.data.size());
+    for (const auto& [id, demand] : t->waiting_readers) {
+        if (demand.cancel && demand.cancel->load()) continue;
+        if (!t->has_meta) {
+            if (demand.piece != -1) continue; // a metadata waiter
+        } else {
+            if (!t->readers.count(id) || demand.piece < 0 || demand.piece >= t->npieces || t->have[size_t(demand.piece)]) continue;
+            if (!t->active.count(demand.piece) && active_bytes + t->piece_size(demand.piece) > kMaxActiveBytes) continue;
+        }
+        waiting = true; since = std::min(since, demand.since);
+    }
+    if (!waiting) return;
+    const double progress = t->has_meta ? t->last_payload : t->metadata_progress_at;
+    if (progress > t->last_recovery) t->recovery_attempts = 0;
+    const double quiet = std::max({since, progress, t->last_recovery});
+    if (now < t->next_recovery || now - quiet < 30) return;
+    unsigned retired = 0;
+    for (auto& peer : t->peers) {
+        if (peer->dead || peer->state != Peer::Active || now - std::max(peer->since, peer->payload_at) < 30) continue;
+        drop_peer(t, peer.get(), "no useful data; automatic reconnect");
+        ++retired;
+    }
+    t->next_refill = 0; t->next_dht = 0; t->want_peers = true; t->wanted_dirty = true;
+    if (!t->has_meta) std::fill(t->meta_asked.begin(), t->meta_asked.end(), 0);
+    t->last_recovery = now;
+    const double delay = 30 * double(1u << std::min(t->recovery_attempts, 2u));
+    t->next_recovery = now + delay;
+    ++t->recovery_attempts;
+    dlog("torrent recovery: waiting_s=%.1f retired=%u retry_s=%.0f", now-quiet, retired, delay);
+}
+
+
 void upkeep(Torrent* t, double now) {
 	// Peers from the trackers
 	{
@@ -1201,6 +1255,7 @@ void upkeep(Torrent* t, double now) {
 		dlog("torrent %s: %s", t->hex.c_str(), idle ? "nobody is watching, pausing" : "resuming");
 	}
 
+    recover_stalled_torrent(t, now);
 	int active = 0, connecting = 0;
 	for (auto& up : t->peers) {
 		Peer* p = up.get();
@@ -1222,7 +1277,7 @@ void upkeep(Torrent* t, double now) {
 		// Late blocks: ask someone else, and expect less from this peer.
 		bool late = false;
 		for (size_t i = 0; i < p->reqs.size();) {
-			if (now - p->reqs[i].at > kRequestTimeout) {
+			if ((p->payload_at <= 0 || now - p->payload_at > kRequestTimeout) && now - p->reqs[i].at > kRequestTimeout) {
 				release_request(t, p->reqs[i]);
 				p->reqs.erase(p->reqs.begin() + long(i));
 				late = true;
@@ -1857,9 +1912,16 @@ bool Engine::wait_metadata(const std::string& hex, std::vector<FileInfo>& files,
 	Impl& I = impl();
 	double until = now_seconds() + timeout_s;
 	std::unique_lock<std::mutex> lock(I.mu);
+    auto t = find_locked(lower(hex));
+    if (!t) { if (error) *error = "the torrent was stopped"; return false; }
+    const int waiter_id = -t->next_reader++;
+    struct MetadataWaitGuard {
+        Torrent* torrent; int id;
+        ~MetadataWaitGuard() { torrent->waiting_readers.erase(id); }
+    } waiting{t.get(), waiter_id};
+    t->waiting_readers[waiter_id] = {now_seconds(), -1, cancel};
 	for (;;) {
-		auto t = find_locked(lower(hex));
-		if (!t) {
+		if (t->stopped) {
 			if (error) *error = "the torrent was stopped";
 			return false;
 		}
@@ -1936,6 +1998,7 @@ std::shared_ptr<Torrent> Engine::open_reader(const std::string& hex, int file_id
 void Engine::close_reader(const std::shared_ptr<Torrent>& t, int reader_id) {
 	std::lock_guard<std::mutex> lock(impl().mu);
 	t->readers.erase(reader_id);
+    t->waiting_readers.erase(reader_id);
 	t->last_reader = now_seconds();
 	t->wanted_dirty = true;
 }
@@ -1955,6 +2018,11 @@ int Engine::read(const std::shared_ptr<Torrent>& t, int reader_id, int file_idx,
 		r->second = abs;
 	}
 	int piece = int(abs / t->plen);
+    struct WaitingGuard {
+        Torrent* torrent; int id;
+        ~WaitingGuard() { torrent->waiting_readers.erase(id); }
+    } waiting{t.get(), reader_id};
+    if (!t->have[size_t(piece)]) t->waiting_readers[reader_id] = {now_seconds(), piece, abort};
 	while (!t->have[size_t(piece)]) {
 		if (t->stopped) return -2;
 		if (abort && abort->load()) return -1;

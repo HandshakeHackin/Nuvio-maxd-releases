@@ -20,7 +20,9 @@ static void colour(void *opaque, const video_format_t *fmt) {
                                  fmt->i_sar_num,
                                  fmt->i_sar_den,
                                  fmt->i_visible_width,
-                                 fmt->i_visible_height};
+                                 fmt->i_visible_height,
+                                 fmt->i_x_offset,
+                                 fmt->i_y_offset};
     c.transfer = fmt->transfer == TRANSFER_FUNC_SMPTE_ST2084 ? 1 : fmt->transfer == TRANSFER_FUNC_HLG ? 2 : 0;
     c.matrix = fmt->space == COLOR_SPACE_BT601 ? 0 : fmt->space == COLOR_SPACE_BT2020 ? 2 : 1;
     c.compatible =

@@ -35,6 +35,18 @@ struct HdrFixture {
     }
 };
 void hdr_gpu_tests() {
+    test("HDR primaries match both VideoOut channel layouts",[] {
+        hui::gfx::DrawList list;
+        const uint32_t rgbWords[] = {0xc00003ffu, 0xc00ffc00u, 0xfff00000u};
+        const uint32_t bgrWords[] = {0xfff00000u, 0xc00ffc00u, 0xc00003ffu};
+        for (int channel=0;channel<3;++channel) {
+            HdrFixture f(2,2,2,std::vector<uint32_t>(4,rgbWords[channel]));
+            f.draw(list,{0,0,2,2},true);
+            require(f.pixel(0,0)==bgrWords[channel],"BGR HDR primary has wrong channel");
+            f.draw(list,{0,0,2,2},false);
+            require(f.pixel(0,0)==rgbWords[channel],"RGB HDR primary has wrong channel");
+        }
+    });
     test("HDR accepted BGR format reverses packed red/blue bits only",[] {
         const uint32_t word=uint32_t(101) | (uint32_t(502)<<10) | (uint32_t(907)<<20) | 0xc0000000u;
         HdrFixture fixture(2,2,2,std::vector<uint32_t>(4,word)); hui::gfx::DrawList list;

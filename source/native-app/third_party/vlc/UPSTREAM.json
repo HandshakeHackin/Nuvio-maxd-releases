@@ -18,7 +18,7 @@
     "compat/vlc_search.c": "66919eae5710298ed152ddbc4751ca6521f8f9e34493a68512bfa5a29c5a4134",
     "disabled.txt": "516314977d8432be11cb5301d73575b2033242ca2ee8203f15aba256c61d7bcd",
     "gen-static-modules.sh": "3b62236dc19dc79594cde43e6abcf43eb623ebdc7bae0fa81a4253abd1f022f5",
-    "modules/ps5vdec.c": "7a0ee4a287170a5b1b54bc8fae11e46a0c6ede177eb35c79c829eda4a06e5600",
+    "modules/ps5vdec.c": "3abebee9291042bd439e5c2a6e2d44f1cedaebabedecdb3cde8e426cd2c65111",
     "patches/0001-freetype-ps5-default-fonts.patch": "dac7605901f1413c58c041b10609458f536ea233317aed1178767f903381b19e",
     "patches/0002-posix-error-ps5-no-strerror_l.patch": "54a2bccff4967765ac673bc491db730796bc8f9ff39bd6729b6db2bcfb32d2cf",
     "patches/0003-interrupt-ps5-sliced-poll.patch": "dd3ad19a6839dd17042c78ea5fe2943c8f4ed2510e622ed9347d2f02f0eb19ff",
@@ -40,7 +40,12 @@
     "patches/0019-nuvio-bundled-font-fallbacks.patch": "ba3c99cdd7efd1de73da1a1799c5098f237d7d75b41ba1713a1e6da5dd113d3e",
     "patches/0020-nuvio-amem-float-fallback.patch": "8064afd62a1f4b339b2e5c714c715df4cad8dd9a07db99048c8a1d8a6215417e",
     "pkg-config": "f7eff3f1d31b8ec753707265761aedbec62f7a1082161ecdfa8ac5527143e290",
-    "plugins.txt": "a1ea18955eb5588a0a433387a365fe082fc4e12e8613ea30945a41c8c0b4b34c"
+    "plugins.txt": "a1ea18955eb5588a0a433387a365fe082fc4e12e8613ea30945a41c8c0b4b34c",
+    "patches/0025-clock-ps5-shorter-gap.patch": "92e41dbcd370b9cca849601b5cb881b0508522ed85cc6dd8da8b488e38f88652",
+    "patches/0026-adaptive-ps5-quicker-start.patch": "bac7c7244bd13e6371aadc041a6aadeebf56ee9b57585a56af56c3395a01a278",
+    "patches/0024-adaptive-ps5-stop-at-once.patch": "fa773879aa58c3e3915d51596652eb0d65b8a14ec125d122cc3c75c788973d0b",
+    "patches/0023-adaptive-ps5-network-caching.patch": "2ca7676d632eecf064c6b9229daba37e2692c2837bd9bedfcb96d3212add3983",
+    "patches/0021-vmem-ps5-keep-visible.patch": "4bcf85d308566ae899739822103cacce1a9224e7f0d785f1772ef1f222d7a87a"
   },
   "libdvbpsi": {
     "version": "1.3.3",
@@ -65,5 +70,10 @@
     "sourceUrl": "https://github.com/nemtrif/utfcpp/archive/refs/tags/v3.2.5.tar.gz",
     "sourceSha256": "14fd1b3c466814cb4c40771b7f207b61d2c7a0aa6a5e620ca05c00df27f25afd",
     "license": "BSL-1.0"
+  },
+  "appliedUpdates": {
+    "version": "0.4.5",
+    "commit": "b981880d092fb9330d9c8b09d63d46f6048c10e0",
+    "scope": "VLC PS5 0.4.5 decoder module plus selective vmem, adaptive caching/cancellation/startup and clock-discontinuity backports; libVLC 3.0.24 and shared FFmpeg 7 ABI retained"
   }
 }

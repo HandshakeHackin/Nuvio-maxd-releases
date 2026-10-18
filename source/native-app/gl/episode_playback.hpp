@@ -26,12 +26,13 @@ public:
     void update(double position, double duration, double elapsed, bool advancing,
                 bool next_exists, bool autoplay, bool sources_ready, bool ended = false);
     std::optional<double> skip_target(double duration) const;
+    bool record_completion(double position, double duration, bool force = false);
     void skipped() { suppressed_ = active; active = -1; }
     void cancel() { cancelled = true; remaining = countdown_; }
     bool launch() const { return counting_ && next_visible && !cancelled && remaining <= 0; }
 private:
     double countdown_ = 10;
     int suppressed_ = -1;
-    bool counting_ = false;
+    bool counting_ = false, completed_ = false;
 };
 } // namespace sx::episode_playback

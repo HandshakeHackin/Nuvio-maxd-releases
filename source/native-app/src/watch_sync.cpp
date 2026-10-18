@@ -63,12 +63,19 @@ json normalize(const json& row, int profile) {
     if (id.empty() || jnum(row, "profile_id", jnum(row, "profileId", profile)) != profile) return {};
     double duration = jnum(row, "duration_ms", jnum(row, "durationMs", jnum(row, "duration")));
     double position = jnum(row, "position_ms", jnum(row, "positionMs", jnum(row, "position")));
-    const bool explicit_ms = row.contains("duration_ms") || row.contains("durationMs");
-    // Legacy RPC snapshots used seconds; current Nuvio writes milliseconds.
-    if (!explicit_ms && duration > 0 && duration <= 8 * 60 * 60) { duration *= 1000; position *= 1000; }
+    const bool duration_ms = jobj(row,"duration_ms").is_number() || jobj(row,"durationMs").is_number();
+    const bool position_ms = jobj(row,"position_ms").is_number() || jobj(row,"positionMs").is_number();
+    // Infer the legacy pair together, but never rescale an explicitly suffixed
+    // field. This matches the mobile/TV mixed-unit import contract.
+    const bool legacy_milliseconds = !duration_ms && !position_ms && duration > 8 * 60 * 60;
+    if (!duration_ms && !legacy_milliseconds && duration > 0 && duration <= 8 * 60 * 60) duration *= 1000;
+    if (!position_ms && !legacy_milliseconds && position > 0 && position <= 8 * 60 * 60) position *= 1000;
     if (duration > 86400000 && duration / 1000 <= 86400000) { duration /= 1000; position /= 1000; }
     if (!std::isfinite(duration) || !std::isfinite(position) || duration < 0 ||
-        (duration > 0 && duration < 60000) || duration > 86400000) return {};
+        duration > 86400000) return {};
+    const double percent = jnum(row,"progress_percent",jnum(row,"progressPercent",-1));
+    if (position <= 0 && duration > 0 && std::isfinite(percent) && percent >= 0 && percent <= 100)
+        position = duration * percent / 100;
     const auto& timestamp = !jobj(row, "updated_at").is_null() ? row["updated_at"] : jobj(row, "last_watched");
     const double updated = timestamp_ms(timestamp);
     if (!std::isfinite(updated) || updated <= 0) return {};

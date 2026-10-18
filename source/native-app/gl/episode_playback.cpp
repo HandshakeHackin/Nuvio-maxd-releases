@@ -123,6 +123,11 @@ void Flow::update(double position, double duration, double elapsed, bool advanci
     counting_ = count;
 }
 
+bool Flow::record_completion(double position, double duration, bool force) {
+    completed_ = completed_ || force || (std::isfinite(position) && std::isfinite(duration) && duration > 0 && position > duration * 0.9);
+    return completed_;
+}
+
 std::optional<double> Flow::skip_target(double duration) const {
     if (active < 0 || active >= static_cast<int>(segments.size()) || !valid(segments[active], duration)) return {};
     return std::min(segments[active].end, duration);

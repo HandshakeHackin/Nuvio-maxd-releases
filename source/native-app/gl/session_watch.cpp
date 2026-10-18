@@ -897,7 +897,7 @@ void Session::watch_save_progress(bool final, bool force_finished)
     const double pos = player_.position(), dur = player_.duration();
     if (dur <= 0 || w_item_.id.empty())
         return; // live streams
-    const bool finished = force_finished || pos > dur * 0.9;
+    const bool finished = w_episode_.record_completion(pos, dur, force_finished);
     if (!final && pos < 1)
         return;
 

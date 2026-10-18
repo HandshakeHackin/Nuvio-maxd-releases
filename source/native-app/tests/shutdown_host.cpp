@@ -41,6 +41,7 @@ struct Session {
     Boundary player_{"player"}, provider_tasks_{"providers"}, tex_{"textures"};
     void watch_stop(bool) { events.push_back("playback stopped"); watching = false; }
     void save_progress() { events.push_back("progress saved"); }
+    void profile_pin_cancel() { events.push_back("pin cleared"); }
     void shutdown();
 };
 #include "shutdown_body.hpp"
@@ -54,6 +55,7 @@ int main() {
         assert(!session.w_episode_cancel_);
         session.updater_.closing = updating;
         session.shutdown();
+        assert(sx::events.front()=="pin cleared");
         assert(sx::events.back() == "progress saved");
         assert(!session.updater_.handed_off);
         session.updater_.finish_exit();

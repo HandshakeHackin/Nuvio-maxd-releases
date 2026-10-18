@@ -37,6 +37,7 @@ void Session::save_profile_settings() {
     if (!save_json(profile_dir_ + "/profile-settings.json", j)) say("Could not save profile preferences", 8.0, true);
 }
 void Session::clear_profile_views() {
+    profile_pin_cancel();
     ++profile_generation_; ++login_gen_; ++addons_gen_; ++home_gen_; ++disc_gen_;
     close_detail(); close_search(); next_preparation_cancel();
     if (launch_cancel_) *launch_cancel_ = true;
@@ -104,8 +105,31 @@ void Session::profile_choose(int id, bool locked) {
             profile_apply(r.result); say("Profile: " + jstr(active_profile_, "name"));
         });
     };
-    if (locked) { say("Enter this profile's PIN", 8.0); ask_text(select); }
+    if (locked) {
+        profile_pin_cancel();
+        profile_pin_submit_=select;
+        pin_open=true;
+    }
     else select("");
+}
+void Session::profile_pin_cancel() {
+    pin_open=false;
+    pin_entry.clear();
+    profile_pin_submit_={};
+}
+void Session::profile_pin_input(const hui::InputFrame& input) {
+    if (!pin_open) return;
+    const auto result=pin_entry.input(input);
+    if (result==PinEntry::Result::cancel) { profile_pin_cancel(); return; }
+    if (result!=PinEntry::Result::submit) return;
+    auto pin=pin_entry.take();
+    pin_open=false;
+    auto submit=std::move(profile_pin_submit_);
+    profile_pin_submit_={};
+    if (submit) submit(pin);
+    volatile char* bytes=pin.data();
+    for (std::size_t i=0;i<pin.size();++i) bytes[i]=0;
+    pin.clear();
 }
 void Session::profiles_menu(bool startup) {
     if (!signed_in()) { say("Sign in to Nuvio to use account profiles", 6.0); return; }

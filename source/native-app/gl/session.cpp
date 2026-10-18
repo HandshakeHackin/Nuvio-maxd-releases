@@ -194,6 +194,7 @@ bool Session::init(const std::string &base_dir, const std::string &data_dir, hui
 
 void Session::shutdown()
 {
+    profile_pin_cancel();
     if (device_cancel_) *device_cancel_ = true;
     prepared_->shutdown();
     updater_.shutdown();
@@ -1250,7 +1251,7 @@ void Session::update(float dt, const Cursor &cursor)
         save_prefs(); refresh_settings();
         say("Your Nuvio session expired. Sign in again in Settings.", 8.0, true);
     }
-    if (profile_prompt_pending_ && !release_notes_open && !dropdown_open && !sign_in_open && !install_source_dialog_) {
+    if (profile_prompt_pending_ && !typing() && !release_notes_open && !dropdown_open && !sign_in_open && !install_source_dialog_) {
         profile_prompt_pending_ = false; profiles_menu(true);
     }
     const double now = now_seconds();

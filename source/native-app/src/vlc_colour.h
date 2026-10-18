@@ -8,7 +8,7 @@ extern "C" {
 struct nuvio_vlc_colour {
     int transfer, matrix, full, compatible;
     float peak;
-    unsigned sar_num, sar_den, visible_width, visible_height;
+    unsigned sar_num, sar_den, visible_width, visible_height, x_offset, y_offset;
 };
 typedef void (*nuvio_vlc_colour_cb)(void *, const struct nuvio_vlc_colour *);
 void nuvio_vlc_colour_install(void *player, nuvio_vlc_colour_cb cb);

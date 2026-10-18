@@ -26,8 +26,8 @@ O=$R/test-output
 mkdir -p "$O/vlc-plugins/access"
 ${HOST_CXX:-g++} -std=c++20 -O0 -g -Wall -Wextra -Werror -pthread -DNUVIO_HAVE_VLC -DPLATFORM_PS5_NATIVE \
  -I"$R/src" -I"$R/third_party" "${cflags[@]}" "${vcflags[@]}" \
- "$R/tests/vlc_host.cpp" "$R/src/"{vlc_backend,pcm_out,bitstream,video_frame,util}.cpp \
- "${vlibs[@]}" "${libs[@]}" -o "$O/vlc-host"
+ "$R/tests/vlc_host.cpp" "$R/src/"{vlc_backend,vlc_cancel,pcm_out,bitstream,video_frame,util}.cpp \
+ "${vlibs[@]}" "${libs[@]}" -rdynamic -o "$O/vlc-host"
 ${HOST_CXX:-g++} -std=c++20 -O1 -fPIC -shared -D__PLUGIN__ -pthread \
  -I"$R/src" -I"$R/third_party" "${cflags[@]}" "${ccflags[@]}" \
  "$R/src/"{vlc_http,netstream,http,util}.cpp "${clibs[@]}" "${libs[@]}" -o "$O/vlc-plugins/access/libnuviohttp_plugin.so"

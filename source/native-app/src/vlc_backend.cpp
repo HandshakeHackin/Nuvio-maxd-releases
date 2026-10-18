@@ -5,6 +5,7 @@
 #include "pcm_out.h"
 #include "util.h"
 #include "vlc_colour.h"
+#include "vlc_cancel.h"
 #include <algorithm>
 #include <array>
 #include <atomic>
@@ -36,6 +37,7 @@ struct VlcBackend::Impl {
     libvlc_instance_t *instance = nullptr;
     libvlc_media_player_t *player = nullptr;
     Options options;
+    long stream_serial = 0;
     std::atomic<bool> stop{false}, failed{false}, user_paused{false}, audio_paused{true};
     std::atomic<int> epoch{1}, shown_epoch{-1}, shown{0}, received{0}, dropped{0};
     std::atomic<float> gain{1};
@@ -47,7 +49,7 @@ struct VlcBackend::Impl {
     VideoFrame current, ready;
     VideoPicture picture;
     bool ready_valid = false, opened_picture = false;
-    nuvio_vlc_colour colour{0, 1, 0, 0, 1000, 1, 1, 0, 0};
+    nuvio_vlc_colour colour{0, 1, 0, 0, 1000, 1, 1, 0, 0, 0, 0};
     unsigned width = 0, height = 0, pitch = 0, uvpitch = 0;
     bool ten = false;
     uint64_t ticket = 0;
@@ -71,7 +73,7 @@ struct VlcBackend::Impl {
     int selected_sub = -2;
     int restore_audio = -1, restore_sub = -2;
     int64_t sub_delay = INT64_MIN;
-    double logged_at = 0;
+    double logged_at = 0, video_wait_since = 0;
     void fail(const char *why) {
         std::lock_guard<std::mutex> lock(mutex);
         failure = why;
@@ -100,12 +102,15 @@ struct VlcBackend::Impl {
     static unsigned setup(void **opaque, char *chroma, unsigned *w, unsigned *h, unsigned *pitches,
                           unsigned *lines) {
         auto &s = *static_cast<Impl *>(*opaque);
+        // Preserve padded decoder dimensions for zero-offset pictures. VLC's
+        // vmem backport keeps the visible rectangle and avoids CPU resizing.
+        // Nonzero crop offsets still use VLC's existing conversion path.
         {
             std::lock_guard<std::mutex> guard(s.mutex);
-            if (s.colour.visible_width && s.colour.visible_width <= *w)
-                *w = s.colour.visible_width;
-            if (s.colour.visible_height && s.colour.visible_height <= *h)
-                *h = s.colour.visible_height;
+            if (s.colour.x_offset || s.colour.y_offset) {
+                if (s.colour.visible_width && s.colour.visible_width <= *w) *w = s.colour.visible_width;
+                if (s.colour.visible_height && s.colour.visible_height <= *h) *h = s.colour.visible_height;
+            }
         }
         if (!video_dimensions_valid(int(*w), int(*h))) {
             s.fail("VLC reported unsupported video dimensions");
@@ -187,8 +192,8 @@ struct VlcBackend::Impl {
         input.y = aligned(slot.y);
         input.u = aligned(slot.uv);
         input.v = nullptr;
-        input.width = int(s.width);
-        input.height = int(s.height);
+        input.width = int(s.colour.visible_width && s.colour.visible_width <= s.width ? s.colour.visible_width : s.width);
+        input.height = int(s.colour.visible_height && s.colour.visible_height <= s.height ? s.colour.visible_height : s.height);
         input.y_stride = int(s.pitch);
         input.c_stride = int(s.uvpitch);
         input.interleaved = true;
@@ -409,6 +414,7 @@ bool VlcBackend::open(const Options &o) {
     d_ = std::make_unique<Impl>();
     auto &s = *d_;
     s.options = o;
+    s.stream_serial = nuvio_vlc_stream_begin();
     if(o.start>0)s.seek_target=o.start;
     s.user_paused = o.paused;
     s.restore_audio = o.audio;
@@ -441,6 +447,7 @@ bool VlcBackend::open(const Options &o) {
     if (o.software)
         option(":ps5vdec=0");
     option(":adaptive-use-access=1");
+    option(":nuvio-stream-serial=" + std::to_string(s.stream_serial));
     option(":sub-track=-1");
     option(":network-caching=2000");
     option(":file-caching=500");
@@ -497,6 +504,7 @@ void VlcBackend::close() {
         return;
     auto &s = *d_;
     s.stop = true;
+    nuvio_vlc_stream_end(s.stream_serial);
     s.cv.notify_all();
     if (s.player) {
         libvlc_media_player_stop(s.player);
@@ -528,8 +536,9 @@ int VlcBackend::state() const {
         std::lock_guard<std::mutex> g(s.mutex);
         return s.opened_picture || s.pcm.is_open() ? 3 : 4;
     }
+    const bool audio_only = libvlc_video_get_track_count(s.player) == 0 && libvlc_audio_get_track_count(s.player) > 0;
     std::lock_guard<std::mutex> g(s.mutex);
-    return s.opened_picture || (s.pcm.is_open() && (state == libvlc_Playing || state == libvlc_Paused)) ? 2
+    return s.opened_picture || (audio_only && s.pcm.is_open() && (state == libvlc_Playing || state == libvlc_Paused)) ? 2
                                                                                                         : 1;
 }
 std::string VlcBackend::error() const {
@@ -595,7 +604,7 @@ const VideoPicture *VlcBackend::present() {
 #ifdef NUVIO_VLC_STATIC
     if (vlc_hw_failed.exchange(false) && !d_->options.software) {
         auto o = d_->options;
-        o.start = position();
+        o.start = d_->seek_target >= 0 ? d_->seek_target.load() : position();
         o.paused = paused();
         o.software = true;
         dlog("player: VLC hardware decoder failed; reopening with software decoding");
@@ -604,6 +613,22 @@ const VideoPicture *VlcBackend::present() {
     }
 #endif
     if (d_->player && libvlc_media_player_get_state(d_->player) == libvlc_Playing) {
+        bool no_picture;
+        { std::lock_guard<std::mutex> g(d_->mutex); no_picture = !d_->opened_picture; }
+        if (no_picture && !d_->user_paused && d_->buffer_percent >= 100 && libvlc_video_get_track_count(d_->player) > 0) {
+            const double now = now_seconds();
+            if (d_->video_wait_since <= 0) d_->video_wait_since = now;
+            if (now - d_->video_wait_since >= 10) {
+                if (!d_->options.software) {
+                    auto options = d_->options;
+                    options.start = d_->seek_target >= 0 ? d_->seek_target.load() : position();
+                    options.paused = paused(); options.software = true;
+                    dlog("player: VLC video startup timed out; retrying same source in software");
+                    open(options);
+                } else d_->fail("VLC audio started without a video picture. Try Native playback.");
+                return nullptr;
+            }
+        } else d_->video_wait_since = 0;
         if (d_->restore_audio >= 0 && libvlc_audio_set_track(d_->player, d_->restore_audio) == 0)
             d_->restore_audio = -1;
         if (d_->restore_sub >= -1 && libvlc_video_set_spu(d_->player, d_->restore_sub) == 0) {

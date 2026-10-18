@@ -79,6 +79,12 @@ int main(int argc, char** argv) {
         d.selected=mode=="providers-last" ? 33 : 18;
         sx::draw_dropdown(list,env,d,1);
     }
+    else if(mode=="profile-pin") {
+        sx::PinEntry entry;
+        hui::InputFrame in;in.pressed=hui::action_bit(hui::Action::confirm);
+        for(int i=0;i<4;++i) entry.input(in);
+        sx::draw_pin_entry(list,env,entry);
+    }
     else if(mode=="release-notes") sx::draw_release_notes(list,env,nuvio_update::current_version);
     else if(mode=="audio-output") {
         sx::DropdownState d;d.title="Audio output";d.options={"PCM","Auto (experimental)","Bitstream (experimental)"};

@@ -1,0 +1,64 @@
+name: Native Nuvio Max'd checks
+on:
+  push:
+    paths:
+      - 'source/native-app/**'
+      - '.github/workflows/native-checks.yml'
+  pull_request:
+    paths:
+      - 'source/native-app/**'
+      - '.github/workflows/native-checks.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  account-and-transport:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: source
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install host dependencies
+        run: |
+          if ! pkg-config --exists libcurl openssl libavcodec libavutil libavformat libswscale libswresample libass egl gl || ! command -v ffmpeg >/dev/null; then
+            sudo apt-get update -qq -o Acquire::Retries=0 -o Acquire::http::Timeout=20 -o Acquire::https::Timeout=20
+            sudo apt-get install -y libcurl4-openssl-dev libssl-dev libavcodec-dev libavutil-dev libavformat-dev libswscale-dev libswresample-dev libass-dev libegl1-mesa-dev libgl1-mesa-dev libgl1-mesa-dri pkg-config openssl ffmpeg
+          fi
+      - name: Build pinned QuickJS provider test engine
+        run: |
+          mkdir -p "$RUNNER_TEMP/quickjs"
+          curl --fail --location --proto '=https' --tlsv1.2 https://bellard.org/quickjs/quickjs-2026-06-04.tar.xz -o "$RUNNER_TEMP/quickjs/source.tar.xz"
+          python3 - "$RUNNER_TEMP/quickjs/source.tar.xz" <<'PY'
+          import hashlib, json, sys
+          pins = json.load(open('native-app/dependencies.json'))['providerRuntime']
+          assert hashlib.sha256(open(sys.argv[1], 'rb').read()).hexdigest() == pins['sourceSha256']
+          PY
+          tar -xf "$RUNNER_TEMP/quickjs/source.tar.xz" -C "$RUNNER_TEMP/quickjs"
+          make -C "$RUNNER_TEMP/quickjs/quickjs-2026-06-04" -j2 libquickjs.a
+          echo "QUICKJS_DIR=$RUNNER_TEMP/quickjs/quickjs-2026-06-04" >> "$GITHUB_ENV"
+      - name: Test account, catalogs, stream cards, navigation, decoder setup and GPU video
+        run: bash native-app/tests/run.sh
+      - name: Render controller dialogs and update guidance
+        run: bash native-app/tests/preview.sh
+      - name: Check whitespace
+        run: git diff --check
+  vlc-playback:
+    runs-on: ubuntu-latest
+    # Match the tested 3.0.23 host ABI, close to the PS5 target's 3.0.24.
+    # Ubuntu 24.04 still supplies 3.0.20 with older adaptive seek behavior.
+    container: debian:trixie
+    defaults:
+      run:
+        working-directory: source
+    timeout-minutes: 10
+    steps:
+      - name: Install real VLC and codec development libraries
+        working-directory: .
+        run: |
+          apt-get update -qq
+          apt-get install -y git ca-certificates python3 g++ pkg-config ffmpeg libcurl4-openssl-dev libavformat-dev libavcodec-dev libavutil-dev libswresample-dev libvlc-dev libvlccore-dev vlc-plugin-base
+      - uses: actions/checkout@v4
+      - name: Test VLC file playback, authenticated HTTP/HLS, seeking and cancellation
+        run: bash native-app/tests/vlc_host.sh

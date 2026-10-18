@@ -635,6 +635,26 @@ class AccountTests(unittest.TestCase):
         self.assertEqual(result['state']['duration'], 7200000)
         self.assertEqual(result['name'], 'Test title')
 
+    def test_progress_percentage_with_duration_imports_resume(self):
+        self.assertTrue(self.pair()['ok'])
+        self.state['progress_rows'] = [self.progress_row(position=0, duration_ms=7200000, progress_percent=25)]
+        rows = self.command('library')['result']
+        self.assertEqual(rows[0]['state']['timeOffset'], 1800000)
+
+    def test_progress_mixed_explicit_and_legacy_units(self):
+        self.assertTrue(self.pair()['ok'])
+        self.state['progress_rows'] = [self.progress_row(position_ms=3000, duration=7200)]
+        row = self.command('library')['result'][0]
+        self.assertEqual(row['state']['timeOffset'], 3000)
+        self.assertEqual(row['state']['duration'], 7200000)
+
+    def test_progress_explicit_short_video_is_readable(self):
+        self.assertTrue(self.pair()['ok'])
+        self.state['progress_rows'] = [self.progress_row(position_ms=5000, duration_ms=30000)]
+        row = self.command('library')['result'][0]
+        self.assertEqual(row['state']['timeOffset'], 5000)
+        self.assertEqual(row['state']['duration'], 30000)
+
     def test_watch_progress_explicit_units_and_profile_isolation(self):
         self.assertTrue(self.pair()['ok'])
         self.state['progress_rows'] = [self.progress_row(position_ms=3000, duration_ms=7200000),
@@ -649,7 +669,7 @@ class AccountTests(unittest.TestCase):
         self.state['expected_profile'] = 2
         self.state['progress_rows_2'] = [
             self.progress_row('tt-family', profile_id=2),
-            self.progress_row('tt-short', duration=30000, duration_ms=30000, profile_id=2)]
+            self.progress_row('tt-invalid', duration=-1, duration_ms=-1, profile_id=2)]
         items = self.command('library', auth_key=key)['result']
         resume = next((i for i in items if i['_id'] == 'tt-family'), None)
         self.assertIsNotNone(resume)
@@ -1055,6 +1075,21 @@ class AccountTests(unittest.TestCase):
         self.assertFalse(any(p.endswith('sync_push_watch_progress') for p,_,_ in self.state['calls']))
         self.assertTrue(self.command('select_profile',profile=2)['ok'])
         self.assertEqual(self.command('tracking',action='status')['result']['progressPreferred'],'nuvio')
+
+    def test_tracker_outage_keeps_previously_synced_continue_watching(self):
+        self.assertTrue(self.pair()['ok'])
+        path = self.profile_path()
+        (path/'tracking.json').write_text(json.dumps({'version':1,'progress':'trakt','library':'nuvio','accounts':{}}))
+        item = self.progress_item(lastWatchedMs=int(time.time()*1000))
+        (path/'native-library-trakt.json').write_text(json.dumps([item]))
+        loaded = self.command('library')
+        self.assertTrue(loaded['ok'], loaded)
+        row = next(x for x in loaded['result'] if x['_id'] == item['_id'])
+        self.assertEqual(row['state']['timeOffset'], 120000)
+        self.assertFalse(any(p.endswith('sync_push_watch_progress') for p,_,_ in self.state['calls']))
+        self.assertTrue(self.command('select_profile', profile=2)['ok'])
+        loaded = self.command('library')
+        self.assertFalse(any(x.get('state', {}).get('timeOffset') == 120000 for x in loaded['result']))
 
     def test_unavailable_library_tracker_falls_back_without_erasing_preference(self):
         self.assertTrue(self.pair()['ok'])

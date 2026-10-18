@@ -60,7 +60,7 @@ FLAGS+=(-DNUVIO_HAVE_VLC -DNUVIO_VLC_STATIC -I"$VLC_SRC/include")
 echo ">> compiling"
 sources=("$ROOT"/ui/*.cpp "$ROOT"/gl/*.cpp "$ROOT/update/core.cpp"
 	"$ROOT/src/nuvio_account.cpp" "$ROOT/src/watch_sync.cpp" "$ROOT/src/tracking.cpp" "$ROOT/src/connected_services.cpp" "$ROOT/src/connected_preparer.cpp" "$ROOT/src/bidi.cpp" "$ROOT/src/stremio.cpp" "$ROOT/src/providers.cpp" "$ROOT/src/http.cpp" "$ROOT/src/util.cpp" "$ROOT/src/tasks.cpp"
-	"$ROOT/src/packet_storage.cpp" "$ROOT/src/diagnostics.cpp" "$ROOT/src/player.cpp" "$ROOT/src/vlc_backend.cpp" "$ROOT/src/netstream.cpp" "$ROOT/src/hwdec_ps5.cpp" "$ROOT/src/yuv_convert.cpp" "$ROOT/src/video_frame.cpp" "$ROOT/src/display_output.cpp"
+	"$ROOT/src/packet_storage.cpp" "$ROOT/src/diagnostics.cpp" "$ROOT/src/player.cpp" "$ROOT/src/vlc_backend.cpp" "$ROOT/src/vlc_cancel.cpp" "$ROOT/src/netstream.cpp" "$ROOT/src/hwdec_ps5.cpp" "$ROOT/src/yuv_convert.cpp" "$ROOT/src/video_frame.cpp" "$ROOT/src/display_output.cpp"
 	"$ROOT/src/evo_backend.cpp" "$ROOT/src/evo_runtime.cpp"
 	"$ROOT/src/subtitle_renderer.cpp" "$ROOT/src/subtitles.cpp" "$ROOT/src/pcm_out.cpp" "$ROOT/src/bitstream.cpp" "$ROOT"/src/torrent/*.cpp
 	"$HUI"/src/gfx/*.cpp "$HUI"/src/audio/{mixer,cues,wav}.cpp "$HUI/src/platform/ps5/audio_out.cpp" "$HUI/src/core/save_file.cpp" "$HUI/src/core/input.cpp" "$HUI/src/ui/glyphs.cpp"
@@ -103,7 +103,7 @@ for f in "$EVO/media/src/evo_vdec_ffmpeg.c" "$EVO/media/src/evo_vdec_native.c" \
 done
 # VLC's private C bridge and static module table share the exact core headers.
 vlc_flags=(-O2 -fPIC -DHAVE_CONFIG_H -I"$VLC_BUILD" -I"$VLC_SRC/include" -I"$SDK/target/user/homebrew/include" -I"$ROOT/src")
-for f in "$ROOT/src/vlc_colour.c" "$ROOT/third_party/vlc/modules/ps5vdec.c" \
+for f in "$ROOT/src/vlc_picture_memory.c" "$ROOT/src/vlc_colour.c" "$ROOT/third_party/vlc/modules/ps5vdec.c" \
          "$ROOT/third_party/vlc/compat/vlc_missing.c" "$ROOT/third_party/vlc/compat/vlc_search.c" "$VLC_STATIC/static_modules.c"; do
     o="$B/obj/vlc_$(basename "$f").o"
     "$CC" -std=gnu11 "${vlc_flags[@]}" -c "$f" -o "$o"
@@ -184,7 +184,14 @@ cp "$ROOT/third_party/provider-runtime/runtime.js" "$APP/providers/"
 mkdir -p "$APP/licenses/provider-runtime"
 cp "$ROOT/third_party/provider-runtime/LICENSES.txt" "$APP/licenses/provider-runtime/"
 mkdir -p "$APP/fonts" "$APP/hui-fonts" "$APP/icons"
-cp "$ROOT"/app/fonts/{Inter-Regular,Inter-SemiBold,Montserrat-Medium,NotoSans-Regular,NotoSans-Bold,NotoNaskhArabicUI-Regular,NotoNaskhArabicUI-Bold,NotoSansThai-Regular,NotoSansCJKsc-Regular}.ttf "$APP/fonts/"
+cp "$ROOT"/app/fonts/{Inter-Regular,Inter-SemiBold,Montserrat-Medium,NotoSans-Regular,NotoSans-Bold,NotoSansHebrew-Regular,NotoSansHebrew-Bold,NotoNaskhArabicUI-Regular,NotoNaskhArabicUI-Bold,NotoSansThai-Regular,NotoSansCJKsc-Regular}.ttf "$APP/fonts/"
+# Every pinned fallback must actually ship, not only exist in the source tree.
+python3 - "$ROOT/dependencies.json" "$APP/fonts" <<'PYFONTS'
+import hashlib,json,sys
+from pathlib import Path
+for name,digest in json.load(open(sys.argv[1]))['subtitleStack']['newFonts'].items():
+    assert hashlib.sha256((Path(sys.argv[2])/name).read_bytes()).hexdigest()==digest,name
+PYFONTS
 # the fonts' license texts travel with them
 cp "$ROOT"/app/fonts/*.txt "$APP/fonts/" 2>/dev/null || true
 cp "$HUI"/assets/fonts/*.huifont "$HUI"/assets/fonts/*LICENSE*.txt "$APP/hui-fonts/"

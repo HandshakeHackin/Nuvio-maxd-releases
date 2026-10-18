@@ -27,6 +27,14 @@ int main() {
         {"invalid identities and specials", [] { expect(timing_url({"https://secret/token","tt123&token=x","tmdb:123"},1,1).empty() && timing_url({"tt123"},0,1).empty()); }},
         {"metadata IMDb mapping", [] { const auto m=parse_meta(json{{"id","tmdb:42"},{"imdb_id","tt123"}}); expect(timing_url({m.imdb_id,m.id},1,1).find("tt123")!=std::string::npos); }},
         {"movie timing query", [] { expect(timing_url({"tt123"},-1,-1,true)=="https://api.introdb.app/segments?imdb_id=tt123&is_movie=true"); }},
+        {"completed episode stays watched after rewind until next playback", [] {
+            Flow f; expect(!f.record_completion(400,1000)); expect(f.record_completion(950,1000));
+            expect(f.record_completion(100,1000)); f=Flow(); expect(!f.record_completion(100,1000));
+            expect(f.record_completion(100,1000,true));
+        }},
+        {"skip clamps metadata rounding beyond video end", [] {
+            Flow f; f.segments={{Kind::intro,10,1000.5}}; tick(f,20); expect(f.skip_target(1000)==1000);
+        }},
         {"intro button boundaries", [] { Flow f; f.segments={{Kind::intro,10,60}}; tick(f,9);expect(f.active<0);tick(f,10);expect(f.active==0);tick(f,59.6);expect(f.active<0); }},
         {"recap seeks to correct end", [] { Flow f;f.segments={{Kind::recap,0,40}};tick(f,10);expect(f.skip_target(1000)==40); }},
         {"skip suppression and backward seek", [] { Flow f;f.segments={{Kind::intro,10,60}};tick(f,20);f.skipped();tick(f,20);expect(f.active<0);tick(f,65);tick(f,20);expect(f.active==0); }},

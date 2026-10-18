@@ -292,6 +292,27 @@ void draw_dialog(hui::gfx::DrawList &list, const Env &env, const DropdownState &
     list.pop_transform();
     list.pop_opacity();
 }
+void draw_pin_entry(hui::gfx::DrawList &list, const Env &env, const PinEntry &entry)
+{
+    scrim(list, 1.0f, 0.78f);
+    const Rect r{theme::kScreenW*0.5f-310.0f,130.0f,620.0f,780.0f};
+    panel(list,r,34.0f,0.98f);
+    text(list,env.fonts.semibold,"Profile PIN",r.x+44.0f,r.y+75.0f,34.0f,theme::ink);
+    text(list,env.fonts.regular,"Enter the PIN for this profile",r.x+44.0f,r.y+120.0f,24.0f,theme::ink_2);
+    text(list,env.fonts.semibold,entry.size()?entry.masked():"Enter PIN",r.cx(),r.y+192.0f,32.0f,theme::ink,Align::center);
+    static constexpr const char* labels[]={"1","2","3","4","5","6","7","8","9","Delete","0","Continue"};
+    for(int i=0;i<12;++i) {
+        const Rect key{r.x+44.0f+182.0f*float(i%3),r.y+245.0f+104.0f*float(i/3),168.0f,88.0f};
+        const bool selected=i==entry.selected();
+        if(selected) list.bordered_rect(key,18.0f,theme::surface_hi,3.0f,theme::ink);
+        else list.rounded_rect(key,18.0f,Color::rgb(0xffffff,0.06f));
+        text(list,env.fonts.semibold,labels[i],key.cx(),key.cy()+10.0f,i==9||i==11?23.0f:32.0f,
+             i==11&&!entry.size()?theme::ink_3:selected?theme::ink:theme::ink_2,Align::center);
+    }
+    text(list,env.fonts.regular,"D-pad: move   Cross: select",r.cx(),r.y+700.0f,22.0f,theme::ink_2,Align::center);
+    text(list,env.fonts.regular,"Square: delete   Circle: cancel",r.cx(),r.y+738.0f,22.0f,theme::ink_2,Align::center);
+}
+
 void draw_dropdown(hui::gfx::DrawList &list, const Env &env, const DropdownState &s, float t)
 {
     if (s.dialog)
