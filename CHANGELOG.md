@@ -10,6 +10,7 @@
 - Preserved cached Continue Watching during tracker outages and kept episodes marked completed after rewinding within the same playback.
 - Added stalled torrent recovery with retry backoff while retaining downloaded pieces.
 - Updated optional VLC's PS5 decoder integration to upstream 0.4.5 fixes, including repeated playback, interlaced timing and VP9 handling. Improved live buffering/cancellation, bounded large-picture memory, coded/visible picture handling and a one-time software retry when buffered video produces no picture.
+- Fixed VLC callback lock ordering during seeks and an audio-output-open failure deadlock; added the newer decoder’s picture-metadata import.
 - Added independent RGB/BGR HDR color checks. Existing HDR pixel-format selection remains; this is not a new universal HDR fix.
 
 ## Test this version

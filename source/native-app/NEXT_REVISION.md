@@ -5,6 +5,7 @@ Status: packaging for 0.5.34. Based on the existing 0.5.33 candidate plus the st
 ## Simple release notes
 
 - Updated optional VLC playback with newer decoder fixes for interlaced video timing, repeated playback and VP9 support, pending PS5 testing.
+- Fixed VLC callback lock ordering during seeks and an audio-open failure deadlock; linked the newer decoder’s picture-metadata import.
 - Improved live-stream buffering and cancellation when leaving a stream. Preserve padded decoder pictures to avoid unnecessary CPU scaling.
 - Added a bounded direct-memory pool for large VLC pictures and safer cleanup when memory release fails.
 - Added automatic torrent recovery when a reader is waiting for data, with retry backoff and preserved downloaded pieces.

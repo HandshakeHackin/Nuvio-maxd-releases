@@ -4,6 +4,10 @@
 #include "config.h"
 #endif
 #include "vlc_colour.h"
+
+// Upstream decoder diagnostic hook. Keep detailed slice tracing disabled by
+// default; this is an app callback, not a symbol imported from a PS5 module.
+int vlc_ps5_log_details(void) { return 0; }
 #include <vlc_common.h>
 #include <vlc_es.h>
 // vmem's opaque is the application backend; one registered conversion callback
