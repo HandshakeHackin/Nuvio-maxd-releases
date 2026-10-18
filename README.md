@@ -9,7 +9,7 @@
 <p align="center">
   <a href="https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/download/v0.5.31-native-experimental/PPSA99288.zip"><img src="https://img.shields.io/badge/Download-ZIP_folder-00B8E8?style=for-the-badge" alt="Download the PS5 app as a ZIP folder"></a>
   <a href="https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/download/v0.5.31-native-experimental/NuvioMaxd-0.5.31-native.ffpfsc"><img src="https://img.shields.io/badge/Download-FFPFSC_image-8B5CF6?style=for-the-badge" alt="Download the PS5 app as an FFPFSC image"></a>
-  <a href="https://homebrew.page/app/PPSA99288/"><img src="https://img.shields.io/badge/ProsperoStore-Listing-22C55E?style=for-the-badge" alt="View the ProsperoStore listing; check its version before installing"></a>
+  <a href="https://prosperostore.net/app/PPSA99288/"><img src="https://img.shields.io/badge/ProsperoStore-Listing-22C55E?style=for-the-badge" alt="View the ProsperoStore listing; check its version before installing"></a>
   <a href="https://ko-fi.com/handshakehackin"><img src="https://img.shields.io/badge/Ko--fi-Support-FF5E5B?style=for-the-badge&logo=kofi&logoColor=white" alt="Optional support on Ko-fi"></a>
 </p>
 
@@ -165,7 +165,7 @@ TorBox/Premiumize separately if you want their cached-file resolution.
 
 The [published-build user guide](https://github.com/HandshakeHackin/Nuvio-maxd-releases/blob/builds/v0.5.31/USER_GUIDE.md)
 covers controls, setup and troubleshooting. Check the version on the
-[ProsperoStore listing](https://homebrew.page/app/PPSA99288/): catalog submission,
+[ProsperoStore listing](https://prosperostore.net/app/PPSA99288/): catalog submission,
 maintainer approval and live deployment happen separately from a GitHub release.
 
 ## Report a problem

@@ -17,7 +17,7 @@ stays private; the source for each released version is available with its public
 downloads.
 
 Nuvio Max'd is also available in the
-[ProsperoStore homebrew shop](https://homebrew.page/app/PPSA99288/).
+[ProsperoStore homebrew shop](https://prosperostore.net/app/PPSA99288/).
 Find **Nuvio Max'd** in the store to install it, or use the GitHub downloads.
 
 ## New in 0.5.31: Continue Watching and tracker choices
