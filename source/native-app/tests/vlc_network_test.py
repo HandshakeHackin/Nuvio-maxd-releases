@@ -30,8 +30,8 @@ threading.Thread(target=s.serve_forever,daemon=True).start()
 e=os.environ.copy()
 base=f'http://127.0.0.1:{s.server_port}'
 try:
- r=subprocess.run([str(root/'test-output/vlc-host'),str(fixtures/'fixture.mp4'),str(fixtures/'fixture.mkv'),base+'/fixture.mp4',base+'/fixture.mkv',base+'/fixture.m3u8',base+'/redirect.m3u8',base+'/stall-headers',base+'/stall-read'],env=e,text=True,capture_output=True,timeout=100)
- print(r.stdout,flush=True);print(r.stderr,flush=True)
+ # Stream diagnostics so a timeout retains the last completed playback stage.
+ r=subprocess.run([str(root/'test-output/vlc-host'),str(fixtures/'fixture.mp4'),str(fixtures/'fixture.mkv'),base+'/fixture.mp4',base+'/fixture.mkv',base+'/fixture.m3u8',base+'/redirect.m3u8',base+'/stall-headers',base+'/stall-read'],env=e,text=True,timeout=100)
  print('requests',len(seen),'segments',len({p for p,h in seen if p.endswith('.ts')}),flush=True)
  assert r.returncode==0,'VLC HTTP playback failed'
  assert all(h=='required' for p,h in seen),'private headers were not preserved'
