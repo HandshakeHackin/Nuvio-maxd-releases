@@ -787,7 +787,7 @@ void Session::poll_presentation_timing() {
 void Session::arm_presentation_timing() {
     if (watching && !launch_open && video_texture && !player_.paused() && !player_.buffering() &&
         player_.state()==Player::State::Playing && player_.picture_serial()==player_.video_serial())
-        presentation::arm(timing_picture_);
+        presentation::arm(timing_picture_,output_hz_);
     else presentation::disarm();
 }
 
@@ -822,7 +822,9 @@ void Session::upload_video()
                  pic->hdr_peak_nits);
     }
     if(!video_texture || pic->w!=video_w || pic->h!=video_h) nuvio_diagnostics::record({{"sourceWidth",pic->w},{"sourceHeight",pic->h},{"sourceTenBit",pic->format==VideoFormat::Nv12_10}});
-    timing_picture_ = {++timing_picture_id_, selected_us};
+    timing_picture_ = {++timing_picture_id_, selected_us,
+        player_.picture_pts()>=0 ? int64_t(player_.picture_pts()*1000000) : INT64_MIN,
+        player_.picture_fps(),uint64_t(player_.picture_serial())};
     video_texture = video_surface_.texture();
     video_hdr = hdr;
     video_w = pic->w; video_h = pic->h; video_sar = pic->sar;
@@ -944,6 +946,7 @@ void Session::watch_save_progress(bool final, bool force_finished)
     s["lastWatched"] = now;
     s["lastWatchedMs"] = now_epoch_ms();
     s["nuvioCompleted"] = finished;
+    s["trackingFinal"] = final;
     s.erase("nuvioRemoveProgress");
     s["nuvioSeason"] = nullptr;
     s["nuvioEpisode"] = nullptr;
@@ -969,6 +972,8 @@ void Session::watch_save_progress(bool final, bool force_finished)
         s["watched"] = nullptr;
     if (finished && final)
     {
+        if (jstr(tracking_status_, "progressPreferred", "nuvio") == "nuvio")
+            sync_watched_mark(w_video_id_, w_item_.name, true, w_item_.id, w_season_, w_episode_number_);
         s["timesWatched"] = static_cast<int>(jnum(s, "timesWatched")) + 1;
         if (w_item_.type == "movie")
             s["flaggedWatched"] = 1;

@@ -87,4 +87,4 @@ jobs:
           version=${RELEASE_TAG#v}
           version=${version%-native-experimental}
           gh release edit "$RELEASE_TAG" --draft=false --prerelease \
-            --title "Nuvio Max'd $version — provider plugins (testing needed)" --notes-file RELEASE_NOTES.md
+            --title "Nuvio Max'd $version — Continue Watching, trackers and playback fixes (testing needed)" --notes-file RELEASE_NOTES.md

@@ -10,7 +10,7 @@ instructions instead of a ready-to-play link.
 2. Connect **TorBox** with the QR code on your phone or an API key. For
    **Premiumize**, enter the API key from your account page.
 3. Alternatively, sign in to Nuvio and choose **Import connections from Nuvio
-   Sync**. This copies supported connections from your primary Nuvio profile.
+   Sync**. This copies supported connections from your selected Nuvio profile.
    If none appear, connect the service in regular Nuvio and sync it, or enter
    its API key here.
 4. Turn **Resolve playable links** on. Set **Resolve with** to Automatic,

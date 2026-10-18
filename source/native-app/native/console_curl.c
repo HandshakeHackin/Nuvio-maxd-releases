@@ -81,6 +81,25 @@ int console_curl_nonblocking(int socket)
     return setsockopt(socket, SOL_SOCKET, CONSOLE_SO_NBIO, &on, sizeof(on));
 }
 
+/* PacBrew curl 8.18 calls curlx_nonblock after an OPENSOCKETFUNCTION callback,
+ * even if SOCKOPTFUNCTION already set SO_NBIO. Its F_GETFL/F_SETFL path can fail
+ * in a sandboxed title (including the SO_NBIO readback in our fcntl fallback),
+ * and cf-socket.c reports that as CURLE_UNSUPPORTED_PROTOCOL, not a socket error.
+ * This function only receives sockets: use the console's write-only operation
+ * directly, retaining the provider callback's resolved-address validation.
+ * Linked with --wrap=curlx_nonblock against the pinned curl archive. */
+int __wrap_curlx_nonblock(int socket, int nonblock)
+{
+    const int on = nonblock != 0;
+    const int result = setsockopt(socket, SOL_SOCKET, CONSOLE_SO_NBIO, &on, sizeof(on));
+    if (result < 0) {
+        const int saved_errno = errno;
+        printf("[ps5-curl] nonblocking socket setup failed errno=%d\n", saved_errno);
+        errno = saved_errno;
+    }
+    return result;
+}
+
 static int console_curl_on_socket(void *user, curl_socket_t socket, curlsocktype purpose)
 {
     (void)user;

@@ -17,7 +17,12 @@ static std::atomic<bool> fail_bitstream{false};
 static std::atomic<bool> failed_hardware{false};
 void require(bool ok,const char* message) { if(!ok) throw std::runtime_error(message); }
 extern "C" int sceAudioOutInit(){return 0;}
-extern "C" int sceAudioOutOpen(int,int,int,unsigned,unsigned,unsigned){return 42;}
+extern "C" int sceAudioOutOpen(int,int,int,unsigned,unsigned,unsigned){
+    // Widen the failed-bitstream -> closed -> PCM-open transition. The main
+    // thread must wait for that transaction, not fail on its intermediate kind.
+    if(fail_bitstream) std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    return 42;
+}
 extern "C" int sceAudioOutClose(int){return 0;}
 extern "C" int sceAudioOutOutput(int h,const void*) {
     if(h==47)return fail_bitstream?-1:0;

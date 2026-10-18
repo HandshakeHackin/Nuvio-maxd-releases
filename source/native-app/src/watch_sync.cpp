@@ -1,4 +1,4 @@
-// Nuvio's sync_pull/push/delete_watch_progress RPC contract, profile 1.
+// Nuvio's sync_pull/push/delete_watch_progress RPC contract, scoped to the selected account profile.
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "watch_sync.h"
 #include <openssl/rand.h>
@@ -58,9 +58,9 @@ void retain_metadata(json& remote, const json& local) {
     for (const char* name : {"name", "poster", "background", "logo"})
         if (!jstr(local, name).empty()) remote[name] = local[name];
 }
-json normalize(const json& row) {
+json normalize(const json& row, int profile) {
     const std::string id = jstr(row, "content_id", jstr(row, "contentId"));
-    if (id.empty() || jnum(row, "profile_id", jnum(row, "profileId", 1)) != 1) return {};
+    if (id.empty() || jnum(row, "profile_id", jnum(row, "profileId", profile)) != profile) return {};
     double duration = jnum(row, "duration_ms", jnum(row, "durationMs", jnum(row, "duration")));
     double position = jnum(row, "position_ms", jnum(row, "positionMs", jnum(row, "position")));
     const bool explicit_ms = row.contains("duration_ms") || row.contains("durationMs");
@@ -94,9 +94,9 @@ json portable(const json& r) {
 }
 }
 
-WatchSync::WatchSync(const std::string& dir, const std::string& owner) : path_(dir + "/watch-sync.json"), owner_(owner) {
+WatchSync::WatchSync(const std::string& dir, const std::string& owner, int profile) : profile_(profile), path_(dir + "/watch-sync.json"), owner_(owner) {
     load_json(path_, state_);
-    if (!state_.is_object() || jstr(state_, "owner") != owner_) state_ = json{{"owner", owner_}};
+    if (!state_.is_object() || jstr(state_, "owner") != owner_ || jnum(state_, "profile", 1) != profile_) state_ = json{{"owner", owner_}, {"profile", profile_}};
     for (const char* field : {"entries", "pending", "baseline", "deletes"})
         if (!jobj(state_, field).is_array()) state_[field] = json::array();
     client_ = jstr(state_, "client");
@@ -128,25 +128,26 @@ void WatchSync::synchronize(const Rpc& rpc, double now) {
         return true;
     };
     if (!state_["deletes"].empty()) {
-        if (!call("sync_delete_watch_progress", {{"p_profile_id", 1}, {"p_keys", state_["deletes"]},
+        if (!call("sync_delete_watch_progress", {{"p_profile_id", profile_}, {"p_keys", state_["deletes"]},
             {"p_origin_client_id", client_}})) return;
         state_["deletes"] = json::array(); if (!save()) return;
     }
     json rows;
-    if (!call("sync_pull_watch_progress", {{"p_profile_id", 1}}, &rows)) return;
+    if (!call("sync_pull_watch_progress", {{"p_profile_id", profile_}}, &rows)) return;
     if (!rows.is_array()) { retry_at_ = now + 120; return; }
     Entries remote;
+    size_t unreadable = 0;
     for (const auto& row : rows) {
-        if (jnum(row, "profile_id", jnum(row, "profileId", 1)) != 1) continue;
-        auto r = normalize(row); if (r.is_object() && !r.empty()) {
+        if (jnum(row, "profile_id", jnum(row, "profileId", profile_)) != profile_) continue;
+        auto r = normalize(row, profile_); if (r.is_object() && !r.empty()) {
             auto k = key(r); if (!remote.count(k) || jnum(r, "last_watched") > jnum(remote[k], "last_watched")) remote[k] = r;
-        } else { retry_at_ = now + 120; return; } // never replace an unreadable cloud snapshot
+        } else ++unreadable;
     }
     Entries local = index(state_["entries"]), pending = index(state_["pending"]), baseline = index(state_["baseline"]);
     // A transient empty snapshot must not erase local data or cause an empty push.
     if (!remote.empty()) {
         for (auto it = local.begin(); it != local.end();) {
-            if (!remote.count(it->first) && baseline.count(it->first) && !pending.count(it->first)) it = local.erase(it);
+            if (!unreadable && !remote.count(it->first) && baseline.count(it->first) && !pending.count(it->first)) it = local.erase(it);
             else ++it;
         }
         for (auto& [k, r] : remote) {
@@ -154,16 +155,27 @@ void WatchSync::synchronize(const Rpc& rpc, double now) {
             if (local.count(k)) retain_metadata(r, local[k]);
             local[k] = r; pending.erase(k);
         }
-        state_["baseline"] = array(remote);
-        baseline = remote;
+        if (!unreadable) {
+            state_["baseline"] = array(remote);
+            baseline = remote;
+        }
     }
     state_["entries"] = array(local); state_["pending"] = array(pending);
     if (!save()) return;
+    // One unsupported row must not hide the rest of a profile's Continue
+    // Watching list. Keep readable rows for display, but do not infer deletions
+    // or push a replacement snapshot while any cloud data is unreadable.
+    if (unreadable) {
+        retry_at_ = now + 120;
+        dlog("progress: profile %d loaded %zu readable entries; %zu unreadable entries; cloud replacement deferred",
+             profile_, remote.size(), unreadable);
+        return;
+    }
     if (pending.empty()) return;
     // Nuvio clients push the merged profile snapshot. Preserve other devices'
     // rows even if the server treats the payload as a complete replacement.
     json updates = json::array(); for (const auto& [k, r] : local) updates.push_back(portable(r));
-    if (!call("sync_push_watch_progress", {{"p_profile_id", 1}, {"p_entries", updates},
+    if (!call("sync_push_watch_progress", {{"p_profile_id", profile_}, {"p_entries", updates},
         {"p_origin_client_id", client_}})) return;
     for (const auto& [k, r] : pending) baseline[k] = r;
     state_["baseline"] = array(baseline); state_["pending"] = json::array(); save();

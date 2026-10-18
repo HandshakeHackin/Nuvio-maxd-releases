@@ -356,6 +356,10 @@ void Session::refresh_board()
 
 void Session::continue_remove(const Item &it)
 {
+    const auto source = jstr(tracking_status_,"progressPreferred","nuvio");
+    if (source == "trakt" || source == "simkl") {
+        say("Remove this Continue Watching entry on "+std::string(source == "trakt" ? "Trakt" : "SIMKL")+". It has not been marked watched.",9.0); return;
+    }
     const auto p = progress_.find(it.id);
     if (p != progress_.end())
     {

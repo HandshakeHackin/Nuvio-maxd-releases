@@ -157,6 +157,7 @@ bool VideoSurface::upload(const VideoPicture& p, std::string* error, bool hdr_ou
         return fail("Invalid decoded video planes");
     if (hdr_output && (!p.hdr10_compatible || p.colors != YuvColors::Hdr10 || p.format == VideoFormat::Rgba))
         return fail("This picture cannot preserve HDR10 through the native YUV path");
+    if (!retire(error)) return false;
     State state;
     const bool resize = !rgba_ || p.w != w_ || p.h != h_ || p.format != format_;
     glActiveTexture(GL_TEXTURE0);
@@ -216,8 +217,29 @@ bool VideoSurface::upload(const VideoPicture& p, std::string* error, bool hdr_ou
     return true;
 }
 
+// Decoder planes have already been copied into owned CPU storage. This fence
+// protects their GL textures through the last composition that sampled them.
+bool VideoSurface::retire(std::string* error) {
+    if (!in_flight_) return true;
+    const GLenum rc=glClientWaitSync(in_flight_,GL_SYNC_FLUSH_COMMANDS_BIT,100000000);
+    if (rc!=GL_ALREADY_SIGNALED && rc!=GL_CONDITION_SATISFIED) {
+        if(error) *error="Video GPU work did not retire safely";
+        return false; // do not overwrite storage still referenced by the GPU
+    }
+    glDeleteSync(in_flight_); in_flight_=nullptr;
+    return true;
+}
+void VideoSurface::submitted() {
+    // Same GL command stream: the newest fence covers every earlier use too.
+    GLsync next=glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE,0);
+    if (!next) { glFinish(); if(in_flight_) glDeleteSync(in_flight_); in_flight_=nullptr; return; }
+    if(in_flight_) glDeleteSync(in_flight_);
+    in_flight_=next;
+}
+
 void VideoSurface::reset() {
-    if (!rgba_ && !y_ && !uv_ && !framebuffer_ && !vao_ && !program_) return;
+    if (!rgba_ && !y_ && !uv_ && !framebuffer_ && !vao_ && !program_ && !in_flight_) return;
+    if (!retire(nullptr)) { glFinish(); glDeleteSync(in_flight_); in_flight_=nullptr; }
     const GLuint textures[] = {rgba_, y_, uv_};
     glDeleteTextures(3, textures);
     if (framebuffer_) glDeleteFramebuffers(1, &framebuffer_);

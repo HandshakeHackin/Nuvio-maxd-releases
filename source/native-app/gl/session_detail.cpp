@@ -53,7 +53,10 @@ Stream stream_view(const ::Stream &st)
 
 bool Session::watched(const std::string &video_id) const
 {
-    return watched_.count(video_id) > 0;
+    if (watched_.count(video_id)) return true;
+    for (const auto& video : d_meta_.videos) if (video.id == video_id)
+        return watched_.count(d_item_.id + ":" + std::to_string(video.season) + ":" + std::to_string(video.episode)) > 0;
+    return false;
 }
 
 void Session::detail_toggle_watched(int index)
@@ -61,17 +64,21 @@ void Session::detail_toggle_watched(int index)
     if (index < 0 || index >= static_cast<int>(d_season_videos_.size()))
         return;
     const std::string &id = d_season_videos_[static_cast<std::size_t>(index)]->id;
-    if (watched_.count(id))
+    const auto& video = *d_season_videos_[static_cast<size_t>(index)];
+    const auto canonical = d_item_.id + ":" + std::to_string(video.season) + ":" + std::to_string(video.episode);
+    const bool mark = !watched(id);
+    if (!mark)
     {
-        watched_.erase(id);
+        watched_.erase(id); watched_.erase(canonical);
         say("Marked as not watched");
     }
     else
     {
-        watched_.insert(id);
+        watched_.insert(canonical);
         say("Marked as watched");
     }
     save_progress();
+    sync_watched_mark(id, d_item_.name, mark, d_item_.id, video.season, video.episode);
     detail.episodes[static_cast<std::size_t>(index)].watched = watched(id);
     changed_ |= kDetail;
 }

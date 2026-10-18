@@ -122,7 +122,7 @@ ApiResult api_addon_collection(const std::string& auth_key);
 ApiResult api_library_get(const std::string& auth_key);
 ApiResult api_library_put(const std::string& auth_key, const json& items);
 ApiResult api_logout(const std::string& auth_key);
-ApiResult api_connected_services_pull(); // explicit import from the primary Nuvio profile
+ApiResult api_connected_services_pull(const std::string& key = ""); // explicit import from selected Nuvio profile
 
 // Nuvio device pairing; the complete verification URL is encoded locally.
 struct LinkCode {

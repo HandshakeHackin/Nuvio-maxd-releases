@@ -40,7 +40,8 @@
       "target/lib/libSceAgc.so": "5eaf8339858c134e2f28b2abd1a0b52542683be8a75ee0bca16147b0c76f485a",
       "target/lib/libSceAgcDriver.so": "3b2cbfea6cbeee48f06bbd78a2c1f8b1f0e9066a9759130ff160cb3a8aa8eca6",
       "target/user/homebrew/include/quickjs/quickjs.h": "2165f47772af9faee1798999a599fa9de850d1bf0259502dade1c25d4a588316",
-      "target/user/homebrew/lib/quickjs/libquickjs.a": "99772f9e9999479d36151b4df31868f25f8264960432fe8616850a4f0d0a7b6e"
+      "target/user/homebrew/lib/quickjs/libquickjs.a": "99772f9e9999479d36151b4df31868f25f8264960432fe8616850a4f0d0a7b6e",
+      "target/user/homebrew/lib/libcurl.a": "c29815b2e111e12c68975626b7d53418533d0718b18ee229943081068c11527d"
     }
   },
   "mkpfs": {

@@ -9,7 +9,7 @@
 namespace {
 int register_rc = 0, close_rc = 0, change_rc = 0, pending = 0, changes = 0, sleeps = 0;
 int status_rc = 0, sleep_rc = 0;
-bool bgr_only=false;
+bool bgr_only=false, rgb_only=false;
 unsigned dynamic_range = 1;
 std::uint64_t output_flags = 0, format = 0;
 std::int64_t clock_us = 1000000;
@@ -30,7 +30,8 @@ void sceVideoOutSetBufferAttribute2(void*,std::uint64_t f,unsigned t,unsigned w,
     format=f;
 }
 int sceVideoOutSubmitChangeBufferAttribute2(int handle,int index,const void*,const void* option) {
-    require(handle==42&&index==0&&!option,"borrowed registration was lost"); ++changes; return bgr_only && format==UINT64_C(0x8100070422000000) ? int(0x80290003u) : change_rc;
+    require(handle==42&&index==0&&!option,"borrowed registration was lost"); ++changes; return ((bgr_only && format==UINT64_C(0x8100070422000000)) ||
+        (rgb_only && format==UINT64_C(0x8100070400000000))) ? int(0x80290003u) : change_rc;
 }
 int ps5_opengl_set_scanout_format(std::uint64_t f,std::int32_t* results) {
     for(int i=0;i<4;++i)results[i]=0x7fffffff;
@@ -60,7 +61,7 @@ int main() try {
     test("refused HDR leaves SDR layout intact",[] {
         change_rc=int(0x80290003u);
         require(!HdrOutput::set(true,3840,2160)&&!HdrOutput::active()&&!HdrOutput::confirmed(),"refusal changed state");
-        require(format==UINT64_C(0x8100070400000000),"BGR alternative was not tried after RGB rejection");
+        require(format==UINT64_C(0x8100070422000000),"RGB alternative was not tried after BGR rejection");
         require(HdrOutput::result()==0x80290003u&&HdrOutput::error().find("pixel format (0x80290003)")!=std::string::npos,
                 "invalid pixel format was hidden by a generic TV error");
         change_rc=0;
@@ -70,6 +71,12 @@ int main() try {
         require(HdrOutput::set(true,3840,2160)&&HdrOutput::bgr(),"BGR candidate not selected");
         require(HdrOutput::format()==UINT64_C(0x8100070400000000),"accepted candidate lost");
         require(HdrOutput::set(false,3840,2160)&&!HdrOutput::bgr(),"BGR restore failed"); bgr_only=false;
+    });
+    test("RGB remains available after a BGR format rejection",[] {
+        rgb_only=true;
+        require(HdrOutput::set(true,3840,2160)&&!HdrOutput::bgr(),"RGB fallback not selected");
+        require(HdrOutput::format()==UINT64_C(0x8100070422000000),"RGB accepted format lost");
+        require(HdrOutput::set(false,3840,2160),"RGB restore failed"); rgb_only=false;
     });
     test("busy or invalid flip queues cannot change the pixel layout",[] {
         const int before=changes; pending=1; sleeps=0;

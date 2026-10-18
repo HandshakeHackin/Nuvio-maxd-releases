@@ -1,4 +1,5 @@
 #include "presentation_timing.hpp"
+#include "tube_frame_pacing.h"
 #include <cassert>
 #include <cmath>
 #include <cstdarg>
@@ -25,6 +26,7 @@ extern "C" uint32_t* __real_sceAgcDcbSetFlip(void* cmd,uint32_t h,int index,uint
 extern "C" int __real_sceVideoOutSubmitFlip(int32_t h,int32_t index,uint32_t mode,int64_t marker) {
     assert(h==7 && index==1 && mode==1 && marker>0); ++calls; return submit_rc;
 }
+extern "C" int sceKernelUsleep(unsigned us) { mono+=us; process+=us; return 0; }
 void dlog(const char*,...) {}
 extern "C" uint32_t* __wrap_sceAgcDcbSetFlip(void*,uint32_t,int,uint32_t,int64_t);
 extern "C" int __wrap_sceVideoOutSubmitFlip(int32_t,int32_t,uint32_t,int64_t);
@@ -83,5 +85,26 @@ int main() {
     assert(__wrap_sceVideoOutSubmitFlip(7,1,1,10)==-42);
     status[3]=10;near(poll(),0);
     assert(calls==5);
+    // The production scheduler waits once for a new low-rate picture at 120 Hz.
+    reset();
+    arm({1,mono,0,24,1},120); assert(needs_wait());
+    const auto before=mono; wait_before_swap();
+    assert(mono>before && mono-before<=25025); assert(!needs_wait());
+    arm({1,before,0,24,1},120); assert(!needs_wait()); // repeated picture
+    arm({2,mono,41667,24,1},60); assert(!needs_wait());
+    arm({3,mono,83333,60,1},120); assert(!needs_wait()); // high-rate path unchanged
+    arm({4,mono,125000,24,2},120); assert(needs_wait()); // new seek epoch
+    reset(); assert(!needs_wait());
+    // Exact source timestamps, jitter, discontinuities and late GPU completion.
+    tube_frame_pacing p{};
+    assert(tube_frame_pacing_begin(&p,1,1,0,1000000,1,24,1001000.0/120));
+    assert(tube_frame_pacing_wait_until(&p,1001000)>1001000);
+    tube_frame_pacing_observe(&p,1025025,1); assert(!p.pending);
+    assert(tube_frame_pacing_begin(&p,1,2,41667,1041667,1,24,1001000.0/120));
+    assert(!tube_frame_pacing_wait_until(&p,1100000)); assert(p.misses==1);
+    tube_frame_pacing_observe(&p,1100000,0); assert(!p.active);
+    assert(!tube_frame_pacing_begin(&p,1,0,0,1000000,1,24,8333));
+    assert(!tube_frame_pacing_begin(&p,1,1,INT64_MIN,1000000,1,24,8333));
+
     std::puts("Presentation timing: GPU/CPU flips, timestamp guards, duplicate/stale rejection, reset and bounded lead passed");
 }

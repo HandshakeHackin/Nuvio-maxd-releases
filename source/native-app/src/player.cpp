@@ -1289,7 +1289,15 @@ bool Player::buffering(int* percent) const {
 
 void Player::update_buffering() {
 	if (state_ != State::Playing || recovering_ || seek_pending_ || reopen_target_ >= 0) return;
-	if(pcm_.failed() && !pcm_.bitstream_kind()) { fail("The PS5 audio output stopped. Try stereo audio output in Settings."); return; }
+    bool pcm_failed;
+    {
+        // The audio worker changes kind/failed together while holding this lock
+        // when it restores PCM. Do not mistake its closed-port intermediate
+        // state for a failed PCM output and terminate otherwise recoverable playback.
+        std::lock_guard<std::mutex> clock(clock_m_);
+        pcm_failed=pcm_.failed() && !pcm_.bitstream_kind();
+    }
+    if(pcm_failed) { fail("The PS5 audio output stopped. Try stereo audio output in Settings."); return; }
 	bool has_v = video_stream_ >= 0, has_a = audio_stream_ >= 0 && pcm_.is_open();
 	if (buffering_) {
 		double target = seek_refill_ ? 0.5 : std::max(kBufferTargets[stalls_], start_target_);

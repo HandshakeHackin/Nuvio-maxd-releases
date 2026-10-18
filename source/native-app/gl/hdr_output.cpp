@@ -1,5 +1,5 @@
 // Switching is owned by the experimental extension inside the OpenGL runtime.
-// HDR uses ProsperoLight's hardware-tested RGB10A2 BT.2100 PQ scanout format.
+// Prefer ProsperoTube/EVO's BGR10A2 BT.2100 PQ format; retain RGB fallback.
 // Buffer registration and GPU rendering stay owned by the pinned OpenGL SDK.
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "hdr_output.hpp"
@@ -97,7 +97,7 @@ bool HdrOutput::set(bool enable, int width, int height) {
     std::printf("[HDR] before switch status_rc=%08x range=%u refresh=%llu flags=%016llx\n",
         unsigned(readback_rc),readback.dynamic_range,(unsigned long long)readback.refresh,(unsigned long long)readback.flags);
     int rc=0;
-    const std::uint64_t candidates[]={enable?kHdr:kSdr,kHdrBgr};
+    const std::uint64_t candidates[]={enable?kHdrBgr:kSdr,kHdr};
     for(int candidate=0;candidate<(enable?2:1);++candidate) {
         attempted_format=candidates[candidate];
         switching_driver=true;
