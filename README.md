@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="sce_sys/icon0.png" alt="Nuvio Max'd app icon" width="176" height="176">
+  <img src="sce_sys/icon0.png" alt="MAX'D Nuvio edition app icon" width="176" height="176">
 </p>
 
 <h1 align="center">Nuvio Max'd</h1>
@@ -29,6 +29,14 @@ tracker source choices and experimental playback improvements.** Read the
 setup and verification limits. The fixes for [#3](https://github.com/HandshakeHackin/Nuvio-maxd-releases/issues/3)
 and [#4](https://github.com/HandshakeHackin/Nuvio-maxd-releases/issues/4) still need
 affected-user PS5 confirmation. The store can lag behind GitHub; check its listed version.
+
+## Staged for the next release — 0.5.32
+
+This branch stages the new **MAX'D** family icon: the angular M/play mark,
+Nuvio teal/white/pink-purple palette, large MAX'D lettering and smaller NUVIO
+label. It includes the matching 512px PS5/GitHub icon and next-version source.
+0.5.32 has not been packaged or released. Download links above still point to
+the published 0.5.31 build. See [the rollout checklist](NEXT_BUILD.md).
 
 ## Library, profiles and sources
 
