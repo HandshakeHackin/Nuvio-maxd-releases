@@ -59,7 +59,7 @@ FLAGS+=(-DNUVIO_HAVE_VLC -DNUVIO_VLC_STATIC -I"$VLC_SRC/include")
 
 echo ">> compiling"
 sources=("$ROOT"/ui/*.cpp "$ROOT"/gl/*.cpp "$ROOT/update/core.cpp"
-	"$ROOT/src/nuvio_account.cpp" "$ROOT/src/watch_sync.cpp" "$ROOT/src/connected_services.cpp" "$ROOT/src/connected_preparer.cpp" "$ROOT/src/bidi.cpp" "$ROOT/src/stremio.cpp" "$ROOT/src/providers.cpp" "$ROOT/src/http.cpp" "$ROOT/src/util.cpp" "$ROOT/src/tasks.cpp"
+	"$ROOT/src/nuvio_account.cpp" "$ROOT/src/watch_sync.cpp" "$ROOT/src/tracking.cpp" "$ROOT/src/connected_services.cpp" "$ROOT/src/connected_preparer.cpp" "$ROOT/src/bidi.cpp" "$ROOT/src/stremio.cpp" "$ROOT/src/providers.cpp" "$ROOT/src/http.cpp" "$ROOT/src/util.cpp" "$ROOT/src/tasks.cpp"
 	"$ROOT/src/packet_storage.cpp" "$ROOT/src/diagnostics.cpp" "$ROOT/src/player.cpp" "$ROOT/src/vlc_backend.cpp" "$ROOT/src/netstream.cpp" "$ROOT/src/hwdec_ps5.cpp" "$ROOT/src/yuv_convert.cpp" "$ROOT/src/video_frame.cpp" "$ROOT/src/display_output.cpp"
 	"$ROOT/src/evo_backend.cpp" "$ROOT/src/evo_runtime.cpp"
 	"$ROOT/src/subtitle_renderer.cpp" "$ROOT/src/subtitles.cpp" "$ROOT/src/pcm_out.cpp" "$ROOT/src/bitstream.cpp" "$ROOT"/src/torrent/*.cpp
@@ -132,7 +132,7 @@ read -r -a DEPS <<< "$("$SDK/bin/prospero-pkg-config" --static --libs libcurl li
 	tr ' ' '\n' | grep -E '^-[lL]' | grep -v -E '^(-lm|-lc)$' | tr '\n' ' ')"
 "$SDK/bin/prospero-lld" -T "$NATIVE/ps5-app.ld" --eh-frame-hdr \
 	--version-script "$BP/tooling/native/app-symbols.map" -e _start -o "$B/pie.elf" \
-	--wrap=fcntl -L "$SDK/target/lib" -L "$HB" \
+	--wrap=fcntl --wrap=curlx_nonblock -L "$SDK/target/lib" -L "$HB" \
 	--wrap=pthread_create --wrap=pipe --wrap=mmap --wrap=mprotect \
 	--wrap=malloc --wrap=free --wrap=calloc --wrap=realloc --wrap=reallocf \
 	--wrap=posix_memalign --wrap=memalign --wrap=aligned_alloc --wrap=valloc --wrap=malloc_usable_size \
@@ -152,6 +152,8 @@ read -r -a DEPS <<< "$("$SDK/bin/prospero-pkg-config" --static --libs libcurl li
 	"$COMPILER_RT" \
 	--end-group \
 	--as-needed "$SDK"/target/lib/*.so "$B"/stubs/*.so "$GL/lib/libSceAgc.so" "$GL/lib/libSceAgcDriver.so"
+
+python3 "$ROOT/tools/verify_curl_socket.py" "$B/pie.elf"
 
 python3 "$NATIVE/check_imports.py" "$B/pie.elf" "$SDK/target/lib" "$B/stubs" "$GL/lib"
 
@@ -193,6 +195,13 @@ echo ">> building bundled image update helper"
 make -C "$ROOT/update" PS5_PAYLOAD_SDK="$SDK" OUTPUT="$B/nuvio-updater.elf"
 cp "$B/nuvio-updater.elf" "$APP/"
 cp "$ROOT/../ps5/account-config.json" "$APP/"
+# Optional app-owner registrations enable phone pairing without developer setup
+# on each console. Never point this at an account-token or profile backup file.
+if [ -n "${NUVIO_TRACKER_APPLICATIONS:-}" ]; then
+    python3 "$ROOT/tools/validate_tracker_applications.py" "$NUVIO_TRACKER_APPLICATIONS" "$APP/tracker-applications.json"
+else
+    printf '%s\n' '{}' > "$APP/tracker-applications.json"
+fi
 # License notices travel with the app: the GPL, the component list, the license text of everything it
 # contains (app/licenses/README.txt), and the notices of the toolkit and the OpenGL SDK.
 cp -r "$ROOT/app/licenses" "$APP/"

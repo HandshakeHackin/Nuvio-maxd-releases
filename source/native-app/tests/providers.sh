@@ -21,3 +21,11 @@ for source in "$ROOT/tests/providers_host.cpp" "$ROOT/src/"{providers,stremio,ht
 done
 "$CXX" -pthread "${objects[@]}" "$QUICKJS_DIR/libquickjs.a" "${libraries[@]}" -ldl -lm -o "$ROOT/test-output/providers-host"
 "$ROOT/test-output/providers-host" "$ROOT/third_party/provider-runtime/runtime.js" "$@"
+
+# Compile the transfer fixture against the exact production request implementation.
+"$CXX" "${flags[@]}" "$ROOT/tests/providers_transfer_host.cpp" \
+ "$BUILD/stremio.cpp.o" "$BUILD/http.cpp.o" "$BUILD/util.cpp.o" \
+ "$QUICKJS_DIR/libquickjs.a" "${libraries[@]}" -Wl,--wrap=curl_easy_setopt -ldl -lm -o "$ROOT/test-output/providers-transfer-host"
+"$ROOT/test-output/providers-transfer-host" "$ROOT/third_party/provider-runtime/runtime.js"
+"$CXX" -std=c++20 -O1 -I"$ROOT/ui" "$ROOT/tests/dropdown_window_host.cpp" -o "$ROOT/test-output/dropdown-window-host"
+"$ROOT/test-output/dropdown-window-host"

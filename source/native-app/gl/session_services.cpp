@@ -6,7 +6,7 @@
 
 namespace sx {
 bool Session::services_save(const debrid::Settings& next) {
-    if (!debrid::save(data_dir_ + "/connected-services.json", next)) {
+    if (!debrid::save(profile_dir_ + "/connected-services.json", next)) {
         say("Could not save Connected Services. Your previous settings are unchanged.", 7.0, true);
         return false;
     }
@@ -100,8 +100,8 @@ void Session::services_import() {
     if (services_importing_) return;
     services_importing_ = true;
     const int generation = services_generation_, login = login_gen_;
-    say("Importing Connected Services from your primary Nuvio profile...");
-    bg<ApiResult>([] { return api_connected_services_pull(); }, [this, generation, login](auto& result) {
+    say("Importing Connected Services from your selected Nuvio profile...");
+    bg<ApiResult>([key = prefs_.auth_key] { return api_connected_services_pull(key); }, [this, generation, login](auto& result) {
         services_importing_ = false;
         if (generation != services_generation_ || login != login_gen_ || !signed_in()) return;
         if (!result.ok) { say(result.error, 8.0, true); return; }

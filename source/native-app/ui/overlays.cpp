@@ -1,6 +1,7 @@
 #include "overlays.hpp"
 #include "release_notes.hpp"
 #include "logo_animation.hpp"
+#include "dropdown_window.hpp"
 
 #include "cards.hpp"
 
@@ -299,16 +300,19 @@ void draw_dropdown(hui::gfx::DrawList &list, const Env &env, const DropdownState
         return;
     }
     scrim(list, t, 0.72f);
-    const int visible = static_cast<int>(std::min<std::size_t>(s.options.size(), 9));
+    const int count = static_cast<int>(s.options.size());
     // A confirmation has a line under its title (what it is about).
     auto message_lines=s.message.empty()?std::vector<std::string>{}:env.fonts.regular.font->wrap(s.message,26.0f,532.0f);
-    const size_t max_lines=visible>5?3:8;
+    const size_t max_lines=count>5?3:8;
     if(message_lines.size()>max_lines) {
         message_lines.resize(max_lines);
         message_lines.back()=env.fonts.regular.font->fit(message_lines.back()+" …",26.0f,532.0f);
     }
     const float extra=message_lines.empty()?0.0f:14.0f+32.0f*float(message_lines.size());
-    const Rect r{theme::kScreenW * 0.5f - 310.0f, 130.0f, 620.0f, 150.0f + extra + static_cast<float>(visible) * 76.0f};
+    const auto window = dropdown_window(count, s.selected, extra);
+    const float footer = window.visible < count ? 28.0f : 0.0f;
+    const Rect r{theme::kScreenW * 0.5f - 310.0f, 130.0f, 620.0f,
+                 150.0f + extra + static_cast<float>(window.visible) * 76.0f + footer};
     list.push_opacity(t);
     list.push_transform(0.96f + 0.04f * t, r.cx(), r.y, 0.0f, 0.0f);
     panel(list, r, 34.0f, 0.97f);
@@ -316,10 +320,10 @@ void draw_dropdown(hui::gfx::DrawList &list, const Env &env, const DropdownState
          34.0f, theme::ink);
     for(size_t i=0;i<message_lines.size();++i)
         text(list,env.fonts.regular,message_lines[i],r.x+44.0f,r.y+128.0f+32.0f*float(i),26.0f,theme::ink_2);
-    list.push_clip({r.x, r.y + 110.0f + extra, r.w, r.h - 126.0f - extra});
-    for (int i = 0; i < static_cast<int>(s.options.size()); ++i)
+    list.push_clip({r.x, r.y + 110.0f + extra, r.w, r.h - 126.0f - extra - footer});
+    for (int i = window.first; i < window.first + window.visible; ++i)
     {
-        const Rect row{r.x + 28.0f, r.y + 118.0f + extra + static_cast<float>(i) * 76.0f, r.w - 56.0f, 66.0f};
+        const Rect row{r.x + 28.0f, r.y + 118.0f + extra + static_cast<float>(i - window.first) * 76.0f, r.w - 56.0f, 66.0f};
         const bool selected = i == s.selected;
         const bool danger = i == s.danger;
         if (selected)
@@ -339,6 +343,11 @@ void draw_dropdown(hui::gfx::DrawList &list, const Env &env, const DropdownState
              danger ? Color::rgb(0xff8585) : active || selected ? theme::ink : theme::ink_2);
     }
     list.pop_clip();
+    if (footer > 0) {
+        const auto range = std::to_string(window.first + 1) + "–" +
+                           std::to_string(window.first + window.visible) + " of " + std::to_string(count);
+        text(list, env.fonts.regular, range, r.cx(), r.y + r.h - 18.0f, 20.0f, theme::ink_3, Align::center);
+    }
     list.pop_transform();
     list.pop_opacity();
 }

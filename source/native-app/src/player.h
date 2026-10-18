@@ -98,6 +98,8 @@ public:
 	const Picture* present();
     // UI-thread only. Lead advances video selection, never the audio/progress clock.
     void set_video_lead(double seconds) { video_lead_ = seconds >= 0 && seconds <= 0.04 ? seconds : 0; }
+    double picture_pts() const { return vlc_ ? -1 : current_.pts; }
+    double picture_fps() const { return vlc_ ? 0 : fps_; }
     int picture_serial() const { return vlc_ ? vlc_->picture_serial() : current_.serial; }
     int video_serial() const { return vlc_ ? vlc_->serial() : vq_.serial(); }
 

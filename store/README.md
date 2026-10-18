@@ -1,22 +1,13 @@
 # ProsperoStore listing
 
-Release: [0.5.31-native-experimental](https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/tag/v0.5.31-native-experimental).
+Release: [0.5.32-native-experimental](https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/tag/v0.5.32-native-experimental).
 
-This record pins the ZIP digest and icon to the 0.5.31 release tag. The tagged
-and packaged contentVersion is 05.000.031. See [CHANGELOG.md](../CHANGELOG.md)
-for the Continue Watching/provider candidate fixes, tracker setup and testing limits.
+The catalog proposal uses the release's immutable ZIP/digest and the matching
+MAX'D icon pinned to its tag. Tagged/package contentVersion is 05.000.032.
+This update adds the MAX'D family icon and updater shutdown candidate fix.
+See [CHANGELOG.md](../CHANGELOG.md) and [testing notes](../native-app/TESTING-0.5.32.md).
 
-The verified catalog update is pushed to
-[`HandshakeHackin/ps5-homebrew-catalog:update-nuvio-maxd-0.5.31`](https://github.com/HandshakeHackin/ps5-homebrew-catalog/tree/update-nuvio-maxd-0.5.31).
-Offline and online record verification pass with zero errors/warnings. The full
-release scan has zero errors and retains the existing helper/loader/console-light
-warnings for maintainer review; see the scan attached to the release.
-
-**Submitted and merged:** [catalog PR #394](https://github.com/darkxex/ps5-homebrew-catalog/pull/394)
-was submitted by the owner and merged on 2026-10-18. Submission validation,
-release scanning and the developer-release checks passed. The catalog repository
-now lives under `darkxex/ps5-homebrew-catalog`.
-
-The current [ProsperoStore listing](https://prosperostore.net/app/PPSA99288/)
-still showed 0.5.29 when checked after the merge. Catalog merge and live deployment
-are separate; GitHub's 0.5.31 downloads are available now.
+The catalog update is submitted after publishing and verifying the assets.
+The submission outcome will be linked here. A submitted or merged PR is separate
+from deployment; check the [live store](https://prosperostore.net/app/PPSA99288/).
+Catalog: https://github.com/darkxex/ps5-homebrew-catalog

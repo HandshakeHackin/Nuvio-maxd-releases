@@ -282,6 +282,7 @@ int main()
         if (wants_hdr != sx::HdrOutput::active() && (wants_hdr || now >= restore_retry_at)) {
             std::string error;
             const bool ready = !wants_hdr || hdr_compositor.prepare(display.width(),display.height(),&error);
+            sx::presentation::reset(); // a mode change invalidates the refresh phase
             glFinish(); // drain GPU writes before VideoOut retypes the registered set
             if (!ready || !sx::HdrOutput::set(wants_hdr,display.width(),display.height())) {
                 if (wants_hdr)
@@ -316,6 +317,11 @@ int main()
                 sys::park();
             }
         } else renderer.present(0, display.width(), display.height());
+        if (sx::presentation::needs_wait()) {
+            glFinish(); // submit the ready picture into its stable refresh interval
+            sx::presentation::wait_before_swap();
+        }
+        session.mark_video_submitted();
         if (!display.swap())
         {
             console_lights.stop();

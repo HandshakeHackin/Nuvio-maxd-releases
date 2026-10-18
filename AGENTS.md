@@ -6,7 +6,7 @@ This authorization includes pushing the catalog branch and opening its pull
 request; do not ask again for routine release submissions.
 
 Follow RELEASING.md. Submit only apps/PPSA99288.json to
-blackbearreloaded/ps5-homebrew-catalog from HandshakeHackin's fork. Use the
+darkxex/ps5-homebrew-catalog from HandshakeHackin's fork. Use the
 published PPSA99288.zip asset's GitHub SHA-256 digest and version tag. Preserve
 existing release assets and tags. Check for an existing proposal before opening
 a duplicate; resolve submission check failures within the authorized scope.

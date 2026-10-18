@@ -44,6 +44,7 @@ int main(int argc, char** argv) {
         } else if (op == "cancel") { nuvio_pairing_cancel(); out["ok"] = true; }
         else if (op == "restore") out["ok"] = nuvio_account_init(argv[1], argv[2]);
         else if (op == "saved") out["saved"] = nuvio_account_saved();
+        else if (op == "context") out = {{"path", nuvio_profile_path()}, {"key", nuvio_profile_key()}};
         else if (op == "parallel") {
             std::vector<std::thread> threads;
             std::atomic<int> count{0};
@@ -95,11 +96,18 @@ int main(int argc, char** argv) {
             }
         } else {
             ApiResult r;
-            if (op == "poll") r = link_read(jstr(cmd, "code"));
+            if (op == "tracking") r = api_tracking(jstr(cmd,"auth_key"),jstr(cmd,"action"),jobj(cmd,"args"));
+            else if (op == "watched_get") r = api_watched_get(jstr(cmd, "auth_key"));
+            else if (op == "watched_update") r = api_watched_update(jstr(cmd, "auth_key"), jstr(cmd, "video"), jstr(cmd, "title"), jbool(cmd, "watched"), jstr(cmd, "content"), int(jnum(cmd, "season", -1)), int(jnum(cmd, "episode", -1)));
+            else if (op == "profiles") r = api_profiles_get(jstr(cmd, "auth_key"));
+            else if (op == "select_profile") r = api_profile_select(jstr(cmd, "auth_key"), int(jnum(cmd, "profile")), jstr(cmd, "pin"));
+            else if (op == "create_profile") r = api_profile_create(jstr(cmd, "auth_key"), jstr(cmd, "name"));
+            else if (op == "source_update") r = api_profile_source_update(jstr(cmd, "auth_key"), jstr(cmd, "url"), jbool(cmd, "plugin"), jbool(cmd, "remove"));
+            else if (op == "poll") r = link_read(jstr(cmd, "code"));
             else if (op == "user") r = api_get_user("");
-            else if (op == "addons") r = api_addon_collection("");
+            else if (op == "addons") r = api_addon_collection(jstr(cmd, "auth_key"));
             else if (op == "logout") r = api_logout("");
-            else if (op == "library") r = api_library_get("");
+            else if (op == "library") r = api_library_get(jstr(cmd, "auth_key"));
             else if (op == "connected_services") r = api_connected_services_pull();
             else if (op == "progress_write") r = api_library_put(jstr(cmd, "auth_key"), jobj(cmd, "changes"));
             out = {{"ok", r.ok}, {"result", r.result}, {"error", r.error}};

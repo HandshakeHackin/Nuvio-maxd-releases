@@ -62,3 +62,13 @@ Expat (Expat contributors)                 MIT                             expat
 libpng (PNG Reference Library authors)     PNG Reference Library License   libpng.txt
 Noto Sans CJK SC / Noto Sans Thai           SIL OFL 1.1                     ../fonts/NotoSansCJK-LICENSE.txt,
                                                                            ../fonts/NotoSansThai-LICENSE.txt
+
+ProsperoTube playback adaptation (GPL-3.0-or-later)
+Copyright (C) 2026 BlackBearReloaded.
+Source: https://github.com/blackbearreloaded/ProsperoTube
+Reviewed commit: aa7eaec9b61b53f0f50cc35c6740858ca149db60.
+The low-frame-rate scheduler in gl/tube_frame_pacing.h is adapted from
+native/tube_frame_pacing.h at that commit. HDR switching and GPU lifetime
+safeguards follow the in-place VideoOut and frame-retirement approach,
+adapted to Nuvio's OpenGL renderer. The matching source archive contains
+the scheduler and adaptations; the GPL license is included in this package.

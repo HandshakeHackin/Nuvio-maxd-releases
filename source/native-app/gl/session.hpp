@@ -85,6 +85,7 @@ class Session
     void fail_video_output(const std::string& error);
     void poll_presentation_timing();
     void arm_presentation_timing();
+    void mark_video_submitted() { if(video_texture) video_surface_.submitted(); }
 
     unsigned take_changed()
     {
@@ -189,7 +190,7 @@ class Session
     void settings_activate(int row);
     void addons_reload();
     // Cross on an addon: one added by URL can be removed; the account's are managed in Nuvio.
-    void addon_activate(int index);
+    void addon_activate(int index, int provider_cursor = 0);
     // Square on the Board: "See all" (a catalog opens in Discover, Continue Watching in the Library).
     void board_square(int row, int col);
     // Whether a row of the Board is Continue Watching.
@@ -232,6 +233,13 @@ class Session
     template <typename T> void bg(std::function<T()> work, std::function<void(T &)> done, bool urgent = false);
 
     // persistence and account
+    void profiles_menu(bool startup = false);
+    void profile_choose(int id, bool locked);
+    void clear_profile_views();
+    void profile_apply(const json& result);
+    void load_profile_settings();
+    void save_profile_settings();
+    void sync_source(const std::string& url, bool plugin, bool remove, bool automatic = false);
     void load_prefs();
     void save_prefs();
     void load_progress();
@@ -243,6 +251,9 @@ class Session
     void load_addons();
     void on_addons_loaded();
     void load_library();
+    void load_watched();
+    void sync_watched_mark(const std::string& video, const std::string& title, bool watched,
+                           const std::string& content = "", int season = -1, int episode = -1);
     const ::Addon *find_addon(const std::string &url) const;
     std::vector<Item> continue_watching() const;
 
@@ -270,6 +281,13 @@ class Session
     void login_poll();
     void login_done(const std::string &auth_key);
     void sign_out();
+    void tracking_menu();
+    void tracker_menu(const std::string& provider);
+    void tracking_source_menu(bool progress);
+    void tracking_refresh();
+    void tracking_action(const std::string& action, const json& args, bool reload = false);
+    void tracker_login_start(const std::string& provider);
+    void tracker_login_poll();
     void services_menu();
     void service_menu(const std::string& provider);
     bool services_save(const debrid::Settings& next);
@@ -338,7 +356,13 @@ class Session
     void apply_meta(Item &item) const;
     void want_meta(const Item &item);
 
-    std::string base_dir_, data_dir_;
+    std::string base_dir_, data_dir_, profile_dir_;
+    json profiles_ = json::array(), active_profile_ = json::object();
+    std::set<std::string> source_attempted_;
+    unsigned profile_generation_ = 0, watched_revision_ = 0;
+    bool profile_ready_ = false, profiles_loading_ = false, profile_prompt_pending_ = false;
+    bool inherit_addons_ = false, inherit_plugins_ = false;
+
     hui::gfx::Renderer *renderer_ = nullptr;
     TexCache tex_;
     Prefs prefs_;
@@ -422,6 +446,10 @@ class Session
     int login_interval_ = 3;
     int login_gen_ = 0;
     bool confirm_sign_out_ = false;
+    json tracking_status_ = json::object();
+    int tracking_generation_ = 0;
+    int library_generation_ = 0;
+    std::string progress_file_ = "progress.json";
     debrid::Settings services_;
     std::shared_ptr<debrid::PreparedLinks> prepared_ = std::make_shared<debrid::PreparedLinks>();
     int services_generation_ = 0;
@@ -511,7 +539,10 @@ class Session
 
 template <typename T> void Session::bg(std::function<T()> work, std::function<void(T &)> done, bool urgent)
 {
-    g_tasks.run<T>(std::move(work), std::move(done), urgent);
+    const auto generation = profile_generation_;
+    g_tasks.run<T>(std::move(work), [this, generation, done = std::move(done)](T& result) {
+        if (generation == profile_generation_) done(result);
+    }, urgent);
 }
 
 } // namespace sx

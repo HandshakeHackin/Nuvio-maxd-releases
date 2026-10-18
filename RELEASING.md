@@ -21,8 +21,8 @@ Do not wait for the catalog's daily discovery/update job instead of submitting
 the release. A merge and store deployment remain controlled by the catalog
 maintainers. Do not rewrite an older released asset to update a listing.
 
-Catalog: https://github.com/blackbearreloaded/ps5-homebrew-catalog
-Submission guide: https://github.com/blackbearreloaded/ps5-homebrew-catalog/blob/main/docs/submitting.md
+Catalog: https://github.com/darkxex/ps5-homebrew-catalog
+Submission guide: https://github.com/darkxex/ps5-homebrew-catalog/blob/main/docs/submitting.md
 
 If GitHub denies creating the upstream PR (for example, a 403 integration
 permission error), retain the pushed fork branch and provide a prefilled compare

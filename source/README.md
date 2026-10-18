@@ -6,14 +6,14 @@ a **ZIP folder** for ProsperoStore and ShadowMountPlus, and an **FFPFSC** image
 for people who prefer image installs. You don't need a PC running a companion
 Nuvio server. This is an unofficial client, previously named Nuvio PS5.
 
-Sign in with a QR code to load your addons and saved library from your primary
+Sign in with a QR code to load your addons and saved library from your selected
 Nuvio profile. **Watch Progress now uses Nuvio Sync**, so you can pause on the
 PS5 and pick up where you left off on another Nuvio device.
 
-**Current release: [v0.5.23 native experimental](https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/tag/v0.5.23-native-experimental).**
+**Current release: [v0.5.29 native experimental](https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/tag/v0.5.29-native-experimental).**
 
-**Local test build 0.5.27 (not published):** grouped Settings, a slow teal/white/pink-purple controller fade, and optional console light sync with approximate colours. Retains measured video flip timing and the PCM/stereo audio changes. See [local test notes](native-app/TESTING-0.5.27.txt). Console compatibility and playback quality still need PS5 testing.
-Download `PPSA99288.zip` or `NuvioMaxd-0.5.23-native.ffpfsc`. The validation report,
+**Local test build 0.5.30 (not published):** account profile selection and creation, separate profile history and sources, addon/plugin repository sync and watched-history import. See [test notes](native-app/TESTING-0.5.30.md). Real-account and PS5 testing is still required.
+Download `PPSA99288.zip` or `NuvioMaxd-0.5.29-native.ffpfsc`. The validation report,
 matching source archive and `SHA256SUMS` are included. The development repository
 stays private; the source for each released version is available with its public
 downloads.
@@ -25,7 +25,8 @@ Find **Nuvio Max'd** in the store to install it, or use the GitHub downloads.
 ## What you can do
 
 - Sign in with your phone and keep your login between launches.
-- Bring in enabled standard addons from your primary profile, including
+- Choose or create Nuvio account profiles with separate sources and history.
+- Bring in enabled standard addons from the selected profile, including
   AIOMetadata and AIOStreams, or add a manifest yourself in Settings.
 - Browse addon catalogs, search for titles and open your saved library.
 - Play direct and debrid links using the built-in player. Debrid comes from
@@ -54,12 +55,12 @@ Let ShadowMount+ finish scanning, then open **Nuvio Max'd**.
 
 ### FFPFSC image
 
-1. Download `NuvioMaxd-0.5.23-native.ffpfsc` and put it in a `/homebrew/` folder
+1. Download `NuvioMaxd-0.5.29-native.ffpfsc` and put it in a `/homebrew/` folder
    on storage that ShadowMount+ scans, just like your other homebrew apps.
    For a USB drive, that might be:
 
    ```text
-   /mnt/usb0/homebrew/NuvioMaxd-0.5.23-native.ffpfsc
+   /mnt/usb0/homebrew/NuvioMaxd-0.5.29-native.ffpfsc
    ```
 
    Leave the image in that folder so ShadowMount+ can identify it automatically.
@@ -92,7 +93,7 @@ helper when the public feed and required local services are available.
 ## Set up Watch Progress across devices
 
 1. Sign in to the **same Nuvio account** on the PS5 and your other device.
-2. Use the **primary profile** on both devices. On your other device, choose
+2. Use the **same profile** on both devices. On your other device, choose
    **Nuvio Sync** as the Watch Progress source.
 3. Play a movie or episode, then pause or stop it. Open that title on the other
    device and check its resume position.
@@ -122,7 +123,7 @@ want only direct/debrid results.
 Open **Settings → Connected Services**. Connect TorBox with a
 phone QR code or API key, or Premiumize with an API key. If you've already
 connected them in Nuvio, choose **Import connections from Nuvio Sync** while
-signed in to copy the connections from your primary profile.
+signed in to copy the connections from your selected profile.
 
 Enable **Resolve playable links** and choose **Resolve with** to prefer TorBox
 or Premiumize. AIOStreams results that ask the client to resolve a cached file
@@ -333,3 +334,34 @@ with the components and licenses listed in the third-party notices.
 The browser/bridge code under `js/` and `ps5/` is retained from the earlier 0.3
 experiment. Its two-package installation guide is archived; use the ZIP or
 FFPFSC instructions above for the current app.
+
+## Account profiles in 0.5.30 (test build)
+
+After sign-in, choose **Who's watching?**. Reopen the picker at **Settings →
+Account & Services → Profiles**. Existing Nuvio profiles import from your account;
+**Create profile** adds a named profile to the account, up to six total. Account
+registration and sign-in continue through Nuvio's existing phone/web flow.
+
+Watch Progress, Continue Watching, watched episodes, local addon additions,
+plugin provider switches, language preferences and Connected Services data are
+separate for each account/profile. Existing pre-profile data with a matching saved sync owner migrates once into
+that account's primary profile; unowned older files remain as backups. guest history is not copied into new
+account profiles. Switching profiles is available after stopping playback.
+Profiles protected by a PIN require Nuvio verification, including on each launch.
+If profile or lock verification is unavailable, retry from Profiles in Settings.
+
+Standard addons and supported **NUVIO_JS** plugin repositories import for the
+selected profile. Add/remove source changes made here sync back to that profile;
+failed changes stay in a local queue and retry when addons reload. Other source
+rows are preserved; unknown future plugin formats stop the push rather than
+being removed. Android DEX/CS3 plugins cannot run in the native JS runtime.
+Individual scraper enable switches remain local to each profile: newly imported
+JS providers start disabled, as in 0.5.29. Enable the providers you want on the
+Addons page. The Nuvio repository sync contract does not carry these individual
+scraper switches.
+
+Nuvio's **use primary addons** and **use primary plugins** flags are respected
+separately. Inherited source sets are read-only here; change sharing flags in
+Nuvio, then refresh/switch profiles. Device display, lighting and installation
+settings remain shared on this PS5. This test build requires real-account and
+PS5 validation before claiming cross-device compatibility.

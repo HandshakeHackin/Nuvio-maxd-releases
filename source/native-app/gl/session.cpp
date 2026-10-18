@@ -3,6 +3,7 @@
 // a title's page is session_detail.cpp.
 
 #include "session.hpp"
+#include "tracking.h"
 #include "release_notes.hpp"
 
 #include "http.h"
@@ -28,6 +29,9 @@ constexpr std::size_t kTextureBudget = 640u << 20; // bytes of artwork kept on t
 enum SettingIndex
 {
     kAccount,
+    kProfiles,
+    kTracking,
+    kLibrarySource,
     kConnectedServices,
     kTorrents,
     kServer,
@@ -122,6 +126,8 @@ bool Session::init(const std::string &base_dir, const std::string &data_dir, hui
     player_.subtitle_renderer().configure(base_dir+"/fonts");
     base_dir_ = base_dir;
     data_dir_ = data_dir;
+    profile_dir_ = data_dir + "/guest";
+    make_dirs(profile_dir_);
     renderer_ = renderer;
     make_dirs(data_dir_);
     log_open(data_dir_ + "/log.txt");
@@ -143,24 +149,43 @@ bool Session::init(const std::string &base_dir, const std::string &data_dir, hui
     release_notes_open=should_show_release_notes(prefs_.seen_release,release_notes_version);
     if (!nuvio_account_init(base_dir_ + "/account-config.json", data_dir_))
         say("Could not load Nuvio account configuration", 8.0, true);
-    prefs_.auth_key = nuvio_account_saved() ? "nuvio-session" : "";
-    debrid::load(data_dir_ + "/connected-services.json", services_);
+    prefs_.auth_key = nuvio_profile_key();
+    debrid::load(profile_dir_ + "/connected-services.json", services_);
     const auto account_user = nuvio_account_user_id();
     if ((!services_.torbox.sync_owner.empty() && services_.torbox.sync_owner != account_user) ||
         (!services_.premiumize.sync_owner.empty() && services_.premiumize.sync_owner != account_user)) {
-        services_.clear_synced(); debrid::save(data_dir_ + "/connected-services.json", services_);
+        services_.clear_synced(); debrid::save(profile_dir_ + "/connected-services.json", services_);
     }
     prepared_->configure(services_);
-    load_progress();
+    if (!signed_in()) {
+        // Legacy guest data has no account owner. Claim it once so a future
+        // account sign-in cannot absorb a different guest's local history.
+        json marker, old_watch, old_prefs, existing;
+        load_json(data_dir_ + "/watch-sync.json", old_watch);
+        if (!load_json(data_dir_ + "/legacy-profile-owner.json", marker) && jstr(old_watch, "owner").empty()) {
+            bool copied = true;
+            for (const auto* file : {"progress.json", "connected-services.json"}) {
+                json old;
+                if (!load_json(profile_dir_ + "/" + file, existing) && load_json(data_dir_ + "/" + file, old))
+                    copied = save_json(profile_dir_ + "/" + file, old) && copied;
+            }
+            if (!load_json(profile_dir_ + "/profile-settings.json", existing) && load_json(data_dir_ + "/settings.json", old_prefs))
+                copied = save_json(profile_dir_ + "/profile-settings.json", old_prefs) && copied;
+            if (copied) save_json(data_dir_ + "/legacy-profile-owner.json", json{{"owner", "guest"}});
+        }
+        load_profile_settings(); load_progress();
+    }
     clock = format_clock();
     board.status = "Loading your catalogs...";
     refresh_settings();
     refresh_library();
     refresh_addons();
-    load_addons();
-    if (signed_in())
-        load_library();
-    else if (!prefs_.onboarding_done) {
+    profile_ready_ = !signed_in();
+    if (signed_in()) {
+        board.status = "Choose your Nuvio profile to load your catalogs and history.";
+        profile_prompt_pending_ = true;
+    } else load_addons();
+    if (!signed_in() && !prefs_.onboarding_done) {
         if(release_notes_open || prefs_.install_source.empty()) login_after_notes_=true;
         else login_start();
     }
@@ -178,7 +203,7 @@ void Session::shutdown()
     bt::Engine::get().shutdown();
     *d_cancel_ = true;
     *d_stream_cancel_ = true;
-    *w_episode_cancel_ = true;
+    if (w_episode_cancel_) *w_episode_cancel_ = true;
     provider_tasks_.stop();
     g_tasks.stop();
     tex_.shutdown();
@@ -214,13 +239,6 @@ void Session::load_prefs()
         prefs_.read_ahead_seconds = (read_ahead == 30 || read_ahead == 60 || read_ahead == 120 || read_ahead == 300)
                                        ? static_cast<int>(read_ahead) : 60;
         prefs_.user_email = jstr(j, "user_email");
-        if (jobj(j, "provider_enabled").is_object())
-            prefs_.provider_enabled = j["provider_enabled"];
-        const json &ex = jobj(j, "extra_addons");
-        if (ex.is_array())
-            for (const auto &v : ex)
-                if (v.is_string())
-                    prefs_.extra_addons.push_back(v.get<std::string>());
     }
 }
 
@@ -243,8 +261,7 @@ void Session::save_prefs()
     j["native_hdr"] = prefs_.native_hdr;
     j["playback_engine"] = prefs_.vlc_player ? "vlc" : prefs_.evo_player ? "evo" : "native";
     j["read_ahead_seconds"] = prefs_.read_ahead_seconds;
-    j["extra_addons"] = prefs_.extra_addons;
-    j["provider_enabled"] = prefs_.provider_enabled;
+    save_profile_settings();
     j["user_email"] = prefs_.user_email;
     if (!save_json(data_dir_ + "/settings.json", j))
         say("Could not save settings to " + data_dir_, 5.0, true);
@@ -253,7 +270,9 @@ void Session::save_prefs()
 void Session::load_progress()
 {
     json j;
-    if (!load_json(data_dir_ + "/progress.json", j))
+    const auto selected_source = jstr(tracking::Store(profile_dir_).status(), "progressPreferred", "nuvio");
+    progress_file_ = tracking::provider(selected_source) ? "progress-"+selected_source+".json" : "progress.json";
+    if (!load_json(profile_dir_ + "/"+progress_file_, j))
         return;
     const json &items = jobj(j, "items");
     if (items.is_object())
@@ -291,7 +310,7 @@ void Session::save_progress()
                                {"stream_video", kv.second.stream_video_id}, {"up_next", kv.second.up_next}};
     j["items"] = items;
     j["watched"] = json(std::vector<std::string>(watched_.begin(), watched_.end()));
-    save_json(data_dir_ + "/progress.json", j);
+    if (profile_ready_) save_json(profile_dir_ + "/"+progress_file_, j);
 }
 
 // ---------------------------------------------------------------------------
@@ -314,6 +333,7 @@ void Session::load_addons()
         bool auth_failed = false;
         bool account_failed = false;
     };
+    if (!profile_ready_) return;
     const std::string key = prefs_.auth_key;
     const std::vector<std::string> extra = prefs_.extra_addons;
     const int gen = ++addons_gen_;
@@ -329,6 +349,7 @@ void Session::load_addons()
                 {
                     if (jbool(ar.result, "offline"))
                         r.errors.push_back("Nuvio sync is unavailable. Using saved addons.");
+                    if (!jstr(ar.result, "syncError").empty()) r.errors.push_back(jstr(ar.result, "syncError"));
                     const json &list = jobj(ar.result, "addons");
                     if (list.is_array())
                         for (const auto &e : list)
@@ -386,13 +407,26 @@ void Session::load_addons()
                 return;
             }
             addons_.clear();
+            const auto extra_before = prefs_.extra_addons;
             for (const auto &a : r.addons)
             {
+                // Once a local addition is represented in the cloud snapshot,
+                // stop treating it as a permanent local override of cloud deletes.
+                if (a->from_account) {
+                    auto& extra = prefs_.extra_addons;
+                    extra.erase(std::remove(extra.begin(), extra.end(), a->transport_url), extra.end());
+                }
                 auto installed = std::make_unique<::Addon>(*a);
                 for (auto &p : installed->providers)
                     p.enabled = jbool(jobj(prefs_.provider_enabled, a->transport_url.c_str()), p.id.c_str());
                 addons_.push_back(std::move(installed));
             }
+            if (extra_before != prefs_.extra_addons) save_prefs();
+            if (signed_in()) for (const auto& a : addons_)
+                if (!a->from_account &&
+                    std::find(prefs_.extra_addons.begin(), prefs_.extra_addons.end(), a->transport_url) != prefs_.extra_addons.end() &&
+                    !(a->provider_repository ? inherit_plugins_ : inherit_addons_))
+                    sync_source(a->transport_url, a->provider_repository, false, true);
             if (!r.errors.empty())
                 say(r.errors.front(), 6.0, true);
             if (r.auth_failed)
@@ -422,13 +456,15 @@ void Session::on_addons_loaded()
 void Session::load_library()
 {
     const std::string key = prefs_.auth_key;
-    if (key.empty() || library_loading_)
+    if (!profile_ready_ || key.empty() || library_loading_)
         return;
     library_loading_ = true;
     library_refresh_at_ = now_seconds() + 60;
-    const int account_gen = login_gen_;
+    const int account_gen = login_gen_, library_gen = ++library_generation_;
+    load_watched();
     bg<ApiResult>([key]() { return api_library_get(key); },
-                  [this, key, account_gen](ApiResult &r) {
+                  [this, key, account_gen, library_gen](ApiResult &r) {
+                      if (library_gen != library_generation_) return;
                       library_loading_ = false;
                       if (prefs_.auth_key != key || login_gen_ != account_gen || !signed_in()) return;
                       if (!r.ok)
@@ -436,6 +472,8 @@ void Session::load_library()
                           say("Could not load your library: " + r.error, 5.0, true);
                           return;
                       }
+                      if (!r.error.empty()) say(r.error, 12.0);
+                      tracking_refresh();
                       const auto active = library_.find(w_item_.id);
                       json playing_item = watching && active != library_.end() ? active->second : json();
                       library_.clear();
@@ -447,6 +485,10 @@ void Session::load_library()
                                   library_[id] = it;
                           }
                       if (playing_item.is_object()) library_[w_item_.id] = playing_item;
+                      for (auto& [id,p] : progress_) {
+                          if (watching && id == w_item_.id) continue;
+                          if (!library_.count(id) || !jbool(jobj(library_[id],"state"),"nuvioSyncManaged")) { p.time = 0; p.up_next.clear(); }
+                      }
                       for (const auto& [id, item] : library_)
                       {
                           if (watching && id == w_item_.id) continue;
@@ -461,7 +503,6 @@ void Session::load_library()
                           p.video_id = video; p.time = jnum(state, "timeOffset") / 1000;
                           p.duration = jnum(state, "duration") / 1000;
                           p.updated = int64_t(jnum(state, "lastWatchedMs"));
-                          if (jbool(state, "nuvioCompleted") && !video.empty()) watched_.insert(video);
                       }
                       save_progress();
                       library_loaded_ = true;
@@ -479,12 +520,15 @@ void Session::addons_reload()
         load_library();
 }
 
-void Session::addon_activate(int index)
+void Session::addon_activate(int index, int provider_cursor)
 {
     if (index < 0 || index >= static_cast<int>(addons_.size()))
         return;
     const std::string url = addons_[static_cast<std::size_t>(index)]->transport_url;
     auto &selected = *addons_[static_cast<std::size_t>(index)];
+    if (selected.provider_repository ? inherit_plugins_ : inherit_addons_) {
+        say("This profile uses the primary profile's sources. Manage them in that profile.", 7.0); return;
+    }
     if (selected.provider_repository)
     {
         std::vector<std::string> choices;
@@ -493,7 +537,7 @@ void Session::addon_activate(int index)
         const int count = static_cast<int>(choices.size());
         choices.push_back("Remove repository");
         choices.push_back("Cancel");
-        open_dropdown(selected.name, choices, 0,
+        open_dropdown(selected.name, choices, -1,
                       [this, url, count](int pick)
                       {
                           ::Addon *a = nullptr;
@@ -508,6 +552,7 @@ void Session::addon_activate(int index)
                               ex.erase(std::remove(ex.begin(), ex.end(), url), ex.end());
                               prefs_.provider_enabled.erase(url);
                               save_prefs();
+                              sync_source(url, true, true);
                               load_addons();
                               return;
                           }
@@ -517,11 +562,20 @@ void Session::addon_activate(int index)
                           save_prefs();
                           refresh_addons();
                           say(p.name + (p.enabled ? " enabled" : " disabled"));
+                          // Keep the list open at the toggled provider so configuring a
+                          // long repository doesn't restart navigation at the first row.
+                          for (int i = 0; i < static_cast<int>(addons_.size()); ++i)
+                              if (addons_[i]->transport_url == url) {
+                                  addon_activate(i, pick);
+                                  break;
+                              }
                       });
+        dropdown.selected = std::clamp(provider_cursor, 0, count + 1);
+        dropdown.danger = count;
         return;
     }
     const auto it = std::find(prefs_.extra_addons.begin(), prefs_.extra_addons.end(), url);
-    if (it == prefs_.extra_addons.end())
+    if (it == prefs_.extra_addons.end() && !selected.from_account)
     {
         say("Install and remove addons in the Nuvio app on your phone or computer; they sync here. "
             "Press Square to reload them now.",
@@ -534,6 +588,7 @@ void Session::addon_activate(int index)
         auto &ex = prefs_.extra_addons;
         ex.erase(std::remove(ex.begin(), ex.end(), url), ex.end());
         save_prefs();
+        sync_source(url, false, true);
         load_addons();
     });
 }
@@ -600,16 +655,27 @@ void Session::refresh_settings()
     using Kind = SettingRow::Kind;
     set(kAccount, Kind::value, "Nuvio account", signed_in() ? prefs_.user_email : "Not signed in",
         signed_in() ? (confirm_sign_out_ ? "Press Cross again to sign out." : "Press Cross to sign out.")
-                    : "Sign in with a QR code to load your primary profile's addons and saved library. Press Cross.");
+                    : "Sign in with a QR code to choose a profile and load its addons and saved library. Press Cross.");
+    set(kProfiles, Kind::value, "Profiles", signed_in() ? jstr(active_profile_, "name", "Choose profile") : "Sign in first",
+        "Import or switch Nuvio account profiles, or create a profile. Each has separate history and sources.");
     set(kTorrents, Kind::toggle, "Peer-to-peer torrents", "",
         "Off uses direct and debrid links from your configured addons. Turn on to also download raw torrents.",
         prefs_.builtin_torrents);
     const int connections = int(!services_.torbox.key.empty()) + int(!services_.premiumize.key.empty());
     set(kConnectedServices, Kind::value, "Connected Services", connections ? std::to_string(connections) + " connected" : "TorBox / Premiumize",
         "Connect TorBox or Premiumize, import connections from Nuvio Sync, and prepare cached links for faster playback. The selected file keeps its original quality.");
-    set(kServer, Kind::value, "Watch Progress", signed_in() ? "Nuvio Sync" : "Saved on this PS5",
-        signed_in() ? "Resume across devices using Nuvio Sync on the same account and primary profile. Press Cross to refresh."
-                    : "Sign in to sync progress with Nuvio. Guest progress stays on this PS5.");
+    set(kTracking, Kind::value, "Tracking accounts", "Trakt / SIMKL / MDBList",
+        "Connect trackers for this profile. Connecting does not change your Library Source or Watch Progress choice.");
+    const auto library_source = jstr(tracking_status_, "library", "nuvio");
+    const auto progress_source = jstr(tracking_status_, "progress", "nuvio");
+    set(kLibrarySource, Kind::value, "Library Source", library_source == "nuvio" ? "Nuvio Library" : tracking::name(library_source),
+        "Choose which source Nuvio reads for your Library. Connected trackers become available here. Nuvio Library is the default.");
+    set(kServer, Kind::value, "Watch Progress", progress_source == "nuvio" ? "Nuvio Sync" : tracking::name(progress_source),
+        "Choose which progress source powers resume and Continue Watching. Nuvio Sync is the default; guest progress stays on this PS5.");
+    if (jstr(tracking_status_, "libraryPreferred", "nuvio") != library_source)
+        settings.rows[kLibrarySource].help += " Tracker unavailable. Using Nuvio Library until it reconnects.";
+    if (jstr(tracking_status_, "progressPreferred", "nuvio") != progress_source)
+        settings.rows[kServer].help += " Tracker unavailable. Using Nuvio Sync until it reconnects.";
     const char* display_labels[] = {"Follow PS5", "1080p", "1440p", "4K"};
     set(kDisplay, Kind::value, "Display output", display_labels[display_output_preference(prefs_.display_output) + 1],
         "Follow the PS5's output resolution, or choose an override. Close and reopen Nuvio Max'd to apply a change.");
@@ -662,7 +728,7 @@ void Session::refresh_settings()
     set(kDonation, Kind::action, "Support on Ko-fi", "", "Optional support for development. Scan the QR code with your phone.");
     set(kInstallSource, Kind::value, "Install source", install_source_label(prefs_.install_source),
         "Where you installed Nuvio Max'd. Update reminders use this choice; change it if you switch install methods.");
-    set(kUpdates, Kind::value, "App updates", update.phase == AppUpdate::Phase::idle ? "Nuvio Max'd 0.5.28 (experimental)" : update.message,
+    set(kUpdates, Kind::value, "App updates", update.phase == AppUpdate::Phase::idle ? "Nuvio Max'd " + std::string(nuvio_update::current_version) + " (experimental)" : update.message,
         update_destination(prefs_.install_source));
     set(kExit, Kind::action, "Exit Nuvio Max'd", "", "Close the app and go back to the home screen.");
     set(kConsoleLights, Kind::toggle, "Console light sync", "", "Fade the console lights with the controller while Nuvio is open. Console colours are approximate. Unsupported systems leave their lights unchanged. Turning off restores the previous state.", prefs_.console_light_sync);
@@ -673,7 +739,7 @@ void Session::refresh_settings()
     const auto group = [&](const char* name,std::initializer_list<int> ids) {
         for(int id:ids) settings.rows[id].category=name;
     };
-    group("Account & Services", {kAccount,kConnectedServices,kServer});
+    group("Account & Services", {kAccount,kProfiles,kTracking,kLibrarySource,kConnectedServices,kServer});
     group("Video", {kDisplay,kRefresh,kHdr,kPlaybackEngine});
     group("Audio", {kAudioMode,kAudioOutput,kAudioLangs});
     group("Subtitles", {kSubLangs,kAutoSubs,kSubSize,kSubFont,kSubColour,kSubEffect,kSubBackground});
@@ -686,6 +752,12 @@ void Session::refresh_settings()
 
 void Session::settings_activate(int row)
 {
+    if (signed_in() && !profile_ready_ &&
+        (row == kTracking || row == kLibrarySource || row == kConnectedServices || row == kServer || row == kAddAddon || row == kReload ||
+         row == kSubLangs || row == kAudioLangs || row == kAutoSubs)) {
+        say("Choose a profile in Account & Services > Profiles first.", 7.0); return;
+    }
+
     if (row != kAccount && confirm_sign_out_)
         confirm_sign_out_ = false;
     switch (row)
@@ -695,6 +767,9 @@ void Session::settings_activate(int row)
     case kConnectedServices:
         services_menu();
         break;
+    case kProfiles: profiles_menu(); break;
+    case kTracking: tracking_menu(); break;
+    case kLibrarySource: tracking_source_menu(false); break;
     case kAccount:
         if (!signed_in())
             login_start();
@@ -713,8 +788,7 @@ void Session::settings_activate(int row)
         detail_refresh_streams();
         break;
     case kServer:
-        if (signed_in()) { load_library(); say("Refreshing Watch Progress from Nuvio Sync"); }
-        else say("Sign in to sync Watch Progress with Nuvio");
+        tracking_source_menu(true);
         break;
     case kDisplay:
         open_dropdown("Display output", {"Follow PS5", "1080p", "1440p", "4K"},
@@ -882,17 +956,22 @@ void Session::settings_activate(int row)
                     std::string err;
                     if (!fetch_addon(url, a, err))
                         return "Could not add the addon or plugin: " + err;
-                    return std::string();
+                    return a.provider_repository ? std::string("plugin") : std::string("addon");
                 },
                 [this, url](std::string &err) {
-                    if (!err.empty())
+                    if (err != "plugin" && err != "addon")
                     {
                         say(err, 6.0, true);
                         return;
                     }
+                    const bool plugin = err == "plugin";
+                    if (plugin ? inherit_plugins_ : inherit_addons_) {
+                        say("This profile inherits those sources. Switch to the primary profile to edit them.", 8.0); return;
+                    }
                     if (std::find(prefs_.extra_addons.begin(), prefs_.extra_addons.end(), url) == prefs_.extra_addons.end())
                         prefs_.extra_addons.push_back(url);
                     save_prefs();
+                    sync_source(url, plugin, false);
                     say("Added. Open Addons to manage it and enable individual providers.", 7.0);
                     load_addons();
                     refresh_settings();
@@ -1100,7 +1179,13 @@ void Session::sign_in_cancel()
     sign_in_open = false;
     login_code_raw_.clear();
     if (device_cancel_) *device_cancel_ = true;
-    if (!device_provider_.empty()) { device_provider_.clear(); device_code_ = {}; return; }
+    if (!device_provider_.empty()) {
+        if (starts_with(device_provider_,"tracking:")) {
+            const auto key=prefs_.auth_key, p=device_provider_.substr(9);
+            bg<ApiResult>([key,p]{return api_tracking(key,"device_cancel",{{"provider",p}});},[](auto&){});
+        }
+        device_provider_.clear(); device_code_ = {}; return;
+    }
     prefs_.onboarding_done = true;
     save_prefs();
 }
@@ -1108,8 +1193,11 @@ void Session::sign_in_cancel()
 void Session::login_done(const std::string &auth_key)
 {
     sign_in_cancel();
+    save_progress(); save_profile_settings();
+    clear_profile_views();
+    profile_ready_ = false;
     prefs_.auth_key = auth_key;
-    services_.clear_synced(); services_save(services_);
+    prefs_.user_email.clear();
     save_prefs();
     say("Signed in");
     bg<ApiResult>([auth_key]() { return api_get_user(auth_key); },
@@ -1121,23 +1209,24 @@ void Session::login_done(const std::string &auth_key)
                       refresh_settings();
                       say("Signed in as " + prefs_.user_email);
                   });
-    library_.clear();
-    library_loaded_ = false;
-    load_addons();
-    load_library();
-    refresh_settings();
+    profile_ready_ = false;
+    profiles_loading_ = false;
+    profile_prompt_pending_ = true;
+    board.status = "Choose a Nuvio profile to load your catalogs and history.";
+    refresh_library(); refresh_addons(); refresh_settings();
 }
 
 void Session::sign_out()
 {
+    if (watching || resuming_) { say("Stop playback before signing out", 6.0); return; }
     const std::string key = prefs_.auth_key;
     bg<ApiResult>([key]() { return api_logout(key); }, [this](ApiResult& r) {
         if (!r.ok) { say(r.error, 8.0, true); return; }
+        save_progress(); save_profile_settings();
         prefs_.auth_key.clear(); prefs_.user_email.clear();
-        services_.clear_synced(); services_save(services_);
-        library_.clear(); library_loaded_ = false;
+        profile_apply(json{{"path", data_dir_ + "/guest"}, {"authKey", ""}, {"profile", json{{"name", "Guest"}}}});
         ++login_gen_;
-        save_prefs(); load_addons(); refresh_library(); refresh_settings();
+        save_prefs();
         say("Signed out");
     });
 
@@ -1154,10 +1243,15 @@ void Session::update(float dt, const Cursor &cursor)
     update_status();
     if (signed_in() && !nuvio_account_saved())
     {
+        if (watching) watch_stop(false);
+        save_progress(); save_profile_settings();
         prefs_.auth_key.clear(); prefs_.user_email.clear();
-        services_.clear_synced(); services_save(services_);
+        profile_apply(json{{"path", data_dir_ + "/guest"}, {"authKey", ""}, {"profile", json{{"name", "Guest"}}}});
         save_prefs(); refresh_settings();
         say("Your Nuvio session expired. Sign in again in Settings.", 8.0, true);
+    }
+    if (profile_prompt_pending_ && !release_notes_open && !dropdown_open && !sign_in_open && !install_source_dialog_) {
+        profile_prompt_pending_ = false; profiles_menu(true);
     }
     const double now = now_seconds();
     if (boot_done_ && signed_in() && !watching && !library_loading_ && now >= library_refresh_at_)
@@ -1186,6 +1280,7 @@ void Session::update(float dt, const Cursor &cursor)
     }
     if (sign_in_open && !sign_in.link_only) {
         if (device_provider_.empty()) login_poll();
+        else if (starts_with(device_provider_, "tracking:")) tracker_login_poll();
         else service_login_poll();
     }
     poll_typing();
