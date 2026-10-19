@@ -77,7 +77,7 @@ void Session::tracking_source_menu(bool progress) {
 }
 void Session::tracker_menu(const std::string& p) {
     if (watching || resuming_) { say("Stop playback before changing tracker connections",7.0); return; }
-    const bool configured=jbool(jobj(jobj(tracking_status_,"accounts"),p),"configured");
+    const bool configured=jbool(jobj(jobj(tracking_status_,"accounts"),p.c_str()),"configured");
     std::vector<std::string> rows{p == "mdblist" ? "Connect with API key" : configured ? "Connect with phone / QR code" : "Phone pairing: awaiting app registration", "Import connection from Nuvio Sync"};
     if (p != "mdblist") rows.push_back("Set up application credentials");
     rows.push_back("Disconnect on this PS5");
@@ -111,7 +111,7 @@ void Session::tracker_menu(const std::string& p) {
 }
 void Session::tracker_login_start(const std::string& p) {
     if (watching || resuming_) { say("Stop playback before connecting a tracker",7.0); return; }
-    dlog("tracking: %s phone pairing requested; application configured=%d",p.c_str(),int(jbool(jobj(jobj(tracking_status_,"accounts"),p),"configured")));
+    dlog("tracking: %s phone pairing requested; application configured=%d",p.c_str(),int(jbool(jobj(jobj(tracking_status_,"accounts"),p.c_str()),"configured")));
     const auto key = prefs_.auth_key; const int gen = ++login_gen_;
     if (device_cancel_) *device_cancel_=true;
     device_cancel_=std::make_shared<std::atomic<bool>>(false);

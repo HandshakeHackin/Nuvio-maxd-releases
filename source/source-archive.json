@@ -1,5 +1,5 @@
 {
-  "sourceCommit": "ba5125fff870a222dbb8095fa7c817f9f21a34d5",
+  "sourceCommit": "2f22c3ba3ef8d91f5c0ebce7817864a2ed216692",
   "version": "0.5.34.2",
   "fileSha256": {
     ".github/workflows/native-checks.yml": "c2557f7195cc9414905fb49fe01ee341163bf7f96d42172550fdab5bb7312efa",
@@ -168,7 +168,7 @@
     "native-app/gl/session_profiles.cpp": "1ed27e0424cd1a22eaf1df1b4e12abbbe7dfd209055405ff2bf18a43cd82b8fa",
     "native-app/gl/session_search.cpp": "2176268f760f9b632c7fa300bda949d9f178f0e1bba0427794f8b4db0d654232",
     "native-app/gl/session_services.cpp": "ef9ea84ae27c7b93c9cab2a2b0ec43119489a562b64eb4812871b276b6d3fcb4",
-    "native-app/gl/session_tracking.cpp": "82cc942a21defda8a41ab4ba0b1d884edf3bcca163ce4df59a27aabc5831b965",
+    "native-app/gl/session_tracking.cpp": "5f65bf151ffc6e2fdccdd1a1e5b045fc9cc7fc016b1b39f6bc661d78a031aaaa",
     "native-app/gl/session_update.cpp": "d3790a386d6adf3b302576004d53a91deb77ed7aace5426faf0974613bc8cb12",
     "native-app/gl/session_watch.cpp": "0c7ced09a269a6232940249182cfdf59c10e435962a95fb5835dcbf7e1dd7cec",
     "native-app/gl/stream_display.hpp": "cde006cd8eec18e1f91309957ce30cb181b0137e9de7c18db3625c23c2e3e778",
