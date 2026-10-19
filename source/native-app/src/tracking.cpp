@@ -112,7 +112,7 @@ Store::Store(std::string directory, Transport transport, const std::atomic<bool>
             auto& account=state_["accounts"][p];
             if (account.is_null()) account=json::object();
             const auto& app=jobj(applications,p);
-            if (account.is_object() && jstr(account,"client_id").empty() && credential(jstr(app,"client_id")) &&
+            if (account.is_object() && (jstr(account,"client_id").empty() || (jstr(account,"client_id")==jstr(app,"client_id") && !credential(jstr(account,"client_secret")))) && credential(jstr(app,"client_id")) &&
                 (std::string(p)!="trakt" || credential(jstr(app,"client_secret")))) {
                 account["client_id"]=app["client_id"];
                 if(std::string(p)=="trakt") account["client_secret"]=app["client_secret"];
@@ -150,7 +150,7 @@ json Store::status() const {
     json out{{"library", jstr(state_,"library_error").empty() ? source(false) : "nuvio"}, {"progress", jstr(state_,"progress_error").empty() ? source(true) : "nuvio"}, {"libraryPreferred", jstr(state_, "library", "nuvio")},
         {"progressPreferred", jstr(state_, "progress", "nuvio")}, {"accounts", json::object()}, {"readable", readable_}};
     for (auto p : providers) out["accounts"][p] = {{"connected", connected(p)}, {"reconnect", jbool(jobj(jobj(state_, "accounts"), p), "reconnect")},
-        {"configured", credential(jstr(jobj(jobj(state_, "accounts"), p), "client_id"))}, {"error", jstr(jobj(jobj(state_, "accounts"), p), "error")}};
+        {"configured", credential(jstr(jobj(jobj(state_, "accounts"), p), "client_id")) && (std::string(p)!="trakt" || credential(jstr(jobj(jobj(state_, "accounts"), p), "client_secret")))}, {"error", jstr(jobj(jobj(state_, "accounts"), p), "error")}};
     return out;
 }
 HttpResponse Store::request(const std::string& p, const std::string& path, const json* body, bool auth) {
@@ -270,7 +270,8 @@ json Store::action(const std::string& operation, const json& args, std::string& 
             a["verified"] = true;
         } else if (operation == "device_start") {
             if (connected(p)) { error="Disconnect the current tracker before connecting another account"; return {}; }
-            if (p == "mdblist" || !credential(jstr(a, "client_id")) || (p == "trakt" && !credential(jstr(a, "client_secret")))) { error = "Set up the application's tracker credentials first"; return {}; }
+            if (p == "mdblist" || !credential(jstr(a, "client_id")) || (p == "trakt" && !credential(jstr(a, "client_secret")))) { error = "Phone pairing is unavailable: this build has no registered "+name(p)+" application. A normal tracker account is sufficient once Max'd supplies its application registration; you do not need a developer account."; return {}; }
+            dlog("tracking: %s pairing start; application configured",p.c_str());
             json body{{"client_id", jstr(a, "client_id")}};
             auto response = p == "trakt" ? request(p, "/oauth/device/code", &body, false) : request(p, "/oauth/pin?client_id="+url_encode(jstr(a, "client_id")), nullptr, false);
             auto code = parsed(response);
@@ -286,7 +287,15 @@ json Store::action(const std::string& operation, const json& args, std::string& 
             if (jstr(pair, "code").empty() || jnum(pair, "expires") <= now_seconds()) { error = "Code expired; connect again"; return {}; }
             json body{{"code", jstr(pair, "code")}, {"client_id", jstr(a, "client_id")}, {"client_secret", jstr(a, "client_secret")}};
             auto response = p == "trakt" ? request(p, "/oauth/device/token", &body, false) : request(p, "/oauth/pin/"+url_encode(jstr(pair, "code"))+"?client_id="+url_encode(jstr(a, "client_id")), nullptr, false);
+            dlog("tracking: %s pairing token HTTP %ld",p.c_str(),response.status);
             auto token = parsed(response);
+            if(p=="trakt" && (response.status==404 || response.status==409 || response.status==410 || response.status==418)) {
+                state_.erase("pairing_"+p);std::string ignored;save(ignored);
+                error=response.status==418 ? "Trakt connection was declined. Connect again to request a new code."
+                    : response.status==409 ? "Trakt code was already used. Connect again to request a new code."
+                    : "Trakt code expired or is invalid. Connect again to request a new code.";
+                return {};
+            }
             if ((p == "trakt" && (response.status == 400 || response.status == 429)) || (p == "simkl" && jstr(token, "result") == "KO"))
                 return {{"pending", true}, {"slow", response.status == 429}};
             if (!response.ok() || !credential(jstr(token, "access_token")) || (p=="trakt" && !credential(jstr(token,"refresh_token")))) { error = failure(p, response); return {}; }

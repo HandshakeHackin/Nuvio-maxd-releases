@@ -37,7 +37,16 @@ void Session::update_menu() {
         open_dropdown("App updates",{"Cancel"},0,[this](int){updater_.cancel();});
         dropdown.message=s.message;dropdown.progress=s.progress;
     } else {
-        open_dropdown("App updates",{"Check for updates","Close"},0,[this](int i){if(i==0){updater_.check();update_menu();}});
+        open_dropdown("App updates",{"Check for updates","Test updater handoff (closes app)","Close"},0,[this](int i){
+            if(i==0){updater_.check();update_menu();}
+            else if(i==1){
+                if(watching || resuming_) {say("Stop playback before testing the updater",7);return;}
+                open_dropdown("Test updater handoff?",{"Cancel","Close app and test"},0,[this](int choice){
+                    if(choice==1){updater_.probe(base_dir_);update_menu();}
+                });
+                dropdown.message="This test closes the app and asks ShadowMount to release its image. It does not download or replace files. Wait for the PS5 notification before reopening. Diagnostic: /data/nuvio-maxd-updater.log";
+            }
+        });
         dropdown.message=s.message.empty()?"Nuvio Max'd "+std::string(nuvio_update::current_version)+". "+update_destination(prefs_.install_source):s.message;
     }
     update_dialog_=true;

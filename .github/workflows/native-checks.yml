@@ -64,3 +64,20 @@ jobs:
         run: |
           bash native-app/tests/vlc_host.sh
           bash native-app/tests/vlc_issue3.sh
+
+  updater-and-trakt-regressions:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: source
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install focused host dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y g++ pkg-config libcurl4-openssl-dev libssl-dev
+      - name: Test guarded image release and Trakt pairing
+        run: |
+          bash native-app/tests/update.sh
+          bash native-app/tests/tracking.sh

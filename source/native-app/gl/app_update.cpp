@@ -49,7 +49,7 @@ void AppUpdate::start_worker(std::function<void()> work) {
     try {worker_=std::thread(std::move(work));}
     catch(...) {running_=false;set(Phase::error,"Could not start an update worker. Close and reopen Nuvio Max'd, then retry.");}
 }
-void AppUpdate::set(Phase p,const std::string& m,float progress) {std::lock_guard lock(mutex_);state_.phase=p;state_.message=m;state_.progress=progress;}
+void AppUpdate::set(Phase p,const std::string& m,float progress) {std::lock_guard lock(mutex_);if(state_.phase!=p)dlog("updater: phase %d: %s",int(p),m.c_str());state_.phase=p;state_.message=m;state_.progress=progress;}
 void AppUpdate::cancel(){cancel_=true;cv_.notify_all();}
 void AppUpdate::shutdown(){if(status().phase!=Phase::closing)cancel();if(worker_.joinable())worker_.join();if(status().phase!=Phase::closing)channel_.close();}
 void AppUpdate::finish_exit(){if(status().phase!=Phase::closing)return;if(worker_.joinable())worker_.join();std::atomic<bool> no_cancel{false};const std::string exit="exit\n";channel_.send(exit.data(),exit.size(),no_cancel);channel_.close();}
@@ -96,6 +96,24 @@ void AppUpdate::download(const std::string& base,const std::string& data) {
             else {channel_.close();set(cancel_?Phase::cancelled:Phase::error,cancel_?"Update cancelled; existing install retained":error.empty()?"Update expired or helper disconnected; existing install retained":error);}
         }catch(...){channel_.close();set(Phase::error,"Update failed; existing install retained");}
         if(fd>=0)close(fd);if(owned)unlink(local.c_str());running_=false;
+    });
+}
+void AppUpdate::probe(const std::string& base) {
+    if(running_)return;
+    if(worker_.joinable())worker_.join();
+    cancel_=false;install_=false;running_=true;set(Phase::staging,"Preparing updater handoff test...");
+    start_worker([this,base] {
+        std::string error,state;
+        try {
+            bool ok=channel_.open(base+"/nuvio-updater.elf",cancel_,error);
+            const auto plan=Json{{"protocol",1},{"title_id",nuvio_update::title_id},{"mode","probe"}}.dump()+"\n";
+            ok=ok && channel_.send(plan.data(),plan.size(),cancel_) && response(channel_,cancel_,state,error) && state=="ready";
+            const std::string install="install\n";
+            ok=ok && !cancel_ && channel_.send(install.data(),install.size(),cancel_) && response(channel_,cancel_,state,error) && state=="closing";
+            if(ok)set(Phase::closing,"Closing for updater handoff test; no image will be replaced");
+            else {channel_.close();set(cancel_?Phase::cancelled:Phase::error,error.empty()?"Updater handoff test cancelled":error);}
+        }catch(...) {channel_.close();set(Phase::error,"Updater handoff test failed; no image was replaced");}
+        running_=false;
     });
 }
 void AppUpdate::install(){if(status().phase!=Phase::ready)return;{std::lock_guard lock(mutex_);install_=true;}cv_.notify_all();}

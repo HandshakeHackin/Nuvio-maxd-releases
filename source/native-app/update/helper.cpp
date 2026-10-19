@@ -3,6 +3,8 @@
 // Bundled payload, launched by Nuvio Max'd through the local payload loader.
 // The loader handoff follows BlackBearReloaded's ProsperoEden / native app kit.
 #include "core.hpp"
+#include "release_wait.hpp"
+#include <fcntl.h>
 #include <curl/curl.h>
 #include <array>
 #include <chrono>
@@ -16,6 +18,16 @@
 extern "C" int sceKernelSendNotificationRequest(int,void*,std::size_t,int);
 namespace {
 using namespace nuvio_update;
+constexpr const char* diagnostic_path="/data/nuvio-maxd-updater.log";
+void trace(const std::string& message) {
+    int fd=open(diagnostic_path,O_WRONLY|O_CREAT|O_APPEND|O_NOFOLLOW,0600);
+    if(fd<0)return;
+    const auto line=std::string(current_version)+" "+message+"\n";
+    (void)write(fd,line.data(),line.size());(void)fsync(fd);close(fd);
+}
+// Only status codes and known state fields are logged. API response bodies can
+// include unrelated installed titles and are deliberately never recorded.
+
 bool send(const Json& j) {
     auto s=j.dump()+"\n"; std::size_t p=0;
     while(p<s.size()) {auto n=write(STDOUT_FILENO,s.data()+p,s.size()-p);if(n<=0)return false;p+=n;} return true;
@@ -40,7 +52,10 @@ Json api(const char* route,const Json& body) {
     curl_easy_setopt(c,CURLOPT_NOSIGNAL,1L);curl_easy_setopt(c,CURLOPT_PROTOCOLS_STR,"http");
     curl_easy_setopt(c,CURLOPT_WRITEFUNCTION,write_json);curl_easy_setopt(c,CURLOPT_WRITEDATA,&response);
     auto rc=curl_easy_perform(c);curl_slist_free_all(headers);curl_easy_cleanup(c);
-    return rc==CURLE_OK?Json::parse(response,nullptr,false):Json();
+    auto result=rc==CURLE_OK?Json::parse(response,nullptr,false):Json();
+    trace(std::string("api ")+route+" transport="+std::to_string(int(rc))+" status="+
+          (result.is_object() && result.contains("status") && result["status"].is_number_integer() ? result["status"].dump() : "unknown"));
+    return result;
 }
 void notify(const std::string& text) {
     struct Request {unsigned char reserved[45];char message[3075];} r{};
@@ -50,13 +65,37 @@ bool capability(const Json& j,const char* value) {
     if(!j.is_object() || !j.contains("capabilities") || !j["capabilities"].is_array())return false;
     for(const auto& c:j["capabilities"])if(c==value)return true;return false;
 }
+bool wait_for_release(const Json& title,const std::string& path) {
+    const auto end=std::chrono::steady_clock::now()+std::chrono::seconds(120);
+    while(std::chrono::steady_clock::now()<end) {
+        const auto reply=api("games/unmount",title);
+        const auto images=api("images",Json::object());
+        if(images.is_object() && images.contains("images") && images["images"].is_array())
+            for(const auto& image:images["images"]) if(image.is_object() && image.value("path",std::string())==path) {
+                for(const char* key:{"source_available","mapped","mounted"})
+                    trace(std::string("image ")+key+"="+(image.contains(key) && image[key].is_boolean()?image[key].dump():"unknown"));
+            }
+        const auto state=release_state(reply,images,path);
+        if(state==ReleaseState::released) {trace("backing image released");return true;}
+        if(state==ReleaseState::refused) {trace("unmount refused");return false;}
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+    }
+    trace("backing image release timed out; original retained");return false;
+}
 int run() {
+    // The helper is a loader payload, independent of /app0. Keep its working
+    // directory out of the app mount while waiting for ShellCore to release it.
+    if(chdir("/data")!=0)return 1;
+    int log=open(diagnostic_path,O_WRONLY|O_CREAT|O_TRUNC|O_NOFOLLOW,0600);
+    if(log>=0)close(log);
+    trace("helper started");
     std::string line,error;
     if(!read_line(line,30))return 1;
     auto j=Json::parse(line,nullptr,false);
     if(!j.is_object() || j.value("protocol",0)!=1 || j.value("title_id",std::string())!=title_id)return 1;
+    const bool probe=j.value("mode",std::string())=="probe";
     Release r{j.value("version",std::string()),j.value("tag",std::string()),j.value("url",std::string()),j.value("sha256",std::string()),"",j.value("size",std::uint64_t(0))};
-    if(!valid_release(r) || !newer(r.version,current_version)) {send({{"state","error"},{"message","Invalid release metadata or older version"}});return 1;}
+    if(!probe && (!valid_release(r) || !newer(r.version,current_version))) {send({{"state","error"},{"message","Invalid release metadata or older version"}});return 1;}
     auto v=api("version",Json::object());
     if(!v.is_object() || v.value("api_version",0)!=1 || !capability(v,"game_info") || !capability(v,"unmount_game") || !capability(v,"list_images") || !capability(v,"rescan")) {
         send({{"state","error"},{"message","Automatic image updates need ShadowMount+ 1.7 with its local API enabled on port 10101"}});return 1;
@@ -64,6 +103,17 @@ int run() {
     const Json title={{"title_id",title_id}};
     auto path=installed_image(api("games/info",title));
     if(path.empty()) {send({{"state","error"},{"message","Nuvio Max'd must be installed as an FFPFSC in a managed /homebrew/ folder"}});return 1;}
+    if(probe) {
+        if(!send({{"state","ready"}}) || !read_line(line,300) || line!="install" ||
+           !send({{"state","closing"}}) || !read_line(line,120) || line!="exit") {
+            trace("handoff test cancelled");return 1;
+        }
+        trace("handoff test: no image replacement");
+        const bool released=wait_for_release(title,path);
+        notify(released ? "Updater handoff test passed. Reopen the app; no files were replaced."
+            : "Updater handoff test failed. Original unchanged. Send /data/nuvio-maxd-updater.log and ShadowMount debug.log.");
+        return released?0:1;
+    }
     Transaction tx;
     if(!tx.begin(path,error)) {send({{"state","error"},{"message",error}});return 1;}
     struct statfs space{};
@@ -83,18 +133,14 @@ int run() {
     // Closing the channel alone is insufficient proof that Nuvio Max'd has exited.
     // ShadowMount's guarded unmount refuses while a title is active.
     if(!read_line(line,120) || line!="exit") {notify("Update cancelled before installation; original retained.");return 1;}
-    bool released=false;
-    for(int attempt=0;attempt<120;++attempt) {
-        auto reply=api("games/unmount",title);
-        if(reply.is_object() && reply.value("status",-1)==0) {released=mount_released(api("images",Json::object()),path);break;}
-        if(!reply.is_object() || reply.value("status",-1)!=16)break;
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+    if(!wait_for_release(title,path)) {
+        notify("Update not installed: backing image not released. Original retained. If persistent_image_mounts=1, disable it in ShadowMount config and reload ShadowMount. Log: /data/nuvio-maxd-updater.log");return 1;
     }
-    if(!released) {notify("Update not installed: the image is still mounted or ShadowMount is unavailable. Original retained; manual replacement is still available.");return 1;}
     auto guard=[&] {
         return installed_image(api("games/info",title))==path && mount_released(api("images",Json::object()),path);
     };
-    if(!tx.commit(guard,error)) {notify(error);return 1;}
+    if(!tx.commit(guard,error)) {trace("commit refused: "+error);notify(error);return 1;}
+    trace("image committed; backup retained");
     const auto scan=api("scan",{{"reset_attempts",false}});
     if(!error.empty()) notify(error);
     else if(!scan.is_object() || scan.value("status",-1)!=0 || !scan.value("scan_queued",false))notify("Update installed and backup saved. Restart ShadowMount+ to refresh the app.");

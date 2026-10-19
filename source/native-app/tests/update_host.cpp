@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "../update/core.hpp"
+#include "../update/release_wait.hpp"
 #include <array>
 #include <cassert>
 #include <filesystem>
@@ -48,6 +49,19 @@ int main(){
     images["images"][0]["mapped"]=false;images["images"][0]["mounted"]=false;
     check(mount_released(images,"/data/homebrew/Nuvio.ffpfsc"),"fully released image accepted");
     images["images"][0]["source_available"]=false;check(!mount_released(images,"/data/homebrew/Nuvio.ffpfsc"),"disconnected storage is not an unmount");
+    const auto image_path="/data/homebrew/Nuvio.ffpfsc";
+    images["images"][0]["source_available"]=true;
+    images["images"][0]["mapped"]=true;
+    check(release_state({{"status",0}},images,image_path)==ReleaseState::retry,"successful runtime unmount still waits for backing image");
+    images["images"][0]["mapped"]=false;
+    check(release_state({{"status",16}},images,image_path)==ReleaseState::retry,"busy title cannot authorize replacement even with released snapshot");
+    check(release_state({{"status",0}},images,image_path)==ReleaseState::released,"later independent snapshot completes release wait");
+    check(release_state({{"status",5}},images,image_path)==ReleaseState::refused,"terminal unmount error is not retried");
+    check(release_state(Json(),images,image_path)==ReleaseState::retry,"transient API outage is retried without replacing");
+    check(release_state({{"status","bad"}},images,image_path)==ReleaseState::retry,"malformed status cannot authorize replacement");
+    check(release_state({{"status",0}},{{"status",0},{"images",Json::array()}},image_path)==ReleaseState::retry,"missing image is not proof of release");
+    images["images"][0]["source_available"]=false;
+    check(release_state({{"status",0}},images,image_path)==ReleaseState::retry,"storage disconnection cannot authorize replacement");
     {
         Fixture x;{Transaction t;check(x.stage(t) && read(x.image)=="original-image","verified staging leaves original installed");}
         check(read(x.image)=="original-image" && !fs::exists(x.image.string()+".nuvio-"+std::to_string(getpid())+".part"),"cancellation removes only the owned stage");

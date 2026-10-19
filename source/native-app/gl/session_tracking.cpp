@@ -77,7 +77,8 @@ void Session::tracking_source_menu(bool progress) {
 }
 void Session::tracker_menu(const std::string& p) {
     if (watching || resuming_) { say("Stop playback before changing tracker connections",7.0); return; }
-    std::vector<std::string> rows{p == "mdblist" ? "Connect with API key" : "Connect with phone / QR code", "Import connection from Nuvio Sync"};
+    const bool configured=jbool(jobj(jobj(tracking_status_,"accounts"),p),"configured");
+    std::vector<std::string> rows{p == "mdblist" ? "Connect with API key" : configured ? "Connect with phone / QR code" : "Phone pairing: awaiting app registration", "Import connection from Nuvio Sync"};
     if (p != "mdblist") rows.push_back("Set up application credentials");
     rows.push_back("Disconnect on this PS5");
     open_dropdown(tracking::name(p), rows, 0, [this,p](int i) {
@@ -105,10 +106,12 @@ void Session::tracker_menu(const std::string& p) {
         }
     });
     dropdown.message = p == "mdblist" ? "Connect using your personal MDBList API key. Import is available when your Nuvio profile syncs that key."
-        : "Phone pairing requires a registered application client ID"+std::string(p == "trakt" ? " and client secret." : ".")+" Import requires compatible credentials from Nuvio Sync.";
+        : configured ? "Use your regular tracker account on your phone. You do not need your own developer application. Import requires a compatible Nuvio Sync connection."
+        : "This build is awaiting the developer's application registration. Regular users do not need API credentials. Nuvio Library and Nuvio Sync remain available; compatible existing connections can be imported.";
 }
 void Session::tracker_login_start(const std::string& p) {
     if (watching || resuming_) { say("Stop playback before connecting a tracker",7.0); return; }
+    dlog("tracking: %s phone pairing requested; application configured=%d",p.c_str(),int(jbool(jobj(jobj(tracking_status_,"accounts"),p),"configured")));
     const auto key = prefs_.auth_key; const int gen = ++login_gen_;
     if (device_cancel_) *device_cancel_=true;
     device_cancel_=std::make_shared<std::atomic<bool>>(false);

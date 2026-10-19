@@ -11,6 +11,7 @@ using tracking::Store;
 struct Fake {
     struct Call { std::string url; bool post; json body; std::vector<std::string> headers; };
     std::vector<Call> calls;
+    int device_status=0;
     bool offline=false, unauthorized=false, malformed=false, reject_key=false, pending=false, paginate=false, reject_item=false;
     HttpResponse operator()(const std::string& url,const std::string* body,const std::vector<std::string>& headers) {
         assert(starts_with(url,"https://api.trakt.tv/") || starts_with(url,"https://api.simkl.com/") || starts_with(url,"https://api.mdblist.com/"));
@@ -24,6 +25,7 @@ struct Fake {
             out={{"device_code","private-device"},{"user_code","ABCD"},{"expires_in",600},{"interval",2},{"verification_url","https://untrusted.example/steal"}};
         } else if (url.find("/oauth/device/token")!=std::string::npos || url.find("/oauth/token")!=std::string::npos) {
             assert(body);
+            if(device_status)return {device_status,"{}","","",0};
             if (pending) return {400,"{}","","",0};
             out={{"access_token","private-access"},{"refresh_token","private-refresh"},{"created_at",now_epoch_ms()/1000},{"expires_in",86400}};
         } else if (url.find("/oauth/pin?")!=std::string::npos) {
@@ -168,7 +170,22 @@ int main() {
     assert(bundled.status()["accounts"]["trakt"]["configured"].get<bool>());
     assert(!bundled.status()["accounts"]["trakt"]["connected"].get<bool>() && bundled.source(true)=="nuvio");
     error.clear();assert(bundled.action("device_start",{{"provider","trakt"}},error)["url"]=="https://trakt.tv/activate");
+    for(int terminal:{404,409,410,418}) {
+        error.clear();bundled.action("device_start",{{"provider","trakt"}},error);assert(error.empty());
+        fake.device_status=terminal;bundled.action("device_poll",{{"provider","trakt"}},error);assert(!error.empty());
+        fake.device_status=0;error.clear();bundled.action("device_poll",{{"provider","trakt"}},error);assert(error.find("expired")!=std::string::npos);
+    }
+    error.clear();bundled.action("device_start",{{"provider","trakt"}},error);assert(error.empty());
+    fake.device_status=429;auto slow=bundled.action("device_poll",{{"provider","trakt"}},error);assert(error.empty() && slow["pending"]==true && slow["slow"]==true);fake.device_status=0;
+    // An interrupted older configuration with a matching public client ID
+    // can be completed by the owner's registered application, without tokens.
+    std::filesystem::create_directories(root+"/partial");
+    save_json(root+"/partial/tracking.json",json{{"version",1},{"accounts",{{"trakt",{{"client_id","client"}}}}}});
+    Store repaired(root+"/partial",transport);assert(repaired.status()["accounts"]["trakt"]["configured"]==true);
     tracking::set_applications(json::object());
+    Store unconfigured(root+"/unconfigured",transport);
+    assert(unconfigured.status()["accounts"]["trakt"]["configured"]==false);
+    error.clear();unconfigured.action("device_start",{{"provider","trakt"}},error);assert(error.find("no registered")!=std::string::npos);
     std::filesystem::remove_all(root);
     std::cout<<"Tracker contracts passed: pairing, validation, refresh, sources, pagination, resume, scrobble, watched marks, offline retry, redaction, permissions and profile isolation\n";
 }
