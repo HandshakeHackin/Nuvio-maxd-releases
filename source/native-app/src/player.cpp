@@ -294,6 +294,7 @@ void Player::demux_thread() {
 
 void Player::demux_run() {
 	std::string input_url = opts_.url;
+	const AVInputFormat* content_format = nullptr;
 	AVDictionary* dict = nullptr;
 	av_dict_set(&dict, "user_agent", kUserAgent, 0);
 	if (!opts_.headers.empty()) av_dict_set(&dict, "headers", (join(opts_.headers, "\r\n") + "\r\n").c_str(), 0);
@@ -348,6 +349,14 @@ void Player::demux_run() {
 		std::string magic = torrent ? TorrentStream::of(main_pb_)->peek(4) : NetStream::of(main_pb_)->peek(64);
 		if (!torrent) {
 			input_url = NetStream::of(main_pb_)->effective_url();
+			// Some providers serve genuine HLS at opaque addresses as octet-stream.
+			// FFmpeg's URL/MIME probe refuses these even after seeing EXT-X tags.
+			// Select HLS only from its actual header; keep the real resolved URL
+			// and existing I/O restrictions for relative segments and cancellation.
+			if (starts_with(magic, "#EXTM3U") && magic.find("#EXT-X-") != std::string::npos) {
+				content_format = av_find_input_format("hls");
+				dlog("player: identified HLS from playlist contents");
+			}
 			std::string prefix = lower(trim(magic));
 			if (starts_with(prefix, "<!doctype html") || starts_with(prefix, "<html")) {
 				avformat_free_context(fmt_);
@@ -367,7 +376,7 @@ void Player::demux_run() {
 			dlog("player: Matroska, starting without reading the end of the file");
 		}
 	}
-	int r = avformat_open_input(&fmt_, input_url.c_str(), nullptr, &dict);
+	int r = avformat_open_input(&fmt_, input_url.c_str(), content_format, &dict);
 	av_dict_free(&dict);
 	if (r < 0) {
 		fmt_ = nullptr;  // freed by avformat_open_input on failure

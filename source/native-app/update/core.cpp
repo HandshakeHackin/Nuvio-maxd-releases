@@ -10,14 +10,16 @@
 #include <vector>
 namespace nuvio_update {
 namespace {
-bool version(const std::string& s, std::array<unsigned,3>& out) {
+bool version(const std::string& s, std::array<unsigned,4>& out) {
     std::size_t p=0;
-    for (int i=0;i<3;++i) {
+    out.fill(0);
+    for (int i=0;i<4;++i) {
         auto start=p; unsigned n=0;
         while(p<s.size() && s[p]>='0' && s[p]<='9') { if(n>999) return false; n=n*10+s[p++]-'0'; }
         if(p==start || n>9999 || (p-start>1 && s[start]=='0')) return false;
         out[i]=n;
-        if(i<2 && (p>=s.size() || s[p++]!='.')) return false;
+        if(p==s.size()) return i>=2;
+        if(i==3 || s[p++]!='.') return false;
     }
     return p==s.size();
 }
@@ -36,10 +38,10 @@ bool write_all(int fd,const void* data,std::size_t size) {
 }
 }
 bool newer(const std::string& a,const std::string& b) {
-    std::array<unsigned,3> av{},bv{}; return version(a,av) && version(b,bv) && av>bv;
+    std::array<unsigned,4> av{},bv{}; return version(a,av) && version(b,bv) && av>bv;
 }
 bool valid_release(const Release& r) {
-    std::array<unsigned,3> v{};
+    std::array<unsigned,4> v{};
     return version(r.version,v) && r.tag=="v"+r.version+"-native-experimental" &&
         r.url=="https://github.com/"+std::string(repository)+"/releases/download/"+r.tag+"/NuvioMaxd-"+r.version+"-native.ffpfsc" &&
         r.sha256.size()==64 && std::all_of(r.sha256.begin(),r.sha256.end(),[](char c){return (c>='0' && c<='9') || (c>='a' && c<='f');}) &&

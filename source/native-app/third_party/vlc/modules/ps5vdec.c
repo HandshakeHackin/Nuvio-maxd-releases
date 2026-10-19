@@ -267,7 +267,10 @@ static bool mem_cpu(Mem *m, size_t len)
     }
     vlc_mutex_unlock(&cpu_block_lock);
     /* a second decoder at the same time (rare): its own, as before */
-    return ok || mem_flexible(m, len);
+    if (ok) return true;
+    // Nuvio already consumes flexible memory for the program image. Match its
+    // Native decoder's CPU-workspace fallback instead of rejecting usable DMEM.
+    return mem_direct(m, len, PAGE_16K, PROT_CPU_RW);
 }
 
 static void mem_free(Mem *m)
@@ -1686,6 +1689,10 @@ static int OpenDecoder(vlc_object_t *obj)
         return VLC_EGENERIC;
     }
     unsigned w = in->video.i_width, h = in->video.i_height;
+    if (!w || !h) {
+        VLOG("video dimensions not available yet: FFmpeg\n");
+        return VLC_EGENERIC;
+    }
     if (w > 3840 || h > 2176) {
         VLOG("%ux%u is bigger than 4K: FFmpeg\n", w, h);
         return VLC_EGENERIC;

@@ -18,7 +18,7 @@
     "compat/vlc_search.c": "66919eae5710298ed152ddbc4751ca6521f8f9e34493a68512bfa5a29c5a4134",
     "disabled.txt": "516314977d8432be11cb5301d73575b2033242ca2ee8203f15aba256c61d7bcd",
     "gen-static-modules.sh": "3b62236dc19dc79594cde43e6abcf43eb623ebdc7bae0fa81a4253abd1f022f5",
-    "modules/ps5vdec.c": "3abebee9291042bd439e5c2a6e2d44f1cedaebabedecdb3cde8e426cd2c65111",
+    "modules/ps5vdec.c": "c3fe8d52fb8ec633c722397888a0c4ea1a75f1c340230ad8941e1f87600464f7",
     "patches/0001-freetype-ps5-default-fonts.patch": "dac7605901f1413c58c041b10609458f536ea233317aed1178767f903381b19e",
     "patches/0002-posix-error-ps5-no-strerror_l.patch": "54a2bccff4967765ac673bc491db730796bc8f9ff39bd6729b6db2bcfb32d2cf",
     "patches/0003-interrupt-ps5-sliced-poll.patch": "dd3ad19a6839dd17042c78ea5fe2943c8f4ed2510e622ed9347d2f02f0eb19ff",
@@ -75,5 +75,9 @@
     "version": "0.4.5",
     "commit": "b981880d092fb9330d9c8b09d63d46f6048c10e0",
     "scope": "VLC PS5 0.4.5 decoder module plus selective vmem, adaptive caching/cancellation/startup and clock-discontinuity backports; libVLC 3.0.24 and shared FFmpeg 7 ABI retained"
-  }
+  },
+  "nuvioIssue3Adaptations": [
+    "Defer unknown-dimension hardware opens to FFmpeg",
+    "Use direct CPU workspace when shared flexible workspace is unavailable"
+  ]
 }

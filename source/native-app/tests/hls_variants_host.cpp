@@ -28,7 +28,9 @@ int main(int argc,char** argv) try {
  require(p.audio_stream()==0,"preferred-language audio crossed HLS variant groups");
  const auto tracks=p.audio_tracks();
  require(tracks.size()==1 && tracks[0].lang=="eng","incompatible audio rendition exposed as switchable");
- run_until(p,[&]{return !p.buffering() && p.position()>.2 && p.picture_serial()==p.video_serial();});
+ // Debug builds initialize the 256 MiB packet pool on the first packet.
+ // Leave time for that under CI load; the assertion still requires a real picture.
+ run_until(p,[&]{return !p.buffering() && p.position()>.2 && p.picture_serial()==p.video_serial();},30);
  require(p.picture_pts()<3,"HLS startup consumed the wrong timeline");
  p.select_audio(1); // stale saved/UI track must not re-enable an incompatible playlist
  run_until(p,[&]{return p.position()>.4;});

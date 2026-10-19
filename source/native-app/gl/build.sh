@@ -139,7 +139,6 @@ read -r -a DEPS <<< "$("$SDK/bin/prospero-pkg-config" --static --libs libcurl li
 	--wrap=sceSystemServiceHideSplashScreen \
 	--wrap=sceVideoOutRegisterBuffers2 --wrap=sceVideoOutClose \
 	--wrap=sceAgcDcbSetFlip --wrap=sceVideoOutSubmitFlip \
-	--defsym=vlc_ps5_big_alloc=0 --defsym=vlc_ps5_big_free=0 \
 	--defsym=vlc_ps5_copy_plane=0 --defsym=vlc_ps5_copy_plane_shift=0 --defsym=vlc_ps5_split_plane16=0 \
 	--allow-multiple-definition --exclude-libs=ALL --defsym=__isthreaded=vlc_ps5_isthreaded \
 	--defsym=__cxa_thread_atexit_impl=0 --defsym=__syscall=0 \
@@ -154,6 +153,7 @@ read -r -a DEPS <<< "$("$SDK/bin/prospero-pkg-config" --static --libs libcurl li
 	--as-needed "$SDK"/target/lib/*.so "$B"/stubs/*.so "$GL/lib/libSceAgc.so" "$GL/lib/libSceAgcDriver.so"
 
 python3 "$ROOT/tools/verify_curl_socket.py" "$B/pie.elf"
+python3 "$ROOT/tools/verify_vlc_picture_hooks.py" "$B/pie.elf"
 
 python3 "$NATIVE/check_imports.py" "$B/pie.elf" "$SDK/target/lib" "$B/stubs" "$GL/lib"
 

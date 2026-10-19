@@ -30,6 +30,8 @@ Json asset_release(const Release& r){return Json{{"draft",false},{"tag_name",r.t
 int main(){
     check(newer("0.5.10","0.5.9") && !newer("0.5.9","0.5.10"),"numeric versions and downgrade refusal");
     check(!newer("0.5.08","0.5.7") && !newer("0.5.9junk","0.5.7"),"malformed version refusal");
+    check(newer("0.5.34.1","0.5.34") && newer("0.5.35","0.5.34.1") && !newer("0.5.34","0.5.34.1"),"temporary revision ordering and upgrade to next release");
+    check(!newer("0.5.34.0","0.5.34") && !newer("0.5.34.01","0.5.34") && !newer("0.5.34.1.2","0.5.34"),"canonical temporary revision parsing");
     Fixture f;auto j=asset_release(f.release);
     check(select_release(Json::array({j}),"0.5.7").version=="0.5.9","new native image with matching source");
     auto malformed=j;malformed["draft"]="wrong type";check(select_release(Json::array({malformed,j}),"0.5.7").version=="0.5.9","malformed release cannot hide a valid later release");

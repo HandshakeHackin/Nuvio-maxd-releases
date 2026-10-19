@@ -18,11 +18,15 @@ high-video.m3u8
 seen=[]
 class Handler(http.server.SimpleHTTPRequestHandler):
  def log_message(self,*args):pass
- def do_GET(self):seen.append(self.path);super().do_GET()
+ def do_GET(self):
+  seen.append(self.path)
+  if self.path=='/opaque-master':
+   data=(p/'master.m3u8').read_bytes();self.send_response(200);self.send_header('Content-Type','application/octet-stream');self.send_header('Content-Length',str(len(data)));self.end_headers();self.wfile.write(data);return
+  super().do_GET()
 s=http.server.ThreadingHTTPServer(('127.0.0.1',0),functools.partial(Handler,directory=str(p)))
 threading.Thread(target=s.serve_forever,daemon=True).start()
 try:
- result=subprocess.run([str(r/'test-output/hls-variants-host'),f'http://127.0.0.1:{s.server_port}/master.m3u8'],text=True,capture_output=True,timeout=30)
+ result=subprocess.run([str(r/'test-output/hls-variants-host'),f'http://127.0.0.1:{s.server_port}/opaque-master'],text=True,capture_output=True,timeout=50)
  print(result.stdout);print(result.stderr)
  assert result.returncode==0,'HLS rendition pairing/startup regression failed'
  assert any(x.startswith('/low-video-') for x in seen),'no selected video fetched'

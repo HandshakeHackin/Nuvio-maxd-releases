@@ -6,12 +6,10 @@ namespace sx {
 inline bool should_show_release_notes(std::string_view seen, std::string_view current) {
     return !current.empty() && seen != current;
 }
-inline constexpr std::array<const char*,6> release_note_items = {
-    "Hebrew text and redirected video streams work more reliably.",
-    "Profile PINs now use a masked controller-operated numeric keypad.",
-    "Fixed incompatible HLS audio choices and unnecessary playlist downloads.",
-    "Continue Watching now includes the full list and imports more resume formats.",
-    "Improved torrent recovery and preserved progress during tracker outages.",
-    "Updated optional VLC decoding, buffering and large-picture handling; PS5 testing needed."
+inline constexpr std::array<const char*,4> release_note_items = {
+    "Fixed genuine HLS playlists rejected at extensionless provider addresses.",
+    "VLC software retry now forces the software decoder instead of retrying PS5 hardware.",
+    "Preserve planar VLC pictures and their 8/10-bit sample alignment for correct colours.",
+    "Restore VLC picture-memory hooks and use direct decoder workspace when flexible memory is exhausted."
 };
 }

@@ -183,3 +183,8 @@ The HDR packing audit follows
 [ProsperoTV's channel-order correction](https://github.com/blackbearreloaded/ProsperoTV/commit/f984b545).
 These are targeted adaptations to Nuvio's existing integration, not imported app
 frontends. See `dependencies.json` and `NEXT_REVISION.md` for scope and validation.
+
+The 0.5.34.1 issue #3 candidate additionally adapts the pinned VLC PS5 decoder to
+reject unknown-dimension opens and use direct CPU workspace when flexible memory
+is unavailable. Local provenance and the modified file hash are recorded in
+`third_party/vlc/UPSTREAM.json`; upstream license notices are retained.

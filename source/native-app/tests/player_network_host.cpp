@@ -60,6 +60,11 @@ int main(int argc,char** argv) try {
         std::cout<<"Network playback: "<<name<<" segment playback, paused/rapid/backward seeks and tracks passed\n";
     }
     {
+        Player p;Player::Options o;o.url=base+"/opaque-playlist";p.open(o);
+        run_until(p,[&]{return !p.buffering() && p.position()>2.2;});p.close();
+        std::cout<<"Content-probed HLS: extensionless octet-stream playlist produces video/audio\n";
+    }
+    {
         Player p;Player::Options o;o.url=base+"/live.m3u8";p.open(o);
         run_until(p,[&]{return !p.buffering() && p.position()>2.2;});p.close();
         std::cout<<"Live HLS: custom-AVIO segment playback and clean close passed\n";

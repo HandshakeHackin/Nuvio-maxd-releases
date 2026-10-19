@@ -51,10 +51,10 @@ struct VlcBackend::Impl {
     bool ready_valid = false, opened_picture = false;
     nuvio_vlc_colour colour{0, 1, 0, 0, 1000, 1, 1, 0, 0, 0, 0};
     unsigned width = 0, height = 0, pitch = 0, uvpitch = 0;
-    bool ten = false;
+    bool ten = false, interleaved = true;
     uint64_t ticket = 0;
     struct Slot {
-        std::vector<uint8_t> y, uv;
+        std::vector<uint8_t> y, uv, v;
         VideoFrame frame;
         uint64_t ticket = 0;
         int state = 0, epoch = 0;
@@ -120,21 +120,25 @@ struct VlcBackend::Impl {
                          !std::memcmp(chroma, "I2A", 3) || !std::memcmp(chroma, "I4A", 3);
         std::lock_guard<std::mutex> lock(s.mutex);
         s.ten = ten;
+        // Keep planar decoder output planar. Requesting NV12/P010 for every
+        // source adds an avoidable VLC chroma conversion on the console.
+        s.interleaved = !std::memcmp(chroma, "NV12", 4) || !std::memcmp(chroma, "P010", 4);
         s.width = *w;
         s.height = *h;
         s.pitch = (*w * (ten ? 2 : 1) + 63) & ~63u;
-        s.uvpitch = (((*w + 1) / 2) * (ten ? 4 : 2) + 63) & ~63u;
-        std::memcpy(chroma, ten ? "P010" : "NV12", 4);
+        s.uvpitch = (((*w + 1) / 2) * (ten ? 2 : 1) * (s.interleaved ? 2 : 1) + 63) & ~63u;
+        std::memcpy(chroma, s.interleaved ? (ten ? "P010" : "NV12") : (ten ? "I0AL" : "I420"), 4);
         pitches[0] = s.pitch;
         pitches[1] = s.uvpitch;
-        pitches[2] = 0;
+        pitches[2] = s.interleaved ? 0 : s.uvpitch;
         lines[0] = *h;
         lines[1] = (*h + 1) / 2;
-        lines[2] = 0;
+        lines[2] = s.interleaved ? 0 : (*h + 1) / 2;
         try {
             for (auto &slot : s.slots) {
                 slot.y.resize(size_t(s.pitch) * lines[0] + 63);
                 slot.uv.resize(size_t(s.uvpitch) * lines[1] + 63);
+                slot.v.resize(s.interleaved ? 0 : size_t(s.uvpitch) * lines[2] + 63);
                 slot.state = 0;
                 slot.ticket = ++s.ticket;
             }
@@ -144,6 +148,9 @@ struct VlcBackend::Impl {
             return 0;
         }
         s.ready_valid = false;
+        dlog("player: VLC picture layout %.4s coded=%ux%u visible=%ux%u pitch=%u/%u/%u bits=%d shift=%d",
+             chroma, *w, *h, s.colour.visible_width, s.colour.visible_height,
+             pitches[0], pitches[1], pitches[2], ten ? 10 : 8, ten && s.interleaved ? 6 : 0);
         return 3;
     }
     static void cleanup(void *) {}
@@ -173,7 +180,7 @@ struct VlcBackend::Impl {
         slot.ticket = (++s.ticket << 2) | uint64_t(index);
         planes[0] = aligned(slot.y);
         planes[1] = aligned(slot.uv);
-        planes[2] = nullptr;
+        planes[2] = s.interleaved ? nullptr : aligned(slot.v);
         return reinterpret_cast<void *>(uintptr_t(slot.ticket));
     }
     static void unlock(void *opaque, void *id, void *const *) {
@@ -191,14 +198,14 @@ struct VlcBackend::Impl {
         YuvPicture input;
         input.y = aligned(slot.y);
         input.u = aligned(slot.uv);
-        input.v = nullptr;
+        input.v = s.interleaved ? nullptr : aligned(slot.v);
         input.width = int(s.colour.visible_width && s.colour.visible_width <= s.width ? s.colour.visible_width : s.width);
         input.height = int(s.colour.visible_height && s.colour.visible_height <= s.height ? s.colour.visible_height : s.height);
         input.y_stride = int(s.pitch);
         input.c_stride = int(s.uvpitch);
-        input.interleaved = true;
+        input.interleaved = s.interleaved;
         input.wide = s.ten;
-        input.shift = s.ten ? 6 : 0;
+        input.shift = s.ten && s.interleaved ? 6 : 0;
         bool packed = false;
         try {
             packed = pack_video_yuv(input, slot.frame);
@@ -447,8 +454,13 @@ bool VlcBackend::open(const Options &o) {
     option(":freetype-font=/app0/fonts/NotoSans-Regular.ttf");
     option(":freetype-monofont=/app0/fonts/NotoSans-Regular.ttf");
 #endif
-    if (o.software)
-        option(":ps5vdec=0");
+    if (o.software) {
+        // VLC boolean options use the no- prefix; '=0' can still enable them.
+        // Restrict the codec list as well so fallback cannot reselect ps5vdec.
+        option(":no-ps5vdec");
+        option(":codec=avcodec");
+        option(":avcodec-hw=none");
+    }
     option(":adaptive-use-access=1");
     option(":nuvio-stream-serial=" + std::to_string(s.stream_serial));
     option(":sub-track=-1");
