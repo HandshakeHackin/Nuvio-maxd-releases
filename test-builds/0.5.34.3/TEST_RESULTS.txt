@@ -1,0 +1,12 @@
+0.5.34.3 targeted issue #3 test. Hardware acceptance remains pending.
+
+PASS: owner TMDB live metadata check (HTTP 200; localized title, IMDb ID, translations and alternative titles).
+PASS: four unmodified German provider scripts through production QuickJS/transfer/parse fixtures, including playback headers and rejected metadata authorization.
+PASS: provider runtime/download/cancellation/isolation, six metadata config cases, script caching, stream caching and settings navigation.
+PASS: 80 account/profile tests and 38 updater regressions.
+PASS: six PS5 syntax checks, target build/link, 413 imports and production picture-allocator hooks.
+PASS: deep image and ZIP round trips; 151 files match. Embedded app/helper version 0.5.34.3, numeric contentVersion 05.000.037. Matching clean source archive: 735 file hashes.
+PASS: approved live Trakt device exchange, account validation and refresh rotation; temporary test token revoked. No account/history writes made.
+
+GitHub focused updater/Trakt job passed. Broader VLC HTTP/HLS playback job failed with playback timeout; account/transport job was still running at the recorded snapshot. Previous Native seek trim/gate failure is not claimed resolved. See PROVIDER_VALIDATION.json for job URLs and current snapshot.
+No real media-site playback or PS5 hardware acceptance is claimed. Password provider options remain unavailable until a verified masked keyboard exists. This candidate is a manual test download; normal release/store unchanged.

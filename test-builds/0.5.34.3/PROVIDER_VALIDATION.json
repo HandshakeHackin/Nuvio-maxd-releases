@@ -1,0 +1,86 @@
+{
+  "version": "0.5.34.3",
+  "sourceCommit": "77045412be5baf3f188de01aa760e711766bae5d",
+  "baseVersion": "0.5.34.2",
+  "issue": "https://github.com/HandshakeHackin/Nuvio-maxd-releases/issues/3",
+  "metadataOwnerConfigured": true,
+  "liveMetadataCheck": {
+    "httpStatus": 200,
+    "localizedTitlePresent": true,
+    "imdbIdPresent": true,
+    "translationsPresent": true,
+    "alternativeTitlesPresent": true
+  },
+  "traktOwnerConfigured": true,
+  "liveTraktCheck": {
+    "deviceCodeAccepted": true,
+    "pollWithoutSecretStatus": 200,
+    "pollError": null,
+    "liveAccountAuthorized": true,
+    "accountValidationStatus": 200,
+    "refreshWithoutSecretStatus": 200,
+    "refreshRotated": true,
+    "temporaryTokenRevokeStatus": 200,
+    "productionHeadersDeviceStatus": 200,
+    "productionHeadersPendingStatus": 400
+  },
+  "germanProviderFixtures": 4,
+  "accountProfileTests": 80,
+  "updaterTests": 38,
+  "hardwareVerified": false,
+  "mediaWebsitesLiveTested": false,
+  "checks": {
+    "providerRegression": "passed",
+    "scriptDownloadCache": "passed",
+    "metadataConfigurationValidation": "6 cases passed",
+    "streamListCache": "passed",
+    "settingsNavigation": "passed",
+    "ps5SyntaxChecks": 6
+  },
+  "limitations": [
+    "Real PS5 provider and playback acceptance is pending.",
+    "Controlled provider fixtures simulate metadata and website responses; they do not establish current media-host availability.",
+    "Password provider settings are omitted until a verified masked keyboard is available.",
+    "Existing broader VLC HLS replay/network and Native seek-gate regressions are not claimed fixed in this provider revision.",
+    "The installable app includes its application registration; account tokens and source credentials are not bundled."
+  ],
+  "evidenceSha256": {
+    "providers-final-2.log": "2bda71b79c338b40e9c534d9b98fd9a3824c875bafa43e3faafd88db85762a02",
+    "german-fixtures-final.log": "408b8b6f5bd0a3b5e630d4195ab840c66c2f737c1042c19530f96bd1651cf2b7",
+    "account-tests.log": "b85e67889304caefc96586fdb04de84df43fe75d5b90815fe41d7993d6911772",
+    "ps5-compile-stable.log": "556ae0352d5b4c8160abcdf34bea2dbb2d9774b49d87ecfcaf33daff0cb00351",
+    "tmdb-owner-key-check.json": "043aea7ae733126a0b1e3dd6675532dc2671aaf4bd3353fff9fdc75fb357155f",
+    "trakt-live-smoke.json": "a9ea0588b5ae7de8a192bdf49d7c0d99d068b2193e26e62dd33bfa6e1f74ad68",
+    "update-tests.log": "3b611792d543b8777248b1833bc33c229fc9e2115652f8c02bf37a4df2ee0683"
+  },
+  "targetPackage": {
+    "contentVersion": "05.000.037",
+    "files": 151,
+    "sourceArchiveFiles": 735,
+    "deepImageZipRoundTrip": true
+  },
+  "sourceCi": {
+    "url": "https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/39335831406",
+    "sourceHead": "07144cd092b6b38dbb774c560c25e61c6fab9253",
+    "jobs": [
+      {
+        "name": "account-and-transport",
+        "status": "in_progress",
+        "conclusion": null,
+        "html_url": "https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/39335831406/job/118344978613"
+      },
+      {
+        "name": "vlc-playback",
+        "status": "completed",
+        "conclusion": "failure",
+        "html_url": "https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/39335831406/job/118344978865"
+      },
+      {
+        "name": "updater-and-trakt-regressions",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/39335831406/job/118344979063"
+      }
+    ]
+  }
+}
