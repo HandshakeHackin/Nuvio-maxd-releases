@@ -1,5 +1,5 @@
 {
-  "sourceCommit": "acbc80a78688e71e788193726de693fd1c23e30a",
+  "sourceCommit": "ba5125fff870a222dbb8095fa7c817f9f21a34d5",
   "version": "0.5.34.2",
   "fileSha256": {
     ".github/workflows/native-checks.yml": "c2557f7195cc9414905fb49fe01ee341163bf7f96d42172550fdab5bb7312efa",
@@ -132,7 +132,7 @@
     "native-app/app/sounds/glass/toggle_02.wav": "1647840bf2e0c6b2febeb527c5b8535f3c0d6b5cc9d2745b7433c9f9cc9aa2d9",
     "native-app/app/sounds/glass/welcome_01.wav": "eae4ba7af91695850c7f031eeed0a01807d9ed1dca063fdca5a7df03e97870cd",
     "native-app/dependencies.json": "cb2a6791220084b40d85448a512254fb233fde94ea258e32db6b94197337605f",
-    "native-app/gl/app_update.cpp": "42dcf5e485e980bda038d4e0f2a10b71586645acb08800ea094006d84b727afd",
+    "native-app/gl/app_update.cpp": "f876ae87cf7cdfdfe127490c4eaac33c3a44534276e5efc33ccbc42fb56f90dc",
     "native-app/gl/app_update.hpp": "3e3782f3f74652e3aed5ef9360afcc46e2e3363c8bf884e56aaf991ec6aa6dc7",
     "native-app/gl/art.cpp": "e017e9345ac886768c4988be6a3755bac8b433d2097dee9d159752992df67377",
     "native-app/gl/art.hpp": "a1e4467caabd2852dc768fc4e19cd839625ffe15e65c90e9af8aaaeff833ac3e",

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "app_update.hpp"
 #include "http.h"
+#include "util.h"
 #include <curl/curl.h>
 #include <array>
 #include <fcntl.h>
