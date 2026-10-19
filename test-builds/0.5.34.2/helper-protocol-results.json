@@ -1,0 +1,41 @@
+{
+  "tests": [
+    {
+      "case": "delayed",
+      "passed": true,
+      "seconds": 2.3,
+      "unmountAttempts": 3,
+      "exitCode": 0
+    },
+    {
+      "case": "busy",
+      "passed": true,
+      "seconds": 2.1,
+      "unmountAttempts": 3,
+      "exitCode": 0
+    },
+    {
+      "case": "outage",
+      "passed": true,
+      "seconds": 2.1,
+      "unmountAttempts": 3,
+      "exitCode": 0
+    },
+    {
+      "case": "refused",
+      "passed": true,
+      "seconds": 0.1,
+      "unmountAttempts": 1,
+      "exitCode": 1
+    },
+    {
+      "case": "persistent",
+      "passed": true,
+      "seconds": 121.0,
+      "unmountAttempts": 104,
+      "exitCode": 1
+    }
+  ],
+  "allPassed": true,
+  "scope": "Real helper probe protocol on Linux with syscall/log/notification shims and fixture ShadowMount API; not PS5 hardware acceptance"
+}

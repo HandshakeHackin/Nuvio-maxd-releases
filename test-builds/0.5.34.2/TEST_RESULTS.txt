@@ -1,0 +1,83 @@
+0.5.34.2 temporary issue #2/#7 test build.
+Hardware acceptance and ordinary-account Trakt pairing are NOT verified.
+Missing owner Trakt application registration remains a blocker.
+Broader playback CI has unresolved VLC HLS replay and native seek failures; see ISSUES_2_7_VALIDATION.json.
+
+update-tests.log
+update: numeric versions and downgrade refusal
+update: malformed version refusal
+update: temporary revision ordering and upgrade to next release
+update: canonical temporary revision parsing
+update: new native image with matching source
+update: malformed release cannot hide a valid later release
+update: no binary advertised without matching source
+update: wrong repository or plaintext URL refusal
+update: missing digest refusal
+update: oversized image refusal
+update: managed homebrew paths only
+update: resolve exact title's physical image
+update: wrong title refusal
+update: persistent backing mount refusal
+update: fully released image accepted
+update: disconnected storage is not an unmount
+update: successful runtime unmount still waits for backing image
+update: busy title cannot authorize replacement even with released snapshot
+update: later independent snapshot completes release wait
+update: terminal unmount error is not retried
+update: transient API outage is retried without replacing
+update: malformed status cannot authorize replacement
+update: missing image is not proof of release
+update: storage disconnection cannot authorize replacement
+update: verified staging leaves original installed
+update: cancellation removes only the owned stage
+update: truncated transfer refusal
+update: corrupt image SHA-256 refusal
+update: busy image retains original
+update: external install changes are preserved
+update: symlink image refusal
+update: symlink parent refusal
+update: stage tampering after verification refusal
+update: remount before commit retains original
+update: rename failure retains installed image and verified backup
+update: storage sync failure refuses replacement
+update: existing backup is never overwritten
+update: atomic install retains backup and saved data
+FFPFSC updater: 38 tests, 0 failures
+
+tracking-tests.log
+[nuvio] tracking: trakt pairing start; application configured
+[nuvio] tracking: trakt pairing token HTTP 400
+[nuvio] tracking: trakt pairing token HTTP 200
+[nuvio] tracking: simkl pairing start; application configured
+[nuvio] tracking: simkl pairing token HTTP 200
+[nuvio] tracking: simkl pairing token HTTP 200
+[nuvio] tracking: simkl pairing start; application configured
+[nuvio] tracking: simkl pairing token HTTP 200
+[nuvio] tracking: trakt pairing start; application configured
+[nuvio] tracking: trakt pairing start; application configured
+[nuvio] tracking: trakt pairing token HTTP 404
+[nuvio] tracking: trakt pairing start; application configured
+[nuvio] tracking: trakt pairing token HTTP 409
+[nuvio] tracking: trakt pairing start; application configured
+[nuvio] tracking: trakt pairing token HTTP 410
+[nuvio] tracking: trakt pairing start; application configured
+[nuvio] tracking: trakt pairing token HTTP 418
+[nuvio] tracking: trakt pairing start; application configured
+[nuvio] tracking: trakt pairing token HTTP 429
+Tracker contracts passed: pairing, validation, refresh, sources, pagination, resume, scrobble, watched marks, offline retry, redaction, permissions and profile isolation
+
+helper-protocol.log
+{"case": "delayed", "passed": true, "seconds": 2.3, "unmountAttempts": 3, "exitCode": 0}
+{"case": "busy", "passed": true, "seconds": 2.1, "unmountAttempts": 3, "exitCode": 0}
+{"case": "outage", "passed": true, "seconds": 2.1, "unmountAttempts": 3, "exitCode": 0}
+{"case": "refused", "passed": true, "seconds": 0.1, "unmountAttempts": 1, "exitCode": 1}
+{"case": "persistent", "passed": true, "seconds": 121.0, "unmountAttempts": 104, "exitCode": 1}
+
+Focused CI: https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/39304047894/job/118236365967 — success
+
+Package: 150 files, deep image and ZIP round-trip hashes and matching source archive verified.
+
+Host helper fixture reproduction (Linux, local 127.0.0.1:10101 must be free):
+ g++ -std=c++20 -O1 -include sys/vfs.h -Isource/native-app/third_party source/native-app/update/helper.cpp source/native-app/update/core.cpp test-builds/0.5.34.2/helper-host-shims.cpp -Wl,--wrap=open -Wl,--wrap=chdir $(pkg-config --cflags --libs libcurl openssl) -pthread -o test-builds/0.5.34.2/helper-host
+ python test-builds/0.5.34.2/helper-protocol-test.py
+Only chdir, diagnostic log open and notification are adapted for the host. The production helper source is unmodified. The test uses probe mode and never replaces an image.

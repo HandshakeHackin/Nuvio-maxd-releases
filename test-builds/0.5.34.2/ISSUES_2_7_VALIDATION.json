@@ -1,0 +1,111 @@
+{
+  "version": "0.5.34.2",
+  "sourceCommit": "2f22c3ba3ef8d91f5c0ebce7817864a2ed216692",
+  "baseSourceCommit": "28af1518aceb1b1d5d07160e05fd580a6ad8d452",
+  "distribution": "Temporary targeted test on builds/v0.5.34.2; no normal release/store promotion",
+  "issues": [
+    "https://github.com/HandshakeHackin/Nuvio-maxd-releases/issues/2",
+    "https://github.com/HandshakeHackin/Nuvio-maxd-releases/issues/7"
+  ],
+  "updaterTests": 38,
+  "hostHelperProtocolTests": {
+    "tests": [
+      {
+        "case": "delayed",
+        "passed": true,
+        "seconds": 2.3,
+        "unmountAttempts": 3,
+        "exitCode": 0
+      },
+      {
+        "case": "busy",
+        "passed": true,
+        "seconds": 2.1,
+        "unmountAttempts": 3,
+        "exitCode": 0
+      },
+      {
+        "case": "outage",
+        "passed": true,
+        "seconds": 2.1,
+        "unmountAttempts": 3,
+        "exitCode": 0
+      },
+      {
+        "case": "refused",
+        "passed": true,
+        "seconds": 0.1,
+        "unmountAttempts": 1,
+        "exitCode": 1
+      },
+      {
+        "case": "persistent",
+        "passed": true,
+        "seconds": 121.0,
+        "unmountAttempts": 104,
+        "exitCode": 1
+      }
+    ],
+    "allPassed": true,
+    "scope": "Real helper probe protocol on Linux with syscall/log/notification shims and fixture ShadowMount API; not PS5 hardware acceptance"
+  },
+  "trackerFixtureContractsPassed": true,
+  "traktOwnerRegistrationBundled": false,
+  "ordinaryAccountTraktPairingVerified": false,
+  "hardwareVerified": false,
+  "playbackSourcesUnchangedFromBase": {
+    "src/player.cpp": "a6ff0bdde63e3f06373c44c743bac7be3fac1b93b0cff11dbbfe4eafda90eac9",
+    "src/vlc_backend.cpp": "71dac8fab43a22b4cc6271fcb2342e3d52c1e26cdf078d1332eca6bcdf71ea16",
+    "src/vlc_picture_memory.c": "6784b6f3ba376071c60e02c74d1e2d1ef48da9066d69d378cdd842d915845fcc",
+    "third_party/vlc/modules/ps5vdec.c": "c3fe8d52fb8ec633c722397888a0c4ea1a75f1c340230ad8941e1f87600464f7",
+    "gl/build.sh": "1d94c39f7c65be6cb911f7944ec71049a542e012ce17b336077f6396184c8d91"
+  },
+  "helperProductionSourceSha256": "3ff117b4557350c30352197744049a53c2064285756d1be85dcfba5c8f8f8ee3",
+  "releaseWaitSourceSha256": "17b2bab64661cc44c03165271f6e723e5d8beaef7ef3a66c2a901a65d34aae50",
+  "focusedCi": {
+    "url": "https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/39304047894/job/118236365967",
+    "conclusion": "success",
+    "publicSourceCommit": "df7188d449412405b06199bf5bb88668d995d746"
+  },
+  "broaderCi": {
+    "url": "https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/39304047894",
+    "status": "in_progress",
+    "conclusion": null,
+    "jobs": [
+      {
+        "name": "vlc-playback",
+        "status": "completed",
+        "conclusion": "failure",
+        "html_url": "https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/39304047894/job/118236365534"
+      },
+      {
+        "name": "updater-and-trakt-regressions",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/39304047894/job/118236365967"
+      },
+      {
+        "name": "account-and-transport",
+        "status": "in_progress",
+        "conclusion": null,
+        "html_url": "https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/39304047894/job/118236366307"
+      }
+    ]
+  },
+  "limitations": [
+    "Missing Max\u2019d Trakt application registration is not solved; ordinary-account QR pairing remains unavailable in this default package.",
+    "PS5 handoff and full image replacement require console confirmation; probe tests never replace an image.",
+    "Persistent backing mounts remain a safe refusal; no global ShadowMount setting is overridden.",
+    "Broader libVLC 3.0.24 HLS replay/network regression times out.",
+    "An earlier broader CI account/transport job failed native seek sample trim/gate; unchanged playback source, not resolved in this revision."
+  ],
+  "evidenceSha256": {
+    "update-tests.log": "3b611792d543b8777248b1833bc33c229fc9e2115652f8c02bf37a4df2ee0683",
+    "tracking-tests.log": "2a42d10d2e89248d7ea3f516aec8ea78bbd1c9fcd0543cd980d32dbad0a2f2d0",
+    "helper-protocol-results.json": "46c1dd44d37e5c5e3ce24d903f7f1c4b4f9c0c4d7b9ec7f34bf9dfd8228a3f5b",
+    "helper-protocol-test.py": "1a8ac7ba50b3b80fa36c7890cadfeb5cc4364782856470fc623cb430b7bb073e",
+    "helper-host-shims.cpp": "c908aad03906792d9eae7fe5e0d03ff0152c1a2049aa08a42ff1e80d7ee8c685",
+    "target-build.log": "41016b7104a89365769ac511734b04f17a4402d41cfc7667391145a0f4571826"
+  },
+  "packageVerification": "BUILD-VERIFICATION.json"
+}

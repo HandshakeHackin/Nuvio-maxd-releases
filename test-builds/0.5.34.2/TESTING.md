@@ -10,7 +10,7 @@ Download `NuvioMaxd-0.5.34.2-native.ffpfsc`, or use `PPSA99288.zip` if your exis
 2. Enable your normal PS5 payload loader on port 9021 and ShadowMount+ 1.7's local API on port 10101. The installed FFPFSC must be in a managed `homebrew` folder.
 3. Stop playback. Open **Settings → App & Updates → App updates → Test updater handoff (closes app)**, then **Close app and test**.
 4. The app should close. Wait up to about three minutes for a PS5 notification before reopening. A passing test means ShadowMount released the backing image. The test does not download, install, replace, or downgrade any image.
-5. If it fails, attach `/data/nuvio-maxd-updater.log` and `/data/shadowmount/debug.log` to issue #7. State your firmware, ShadowMount version, install path/method, notification text, and whether `persistent_image_mounts` is enabled. Please copy the updater log before repeating the test, which starts a new log.
+5. If it fails, attach `/data/nuvio-maxd-updater.log` and `/data/shadowmount/debug.log` to issue #7. State your firmware, ShadowMount version, install path/method, notification text, and whether `persistent_image_mounts` is enabled. Please copy the updater log before repeating the test, which starts a new log. If it is missing or access is denied, report the exact path/error and notification text.
 
 With `persistent_image_mounts=1`, ShadowMount intentionally keeps the backing image mounted. This updater preserves the installed image in that case. Set `persistent_image_mounts=0` in `/data/shadowmount/config.ini`, reload ShadowMount normally, then retry. This build never changes that global setting for you and never forces an in-use image replacement.
 
