@@ -256,7 +256,7 @@ bool establish_context() {
         json settings, existing;
         if (!load_json(primary + "/profile-settings.json", existing) && load_json(dir + "/settings.json", settings)) {
             json scoped;
-            for (const auto* field : {"extra_addons", "provider_enabled", "subtitle_languages", "audio_languages", "auto_subtitles"})
+            for (const auto* field : {"extra_addons", "provider_enabled", "provider_settings", "subtitle_languages", "audio_languages", "auto_subtitles"})
                 if (settings.contains(field)) scoped[field] = settings[field];
             if (!save_json(primary + "/profile-settings.json", scoped)) return false;
         }

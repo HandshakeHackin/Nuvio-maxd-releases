@@ -188,3 +188,11 @@ The 0.5.34.1 issue #3 candidate additionally adapts the pinned VLC PS5 decoder t
 reject unknown-dimension opens and use direct CPU workspace when flexible memory
 is unavailable. Local provenance and the modified file hash are recorded in
 `third_party/vlc/UPSTREAM.json`; upstream license notices are retained.
+
+## TMDB metadata service
+
+This product uses the TMDB API but is not endorsed or certified by TMDB.
+Movie and TV metadata is provided by https://www.themoviedb.org/.
+The application's own TMDB registration is configured at build time; no other
+application's registration is reused. Third-party provider availability is not
+guaranteed by TMDB.

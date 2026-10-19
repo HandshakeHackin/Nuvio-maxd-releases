@@ -24,6 +24,7 @@
 #include "video_surface.hpp"
 #include "subtitles.h"
 #include "tasks.h"
+#include "stream_result_cache.hpp"
 #include "audio/cues.hpp"
 #include "core/input.hpp"
 
@@ -195,6 +196,9 @@ class Session
     void addons_reload();
     // Cross on an addon: one added by URL can be removed; the account's are managed in Nuvio.
     void addon_activate(int index, int provider_cursor = 0);
+    void provider_options(const std::string &url);
+    void provider_options_load(const std::string &url, const std::string &id);
+    void provider_options_show(const std::string &url, const std::string &id, const json &layout);
     // Square on the Board: "See all" (a catalog opens in Discover, Continue Watching in the Library).
     void board_square(int row, int col);
     // Whether a row of the Board is Continue Watching.
@@ -475,6 +479,10 @@ class Session
     std::vector<::Stream> d_streams_; // in the order the screen shows them
     std::vector<::Stream> d_found_;   // as the addons sent them
     int d_gen_ = 0, d_pending_ = 0, d_answered_ = 0, d_meta_gen_ = 0;
+    StreamResultCache stream_result_cache_;
+    std::string d_stream_cache_key_;
+    std::set<std::string> d_cached_sources_;
+    bool d_stream_errors_ = false;
     bool d_open_ = false;
     std::shared_ptr<std::atomic<bool>> d_stream_cancel_ = std::make_shared<std::atomic<bool>>(false);
     std::shared_ptr<std::atomic<bool>> d_cancel_ = std::make_shared<std::atomic<bool>>(false);

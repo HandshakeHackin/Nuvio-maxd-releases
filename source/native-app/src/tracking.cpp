@@ -112,10 +112,11 @@ Store::Store(std::string directory, Transport transport, const std::atomic<bool>
             auto& account=state_["accounts"][p];
             if (account.is_null()) account=json::object();
             const auto& app=jobj(applications,p);
-            if (account.is_object() && (jstr(account,"client_id").empty() || (jstr(account,"client_id")==jstr(app,"client_id") && !credential(jstr(account,"client_secret")))) && credential(jstr(app,"client_id")) &&
-                (std::string(p)!="trakt" || credential(jstr(app,"client_secret")))) {
+            // A saved token belongs to its original client identity. Never
+            // migrate an imported connection to a different application.
+            if (account.is_object() && jstr(account,"client_id").empty() &&
+                jstr(account,"access_token").empty() && credential(jstr(app,"client_id"))) {
                 account["client_id"]=app["client_id"];
-                if(std::string(p)=="trakt") account["client_secret"]=app["client_secret"];
             }
         }
     }
@@ -150,7 +151,7 @@ json Store::status() const {
     json out{{"library", jstr(state_,"library_error").empty() ? source(false) : "nuvio"}, {"progress", jstr(state_,"progress_error").empty() ? source(true) : "nuvio"}, {"libraryPreferred", jstr(state_, "library", "nuvio")},
         {"progressPreferred", jstr(state_, "progress", "nuvio")}, {"accounts", json::object()}, {"readable", readable_}};
     for (auto p : providers) out["accounts"][p] = {{"connected", connected(p)}, {"reconnect", jbool(jobj(jobj(state_, "accounts"), p), "reconnect")},
-        {"configured", credential(jstr(jobj(jobj(state_, "accounts"), p), "client_id")) && (std::string(p)!="trakt" || credential(jstr(jobj(jobj(state_, "accounts"), p), "client_secret")))}, {"error", jstr(jobj(jobj(state_, "accounts"), p), "error")}};
+        {"configured", credential(jstr(jobj(jobj(state_, "accounts"), p), "client_id"))}, {"error", jstr(jobj(jobj(state_, "accounts"), p), "error")}};
     return out;
 }
 HttpResponse Store::request(const std::string& p, const std::string& path, const json* body, bool auth) {
@@ -173,8 +174,9 @@ bool Store::refresh(const std::string& p, std::string& error) {
     auto& a = state_["accounts"][p];
     const double expires = jnum(a, "expires_at");
     if (expires <= 0 || expires > double(now_epoch_ms()) / 1000 + 120) return true;
-    json body{{"refresh_token", jstr(a, "refresh_token")}, {"client_id", jstr(a, "client_id")}, {"client_secret", jstr(a, "client_secret")},
-        {"redirect_uri", "urn:ietf:wg:oauth:2.0:oob"}, {"grant_type", "refresh_token"}};
+    // This is a public TV client using device authorization, not a browser
+    // authorization-code exchange. It has no client secret or redirect URI.
+    json body{{"refresh_token", jstr(a, "refresh_token")}, {"client_id", jstr(a, "client_id")}, {"grant_type", "refresh_token"}};
     auto response = request(p, "/oauth/token", &body, false); auto token = parsed(response);
     if (!response.ok() || !credential(jstr(token, "access_token")) || !credential(jstr(token, "refresh_token"))) {
         if (response.status == 400 || response.status == 401) a["reconnect"] = true;
@@ -239,12 +241,18 @@ json Store::action(const std::string& operation, const json& args, std::string& 
         if (operation == "device_cancel") {
             state_.erase("pairing_"+p);
         } else if (operation == "configure") {
-            if (p == "mdblist" || !credential(jstr(args, "client_id")) || (p == "trakt" && !credential(jstr(args, "client_secret")))) { error = "Enter the application's tracker credentials"; return {}; }
+            if (p == "mdblist" || !credential(jstr(args, "client_id"))) { error = "Enter the application's public client ID"; return {}; }
             if (connected(p)) { error = "Disconnect before changing application credentials"; return {}; }
-            a = {{"client_id", jstr(args, "client_id")}, {"client_secret", jstr(args, "client_secret")}};
+            a = {{"client_id", jstr(args, "client_id")}};
+            state_.erase("pairing_"+p);
         } else if (operation == "disconnect") {
             // Local disconnect does not revoke credentials shared with another Nuvio device.
             a = json::object();
+            {
+                std::lock_guard<std::mutex> guard(applications_mutex);
+                const auto& app=jobj(applications,p.c_str());
+                if (credential(jstr(app,"client_id"))) a["client_id"]=app["client_id"];
+            }
             remove((dir_+"/native-library-"+p+".json").c_str());
             remove((dir_+"/progress-"+p+".json").c_str());
             for (const auto* field : {"library", "progress"}) if (jstr(state_, field) == p) state_[field] = "nuvio";
@@ -270,7 +278,7 @@ json Store::action(const std::string& operation, const json& args, std::string& 
             a["verified"] = true;
         } else if (operation == "device_start") {
             if (connected(p)) { error="Disconnect the current tracker before connecting another account"; return {}; }
-            if (p == "mdblist" || !credential(jstr(a, "client_id")) || (p == "trakt" && !credential(jstr(a, "client_secret")))) { error = "Phone pairing is unavailable: this build has no registered "+name(p)+" application. A normal tracker account is sufficient once Max'd supplies its application registration; you do not need a developer account."; return {}; }
+            if (p == "mdblist" || !credential(jstr(a, "client_id"))) { error = "Phone pairing is unavailable: this build has no registered "+name(p)+" application. A normal tracker account is sufficient once Max'd supplies its application registration; you do not need a developer account."; return {}; }
             dlog("tracking: %s pairing start; application configured",p.c_str());
             json body{{"client_id", jstr(a, "client_id")}};
             auto response = p == "trakt" ? request(p, "/oauth/device/code", &body, false) : request(p, "/oauth/pin?client_id="+url_encode(jstr(a, "client_id")), nullptr, false);
@@ -280,12 +288,12 @@ json Store::action(const std::string& operation, const json& args, std::string& 
                 {"expires", now_seconds()+std::clamp(jnum(code, "expires_in"), 1.0, 3600.0)}};
             if (!save(error)) return {};
             // Fixed vendor verification origins prevent QR substitution.
-            return {{"code", jstr(code, "user_code")}, {"url", p == "trakt" ? "https://trakt.tv/activate" : "https://simkl.com/pin"},
+            return {{"code", jstr(code, "user_code")}, {"url", p == "trakt" ? "https://auth.trakt.tv/activate" : "https://simkl.com/pin"},
                 {"interval", std::clamp(jnum(code, "interval", 5), 2.0, 60.0)}, {"expires_in", std::clamp(jnum(code, "expires_in"), 1.0, 3600.0)}};
         } else if (operation == "device_poll") {
             const auto pair = jobj(state_, ("pairing_"+p).c_str());
             if (jstr(pair, "code").empty() || jnum(pair, "expires") <= now_seconds()) { error = "Code expired; connect again"; return {}; }
-            json body{{"code", jstr(pair, "code")}, {"client_id", jstr(a, "client_id")}, {"client_secret", jstr(a, "client_secret")}};
+            json body{{"code", jstr(pair, "code")}, {"client_id", jstr(a, "client_id")}};
             auto response = p == "trakt" ? request(p, "/oauth/device/token", &body, false) : request(p, "/oauth/pin/"+url_encode(jstr(pair, "code"))+"?client_id="+url_encode(jstr(a, "client_id")), nullptr, false);
             dlog("tracking: %s pairing token HTTP %ld",p.c_str(),response.status);
             auto token = parsed(response);

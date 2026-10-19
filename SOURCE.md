@@ -1,3 +1,3 @@
-# Temporary 0.5.34.2 source
+# Temporary 0.5.34.3 source
 
-Based on 0.5.34.1. Matching source is in `source/`; the test download directory will include the matching source archive and SHA-256 manifest. This branch is for issues #2 and #7; the normal release and store remain unchanged.
+Matching source is in `source/`. This candidate addresses issue #3's provider metadata, playback headers, provider settings and stream-list feedback, and includes the staged Trakt registration fix. Test downloads will be in `test-builds/0.5.34.3/`. Existing normal release/store and earlier test downloads are unchanged. The owner's metadata registration is supplied privately when packaging and is excluded from source.

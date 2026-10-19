@@ -24,7 +24,7 @@ struct Fake {
             assert(body && calls.back().body["client_id"]=="client");
             out={{"device_code","private-device"},{"user_code","ABCD"},{"expires_in",600},{"interval",2},{"verification_url","https://untrusted.example/steal"}};
         } else if (url.find("/oauth/device/token")!=std::string::npos || url.find("/oauth/token")!=std::string::npos) {
-            assert(body);
+            assert(body && !calls.back().body.contains("client_secret") && !calls.back().body.contains("redirect_uri"));
             if(device_status)return {device_status,"{}","","",0};
             if (pending) return {400,"{}","","",0};
             out={{"access_token","private-access"},{"refresh_token","private-refresh"},{"created_at",now_epoch_ms()/1000},{"expires_in",86400}};
@@ -70,8 +70,8 @@ int main() {
     auto action=[&](const auto& op,const json& args){error.clear();auto r=store.action(op,args,error);assert(error.empty());return r;};
     assert(store.source(false)=="nuvio" && store.source(true)=="nuvio" && fake.calls.empty());
     store.action("source",{{"field","library"},{"value","trakt"}},error); assert(!error.empty());
-    action("configure",{{"provider","trakt"},{"client_id","client"},{"client_secret","private-secret"}});
-    auto code=action("device_start",{{"provider","trakt"}}); assert(code["url"]=="https://trakt.tv/activate");
+    action("configure",{{"provider","trakt"},{"client_id","client"}});
+    auto code=action("device_start",{{"provider","trakt"}}); assert(code["url"]=="https://auth.trakt.tv/activate");
     assert(code.dump().find("private-device")==std::string::npos);
     fake.pending=true; auto waiting=action("device_poll",{{"provider","trakt"}}); assert(waiting["pending"]==true);
     fake.pending=false; action("device_poll",{{"provider","trakt"}});
@@ -165,11 +165,11 @@ int main() {
     assert(!after_cancel.status()["accounts"]["simkl"]["connected"].get<bool>());
     // Owner-bundled app registrations make normal phone pairing available
     // without opting anyone into an account or a different source.
-    tracking::set_applications({{"trakt",{{"client_id","client"},{"client_secret","registered-app-secret"}}}});
+    tracking::set_applications({{"trakt",{{"client_id","client"}}}});
     std::filesystem::create_directories(root+"/bundled");Store bundled(root+"/bundled",transport);
     assert(bundled.status()["accounts"]["trakt"]["configured"].get<bool>());
     assert(!bundled.status()["accounts"]["trakt"]["connected"].get<bool>() && bundled.source(true)=="nuvio");
-    error.clear();assert(bundled.action("device_start",{{"provider","trakt"}},error)["url"]=="https://trakt.tv/activate");
+    error.clear();assert(bundled.action("device_start",{{"provider","trakt"}},error)["url"]=="https://auth.trakt.tv/activate");
     for(int terminal:{404,409,410,418}) {
         error.clear();bundled.action("device_start",{{"provider","trakt"}},error);assert(error.empty());
         fake.device_status=terminal;bundled.action("device_poll",{{"provider","trakt"}},error);assert(!error.empty());
@@ -177,11 +177,29 @@ int main() {
     }
     error.clear();bundled.action("device_start",{{"provider","trakt"}},error);assert(error.empty());
     fake.device_status=429;auto slow=bundled.action("device_poll",{{"provider","trakt"}},error);assert(error.empty() && slow["pending"]==true && slow["slow"]==true);fake.device_status=0;
-    // An interrupted older configuration with a matching public client ID
-    // can be completed by the owner's registered application, without tokens.
+    // A saved public client ID needs no client secret to enable pairing.
     std::filesystem::create_directories(root+"/partial");
     save_json(root+"/partial/tracking.json",json{{"version",1},{"accounts",{{"trakt",{{"client_id","client"}}}}}});
     Store repaired(root+"/partial",transport);assert(repaired.status()["accounts"]["trakt"]["configured"]==true);
+    // Disconnect restores the owner registration immediately; no app restart.
+    error.clear();bundled.action("disconnect",{{"provider","trakt"}},error);assert(error.empty());
+    assert(bundled.status()["accounts"]["trakt"]["configured"]==true);
+    bundled.action("device_start",{{"provider","trakt"}},error);assert(error.empty());
+    bundled.action("device_poll",{{"provider","trakt"}},error);assert(error.empty());
+    Store signed_in(root+"/bundled",transport);assert(signed_in.status()["accounts"]["trakt"]["connected"]==true);
+    // Owner registration changes cannot rewrite an existing token's client ID.
+    tracking::set_applications({{"trakt",{{"client_id","new-owner-client"}}}});
+    Store preserved(root+"/bundled",transport);
+    preserved.action("device_cancel",{{"provider","trakt"}},error);assert(error.empty());
+    assert(load_json(root+"/bundled/tracking.json",disk));
+    assert(disk["accounts"]["trakt"]["client_id"]=="client" && disk["accounts"]["trakt"]["access_token"]=="private-access");
+    preserved.action("disconnect",{{"provider","trakt"}},error);assert(error.empty());
+    assert(load_json(root+"/bundled/tracking.json",disk));
+    assert(disk["accounts"]["trakt"]["client_id"]=="new-owner-client" && !disk["accounts"]["trakt"].contains("access_token"));
+    assert(!disk["accounts"]["trakt"].contains("client_secret"));
+    std::filesystem::create_directories(root+"/isolated");Store isolated(root+"/isolated",transport);
+    assert(isolated.status()["accounts"]["trakt"]["configured"]==true && isolated.status()["accounts"]["trakt"]["connected"]==false);
+    assert(isolated.source(false)=="nuvio" && isolated.source(true)=="nuvio");
     tracking::set_applications(json::object());
     Store unconfigured(root+"/unconfigured",transport);
     assert(unconfigured.status()["accounts"]["trakt"]["configured"]==false);

@@ -1003,10 +1003,11 @@ class AccountTests(unittest.TestCase):
     def test_legacy_data_migrates_only_to_original_primary(self):
         (self.path / 'watch-sync.json').write_text(json.dumps({'owner': 'owner-id'}))
         (self.path / 'progress.json').write_text(json.dumps({'items': {'tt123': {'time': 42}}}))
-        (self.path / 'settings.json').write_text(json.dumps({'extra_addons': ['https://example.invalid/manifest.json']}))
+        (self.path / 'settings.json').write_text(json.dumps({'extra_addons': ['https://example.invalid/manifest.json'], 'provider_settings': {'repo': {'provider': {'language': 'de'}}}}))
         self.assertTrue(self.pair()['ok'])
         self.assertEqual(json.loads((self.profile_path() / 'progress.json').read_text())['items']['tt123']['time'], 42)
         self.assertEqual(len(json.loads((self.profile_path() / 'profile-settings.json').read_text())['extra_addons']), 1)
+        self.assertEqual(json.loads((self.profile_path() / 'profile-settings.json').read_text())['provider_settings']['repo']['provider']['language'], 'de')
         self.assertTrue(self.command('select_profile', profile=2)['ok'])
         self.state['expected_profile'] = 2
         self.assertFalse((self.profile_path() / 'progress.json').exists())

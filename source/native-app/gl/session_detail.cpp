@@ -463,6 +463,8 @@ void Session::detail_load_streams(const std::string &video_id, const std::string
     }
     detail.stream_heading = heading;
     d_answered_ = 0;
+    d_stream_errors_=false;
+    d_cached_sources_.clear();
 
     std::string type = d_meta_loaded_ ? d_meta_.type : d_item_.type;
     if (type.empty())
@@ -475,6 +477,13 @@ void Session::detail_load_streams(const std::string &video_id, const std::string
             sources.push_back(std::move(source));
         }
     d_pending_ = static_cast<int>(sources.size());
+    json source_identity=json::array();
+    for(const auto& a:sources) {
+        json scripts=json::array();
+        for(const auto& p:a.providers)scripts.push_back(json::array({p.id,p.version,p.filename,p.settings}));
+        source_identity.push_back(json::array({a.transport_url,a.version,scripts}));
+    }
+    d_stream_cache_key_=json::array({profile_dir_,type,video_id,source_identity}).dump();
     detail.streams_loading = d_pending_ > 0;
     if (prefetched)
     {
@@ -494,6 +503,9 @@ void Session::detail_load_streams(const std::string &video_id, const std::string
         return;
     }
     detail.streams_status = "Loading streams... (0 of " + std::to_string(sources.size()) + " sources answered)";
+    d_found_=stream_result_cache_.get(d_stream_cache_key_,now_seconds());
+    for(const auto& s:d_found_)d_cached_sources_.insert(s.addon);
+    if(!d_found_.empty())detail_refresh_streams();
     for (const auto &s : sources)
     {
         const std::string name = s.name;
@@ -506,20 +518,31 @@ void Session::detail_load_streams(const std::string &video_id, const std::string
         };
         auto work = [s, type, video_id, meta, cancel]()
         {
-            auto found = providers::fetch(s, type, video_id, meta, cancel.get());
-            return Res{std::move(found.streams), std::move(found.error)};
+            try {
+                auto found = providers::fetch(s, type, video_id, meta, cancel.get());
+                return Res{std::move(found.streams), std::move(found.error)};
+            } catch (...) {return Res{{},"Provider search failed; try reloading this source"};}
         };
         auto done = [this, gen, name](Res &r)
         {
             if (gen != d_gen_)
                 return;
             ++d_answered_;
+            // Replace a cached source's results with its fresh answer, including
+            // empty/error responses. Never leave old links after a refresh.
+            if(d_cached_sources_.erase(name))
+                d_found_.erase(std::remove_if(d_found_.begin(),d_found_.end(),[&](const auto& s){return s.addon==name;}),d_found_.end());
             if (!r.error.empty())
+            {
+                d_stream_errors_=true;
                 dlog("streams from %s: %s", name.c_str(), r.error.c_str());
+            }
             dlog("streams: source %s returned %zu playable candidates", name.c_str(), r.streams.size());
             for (auto &st : r.streams)
                 d_found_.push_back(st);
             detail_refresh_streams();
+            if(d_answered_==d_pending_)
+                stream_result_cache_.put(d_stream_cache_key_,d_stream_errors_ ? std::vector<::Stream>{} : d_found_,now_seconds());
             if (!r.error.empty() && d_streams_.empty())
                 say(name + ": " + r.error, 6.0, true);
         };

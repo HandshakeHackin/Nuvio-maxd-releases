@@ -20,6 +20,14 @@ namespace providers {
 namespace {
 using Clock = std::chrono::steady_clock;
 std::string runtime_source;
+std::mutex config_mutex;
+std::string tmdb_key;
+struct CachedScript { std::string code; Clock::time_point expires; };
+std::mutex scripts_mutex;
+std::map<std::string,CachedScript> scripts;
+std::string configured_tmdb_key() {
+  std::lock_guard<std::mutex> lock(config_mutex); return tmdb_key;
+}
 struct Timer {
   int id;
   Clock::time_point when;
@@ -29,6 +37,7 @@ struct Execution {
   const std::atomic<bool> *cancel = nullptr;
   Clock::time_point deadline;
   unsigned requests = 0;
+  std::string diagnostic;
   int next_timer = 0;
   std::vector<Timer> timers;
   bool stopped() const {
@@ -173,6 +182,17 @@ json request(Execution &e, json req) {
   auto url = jstr(req, "url"), method = jstr(req, "method", "GET"),
        body = jstr(req, "body");
   auto headers = jobj(req, "headers");
+  const bool tmdb = origin(url)=="https://api.themoviedb.org:443";
+  if (tmdb) {
+    auto key_at=url.find("api_key=");
+    if (key_at!=std::string::npos) {
+      auto key=url.substr(key_at+8);key=key.substr(0,key.find('&'));
+      if (key.empty() || key=="undefined" || key=="null") {
+        e.diagnostic="Provider metadata access is not configured in this build. Update the app or contact the maintainer.";
+        return {{"error",e.diagnostic}};
+      }
+    }
+  }
   if (method != "GET" && method != "HEAD" && method != "POST")
     return {{"error", "Unsupported provider HTTP method"}};
   for (int redirect = 0; redirect <= 5; ++redirect) {
@@ -242,6 +262,10 @@ json request(Execution &e, json req) {
     curl_easy_getinfo(c, CURLINFO_RESPONSE_CODE, &status);
     curl_slist_free_all(list);
     curl_easy_cleanup(c);
+    if (tmdb && (status==401 || status==403))
+      e.diagnostic="Provider metadata authorization was rejected (HTTP "+std::to_string(status)+"). Contact the maintainer.";
+    else if ((status==403 || status==429) && e.diagnostic.empty())
+      e.diagnostic="Provider website refused the request (HTTP "+std::to_string(status)+"). Try again later.";
     if (rc != CURLE_OK)
       return {{"error", transport_error(rc, t)}};
     auto location = jstr(t.headers, "location");
@@ -287,8 +311,10 @@ JSValue native_fetch(JSContext *c, JSValueConst, int argc, JSValueConst *argv) {
     auto req = json::parse(input, nullptr, false);
     if (!req.is_object())
       return JS_ThrowTypeError(c, "Invalid request");
-    auto out =
-        request(*e, req).dump(-1, ' ', false, json::error_handler_t::replace);
+    auto response=request(*e, req);
+    if (!jstr(response,"error").empty() && e->diagnostic.empty())
+      e->diagnostic=jstr(response,"error");
+    auto out = response.dump(-1, ' ', false, json::error_handler_t::replace);
     return JS_NewStringLen(c, out.data(), out.size());
 
   } catch (...) {
@@ -369,9 +395,19 @@ bool initialize(const std::string &path) {
   runtime_source = std::move(source);
   return true;
 }
+bool configure(const std::string &path) {
+  json config;
+  const bool loaded=load_json(path,config) && config.is_object();
+  auto key=loaded ? jstr(jobj(config,"tmdb"),"api_key") : "";
+  const bool valid=key.empty() || (key.size()==32 && key.find_first_not_of("0123456789abcdefABCDEF")==std::string::npos);
+  std::lock_guard<std::mutex> lock(config_mutex);
+  tmdb_key=valid ? key : "";
+  return loaded && valid;
+}
+void clear_script_cache() { std::lock_guard<std::mutex> lock(scripts_mutex);scripts.clear(); }
 json execute(const std::string &source, const json &arguments,
              const json &settings, std::string &error,
-             const std::atomic<bool> *cancel, int timeout_ms) {
+             const std::atomic<bool> *cancel, int timeout_ms, bool describe_settings) {
   error.clear();
   if (runtime_source.empty()) {
     error = "Provider runtime is unavailable";
@@ -427,12 +463,13 @@ json execute(const std::string &source, const json &arguments,
       eval("globalThis.SCRAPER_SETTINGS=" +
            (settings.is_object() ? settings : json::object()).dump() +
            ";globalThis.getSetting=(k,d)=>SCRAPER_SETTINGS[k]??d;globalThis."
-           "TMDB_API_KEY=SCRAPER_SETTINGS.tmdbApiKey||'';globalThis."
+           "TMDB_API_KEY=SCRAPER_SETTINGS.tmdbApiKey||"+json(configured_tmdb_key()).dump()+";globalThis."
            "getTmdbApiKey=()=>TMDB_API_KEY;") &&
       eval("(function(module,exports){\n" + source +
            "\n})(module,module.exports);")) {
-    auto invocation = "(async()=>{const p=module.exports;const "
-                      "fn=p.getStreams||(p.default&&p.default.getStreams);if("
+    auto invocation = std::string("(async()=>{const p=module.exports;const ")+
+                      (describe_settings ? "fn=p.onSettings||(p.default&&p.default.onSettings)||globalThis.onSettings;if(typeof fn!=='function')return '[]';" :
+                      "fn=p.getStreams||(p.default&&p.default.getStreams)||globalThis.getStreams;")+"if("
                       "typeof fn!=='function')throw new Error('Missing "
                       "getStreams');const r=await fn(..." +
                       arguments.dump() +
@@ -508,6 +545,8 @@ json execute(const std::string &source, const json &arguments,
   if (e.stopped())
     error = cancel && *cancel ? "Provider search cancelled"
                               : "Provider search timed out";
+  if (error.empty() && result.empty() && !describe_settings && !e.diagnostic.empty())
+    error=e.diagnostic;
   JS_FreeValue(c, promise);
   for (auto &t : e.timers) {
     JS_FreeValue(c, t.fn);
@@ -561,6 +600,48 @@ Identity identify(const std::string &video_id, const Meta &meta) {
   return identity;
 }
 
+namespace {
+std::string load_script(const Addon& repository, const ProviderScript& p,
+                        std::string& error, const std::atomic<bool>* cancel) {
+  if (cancel && *cancel) { error="Provider request cancelled";return {}; }
+  const auto url=resolve_url(repository.transport_url,p.filename);
+  const auto key=url+"\n"+p.version;
+  {
+    std::lock_guard<std::mutex> lock(scripts_mutex);
+    auto it=scripts.find(key);
+    if(it!=scripts.end() && Clock::now()<it->second.expires) return it->second.code;
+  }
+  Execution e;e.cancel=cancel;e.deadline=Clock::now()+std::chrono::seconds(15);
+  auto response=request(e,{{"url",url}});
+  if(!jstr(response,"error").empty() || jnum(response,"status")!=200) {
+    const auto reason=jstr(response,"error");
+    error="Could not download provider script ("+(reason.empty()?"HTTP "+std::to_string(static_cast<int>(jnum(response,"status"))):reason)+")";
+    dlog("provider: script download failed id=%s status=%d",p.id.c_str(),static_cast<int>(jnum(response,"status")));
+    return {};
+  }
+  auto encoded=jstr(response,"body");std::string code(encoded.size(),'\0');
+  auto size=EVP_DecodeBlock(reinterpret_cast<unsigned char*>(code.data()),
+                          reinterpret_cast<const unsigned char*>(encoded.data()),encoded.size());
+  if(size<0) {error="Invalid provider script download";return {};}
+  while(!encoded.empty() && encoded.back()=='=') {--size;encoded.pop_back();}
+  if(size<=0 || size>1024*1024) {error="Provider script is empty or exceeds 1 MB";return {};}
+  code.resize(size);
+  if(cancel && *cancel) {error="Provider request cancelled";return {};}
+  {
+    std::lock_guard<std::mutex> lock(scripts_mutex);
+    // At most eight cached scripts, each limited to 1 MiB; never store failures.
+    if(scripts.size()>=8 && !scripts.count(key)) scripts.erase(scripts.begin());
+    scripts[key]={code,Clock::now()+std::chrono::minutes(5)};
+  }
+  return code;
+}
+}
+json settings_layout(const Addon& a,const ProviderScript& p,std::string& error,
+                     const std::atomic<bool>* cancel) {
+  error.clear();auto code=load_script(a,p,error,cancel);
+  if(code.empty())return json::array();
+  return execute(code,json::array(),p.settings,error,cancel,10000,true);
+}
 Result streams(const Addon &repository, const std::string &type,
                const std::string &video_id, const Meta &meta,
                const std::atomic<bool> *cancel) {
@@ -613,42 +694,35 @@ Result streams(const Addon &repository, const std::string &type,
             p.types.end() &&
         std::find(p.types.begin(), p.types.end(), type) == p.types.end())
       continue;
-    Execution e;
-    e.cancel = cancel;
-    e.deadline = Clock::now() + std::chrono::seconds(15);
-    auto url = resolve_url(repository.transport_url, p.filename);
-    auto response = request(e, {{"url", url}});
-    if (!jstr(response, "error").empty() || jnum(response, "status") != 200) {
-      const auto reason = jstr(response, "error");
-      out.error = p.name + ": Could not download provider script (" +
-                  (reason.empty() ? "HTTP " + std::to_string(static_cast<int>(jnum(response, "status"))) : reason) + ")";
-      // Provider identity + status only; never log the URL or request headers.
-      dlog("provider: script download failed id=%s status=%d reason=%s", p.id.c_str(),
-           static_cast<int>(jnum(response, "status")), reason.c_str());
-      continue;
-    }
-    auto encoded = jstr(response, "body");
-    std::string code(encoded.size(), '\0');
-    auto size =
-        EVP_DecodeBlock(reinterpret_cast<unsigned char *>(code.data()),
-                        reinterpret_cast<const unsigned char *>(encoded.data()),
-                        encoded.size());
-    if (size < 0) {
-      out.error = "Invalid provider script download";
-      continue;
-    }
-    while (!encoded.empty() && encoded.back() == '=') {
-      --size;
-      encoded.pop_back();
-    }
-    code.resize(size);
+    std::string download_error;
+    auto code=load_script(repository,p,download_error,cancel);
+    if(code.empty()) {out.error=p.name+": "+download_error;continue;}
     std::string error;
     auto values =
         execute(code, json::array({tmdb, media_type, season, episode}),
-                json::object(), error, cancel);
+                p.settings, error, cancel);
     if (!error.empty()) {
       out.error = p.name + ": " + error;
       continue;
+    }
+    // Nuvio scripts return top-level headers; Stremio addons use
+    // behaviorHints.proxyHeaders.request. Preserve both when adapting results.
+    for(auto& value:values) {
+      if(!value.is_object() || !jobj(value,"headers").is_object())continue;
+      json merged=json::object();
+      for(auto it=value["headers"].begin();it!=value["headers"].end();++it) {
+        const auto key=it.key();
+        if(!it.value().is_string() || key.empty() || key.size()>128 ||
+           key.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!#$%&'*+-.^_`|~")!=std::string::npos)continue;
+        const auto text=it.value().get<std::string>();
+        if(text.size()>8192 || text.find_first_of("\r\n")!=std::string::npos)continue;
+        merged[key]=text;
+      }
+      const auto& standard=jobj(jobj(jobj(value,"behaviorHints"),"proxyHeaders"),"request");
+      if(standard.is_object())for(auto it=standard.begin();it!=standard.end();++it)merged[it.key()]=it.value();
+      if(!jobj(value,"behaviorHints").is_object())value["behaviorHints"]=json::object();
+      if(!jobj(value["behaviorHints"],"proxyHeaders").is_object())value["behaviorHints"]["proxyHeaders"]=json::object();
+      value["behaviorHints"]["proxyHeaders"]["request"]=std::move(merged);
     }
     auto parsed = parse_streams({{"streams", values}}, repository.name);
     for (auto &s : parsed)

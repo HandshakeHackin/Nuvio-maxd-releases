@@ -76,7 +76,7 @@ int main(int argc, char **argv) {
                  "Error('allowed')}catch(e){if(String(e).includes('allowed'))"
                  "throw e;return []}}";
   result = providers::execute(blocked, json::array(), {}, error);
-  assert(error.empty() && result.empty());
+  assert(error.find("public address") != std::string::npos && result.empty());
   pollfd incoming{server, POLLIN, 0};
   assert(poll(&incoming, 1, 0) == 0);
   close(server);
@@ -94,6 +94,16 @@ int main(int argc, char **argv) {
       "e;}return []}",
       json::array(), {}, error);
   assert(error.empty());
+  // Saved per-provider options reach both the stream and settings callbacks.
+  result=providers::execute("module.exports.getStreams=()=>[{url:'https://example.com/'+getSetting('language','en')}];",json::array(),{{"language","de"}},error);
+  assert(error.empty() && result[0]["url"]=="https://example.com/de");
+  result=providers::execute("module.exports.onSettings=()=>[{type:'select',key:'language',label:'Language',options:[{label:'German',value:'de'}]}];",json::array(),{},error,nullptr,1000,true);
+  assert(error.empty() && result.size()==1 && result[0]["key"]=="language");
+  result=providers::execute("module.exports.getStreams=()=>[];",json::array(),{},error,nullptr,1000,true);
+  assert(error.empty() && result.empty());
+  // A provider which catches its metadata failure must not hide missing setup.
+  result=providers::execute("module.exports.getStreams=async()=>{try{await fetch('https://api.themoviedb.org/3/movie/1?api_key='+TMDB_API_KEY)}catch(e){}return []};",json::array(),{},error);
+  assert(result.empty() && error.find("metadata access is not configured")!=std::string::npos);
   Addon a;
   assert(parse_addon(
       {{"name", "Fixture"},

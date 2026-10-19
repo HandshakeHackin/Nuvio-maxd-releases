@@ -68,6 +68,7 @@ enum SettingIndex
     kExit,
     kConsoleLights,
     kReadAhead,
+    kMetadataCredits,
     kSettingCount
 };
 
@@ -137,6 +138,8 @@ bool Session::init(const std::string &base_dir, const std::string &data_dir, hui
     provider_tasks_.start(2);
     if (!providers::initialize(base_dir_ + "/providers/runtime.js"))
         dlog("providers: runtime unavailable");
+    if (!providers::configure(base_dir_ + "/providers/applications.json"))
+        dlog("providers: metadata configuration unavailable");
     boot_start_ = now_seconds();
     tex_.init(data_dir_ + "/art", renderer_, 6);
     // The app's storage holds the read-ahead: the built-in torrent engine's 6 GB
@@ -327,6 +330,7 @@ const ::Addon *Session::find_addon(const std::string &url) const
 
 void Session::load_addons()
 {
+    stream_result_cache_.clear();
     struct Result
     {
         std::vector<std::shared_ptr<::Addon>> addons;
@@ -419,7 +423,11 @@ void Session::load_addons()
                 }
                 auto installed = std::make_unique<::Addon>(*a);
                 for (auto &p : installed->providers)
+                {
                     p.enabled = jbool(jobj(prefs_.provider_enabled, a->transport_url.c_str()), p.id.c_str());
+                    const auto& settings=jobj(jobj(prefs_.provider_settings,a->transport_url.c_str()),p.id.c_str());
+                    if(settings.is_object()) p.settings=settings;
+                }
                 addons_.push_back(std::move(installed));
             }
             if (extra_before != prefs_.extra_addons) save_prefs();
@@ -515,6 +523,7 @@ void Session::load_library()
 
 void Session::addons_reload()
 {
+    providers::clear_script_cache();
     say("Reloading addons...");
     load_addons();
     if (signed_in())
@@ -536,6 +545,7 @@ void Session::addon_activate(int index, int provider_cursor)
         for (const auto &p : selected.providers)
             choices.push_back(std::string(p.enabled ? "On: " : "Off: ") + p.name);
         const int count = static_cast<int>(choices.size());
+        choices.push_back("Provider settings");
         choices.push_back("Remove repository");
         choices.push_back("Cancel");
         open_dropdown(selected.name, choices, -1,
@@ -545,13 +555,18 @@ void Session::addon_activate(int index, int provider_cursor)
                           for (auto &candidate : addons_)
                               if (candidate->transport_url == url)
                                   a = candidate.get();
-                          if (!a || pick < 0 || pick > count)
+                          if (!a || pick < 0 || pick > count+1)
                               return;
                           if (pick == count)
+                          {
+                              provider_options(url); return;
+                          }
+                          if (pick == count+1)
                           {
                               auto &ex = prefs_.extra_addons;
                               ex.erase(std::remove(ex.begin(), ex.end(), url), ex.end());
                               prefs_.provider_enabled.erase(url);
+                              prefs_.provider_settings.erase(url);
                               save_prefs();
                               sync_source(url, true, true);
                               load_addons();
@@ -571,8 +586,8 @@ void Session::addon_activate(int index, int provider_cursor)
                                   break;
                               }
                       });
-        dropdown.selected = std::clamp(provider_cursor, 0, count + 1);
-        dropdown.danger = count;
+        dropdown.selected = std::clamp(provider_cursor, 0, count + 2);
+        dropdown.danger = count+1;
         return;
     }
     const auto it = std::find(prefs_.extra_addons.begin(), prefs_.extra_addons.end(), url);
@@ -726,6 +741,7 @@ void Session::refresh_settings()
             : std::to_string(prefs_.extra_addons.size()) + " added here.");
     set(kReload, Kind::action, "Reload addons and catalogs", "", "Fetch every addon and catalog again.");
     const auto update = updater_.status();
+    set(kMetadataCredits, Kind::action, "Metadata credits", "TMDB", "This product uses the TMDB API but is not endorsed or certified by TMDB.");
     set(kDonation, Kind::action, "Support on Ko-fi", "", "Optional support for development. Scan the QR code with your phone.");
     set(kInstallSource, Kind::value, "Install source", install_source_label(prefs_.install_source),
         "Where you installed Nuvio Max'd. Update reminders use this choice; change it if you switch install methods.");
@@ -747,7 +763,7 @@ void Session::refresh_settings()
     group("Playback", {kSeek, kShoulderSeek, kCountdown, kAutoplay, kSkipSegments, kReadAhead});
     group("Appearance & Lighting", {kReducedMotion,kHighContrast,kUiSounds,kCalmBackgrounds,kConsoleLights});
     group("Addons", {kTorrents,kAddAddon,kReload});
-    group("App & Updates", {kReleaseNotes,kDiagnostics,kDonation,kInstallSource,kUpdates,kExit});
+    group("App & Updates", {kReleaseNotes,kDiagnostics,kMetadataCredits,kDonation,kInstallSource,kUpdates,kExit});
     changed_ |= kSettings;
 }
 
@@ -932,6 +948,10 @@ void Session::settings_activate(int row)
         }
         sign_in_open=true;break;
     }
+    case kMetadataCredits:
+        open_dropdown("Metadata credits",{"Close"},0,[](int){});
+        dropdown.message="This product uses the TMDB API but is not endorsed or certified by TMDB. Movie and TV metadata: https://www.themoviedb.org/";
+        break;
     case kInstallSource: install_source_menu(); break;
     case kReleaseNotes: release_notes_open=true; release_notes_version=nuvio_update::current_version; break;
     case kDiagnostics: say("Diagnostics: " + data_dir_ + "/runtime.json, boot-current.txt and crash-current.txt. Previous run files are kept too.", 15.0); break;

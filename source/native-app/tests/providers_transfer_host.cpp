@@ -93,6 +93,8 @@ int main(int argc, char **argv) {
   assert(ipv4_setups == 1);
   assert(r.error.empty() && r.streams.size() == 1);
   assert(r.streams[0].url == "https://example.com/video.mp4");
+  r=run();assert(ipv4_setups==1); // repeated searches reuse the downloaded script
+  providers::clear_script_cache();
   reply_status = 404; r = run();
   assert(r.streams.empty() && r.error.find("Sample:") != std::string::npos && r.error.find("HTTP 404") != std::string::npos);
   reply_status = 0; reply_error = CURLE_OPERATION_TIMEDOUT; r = run();

@@ -1,6 +1,24 @@
-# Next Nuvio Max’d revision
+# Nuvio Max’d 0.5.34.3 targeted test revision
 
-Status: packaging for 0.5.34. Based on the existing 0.5.33 candidate plus the staged profile PIN keypad. Keep the current 0.5.33 test downloads immutable. Version metadata and the in-app changelog are updated for 0.5.34; existing 0.5.33 downloads remain unchanged.
+## Staged provider compatibility and stream-list improvements
+
+- Fix metadata access for JavaScript providers using the owner's TMDB registration. Missing or rejected metadata authorization now gives a useful diagnostic instead of silently returning no hosts.
+- Preserve the playback headers returned by Nuvio providers, including Referer and Origin.
+- Add per-profile provider text, select and toggle settings, with inherited-profile safeguards.
+- Keep the loading counter visible after the first stream appears. Cache successful provider scripts briefly and show recent eligible stream results while every source refreshes in the background.
+- Include metadata credits under App & Updates.
+
+Related reports: [missing provider streams #3](https://github.com/HandshakeHackin/Nuvio-maxd-releases/issues/3#issuecomment-6277799728), [loading progress and repeated searches](https://github.com/HandshakeHackin/Nuvio-maxd-releases/issues/3#issuecomment-6277804390). The owner registration passed a live read-only TMDB check. All four unmodified reported provider scripts returned fixture streams with required playback headers and correctly reported rejected metadata authorization. Console and real-site playback acceptance remain pending. Staged source only; no release or store deployment yet.
+
+## Staged after temporary 0.5.34.2: Trakt registration
+
+- Fix [Trakt connection issue #2](https://github.com/HandshakeHackin/Nuvio-maxd-releases/issues/2): include Max'd's owner-registered public Client ID by default, so normal users can connect using their phone without registering a developer application.
+- Remove the Client Secret prompt and use secret-free device-code exchange and refresh. Use `https://auth.trakt.tv/activate` for the phone/QR step.
+- Restore the bundled application registration immediately after disconnect; preserve existing connected profiles' client identity and keep Nuvio sources as the default.
+- Build configuration rejects Client Secrets, account tokens and API keys. SIMKL owner registration is still separate and has not been supplied.
+
+Validation on 2026-10-19: with the owner's approval, official Trakt returned HTTP 200 for device-code exchange, read-only account validation, token refresh with a rotated refresh token, and revocation of the temporary test token. No library/history writes were made. Requests using the app's production headers also passed device-code creation and the expected HTTP 400 pending response. Deterministic host tests cover pairing, refresh, disconnected/connected registration handling and profile isolation. This follow-up is included in the 0.5.34.3 targeted test candidate; PS5 acceptance remains pending. Published 0.5.34.2 downloads are unchanged.
+
 
 ## Simple release notes
 
@@ -43,3 +61,5 @@ See `ISSUE7_FOLLOWUP.md` for reproducible playback/history defects, before-and-a
 - [Log-location instructions](https://github.com/HandshakeHackin/Nuvio-maxd-releases/issues/7#issuecomment-6253091786)
 
 Keep feature requests separate from original bug investigations. The upcoming release must include its normal GitHub documentation and Homebrew Store catalog submission when publication is authorized.
+
+Distribution: targeted issue #3 test on `builds/v0.5.34.3`; existing release/store and prior test downloads remain unchanged. Hardware acceptance is pending. Numeric package revision: `05.000.037`.

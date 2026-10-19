@@ -79,7 +79,7 @@ void Session::tracker_menu(const std::string& p) {
     if (watching || resuming_) { say("Stop playback before changing tracker connections",7.0); return; }
     const bool configured=jbool(jobj(jobj(tracking_status_,"accounts"),p.c_str()),"configured");
     std::vector<std::string> rows{p == "mdblist" ? "Connect with API key" : configured ? "Connect with phone / QR code" : "Phone pairing: awaiting app registration", "Import connection from Nuvio Sync"};
-    if (p != "mdblist") rows.push_back("Set up application credentials");
+    if (p != "mdblist") rows.push_back("Advanced: application client ID");
     rows.push_back("Disconnect on this PS5");
     open_dropdown(tracking::name(p), rows, 0, [this,p](int i) {
         if (i == 0) {
@@ -91,11 +91,7 @@ void Session::tracker_menu(const std::string& p) {
             say("Enter the client ID from your "+tracking::name(p)+" developer application", 10.0);
             ask_text([this,p](const auto& id) {
                 if (trim(id).empty()) return;
-                if (p == "simkl") { tracking_action("configure",{{"provider",p},{"client_id",trim(id)}}); return; }
-                say("Enter the Trakt application's client secret. Do not share it in logs or screenshots.", 10.0);
-                ask_text([this,p,id](const auto& secret) {
-                    if (!trim(secret).empty()) tracking_action("configure",{{"provider",p},{"client_id",trim(id)},{"client_secret",trim(secret)}});
-                });
+                tracking_action("configure",{{"provider",p},{"client_id",trim(id)}});
             });
         } else if (i == (p == "mdblist" ? 2 : 3)) {
             if (watching || resuming_) { say("Stop playback before disconnecting a tracker",7.0); return; }

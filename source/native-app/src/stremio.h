@@ -33,7 +33,8 @@ struct AddonResource {
 };
 
 struct ProviderScript {
- std::string id, name, filename; std::vector<std::string> types; bool enabled=false;
+ std::string id, name, filename, version; std::vector<std::string> types; bool enabled=false;
+ json settings=json::object();
 };
 
 struct Addon {

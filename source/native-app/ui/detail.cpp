@@ -505,7 +505,9 @@ void Detail::draw_streams(hui::gfx::DrawList &list) const
     }
     list.pop_clip();
     const std::string provider = filter_ > 0 ? filters_[filter_] : "All sources";
-    text(list,env_.fonts.semibold,provider,hx,268,26,theme::ink_2);
+    text(list,env_.fonts.semibold,env_.fonts.semibold.font->fit(provider,26,280),hx,268,26,theme::ink_2);
+    if(content_->streams_loading && !visible_.empty())
+        text(list,env_.fonts.regular,env_.fonts.regular.font->fit(content_->streams_status,20,kPanel.w-350),hx+300,268,20,theme::ink_3);
 
     list.push_clip({kPanel.x,kStreamTop-4,kPanel.w,kStreamViewH+8});
     const Rect ring = ring_.value();

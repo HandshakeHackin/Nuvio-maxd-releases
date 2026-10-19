@@ -89,6 +89,7 @@ bool parse_addon(const json& m, const std::string& transport_url, Addon& a) {
         a.types={"movie","series"};
         for (const auto& entry : m["scrapers"]) {
             ProviderScript p; p.id=jstr(entry,"id");p.name=jstr(entry,"name",p.id);p.filename=jstr(entry,"filename");
+            p.version=jstr(entry,"version",a.version);
             p.types=str_array(jobj(entry,"supportedTypes"));
             if(!p.id.empty() && !p.filename.empty() && p.filename.size()<2048 && a.providers.size()<256)
                 a.providers.push_back(std::move(p));

@@ -29,3 +29,7 @@ done
 "$ROOT/test-output/providers-transfer-host" "$ROOT/third_party/provider-runtime/runtime.js"
 "$CXX" -std=c++20 -O1 -I"$ROOT/ui" "$ROOT/tests/dropdown_window_host.cpp" -o "$ROOT/test-output/dropdown-window-host"
 "$ROOT/test-output/dropdown-window-host"
+python3 "$ROOT/tests/provider_applications_test.py"
+"$CXX" -std=c++20 -O0 -I"$ROOT/gl" -I"$ROOT/src" -I"$ROOT/third_party" \
+ "$ROOT/tests/stream_result_cache_host.cpp" "$BUILD/util.cpp.o" "${libraries[@]}" -pthread -o "$ROOT/test-output/stream-result-cache-host"
+"$ROOT/test-output/stream-result-cache-host"

@@ -181,6 +181,14 @@ cp "$ROOT/app/sce_sys/icon0.png" "$APP/sce_sys/"
 bash "$BP/tools/validate-assets.sh" "$APP/sce_sys" >/dev/null
 mkdir -p "$APP/providers"
 cp "$ROOT/third_party/provider-runtime/runtime.js" "$APP/providers/"
+python3 "$ROOT/tools/validate_provider_applications.py" \
+    "${NUVIO_PROVIDER_APPLICATIONS:-$ROOT/app/provider-applications.json}" "$APP/providers/applications.json"
+python3 - "$APP/providers/applications.json" "${NUVIO_ALLOW_UNCONFIGURED_PROVIDERS:-0}" <<'PY'
+import json, sys
+config = json.load(open(sys.argv[1]))
+if not config.get('tmdb', {}).get('api_key') and sys.argv[2] != '1':
+    raise SystemExit('Provider metadata is not configured. Set NUVIO_PROVIDER_APPLICATIONS to the private owner registration file. Development-only opt-out: NUVIO_ALLOW_UNCONFIGURED_PROVIDERS=1.')
+PY
 mkdir -p "$APP/licenses/provider-runtime"
 cp "$ROOT/third_party/provider-runtime/LICENSES.txt" "$APP/licenses/provider-runtime/"
 mkdir -p "$APP/fonts" "$APP/hui-fonts" "$APP/icons"
@@ -202,13 +210,10 @@ echo ">> building bundled image update helper"
 make -C "$ROOT/update" PS5_PAYLOAD_SDK="$SDK" OUTPUT="$B/nuvio-updater.elf"
 cp "$B/nuvio-updater.elf" "$APP/"
 cp "$ROOT/../ps5/account-config.json" "$APP/"
-# Optional app-owner registrations enable phone pairing without developer setup
-# on each console. Never point this at an account-token or profile backup file.
-if [ -n "${NUVIO_TRACKER_APPLICATIONS:-}" ]; then
-    python3 "$ROOT/tools/validate_tracker_applications.py" "$NUVIO_TRACKER_APPLICATIONS" "$APP/tracker-applications.json"
-else
-    printf '%s\n' '{}' > "$APP/tracker-applications.json"
-fi
+# Public owner registrations enable pairing without developer setup on each
+# console. Overrides are validated too; secrets/account backups are forbidden.
+python3 "$ROOT/tools/validate_tracker_applications.py" \
+    "${NUVIO_TRACKER_APPLICATIONS:-$ROOT/app/tracker-applications.json}" "$APP/tracker-applications.json"
 # License notices travel with the app: the GPL, the component list, the license text of everything it
 # contains (app/licenses/README.txt), and the notices of the toolkit and the OpenGL SDK.
 cp -r "$ROOT/app/licenses" "$APP/"
