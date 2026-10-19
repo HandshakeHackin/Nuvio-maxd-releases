@@ -14,3 +14,5 @@ The automated checks validate HLS probing, software decoder selection, colour-pl
 The broader local libVLC 3.0.23 network regression timed out after completing local-file playback and seeking/reopen checks. VLC remains experimental; this candidate is not a fully validated network-player replacement. The exact failed run is retained in the validation receipt.
 
 This temporary build is distributed through the issue-testing branch, rather than the normal release feed or store. PS5 numeric package contentVersion is 05.000.035; the visible app version is 0.5.34.1.
+
+Post-build CI (libVLC 3.0.24) also failed on an HLS EOF/replay timeout after local-file and earlier network playback/seek stages passed. Full VLC network compatibility remains unverified. CI: https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/39283303443

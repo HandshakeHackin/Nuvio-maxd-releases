@@ -24,3 +24,5 @@ HTTP 403 refusals, DNS failures and provider-script HTTP 404s in the logs are se
 The broad pre-fix Native network regression also encountered its existing intermittent EOF/replay timeout before reaching the new HLS case. The isolated HLS fixture is the before/after reproduction used for this report; do not present that initial broad run as a full pass.
 
 The first post-fix HLS run exhausted its eight-second host startup budget while initializing the 256 MiB packet pool. An isolated debug allocation benchmark took 8.9 seconds under concurrent build load. The first-picture test now allows 30 seconds while still requiring decoded video and the correct timeline; production buffering and allocation behavior are unchanged.
+
+Post-build CI (libVLC 3.0.24) also failed on an HLS EOF/replay timeout after local-file and earlier network playback/seek stages passed. Full VLC network compatibility remains unverified. CI: https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/39283303443

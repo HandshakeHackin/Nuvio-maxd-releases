@@ -4,7 +4,7 @@ This branch provides a targeted test build for [issue #3](https://github.com/Han
 
 [Downloads and testing instructions](test-builds/0.5.34.1/TESTING.md) · [Checksums](test-builds/0.5.34.1/SHA256SUMS) · [Validation and limits](test-builds/0.5.34.1/ISSUE3-VALIDATION.json)
 
-Native/EVO HLS detection, VLC software fallback, decoder workspace and picture-memory hooks are fixed. Planar VLC picture handling is a candidate correction for the reported red picture; affected-PS5 confirmation is required. The broader older-host VLC network regression timed out; full network compatibility is not claimed.
+Native/EVO HLS detection, VLC software fallback, decoder workspace and picture-memory hooks are fixed. Planar VLC picture handling is a candidate correction for the reported red picture; affected-PS5 confirmation is required. VLC network testing has timed out both locally and in libVLC 3.0.24 CI (HLS EOF/replay); full network compatibility is not claimed.
 
 ---
 

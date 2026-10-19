@@ -108,3 +108,33 @@ FFPFSC updater: 30 tests, 0 failures
 
 === CURRENT PACKAGE VERIFICATION ===
 Verified 0.5.34.1: 150 packaged files, deep image and ZIP round trips, matching clean source 28af1518aceb1b1d5d07160e05fd580a6ad8d452, 723 source hashes
+
+Post-build CI (libVLC 3.0.24) also failed on an HLS EOF/replay timeout after local-file and earlier network playback/seek stages passed. Full VLC network compatibility remains unverified. CI: https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/39283303443
+
+2026-10-19T16:11:36.5915810Z [nuvio] player: VLC 3.0.24 Vetinari; decoded PCM output
+2026-10-19T16:11:36.6940747Z [nuvio] player: VLC 3.0.24 Vetinari; decoded PCM output
+2026-10-19T16:11:37.7655581Z near end 10 dur 12
+2026-10-19T16:11:39.8966629Z [nuvio] player: VLC 3.0.24 Vetinari; decoded PCM output
+2026-10-19T16:11:40.3832494Z [nuvio] player: VLC 3.0.24 Vetinari; decoded PCM output
+2026-10-19T16:11:40.4909414Z Real VLC: open/video/audio, pause, forward/back seek and reopen passed
+2026-10-19T16:11:40.4909993Z [nuvio] player: VLC 3.0.24 Vetinari; decoded PCM output
+2026-10-19T16:11:41.5167222Z near end 10.021 dur 12.021
+2026-10-19T16:11:43.6103420Z [nuvio] player: VLC 3.0.24 Vetinari; decoded PCM output
+2026-10-19T16:11:43.9238789Z [nuvio] player: VLC 3.0.24 Vetinari; decoded PCM output
+2026-10-19T16:11:44.0557756Z Real VLC: open/video/audio, pause, forward/back seek and reopen passed
+2026-10-19T16:11:44.0558287Z [nuvio] player: VLC 3.0.24 Vetinari; decoded PCM output
+2026-10-19T16:11:45.1676206Z near end 10 dur 12
+2026-10-19T16:11:47.2912439Z [nuvio] player: VLC 3.0.24 Vetinari; decoded PCM output
+2026-10-19T16:11:47.7729962Z [nuvio] player: VLC 3.0.24 Vetinari; decoded PCM output
+2026-10-19T16:11:47.8811713Z Real VLC: open/video/audio, pause, forward/back seek and reopen passed
+2026-10-19T16:11:47.8812636Z [nuvio] player: VLC 3.0.24 Vetinari; decoded PCM output
+2026-10-19T16:11:48.9422676Z near end 10.021 dur 12.021
+2026-10-19T16:11:51.0697457Z [nuvio] player: VLC 3.0.24 Vetinari; decoded PCM output
+2026-10-19T16:11:51.3874616Z [nuvio] player: VLC 3.0.24 Vetinari; decoded PCM output
+2026-10-19T16:11:57.4280945Z Real VLC: open/video/audio, pause, forward/back seek and reopen passed
+2026-10-19T16:11:57.4281497Z [nuvio] player: VLC 3.0.24 Vetinari; decoded PCM output
+2026-10-19T16:11:59.1444651Z near end 10 dur 12
+2026-10-19T16:12:01.1903726Z [nuvio] player: VLC 3.0.24 Vetinari; decoded PCM output
+2026-10-19T16:12:13.1944549Z VLC timed out: VLC 192x108 · 24.0 fps · unavailable · shown 241 · UI skipped 0
+2026-10-19T16:12:13.2313544Z requests 36 segments 6
+2026-10-19T16:12:13.2675851Z AssertionError: VLC HTTP playback failed

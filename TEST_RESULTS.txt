@@ -1,3 +1,5 @@
 0.5.34.1 temporary issue #3 build
 
 See test-builds/0.5.34.1/ISSUE3-VALIDATION.json and BUILD-VERIFICATION.json. Focused issue regressions passed in the base candidate; only version naming and numeric revision parsing changed in this rebuild. The version parser regression is rerun for this source. Exact affected-PS5 colour output remains unverified. Broader older-host libVLC network regression timed out; not a full network acceptance.
+
+Post-build CI (libVLC 3.0.24) also failed on an HLS EOF/replay timeout after local-file and earlier network playback/seek stages passed. Full VLC network compatibility remains unverified. CI: https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/39283303443

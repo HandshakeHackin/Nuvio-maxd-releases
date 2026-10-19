@@ -43,14 +43,21 @@
     "Broader older-host libVLC 3.0.23 network test timed out after local-file playback, pause, seeking and reopen passed.",
     "HTTP 403, DNS and provider-script 404 failures remain separate.",
     "Header parser sanitizer test disabled leak scanning due to the container tracer limitation.",
-    "Initial HLS 8-second host test limit was shorter than measured debug pool allocation; the 30-second first-picture regression passed."
+    "Initial HLS 8-second host test limit was shorter than measured debug pool allocation; the 30-second first-picture regression passed.",
+    "Post-build CI (libVLC 3.0.24) also failed on an HLS EOF/replay timeout after local-file and earlier network playback/seek stages passed. Full VLC network compatibility remains unverified. CI: https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/39283303443"
   ],
   "packageVerification": "BUILD-VERIFICATION.json",
   "ciStatus": {
     "id": 39283303443,
-    "status": "in_progress",
-    "conclusion": null,
+    "status": "completed",
+    "conclusion": "failure",
     "html_url": "https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/39283303443",
     "head_sha": "36146d0df96eef489fb2a089de4747ba624a543b"
+  },
+  "ciFailure": {
+    "job": 118162187609,
+    "library": "libVLC 3.0.24",
+    "stage": "HLS EOF/replay timeout",
+    "excerptSha256": "05f0a957cf153fb0746204f1a6b26c15de2732fb61db75429d3a0d9f32c62d84"
   }
 }

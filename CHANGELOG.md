@@ -7,7 +7,7 @@
 - Preserve planar VLC colour data as a candidate fix for red/green pictures.
 - Support temporary revision numbers so testers can later upgrade to 0.5.35.
 
-[Issue #3](https://github.com/HandshakeHackin/Nuvio-maxd-releases/issues/3) remains open for PS5 testing. This branch provides manual test downloads; the normal release/store remains 0.5.34. Focused checks and package verification pass; the broader older-host VLC network regression timed out.
+[Issue #3](https://github.com/HandshakeHackin/Nuvio-maxd-releases/issues/3) remains open for PS5 testing. This branch provides manual test downloads; the normal release/store remains 0.5.34. Focused checks and package verification pass; broader VLC network testing also fails on HLS EOF/replay in libVLC 3.0.24 CI.
 
 
 ## Changes since public 0.5.32
