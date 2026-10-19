@@ -1,26 +1,3 @@
-# Released source
+# Temporary 0.5.34.1 source
 
-Each release includes `NuvioMaxd-<version>-source.tar.gz`. This contains the
-native app source, build scripts, vendored UI code, dependency pins, license
-notices and the public account-service configuration needed to build it.
-Extract the archive and read `native-app/README.md` for the toolchain setup.
-
-`source-archive.json` records the development commit and a SHA-256 hash for
-every archived source file. The same commit is recorded in the packaged
-`build-info.json` and the release validation report. The public tag marks this
-download repository's publication commit, so it has a different commit ID.
-The development repository stays private; code for released builds is available
-without an account through the matching archives here.
-
-A browsable copy of this branch's released source is in [`source/`](source/README.md).
-This branch contains 0.5.34; `source/source-archive.json` identifies its exact
-development commit and original file hashes. The main and build branches
-retain their respective release versions. GitHub's language statistics count this
-app source, excluding vendored libraries and release-only verification scripts.
-
-The project is GPL-3.0-or-later. Components retain their own notices and license
-texts in the source and packaged app. The native UI and player build on
-[Sp9nky's unofficial Stremio port](https://github.com/Sp9nky/unofficial-stremio-ps5-port),
-[BlackBearReloaded's Prospero UI](https://github.com/blackbearreloaded/ps5-homebrew-ui)
-and the other components listed in [THIRD_PARTY.md](source/native-app/THIRD_PARTY.md).
-This is an unofficial Nuvio client, not an official Nuvio or Sony release.
+Matching source is in `source/` and `test-builds/0.5.34.1/NuvioMaxd-0.5.34.1-source.tar.gz`. See `source/source-archive.json` for the original development commit and file digests. All upstream notices and source archives are retained. This branch is an issue-test distribution; main and the normal release remain unchanged.

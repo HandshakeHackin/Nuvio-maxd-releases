@@ -1,26 +1,26 @@
-# Nuvio Max'd 0.5.34 — playback recovery, profile PINs and watch history
+# 0.5.34.1 issue 3 candidate
 
-## Changes since public 0.5.32
+Temporary issue-test candidate based on 0.5.34. The normal release and store listing remain unchanged. Display version is 0.5.34.1; PS5 numeric contentVersion remains 05.000.035 because its package field uses three components. The updater accepts canonical three/four-component versions, so 0.5.35 sorts after this temporary revision.
 
-- Bundled Hebrew font fallbacks for menus, title details and subtitles. The 0.5.33 test reporter confirmed Hebrew text and Torrentio content display correctly.
-- Fixed relative HLS segment addresses after redirects and added clearer errors when a source returns a web page. Hidden torrent results now have an explanation without automatically enabling peer-to-peer.
-- Added a masked, controller-operated numeric keypad for profile PINs, avoiding the PS5 system keyboard's suggestion/history path. Server-side PIN verification remains in place.
-- Fixed Native HLS audio choices across unrelated video variants and stopped reading inactive audio playlists. This is a candidate fix for the buffering report in [#7](https://github.com/HandshakeHackin/Nuvio-maxd-releases/issues/7#issuecomment-6253227197), not confirmation for every live-stream/provider stall.
-- Removed the 50-title Continue Watching cutoff and corrected imports for percentage progress with a known duration, mixed seconds/milliseconds and short videos. Addresses [missing titles feedback](https://github.com/HandshakeHackin/Nuvio-maxd-releases/issues/7#issuecomment-6253252186); exact-account confirmation is pending.
-- Preserved cached Continue Watching during tracker outages and kept episodes marked completed after rewinding within the same playback.
-- Added stalled torrent recovery with retry backoff while retaining downloaded pieces.
-- Updated optional VLC's PS5 decoder integration to upstream 0.4.5 fixes, including repeated playback, interlaced timing and VP9 handling. Improved live buffering/cancellation, bounded large-picture memory, coded/visible picture handling and a one-time software retry when buffered video produces no picture.
-- Fixed VLC callback lock ordering during seeks and an audio-output-open failure deadlock; added the newer decoder’s picture-metadata import.
-- Added independent RGB/BGR HDR color checks. Existing HDR pixel-format selection remains; this is not a new universal HDR fix.
+Evidence: [latest report and four logs](https://github.com/HandshakeHackin/Nuvio-maxd-releases/issues/3#issuecomment-6264818454).
 
-## Test this version
+## Confirmed defects and changes
 
-Install **0.5.34**, then use **Native** first to retest the same stream that stalled. Also compare Continue Watching using the same profile and watch-progress source as mobile, and try the profile PIN keypad. Optional VLC is under **Settings → Video → Playback engine**; changes apply to the next stream. VLC remains experimental and requires PS5 testing.
+- Native/EVO: the renderer log contains FFmpeg's `Not detecting m3u8/hls with non standard extension and non standard mime type`, followed by invalid-data failure. A production-player fixture reproduces this with an extensionless HLS master served as octet-stream. Select HLS from its actual `#EXTM3U`/`#EXT-X-` header while retaining the resolved URL, authenticated custom I/O, segment restrictions and cancellation. HTML rejection remains in place.
+- VLC: `:ps5vdec=0` does not reliably disable the boolean option. A real-VLC test with an instrumented rejecting hardware decoder reproduces its reselection using the old option. The retry now uses `:no-ps5vdec`, `:codec=avcodec` and `:avcodec-hw=none`, preserving source, headers and resume/pause state.
+- The log shows a zero-dimension hardware decoder opening/closing without packets and subsequent CPU-workspace allocation failures. Reject hardware opens until dimensions are known, and use direct CPU workspace when the shared flexible block is unavailable. Failure-injection tests exercise ownership, reuse and cleanup; this does not simulate successful console decoding.
+- The release linker set `vlc_ps5_big_alloc` and `vlc_ps5_big_free` to zero, disabling the already-compiled allocator. Remove those overrides and require both symbols to resolve to executable production functions before packaging. The check fails against the previous linked image.
 
-If an old updater crashes, manually replace the installation while preserving saved app data. Use `PPSA99288.zip` for folder/store installs or `NuvioMaxd-0.5.34-native.ffpfsc` for compatible image installs. Existing 0.5.33 test downloads remain unchanged. Homebrew Store availability depends on catalog merge/deployment; verify its displayed version before installing.
+## Colour candidate
 
-Host tests exercise real FFmpeg/HTTP HLS rendition selection, playback, audio switching, seeking, EOF/replay, redirects and cancellation. All 80 account/profile tests and the production Continue Watching history checks pass. Native PS5 build, package verification and release CI results are recorded in the attached validation report. These checks do not replace testing on a physical PS5. Native remains default; EVO and VLC are optional. Tracker application credential requirements remain unchanged.
+Preserve planar I420/I0AL output instead of requiring VLC to convert every source to NV12/P010. Preserve existing NV12/P010 sources, pitch/crop handling and correct low/high bit alignment; interleave planar chroma in the existing owned-frame packer. Add layout diagnostics without URLs or credentials.
 
-Please reply in the relevant [issue](https://github.com/HandshakeHackin/Nuvio-maxd-releases/issues/7) with version 0.5.34 and your results. If a stall persists, attach a fresh sanitized playback log after reproducing it; keep passwords, PINs, tokens and signed stream URLs out of reports. Additional provider-coverage differences tracked in [#3](https://github.com/HandshakeHackin/Nuvio-maxd-releases/issues/3) are not all resolved by these changes.
+Real libVLC tests decode red, green and blue fixtures, verify pixel values, and exercise 8-bit and 10-bit planar pictures. These tests validate the new path; they do **not** prove that the exact PS5 red/green output has been eliminated. Affected-console confirmation remains required.
 
-VLC validation note: the current libVLC 3.0.24 CI playback suite passes, including audio-output failure injection. An initial CI attempt and a local libVLC 3.0.23 HLS reopen/close stress run timed out; these results are retained in validation evidence. Do not treat optional VLC as a confirmed fix for every stall.
+## Boundaries and retest
+
+HTTP 403 refusals, DNS failures and provider-script HTTP 404s in the logs are separate failures. No universal provider compatibility or server-side fix is claimed. The public issue remains open. Retest the same Vidmody/MoonVidmodyFilmDizi source with Native, then a source known to play in Native with VLC. Check picture colours, audio, subtitles and stop/reopen behavior; collect playback and renderer logs before restarting.
+
+The broad pre-fix Native network regression also encountered its existing intermittent EOF/replay timeout before reaching the new HLS case. The isolated HLS fixture is the before/after reproduction used for this report; do not present that initial broad run as a full pass.
+
+The first post-fix HLS run exhausted its eight-second host startup budget while initializing the 256 MiB packet pool. An isolated debug allocation benchmark took 8.9 seconds under concurrent build load. The first-picture test now allows 30 seconds while still requiring decoded video and the correct timeline; production buffering and allocation behavior are unchanged.

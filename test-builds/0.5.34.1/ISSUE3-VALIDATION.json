@@ -1,0 +1,56 @@
+{
+  "version": "0.5.34.1",
+  "status": "temporary issue-test build; not a normal release or store update",
+  "sourceCommit": "28af1518aceb1b1d5d07160e05fd580a6ad8d452",
+  "sourceBranch": "builds/v0.5.34.1",
+  "basePlaybackValidationCommit": "6e9db443201e9029a8f09ba0795079234f6191af",
+  "unchangedPlaybackSourceSha256": {
+    "src/player.cpp": "a6ff0bdde63e3f06373c44c743bac7be3fac1b93b0cff11dbbfe4eafda90eac9",
+    "src/vlc_backend.cpp": "71dac8fab43a22b4cc6271fcb2342e3d52c1e26cdf078d1332eca6bcdf71ea16",
+    "src/vlc_picture_memory.c": "6784b6f3ba376071c60e02c74d1e2d1ef48da9066d69d378cdd842d915845fcc",
+    "third_party/vlc/modules/ps5vdec.c": "c3fe8d52fb8ec633c722397888a0c4ea1a75f1c340230ad8941e1f87600464f7",
+    "gl/build.sh": "1d94c39f7c65be6cb911f7944ec71049a542e012ce17b336077f6396184c8d91"
+  },
+  "issue": "https://github.com/HandshakeHackin/Nuvio-maxd-releases/issues/3#issuecomment-6264818454",
+  "newChecks": [
+    "30 updater regressions including temporary revision ordering",
+    "PS5 compile/link/import and nonzero picture allocator hooks",
+    "150-file deep image and ZIP verification",
+    "723 matching source hashes"
+  ],
+  "baseFocusedPlaybackChecks": {
+    "opaque-hls-after-30s.log": "External-rendition HLS playback passed",
+    "colour-after.log": "8/10-bit planar packing passed",
+    "workspace-after.log": "failure cleanup passed",
+    "picture-memory-after.log": "ownership retention",
+    "decoder-headers-after-no-lsan.log": "VLC decoder headers passed"
+  },
+  "baseEvidenceSha256": {
+    "opaque-hls-after-30s.log": "ccebaf4a2d44b1705d65171f8b68e84730499e49da4114cfdb8816fd7563202b",
+    "colour-after.log": "8277449c41e30f67b868a89df5770ea970c88c3a93a43858abfff7b0f7ed1e09",
+    "workspace-after.log": "0c5613f67aefa2419a5d7d086542e966b4bfc243bdf48eb5b0277e219afbb573",
+    "picture-memory-after.log": "ccf97ec5c1bc612c70c9804bea1cc8b9490caca928911579380550b628f2936d",
+    "decoder-headers-after-no-lsan.log": "b4c5fd6225b77776eb5afadbc882073e39445a868259082896acf66ece725715"
+  },
+  "newEvidenceSha256": {
+    "update-after.log": "69b3172dfe45e00268210996e1069ebddb1b7693605dc022ed656b3ae9260ed3",
+    "target-build.log": "f3559f00bf43cc80a240a1f2e9c96efbcceb1f162bddb6e7d81730a7ad2dfd0c",
+    "package-after.log": "5493b161346661e07c7c1962aac67481b49958dd0ee4ac6a76a9b47428f31e45"
+  },
+  "hardwareVerified": false,
+  "limits": [
+    "Exact affected PS5 red/green output requires console confirmation.",
+    "Broader older-host libVLC 3.0.23 network test timed out after local-file playback, pause, seeking and reopen passed.",
+    "HTTP 403, DNS and provider-script 404 failures remain separate.",
+    "Header parser sanitizer test disabled leak scanning due to the container tracer limitation.",
+    "Initial HLS 8-second host test limit was shorter than measured debug pool allocation; the 30-second first-picture regression passed."
+  ],
+  "packageVerification": "BUILD-VERIFICATION.json",
+  "ciStatus": {
+    "id": 39283303443,
+    "status": "in_progress",
+    "conclusion": null,
+    "html_url": "https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/39283303443",
+    "head_sha": "36146d0df96eef489fb2a089de4747ba624a543b"
+  }
+}

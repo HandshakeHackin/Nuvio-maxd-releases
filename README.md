@@ -1,3 +1,13 @@
+# Nuvio Max’d 0.5.34.1 — temporary issue #3 test build
+
+This branch provides a targeted test build for [issue #3](https://github.com/HandshakeHackin/Nuvio-maxd-releases/issues/3). It is not the normal app update or store release. The public release and store listing remain 0.5.34.
+
+[Downloads and testing instructions](test-builds/0.5.34.1/TESTING.md) · [Checksums](test-builds/0.5.34.1/SHA256SUMS) · [Validation and limits](test-builds/0.5.34.1/ISSUE3-VALIDATION.json)
+
+Native/EVO HLS detection, VLC software fallback, decoder workspace and picture-memory hooks are fixed. Planar VLC picture handling is a candidate correction for the reported red picture; affected-PS5 confirmation is required. The broader older-host VLC network regression timed out; full network compatibility is not claimed.
+
+---
+
 <p align="center">
   <img src="sce_sys/icon0.png" alt="MAX'D Nuvio edition app icon" width="176" height="176">
 </p>

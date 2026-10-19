@@ -1,5 +1,15 @@
 # Nuvio Max'd 0.5.34 — playback recovery, profile PINs and watch history
 
+## 0.5.34.1 — temporary issue #3 test
+
+- Detect genuine HLS playlists served at extensionless addresses for Native/EVO.
+- Correct VLC software fallback, decoder workspace and picture allocation hooks.
+- Preserve planar VLC colour data as a candidate fix for red/green pictures.
+- Support temporary revision numbers so testers can later upgrade to 0.5.35.
+
+[Issue #3](https://github.com/HandshakeHackin/Nuvio-maxd-releases/issues/3) remains open for PS5 testing. This branch provides manual test downloads; the normal release/store remains 0.5.34. Focused checks and package verification pass; the broader older-host VLC network regression timed out.
+
+
 ## Changes since public 0.5.32
 
 - Bundled Hebrew font fallbacks for menus, title details and subtitles. The 0.5.33 test reporter confirmed Hebrew text and Torrentio content display correctly.
