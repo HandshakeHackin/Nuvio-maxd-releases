@@ -2,3 +2,6 @@
 /*.py linguist-vendored
 /source/native-app/third_party/** linguist-vendored
 /source/native-app/gl/scanout_driver_extension.inc linguist-language=C
+
+# Preserve upstream patch context and vendor source whitespace verbatim.
+/source/native-app/third_party/** -whitespace

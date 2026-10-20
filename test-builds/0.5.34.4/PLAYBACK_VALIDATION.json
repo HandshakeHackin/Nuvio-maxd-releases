@@ -1,0 +1,60 @@
+{
+  "version": "0.5.34.4",
+  "contentVersion": "05.000.038",
+  "sourceCommit": "1a3c6834c1ee2ae39363593e87fc7b48b9a53439",
+  "issue": "https://github.com/HandshakeHackin/Nuvio-maxd-releases/issues/8",
+  "hardwareVerified": false,
+  "checks": {
+    "originalAudioReset": "reproduced in production Player with simulated output over HTTP custom AVIO",
+    "focusedAudioSwitch": "passed",
+    "audioCases": [
+      "paused track switch retains position",
+      "playing switch resumes on the same timeline",
+      "explicit seek retains priority",
+      "quick-open Matroska loads cues/resynchronizes rather than continuing from read-ahead"
+    ],
+    "fixtureFormats": [
+      "MP4",
+      "quick-open Matroska"
+    ],
+    "focusedDriver": "Stops the existing fixture after its third audio assertion marker; independent later HLS/error checks are excluded",
+    "sourceCache": "passed: HTTP/torrent TTL, profile/options isolation, signed/resolver exclusion, reload, bounded memory/count and LRU",
+    "updater": "38 tests, 0 failures",
+    "sourcePrivateConfigurationScan": "passed",
+    "mixedCodecLocal": "passed: AAC 48000 Hz \u2194 AC3 44100 Hz, PCM output, local-file MP4 and indexed Matroska; not custom AVIO or native bitstream output",
+    "mixedCodecCustomAvioBaseline": "same before-switch startup stall reproduced in baseline and corrected player; local-file switching passes",
+    "ps5TargetBuild": "passed: Native/EVO/VLC app and bundled updater linked; 413 imports resolve to loaded modules; production curl and VLC picture hooks verified",
+    "packageVerification": "passed: 151 file hashes match ZIP and deep image extraction, 739 matching source hashes, clean source/version metadata, image errors=0 warnings=0"
+  },
+  "knownLimits": [
+    "No physical PS5, live Torrentio peers, EVO track switch or real HDMI/optical output validation",
+    "Broad Native custom-AVIO HLS fixture times out before audio assertions on both baseline and corrected source",
+    "Earlier broader host VLC/HLS timeout not claimed fixed",
+    "Prior playback safeguard tests are recorded in source/native-app/PLAYBACK_STABILITY_VALIDATION.json; those are historical host/target compile checks, not PS5 runtime acceptance",
+    "Mixed AAC/AC3 custom-AVIO fixture stalls before track switching; that media/input combination is not validated. The local-file variant passes. The inherited local-run final marker refers to the default HTTP driver; local Matroska is indexed rather than quick-open."
+  ],
+  "included": [
+    "Native audio-track resynchronization candidate",
+    "Recent eligible torrent/direct source cache",
+    "Audio output/video lifetime safeguards and two VLC seek/rebuffer backports",
+    "Existing .34.3 provider, Trakt and updater fixes"
+  ],
+  "excludedStagedFeatures": [
+    "Live TV",
+    "Anime timing extensions",
+    "Settings search",
+    "Trailers"
+  ],
+  "delivery": "opt-in builds/v0.5.34.4 branch, issue #8; normal release/store feeds unchanged",
+  "evidenceSha256": {
+    "audio-before-focused.log": "b3904914d067bf074e0712168a849de748ef6e5f645f4e4c7f94fe714a55c107",
+    "audio-after-focused.log": "aec4b7d95bb9203f39b88fd10549143e564421c6f3ff051b09779419f633cbec",
+    "source-cache.log": "37fb0f0c30161869bfeefdf50edb8d658ae69b2d70b5a8ccc53e57114abd854d",
+    "update-tests.log": "3b611792d543b8777248b1833bc33c229fc9e2115652f8c02bf37a4df2ee0683",
+    "audio-mixed-local.log": "6b0434b808b6f15682259a19916015ba6eed7843827093035926655e7c6e0d25",
+    "audio-mixed-codec.log": "6079d8667cc64c3bdc1e6b4a5fa5d7d8ce0313e21b4e2aa22f3baf18d6084e85",
+    "audio-mixed-before.log": "6079d8667cc64c3bdc1e6b4a5fa5d7d8ce0313e21b4e2aa22f3baf18d6084e85",
+    "target-build.log": "784032f7d262c464f643636698a3c7083e62c0e23c4f68909db8ab76019b9c53",
+    "package-verification.log": "6eecc854cc5724573cf033be7933223bc5d9bde614fc0e6b99a238254d1b0262"
+  }
+}
