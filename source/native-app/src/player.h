@@ -217,7 +217,7 @@ private:
 	std::atomic<int> audio_switch_{-1};
 	double start_offset_ = 0;  // container start time; all times shown are relative to it
 	double to_sec(int64_t ts, double tb) const;
-	void do_seek(double target);
+	void do_seek(double target, bool switching_audio = false);
 	void apply_run_state();
 	double queued_audio_seconds() const;
 

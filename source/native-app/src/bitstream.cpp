@@ -15,6 +15,7 @@ int sceAudioOutSysGetHdmiMonitorInfo(int,void*,unsigned);
 }
 namespace bitstream {
 static std::atomic<bool> pcm_normal{true};
+static std::atomic<bool> shutdown_failed{false};
 int kind(const AVCodecParameters* p) {
     if(!p || p->sample_rate!=48000) return None;
     if(p->codec_id==AV_CODEC_ID_AC3) return Ac3;
@@ -32,7 +33,7 @@ bool receiver_supports(const uint8_t* p,size_t n,int k) {
 }
 int open_port(int k,bool check) {
 #if (defined(PLATFORM_PS5) || defined(NUVIO_HOST_BITSTREAM_API)) && defined(PLATFORM_PS5_NATIVE)
-    if(k<Ac3 || k>Dts)return -1;
+    if(shutdown_failed || k<Ac3 || k>Dts)return -1;
     const int init=sceAudioOutInit();if(init && uint32_t(init)!=0x8026000eu)return -1;
     alignas(16) uint8_t info[0x180]{};
     const int probe=sceAudioOutSysGetHdmiMonitorInfo(1,info,sizeof(info));
@@ -43,7 +44,7 @@ int open_port(int k,bool check) {
     const int h=sceAudioOutExOpen(0xff,mode);
     if(h<0)return h;
     const int rc=sceAudioOutExConfigureOutput(0,0,mode,1,0);
-    if(rc) {sceAudioOutExClose(h);pcm_normal=sceAudioOutExConfigureOutput(0,0,0xff,0xff,0)==0;return -1;}
+    if(rc) {if(sceAudioOutExClose(h)<0)shutdown_failed=true;pcm_normal=!shutdown_failed && sceAudioOutExConfigureOutput(0,0,0xff,0xff,0)==0;return -1;}
     pcm_normal=false;
     return h;
 #else
@@ -52,20 +53,21 @@ int open_port(int k,bool check) {
 }
 bool close_port(int h) {
 #if (defined(PLATFORM_PS5) || defined(NUVIO_HOST_BITSTREAM_API)) && defined(PLATFORM_PS5_NATIVE)
-    if(h>=0)sceAudioOutExClose(h);
+    if(h>=0 && sceAudioOutExClose(h)<0){shutdown_failed=true;return false;}
     const int rc=sceAudioOutExConfigureOutput(0,0,0xff,0xff,0);
     pcm_normal=rc==0;
     dlog("audio: restored PCM output rc=0x%08x",unsigned(rc));
-    return pcm_normal;
+    return pcm_normal && !shutdown_failed;
 #else
     (void)h;return true;
 #endif
 }
 bool ensure_pcm() {
 #if (defined(PLATFORM_PS5) || defined(NUVIO_HOST_BITSTREAM_API)) && defined(PLATFORM_PS5_NATIVE)
+    if(shutdown_failed)return false;
     if(!pcm_normal)pcm_normal=sceAudioOutExConfigureOutput(0,0,0xff,0xff,0)==0;
 #endif
-    return pcm_normal;
+    return pcm_normal && !shutdown_failed;
 }
 Packer::~Packer(){clear();}
 void Packer::clear() {

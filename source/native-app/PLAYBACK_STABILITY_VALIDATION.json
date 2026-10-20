@@ -1,0 +1,41 @@
+{
+  "feature": "Playback stability",
+  "status": "staged source; not packaged or published",
+  "upstream": {
+    "repository": "https://github.com/LoZazaMastro/Stremio-Plus",
+    "commit": "1475f4c66202325ff5bfde9e715e1dca4420a248",
+    "version": "0.5.18"
+  },
+  "checks": {
+    "audioBoundaryFaultTests": "passed: output framing, pacing, seek epochs, alternating persistent grain addresses, reject queue after close, failed PCM drain/close and encoded close block reuse",
+    "videoLifetimeTests": "passed: fence timeout/failure retention, completion, repeat submissions, fallback, framebuffer detach before deleting textures, caller framebuffer restoration",
+    "nativePlaybackLifecycle": "passed: software decoding, seeks/pause, injected decoder fallback, healthy bitstream-to-PCM recovery and unsafe-drain stop without retry loop",
+    "hostVlcNetwork": "passed: real host libVLC 3.0.23 authenticated HTTP/HLS, pause/seek/resume/rewind, cancellation; not the patched PS5 libVLC runtime",
+    "ps5AppSyntax": [
+      "src/pcm_out.cpp",
+      "src/bitstream.cpp",
+      "gl/video_surface.cpp",
+      "src/player.cpp"
+    ],
+    "ps5VlcObjectCompilation": [
+      "modules/codec/avcodec/video.c",
+      "src/input/es_out.c"
+    ],
+    "vendorPatchApplyAndReverseDryRun": "passed against private pinned VLC 3.0.24 source; target compilation has existing upstream warnings",
+    "vendorSourceAndPatchHashes": "passed",
+    "openglMirror": {
+      "url": "https://github.com/LedyBacer/ps5-opengl/releases/download/v1.0.2/ps5-opengl-sdk-1.0.2.tar.gz",
+      "bytes": 226310155,
+      "sha256": "30d8e51dd062739b629346102be5932728ba714bc50b1bdcdf08306c8843d9a4",
+      "verified": true
+    },
+    "diffWhitespace": "passed",
+    "privateCredentialScan": "passed"
+  },
+  "notValidated": [
+    "Physical PS5 playback and real HDMI audio",
+    "Runtime acceptance of patched PS5 libVLC",
+    "Final PS5 libraries/app linking and packaging"
+  ],
+  "credentialsIncluded": false
+}

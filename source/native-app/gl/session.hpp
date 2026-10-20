@@ -478,6 +478,7 @@ class Session
     std::string d_stream_heading_;
     std::vector<::Stream> d_streams_; // in the order the screen shows them
     std::vector<::Stream> d_found_;   // as the addons sent them
+    bool d_cache_warm_=false;
     int d_gen_ = 0, d_pending_ = 0, d_answered_ = 0, d_meta_gen_ = 0;
     StreamResultCache stream_result_cache_;
     std::string d_stream_cache_key_;

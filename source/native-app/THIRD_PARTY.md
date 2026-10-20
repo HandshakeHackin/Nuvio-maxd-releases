@@ -196,3 +196,8 @@ Movie and TV metadata is provided by https://www.themoviedb.org/.
 The application's own TMDB registration is configured at build time; no other
 application's registration is reused. Third-party provider availability is not
 guaranteed by TMDB.
+
+## Playback stability backports
+
+
+VLC late-clock rebuffering and post-preroll discard policy patches are adapted from [LoZazaMastro/Stremio-Plus 0.5.18](https://github.com/LoZazaMastro/Stremio-Plus/commit/1475f4c66202325ff5bfde9e715e1dca4420a248), GPL-3.0. Existing VLC/FFmpeg notices remain. Audio grain ownership and native VideoSurface cleanup are Nuvio-specific implementations following the same lifetime safeguards. The OpenGL SDK download now uses LedyBacer's maintained fork, preserving version 1.0.2 and its existing archive checksum.

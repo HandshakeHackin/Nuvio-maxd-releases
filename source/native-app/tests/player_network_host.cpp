@@ -29,8 +29,26 @@ int main(int argc,char** argv) try {
         const auto tracks=p.audio_tracks();
         require(!tracks.empty(),"audio tracks missing");
         if(tracks.size()>1) {
+            run_until(p,[&]{return !p.buffering() && p.position()>2.2;});
+            p.set_paused(true);
+            const double anchor=p.position();
+            const int before=p.picture_serial();
             p.select_audio(tracks.back().stream);
-            run_until(p,[&]{return !p.buffering() && p.audio_stream()==tracks.back().stream;});
+            run_until(p,[&]{return !p.buffering() && p.audio_stream()==tracks.back().stream && p.picture_serial()!=before;});
+            require(p.paused(),"audio switch resumed a paused video");
+            require(std::abs(p.position()-anchor)<.08,"audio switch reset or shifted the paused position");
+            p.set_paused(false);
+            run_until(p,[&]{return p.position()>anchor+.15;});
+            const double playing=p.position();
+            p.select_audio(tracks.front().stream);
+            run_until(p,[&]{return !p.buffering() && p.audio_stream()==tracks.front().stream;});
+            require(p.position()>=playing-.08 && p.position()<playing+.8,"playing audio switch shifted the timeline");
+            run_until(p,[&]{return p.position()>playing+.2;});
+            // An explicit queued seek takes priority over the captured switch position.
+            p.set_paused(true);p.seek(5);p.select_audio(tracks.back().stream);
+            run_until(p,[&]{return !p.buffering() && p.audio_stream()==tracks.back().stream && p.position()>=5;});
+            require(p.paused() && p.position()<5.04,"audio switch lost a pending paused seek");
+            std::cout<<"Audio switch: "<<name<<" preserves paused/playing position and explicit seek\n";
         }
         const int audio=p.audio_stream();
         const auto subs=p.subtitle_tracks();

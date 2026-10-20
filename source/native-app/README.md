@@ -347,3 +347,8 @@ Settings → Account & Services now includes Trakt, SIMKL and MDBList connection
 plus independent Library Source and Watch Progress selectors. Both default to
 Nuvio. See [Tracking setup and testing](TRACKING.md), including the application
 registration required for Trakt/SIMKL phone pairing in this test build.
+
+### Source-list caching
+
+
+Returning to the same title or episode can show recent eligible sources immediately while refreshing in the background. Torrent descriptors last up to five minutes; stable direct URLs last sixty seconds. Signed links and credential-bearing resolver payloads are not reused. Reload forces a fresh search. The bounded cache is session-only, scoped to profile and addon/provider options, and is cleared on profile changes. This reduces repeated empty-list waits without treating cached availability or seeder counts as a fresh check.

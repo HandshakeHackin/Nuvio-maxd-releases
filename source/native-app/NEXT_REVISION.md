@@ -1,3 +1,42 @@
+# Nuvio Max’d 0.5.34.4 targeted playback test
+
+Based on 0.5.34.3. This opt-in test is distributed in issue #8, not promoted to the normal release or store feed. Native audio switching and source caching require reporter confirmation. Live TV, anime timings, settings search and trailers remain staged separately.
+
+## Targeted audio-track test (issue #8)
+
+- Capture the playback position before replacing the audio output clock. Resynchronize indexed and quick-open Matroska inputs at that position, preserve pause state and pending seeks, and reject packets from the previous track generation.
+- Log the selected track and resynchronization anchor without exposing stream URLs. A failed output reopen or indexed seek stops with an actionable error instead of continuing with conflicting clocks.
+- Host coverage exercises two-track MP4 and quick-open Matroska over custom HTTP AVIO; affected-console Torrentio/P2P validation remains required.
+
+# Unreleased: returning to recently found sources
+
+Addresses the [source-list caching request](https://github.com/HandshakeHackin/Nuvio-maxd-releases/issues/3#issuecomment-6284415813), also confirmed in [issue #8](https://github.com/HandshakeHackin/Nuvio-maxd-releases/issues/8#issuecomment-6288657099).
+
+- Reuse validated torrent source descriptors in session memory for up to five minutes; resolve/play them through the current profile's existing torrent/debrid path.
+- Keep safe direct HTTP results for sixty seconds and continue excluding signed/query/fragment playback URLs and credential-bearing client resolver payloads.
+- Show eligible cached choices immediately with Refreshing sources feedback while fresh source requests run; fresh empty/error results still replace old source results.
+- Scope results by profile, title/episode, source identity/version/name and provider options. Use bounded memory and least-recently-used eviction across eight searches.
+- Reload deliberately bypasses the current cached search. Cache entries are not saved to disk or carried across profile changes.
+- The same candidate includes a Native audio-track resynchronization fix for issue #8; affected-console testing remains pending.
+
+
+---
+
+# Unreleased: playback stability
+
+- Backport VLC's post-seek frame-discard reset and reference-safe HEVC rebuffering from Stremio-Plus 0.5.18. Genuine seeks still flush decoder references; late-clock recovery does not.
+- Reject damaged FFmpeg-decoded pictures rather than presenting them after rebuffering.
+- Keep two aligned audio output buffers alive through drain/close; reject queueing after output closes and prevent unsafe PCM/bitstream port reuse when shutdown fails.
+- Detach obsolete video framebuffer textures before releasing them on format/size changes; clear partial allocation state when GPU storage fails. Retain native picture resolution and existing HDR precision.
+- Fetch the unchanged, checksum-pinned OpenGL SDK 1.0.2 from its maintained LedyBacer fork.
+- Stop failed audio restoration with a clear app-restart message rather than retrying PCM recovery indefinitely.
+- Targeted playback test; physical PS5 acceptance remains pending.
+
+See [playback changes and validation limits](PLAYBACK_STABILITY.md).
+
+
+---
+
 # Nuvio Max’d 0.5.34.3 targeted test revision
 
 ## Staged provider compatibility and stream-list improvements

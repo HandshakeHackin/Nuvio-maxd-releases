@@ -23,3 +23,10 @@ See ../../VLC_INTEGRATION.md for build instructions and validation limits.
 
 Native MKV playback uses pinned libebml/libmatroska and utf8cpp headers.
 All five dependency source archives are retained in the matching source export.
+
+Staged patches 0027–0028 adapt Stremio-Plus 0.5.18 at commit
+1475f4c66202325ff5bfde9e715e1dca4420a248 (GPL-3.0): preserve decoder
+references when rebuilding a late clock buffer, reject corrupt FFmpeg
+pictures, and restore skip_frame after preroll even with hurry-up disabled.
+Actual seeks still flush. Rebuild libVLC before packaging these patches;
+the existing binary archives do not incorporate source changes automatically.

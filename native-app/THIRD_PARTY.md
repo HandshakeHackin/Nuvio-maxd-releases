@@ -183,3 +183,21 @@ The HDR packing audit follows
 [ProsperoTV's channel-order correction](https://github.com/blackbearreloaded/ProsperoTV/commit/f984b545).
 These are targeted adaptations to Nuvio's existing integration, not imported app
 frontends. See `dependencies.json` and `NEXT_REVISION.md` for scope and validation.
+
+The 0.5.34.1 issue #3 candidate additionally adapts the pinned VLC PS5 decoder to
+reject unknown-dimension opens and use direct CPU workspace when flexible memory
+is unavailable. Local provenance and the modified file hash are recorded in
+`third_party/vlc/UPSTREAM.json`; upstream license notices are retained.
+
+## TMDB metadata service
+
+This product uses the TMDB API but is not endorsed or certified by TMDB.
+Movie and TV metadata is provided by https://www.themoviedb.org/.
+The application's own TMDB registration is configured at build time; no other
+application's registration is reused. Third-party provider availability is not
+guaranteed by TMDB.
+
+## Playback stability backports
+
+
+VLC late-clock rebuffering and post-preroll discard policy patches are adapted from [LoZazaMastro/Stremio-Plus 0.5.18](https://github.com/LoZazaMastro/Stremio-Plus/commit/1475f4c66202325ff5bfde9e715e1dca4420a248), GPL-3.0. Existing VLC/FFmpeg notices remain. Audio grain ownership and native VideoSurface cleanup are Nuvio-specific implementations following the same lifetime safeguards. The OpenGL SDK download now uses LedyBacer's maintained fork, preserving version 1.0.2 and its existing archive checksum.

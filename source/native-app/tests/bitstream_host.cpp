@@ -7,19 +7,28 @@
 #include <cstring>
 #include <thread>
 #include <cstdarg>
+#include <sys/wait.h>
+#include <unistd.h>
 extern "C" {
 #include <libavformat/avformat.h>
 }
 static int probe_rc,open_rc=47,configure_rc,opens,closes,restores;
-static std::atomic<int> output_rc{0};
+static std::atomic<int> output_rc{0},drain_rc{0};
+static int close_rc=0,ex_close_rc=0;
+static const void* last_buffer=nullptr;
+static std::atomic<unsigned> buffer_switches{0};
 static uint8_t monitor[0x180]{};
 extern "C" {
 int sceAudioOutInit(){return 0;}
 int sceAudioOutOpen(int,int,int,unsigned,unsigned,unsigned){return 50;}
-int sceAudioOutClose(int){return 0;}
-int sceAudioOutOutput(int,const void*){return output_rc;}
+int sceAudioOutClose(int){return close_rc;}
+int sceAudioOutOutput(int,const void* data){
+ if(data) {if(last_buffer){assert(last_buffer!=data);++buffer_switches;}last_buffer=data;}
+ else last_buffer=nullptr;
+ return data ? output_rc.load() : drain_rc.load();
+}
 int sceAudioOutExOpen(int user,int mode){assert(user==0xff&&mode>=0&&mode<=3);++opens;return open_rc;}
-int sceAudioOutExClose(int h){assert(h==47);++closes;return 0;}
+int sceAudioOutExClose(int h){assert(h==47);++closes;return ex_close_rc;}
 int sceAudioOutExConfigureOutput(int zero,unsigned flags,int mode,int target,uint64_t opts) {
  assert(!zero&&!flags&&!opts);if(mode==0xff){assert(target==0xff);++restores;return 0;}assert(target==1);return configure_rc;
 }
@@ -51,6 +60,25 @@ int main(int argc,char** argv){
  assert(out.played_seconds()>0.030&&out.played_seconds()<0.034);
  out.pause(true);out.clear();std::this_thread::sleep_for(std::chrono::milliseconds(8));assert(out.played_seconds()==0);
  output_rc=-1;for(int i=0;i<100 && !out.failed();++i) {std::this_thread::sleep_for(std::chrono::milliseconds(5));}
- assert(out.failed());out.close();
- assert(!AudioPort::player_wants);std::puts("Bitstream audio: framing, capabilities, lossless fallback, pacing, seek epoch and port recovery passed");
+ assert(out.failed());output_rc=0;out.close();
+ assert(buffer_switches>1);
+ assert(!out.queue(burst.data(),burst.size()));
+ assert(!AudioPort::player_wants);
+ // Isolate process-wide unsafe-shutdown latches, just as restarting the app does.
+ for(int scenario=0;scenario<3;++scenario) {
+  const pid_t child=fork();assert(child>=0);
+  if(child==0) {
+   PcmOut pcm;assert(pcm.open(false));
+   std::this_thread::sleep_for(std::chrono::milliseconds(8));
+   if(scenario==0)close_rc=-1;
+   if(scenario==1)drain_rc=-1;
+   if(scenario==2){ex_close_rc=-1;assert(!bitstream::close_port(47));assert(!bitstream::ensure_pcm());}
+   pcm.close();
+   if(scenario<2) {assert(AudioPort::shutdown_failed && AudioPort::player_wants);assert(!pcm.open(false));assert(!pcm.open_bitstream(bitstream::Ac3,false));}
+   else {assert(!pcm.open(false));assert(bitstream::open_port(bitstream::Ac3,false)<0);}
+   _exit(0);
+  }
+  int status=0;assert(waitpid(child,&status,0)==child && WIFEXITED(status) && WEXITSTATUS(status)==0);
+ }
+ std::puts("Bitstream audio: framing, capabilities, lossless fallback, pacing, seek epoch and port recovery passed");
 }

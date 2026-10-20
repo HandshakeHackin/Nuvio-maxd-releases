@@ -561,7 +561,12 @@ void Player::demux_run() {
             playback_streams::compatible_audio(fmt_, vs, sw)) {
 			AVCodecContext* nc = nullptr;
 			if (open_stream_codec(sw, &nc)) {
+                // Capture the timeline before reopening the port resets played_seconds().
+                // Keep an explicit seek (including one queued during codec open) ahead
+                // of this anchor, and retire every packet from the previous track.
+                const double anchor = target >= 0 ? target : position();
 				std::lock_guard<std::mutex> lock(actx_m_);
+                aq_.flush();
 				avcodec_free_context(&actx_);
 				actx_ = nc;
                 if (playback_streams::is_hls(fmt_)) {
@@ -569,9 +574,28 @@ void Player::demux_run() {
                     fmt_->streams[sw]->discard = AVDISCARD_DEFAULT;
                 }
 				audio_stream_ = sw;
-                { std::lock_guard<std::mutex> clock(clock_m_); pcm_.close(false); open_audio_output(sw); }
-				// Without the index (quick_) it just carries on from here.
-				if (target < 0 && !quick_) target = position();
+                {
+                    std::lock_guard<std::mutex> clock(clock_m_);
+                    pcm_.close(false);
+                    audio_base_pts_ = audio_end_pts_ = -1;
+                    wall_base_pts_ = anchor; wall_base_time_ = now_seconds();
+                    open_audio_output(sw);
+                }
+                if (!pcm_.is_open()) {
+                    fail("Could not reopen audio for the selected track. Restart playback.");
+                    break;
+                }
+                dlog("player: audio switch to #%d at %.3f s (paused %d)", sw, anchor, int(paused_.load()));
+                // A quick Matroska input must load its cues too. Otherwise the
+                // demuxer remains at its read-ahead position, seconds past playback.
+                // Keep the decoder lock until queues and clocks share the new serial.
+                if (playback_streams::is_hls(fmt_) && duration_ <= 0) {
+                    adrop_ = anchor;
+                    apply_run_state(); // Live playlists cannot rewind to a VOD timestamp.
+                } else {
+                    do_seek(anchor, true);
+                }
+                target = -1;
 			}
 		}
 		if (target >= 0) do_seek(target);
@@ -660,7 +684,7 @@ void Player::demux_run() {
 	video_stream_ = audio_stream_ = -1;
 }
 
-void Player::do_seek(double target) {
+void Player::do_seek(double target, bool switching_audio) {
 	const bool short_refill = state_ == State::Playing && !recovering_;
 	// Promote a quick Matroska open to a seekable input on its demux thread.
 	// FFmpeg can load deferred cues here without discarding the decoders/tracks.
@@ -686,6 +710,7 @@ void Player::do_seek(double target) {
 			return;
 		}
 		if(recovering_.exchange(false)) { fail("Decoder recovery could not seek this source. Choose another stream."); return; }
+        if (switching_audio) { fail("Could not resynchronize the selected audio track. Restart playback or choose another stream."); return; }
 		vdrop_ = adrop_ = -1; seek_refill_ = false; buffering_ = false; apply_run_state(); return;
 	}
 	subtitle_renderer_.seek();
@@ -1129,6 +1154,12 @@ void Player::audio_thread() {
 		if (abort_) break;
 		if (r == 0 && !(pcm_.bitstream_kind() && pcm_.failed())) continue;
 		std::unique_lock<std::mutex> alock(actx_m_);
+        // A packet may have been popped just before the demux thread changed
+        // tracks. Never submit an old-track packet to the replacement decoder.
+        if (r == 1 && s != aq_.serial()) {
+            av_packet_free(&pkt);
+            continue;
+        }
 		if (!actx_) {
 			if (r == 1) av_packet_free(&pkt);
 			continue;
@@ -1176,6 +1207,10 @@ void Player::audio_thread() {
                 { std::lock_guard<std::mutex> clock(clock_m_);
                   target=clock_locked();pcm_.close(false);open_audio_output(audio_stream_,true);
                   audio_base_pts_=audio_end_pts_=-1;wall_base_pts_=target;wall_base_time_=now_seconds(); }
+                if(!pcm_.is_open()) {
+                    fail("The audio output could not be released or restored safely. Close and reopen the app before playing again.");
+                    break;
+                }
                 dlog("audio: bitstream failed; restoring PCM and rebuffering at %.3f s",target);
                 buffering_=true;pcm_.pause(true);packer.clear();packed_serial=-1;
                 {std::lock_guard<std::mutex> seek(seek_m_);seek_target_=target;seek_req_=true;}
@@ -1328,6 +1363,9 @@ bool Player::buffering(int* percent) const {
 
 void Player::update_buffering() {
 	if (state_ != State::Playing || recovering_ || seek_pending_ || reopen_target_ >= 0) return;
+    if(AudioPort::shutdown_failed) {
+        fail("The audio output could not be released safely. Close and reopen the app before playing again.");return;
+    }
     bool pcm_failed;
     {
         // The audio worker changes kind/failed together while holding this lock

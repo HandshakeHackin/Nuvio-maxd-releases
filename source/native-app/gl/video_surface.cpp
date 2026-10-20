@@ -160,6 +160,12 @@ bool VideoSurface::upload(const VideoPicture& p, std::string* error, bool hdr_ou
     if (!retire(error)) return false;
     State state;
     const bool resize = !rgba_ || p.w != w_ || p.h != h_ || p.format != format_;
+    if(resize) {
+        // Deleted texture names must not be rebound by the caller-state guard.
+        for(auto& texture:state.textures)
+            if(GLuint(texture)==rgba_ || GLuint(texture)==y_ || GLuint(texture)==uv_)texture=0;
+        release_textures();
+    }
     glActiveTexture(GL_TEXTURE0);
     if (!rgba_) glGenTextures(1, &rgba_);
     glBindTexture(GL_TEXTURE_2D, rgba_);
@@ -169,6 +175,7 @@ bool VideoSurface::upload(const VideoPicture& p, std::string* error, bool hdr_ou
         glTexImage2D(GL_TEXTURE_2D, 0, p.format == VideoFormat::Rgba ? GL_RGBA8 : GL_RGB10_A2,
                      p.w, p.h, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
         texture_parameters(GL_LINEAR);
+        if(!rgba_ || glGetError()!=GL_NO_ERROR) {release_textures();return fail("Cannot allocate the video output texture");}
     }
     if (p.format == VideoFormat::Rgba) {
         glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, p.w, p.h, GL_RGBA, GL_UNSIGNED_BYTE, p.rgba);
@@ -186,6 +193,7 @@ bool VideoSurface::upload(const VideoPicture& p, std::string* error, bool hdr_ou
         if (resize) {
             glTexImage2D(GL_TEXTURE_2D, 0, wide ? GL_R16 : GL_R8, p.w, p.h, 0, GL_RED, type, nullptr);
             texture_parameters(GL_NEAREST);
+            if(!y_ || glGetError()!=GL_NO_ERROR) {release_textures();return fail("Cannot allocate the video luma texture");}
         }
         glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, p.w, p.h, GL_RED, type, p.y);
         glActiveTexture(GL_TEXTURE1); glBindTexture(GL_TEXTURE_2D, uv_);
@@ -193,13 +201,15 @@ bool VideoSurface::upload(const VideoPicture& p, std::string* error, bool hdr_ou
         if (resize) {
             glTexImage2D(GL_TEXTURE_2D, 0, wide ? GL_RG16 : GL_RG8, cw, ch, 0, GL_RG, type, nullptr);
             texture_parameters(GL_LINEAR);
+            if(!uv_ || glGetError()!=GL_NO_ERROR) {release_textures();return fail("Cannot allocate the video chroma texture");}
         }
         glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, cw, ch, GL_RG, type, p.uv);
         if (!framebuffer_) glGenFramebuffers(1, &framebuffer_);
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffer_);
         glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rgba_, 0);
-        if (glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-            return fail("Cannot allocate the native-resolution video surface");
+        if (glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+            release_textures();return fail("Cannot allocate the native-resolution video surface");
+        }
         glViewport(0, 0, p.w, p.h);
         glDisable(GL_BLEND); glDisable(GL_DEPTH_TEST); glDisable(GL_CULL_FACE);
         glDisable(GL_SCISSOR_TEST); glDisable(GL_FRAMEBUFFER_SRGB); glDisable(GL_DITHER);
@@ -237,11 +247,20 @@ void VideoSurface::submitted() {
     in_flight_=next;
 }
 
+void VideoSurface::release_textures() {
+    if(framebuffer_) {
+        GLint draw=0;glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING,&draw);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER,framebuffer_);
+        glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER,GL_COLOR_ATTACHMENT0,GL_TEXTURE_2D,0,0);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER,GLuint(draw));
+    }
+    const GLuint textures[]={rgba_,y_,uv_};glDeleteTextures(3,textures);
+    rgba_=y_=uv_=0;w_=h_=0;
+}
 void VideoSurface::reset() {
     if (!rgba_ && !y_ && !uv_ && !framebuffer_ && !vao_ && !program_ && !in_flight_) return;
     if (!retire(nullptr)) { glFinish(); glDeleteSync(in_flight_); in_flight_=nullptr; }
-    const GLuint textures[] = {rgba_, y_, uv_};
-    glDeleteTextures(3, textures);
+    release_textures();
     if (framebuffer_) glDeleteFramebuffers(1, &framebuffer_);
     if (vao_) glDeleteVertexArrays(1, &vao_);
     if (program_) glDeleteProgram(program_);

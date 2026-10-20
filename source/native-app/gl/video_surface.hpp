@@ -19,6 +19,7 @@ public:
 private:
     GLsync in_flight_ = nullptr;
     bool retire(std::string* error);
+    void release_textures();
     GLuint rgba_ = 0, y_ = 0, uv_ = 0, framebuffer_ = 0, program_ = 0, vao_ = 0;
     int w_ = 0, h_ = 0;
     VideoFormat format_ = VideoFormat::Rgba;

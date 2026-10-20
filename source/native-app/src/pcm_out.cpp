@@ -29,8 +29,10 @@ const int kPortMain = 0;
 
 std::atomic<bool> AudioPort::player_wants{false};
 std::atomic<bool> AudioPort::ui_holds{false};
+std::atomic<bool> AudioPort::shutdown_failed{false};
 
 bool PcmOut::open(bool surround) {
+	if (AudioPort::shutdown_failed) return false;
 	if (open_) return true;
     if(!bitstream::ensure_pcm()) {dlog("audio: PCM restore refused; output stays silent");return false;}
 	channels_ = surround ? 8 : 2; floating_ = false;
@@ -42,6 +44,7 @@ bool PcmOut::open(bool surround) {
 		timespec ts{0, 5 * 1000 * 1000};
 		nanosleep(&ts, nullptr);
 	}
+	if(AudioPort::ui_holds) return false;
 	int init = sceAudioOutInit();
 	if (init != 0 && init != kAlreadyInitialized) {
 		dlog("audio: sceAudioOutInit 0x%08x", unsigned(init));
@@ -65,7 +68,7 @@ bool PcmOut::open(bool surround) {
     return start_thread();
 }
 bool PcmOut::open_bitstream(int kind, bool check_receiver) {
-    if(open_) return false;
+    if(open_ || AudioPort::shutdown_failed) return false;
     AudioPort::player_wants=true;
     for(int i=0;i<300 && AudioPort::ui_holds;++i) {timespec ts{0,5000000};nanosleep(&ts,nullptr);}
     if(AudioPort::ui_holds) return false;
@@ -78,19 +81,30 @@ bool PcmOut::open_bitstream(int kind, bool check_receiver) {
 bool PcmOut::start_thread() {
 	{
 		std::lock_guard<std::mutex> lock(m_);
-		ring_.assign(rate_.load() * bytes_per_frame() * 2, 0);
+        try {
+            output_buffers_=std::make_unique<OutputBuffers>();
+            ring_.assign(rate_.load() * bytes_per_frame() * 2, 0);
+        } catch (...) {
+#ifdef PLATFORM_PS5_NATIVE
+            const bool closed=bitstream_kind_ ? bitstream::close_port(handle_) : sceAudioOutClose(handle_)>=0;
+            if(!closed)AudioPort::shutdown_failed=true;
+#endif
+            handle_=-1;
+            if(!AudioPort::shutdown_failed)AudioPort::player_wants=false;
+            return false;
+        }
 		head_ = count_ = 0; inflight_frames_=0; played_frames_ = 0; ++generation_;
 	}
-	stop_ = false; failed_ = false;
+	stop_ = false; failed_ = false; drained_=true;
 	paused_ = true;
 	// Never name the thread: pthread_setname_np hangs on the console.
 	if (pthread_create(&thread_, nullptr, &PcmOut::thread_main, this) != 0) {
 		dlog("audio: can't start the output thread");
 #ifdef PLATFORM_PS5_NATIVE
-		if(bitstream_kind_) bitstream::close_port(handle_); else sceAudioOutClose(handle_);
+		if(!(bitstream_kind_ ? bitstream::close_port(handle_) : sceAudioOutClose(handle_)>=0))AudioPort::shutdown_failed=true;
 #endif
 		handle_ = -1;
-		AudioPort::player_wants = false;
+		if(!AudioPort::shutdown_failed)AudioPort::player_wants = false;
 		return false;
 	}
 	dlog("audio: output %s", description().c_str());
@@ -104,11 +118,20 @@ void PcmOut::close(bool release_claim) {
 	stop_ = true;
 	pthread_join(thread_, nullptr);
 #ifdef PLATFORM_PS5_NATIVE
-	if (handle_ >= 0) { if(bitstream_kind_) bitstream::close_port(handle_); else sceAudioOutClose(handle_); }
+	if (handle_ >= 0) {
+        const bool closed=bitstream_kind_ ? bitstream::close_port(handle_) : sceAudioOutClose(handle_)>=0;
+        if(!closed || !drained_)AudioPort::shutdown_failed=true;
+    }
 #endif
 	handle_ = -1;
 	open_ = false;
-	if(release_claim && bitstream::ensure_pcm()) AudioPort::player_wants = false;  // the interface may have the port back
+    if(AudioPort::shutdown_failed) {
+        // The driver may still reference these addresses. Retain this bounded
+        // allocation and refuse further port opens until the app restarts.
+        (void)output_buffers_.release();failed_=true;AudioPort::player_wants=true;
+        dlog("audio: output drain/close failed; retaining submitted buffers and refusing port reuse");
+    } else output_buffers_.reset();
+	if(release_claim && !AudioPort::shutdown_failed && bitstream::ensure_pcm()) AudioPort::player_wants = false;  // the interface may have the port back
 }
 
 std::string PcmOut::description() const {
@@ -118,7 +141,7 @@ std::string PcmOut::description() const {
 
 bool PcmOut::queue(const void* data, size_t bytes) {
 	std::lock_guard<std::mutex> lock(m_);
-	if (!data || bytes % bytes_per_frame() || bytes > ring_.size() - count_) return false;
+	if (!open_ || stop_ || failed_ || !data || bytes % bytes_per_frame() || bytes > ring_.size() - count_) return false;
 	const size_t tail = (head_ + count_) % ring_.size();
 	const size_t first = std::min(bytes, ring_.size() - tail);
 	std::memcpy(ring_.data() + tail, data, first);
@@ -150,11 +173,13 @@ void* PcmOut::thread_main(void* self) {
 }
 
 void PcmOut::run() {
-	alignas(64) uint8_t grain[kGrainFrames * 8 * sizeof(float)];
+	unsigned buffer_index=0;
 	const int frames=grain_frames_,rate=rate_;
 	const size_t grain_bytes = frames * bytes_per_frame();
     int errors=0;
 	while (!stop_) {
+        auto* grain=output_buffers_->grains[buffer_index];
+        buffer_index^=1;
 		size_t got = 0; uint64_t epoch;
 		{
 			std::lock_guard<std::mutex> lock(m_); epoch = generation_;
@@ -170,6 +195,7 @@ void PcmOut::run() {
 		if (got < grain_bytes) std::memset(grain + got, 0, grain_bytes - got);
 #ifdef PLATFORM_PS5_NATIVE
 		const double output_started=now_seconds();
+		drained_=false;
 		const bool output_ok = sceAudioOutOutput(handle_, grain) >= 0;
 		if (!output_ok) { timespec ts{0, 5000000}; nanosleep(&ts, nullptr); }
 #else
@@ -190,6 +216,6 @@ void PcmOut::run() {
         }
 	}
 #ifdef PLATFORM_PS5_NATIVE
-	sceAudioOutOutput(handle_, nullptr);
+	drained_=sceAudioOutOutput(handle_, nullptr)>=0;
 #endif
 }

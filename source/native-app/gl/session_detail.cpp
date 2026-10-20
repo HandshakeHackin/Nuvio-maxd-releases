@@ -465,6 +465,7 @@ void Session::detail_load_streams(const std::string &video_id, const std::string
     d_answered_ = 0;
     d_stream_errors_=false;
     d_cached_sources_.clear();
+    d_cache_warm_=false;
 
     std::string type = d_meta_loaded_ ? d_meta_.type : d_item_.type;
     if (type.empty())
@@ -481,7 +482,7 @@ void Session::detail_load_streams(const std::string &video_id, const std::string
     for(const auto& a:sources) {
         json scripts=json::array();
         for(const auto& p:a.providers)scripts.push_back(json::array({p.id,p.version,p.filename,p.settings}));
-        source_identity.push_back(json::array({a.transport_url,a.version,scripts}));
+        source_identity.push_back(json::array({a.transport_url,a.id,a.name,a.version,scripts}));
     }
     d_stream_cache_key_=json::array({profile_dir_,type,video_id,source_identity}).dump();
     detail.streams_loading = d_pending_ > 0;
@@ -504,6 +505,7 @@ void Session::detail_load_streams(const std::string &video_id, const std::string
     }
     detail.streams_status = "Loading streams... (0 of " + std::to_string(sources.size()) + " sources answered)";
     d_found_=stream_result_cache_.get(d_stream_cache_key_,now_seconds());
+    d_cache_warm_=!d_found_.empty();
     for(const auto& s:d_found_)d_cached_sources_.insert(s.addon);
     if(!d_found_.empty())detail_refresh_streams();
     for (const auto &s : sources)
@@ -556,7 +558,10 @@ void Session::detail_load_streams(const std::string &video_id, const std::string
 
 void Session::detail_reload_streams()
 {
-    if (d_open_ && !d_video_id_.empty()) detail_load_streams(d_video_id_, d_stream_heading_);
+    if (d_open_ && !d_video_id_.empty()) {
+        stream_result_cache_.erase(d_stream_cache_key_);
+        detail_load_streams(d_video_id_, d_stream_heading_);
+    }
 }
 
 void Session::detail_refresh_streams()
@@ -606,7 +611,7 @@ void Session::detail_refresh_streams()
             say("Choose a stream for the next episode. No matching direct/debrid quality was found.", 7.0);
     }
     if (d_answered_ < d_pending_)
-        detail.streams_status = "Loading streams... (" + std::to_string(d_answered_) + " of " + std::to_string(d_pending_) +
+        detail.streams_status = std::string(d_cache_warm_?"Refreshing sources... (":"Loading streams... (") + std::to_string(d_answered_) + " of " + std::to_string(d_pending_) +
                                 " sources answered)";
     else if (detail.streams.empty() && hidden_torrents)
         detail.streams_status = std::to_string(hidden_torrents) +

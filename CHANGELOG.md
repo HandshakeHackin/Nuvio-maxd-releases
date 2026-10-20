@@ -1,3 +1,14 @@
+# 0.5.34.4 — opt-in playback test
+
+- Proposed [issue #8 audio-track fix](https://github.com/HandshakeHackin/Nuvio-maxd-releases/issues/8): preserve the Native playback clock, pause state and explicit seek while discarding previous-track packets and resynchronizing quick-open Matroska.
+- Reuse eligible torrent source descriptors for five minutes and stable direct URLs for sixty seconds while refreshing; Reload starts fresh. Bounded session/profile cache, excluding signed links and resolver payloads.
+- Include audio/video resource-lifetime safeguards and VLC seek/rebuffer backports; retain 0.5.34.3 provider, Trakt and updater fixes.
+- Focused audio/cache checks and 38 updater tests pass. Physical PS5/Torrentio confirmation is pending; broad host HLS and a mixed-codec custom-AVIO startup case remain unverified. See [testing and validation](test-builds/0.5.34.4/TESTING.md).
+
+This is a targeted branch test, with normal release/store feeds unchanged. Live TV, anime timing extensions, settings search and trailers remain staged separately.
+
+---
+
 # Nuvio Max'd 0.5.34 — playback recovery, profile PINs and watch history
 
 ## 0.5.34.1 — temporary issue #3 test
