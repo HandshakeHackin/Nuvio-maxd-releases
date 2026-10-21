@@ -160,6 +160,7 @@ The [published-build user guide](https://github.com/HandshakeHackin/Nuvio-maxd-r
 covers controls, setup and troubleshooting. Check the version on the
 [ProsperoStore listing](https://prosperostore.net/app/PPSA99288/): catalog submission,
 maintainer approval and live deployment happen separately from a GitHub release.
+The 1.0 store update is prepared; [submit the prefilled catalog pull request](store/README.md) because the integration cannot create it upstream.
 
 ## Report a problem
 
