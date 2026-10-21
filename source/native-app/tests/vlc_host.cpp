@@ -136,10 +136,12 @@ int main(int argc, char **argv) try {
         std::cerr << "near end " << b.position() << " dur " << b.duration() << "\n";
         wait(b, [&] { return b.state() == 3; }, 8);
         b.seek(2);
+        // Adaptive HLS uses two-second fixture segments and a coarse libVLC clock.
+        // Allow one segment of landing tolerance; file replay remains strict.
         std::cerr << "replay requested " << o.url << " pos " << b.position() << " serial " << b.serial() << " picture " << b.picture_serial() << "\n";
         wait(b, [&] {
             return b.state() == 2 && b.picture_serial() == b.serial() && b.position() > 2.1 &&
-                   b.position() < 3;
+                   b.position() < (o.url.find(".m3u8") != std::string::npos ? 4.1 : 3.0);
         });
         std::cerr << "replayed " << b.position() << "\n";
         b.close();
