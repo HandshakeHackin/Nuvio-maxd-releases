@@ -56,7 +56,7 @@ template <class F> void wait(VlcBackend &b, F f, double seconds = 12) {
             return;
         std::this_thread::sleep_for(std::chrono::milliseconds(3));
     }
-    throw std::runtime_error("VLC timed out: " + b.stats());
+    throw std::runtime_error("VLC timed out: position=" + std::to_string(b.position()) + " state=" + std::to_string(b.state()) + " serial=" + std::to_string(b.serial()) + " picture=" + std::to_string(b.picture_serial()) + " " + b.stats());
 }
 int main(int argc, char **argv) try {
     require(argc >= 2, "fixture missing");
@@ -136,13 +136,16 @@ int main(int argc, char **argv) try {
         std::cerr << "near end " << b.position() << " dur " << b.duration() << "\n";
         wait(b, [&] { return b.state() == 3; }, 8);
         b.seek(2);
+        std::cerr << "replay requested " << o.url << " pos " << b.position() << " serial " << b.serial() << " picture " << b.picture_serial() << "\n";
         wait(b, [&] {
             return b.state() == 2 && b.picture_serial() == b.serial() && b.position() > 2.1 &&
                    b.position() < 3;
         });
+        std::cerr << "replayed " << b.position() << "\n";
         b.close();
         require(b.state() == 0, "VLC close did not release player");
         require(b.open(o), "VLC reopen failed");
+        std::cerr << "reopened " << o.url << "\n";
         wait(b, [&] { return b.picture_serial() > 0; });
         b.close();
         std::cout << "Real VLC: open/video/audio, pause, forward/back seek and reopen passed\n";
