@@ -31,7 +31,12 @@ e=os.environ.copy()
 base=f'http://127.0.0.1:{s.server_port}'
 try:
  # Stream diagnostics so a timeout retains the last completed playback stage.
- r=subprocess.run([str(root/'test-output/vlc-host'),str(fixtures/'fixture.mp4'),str(fixtures/'fixture.mkv'),base+'/fixture.mp4',base+'/fixture.mkv',base+'/fixture.m3u8',base+'/redirect.m3u8',base+'/stall-headers',base+'/stall-read'],env=e,text=True,timeout=100)
+ r=subprocess.Popen([str(root/'test-output/vlc-host'),str(fixtures/'fixture.mp4'),str(fixtures/'fixture.mkv'),base+'/fixture.mp4',base+'/fixture.mkv',base+'/fixture.m3u8',base+'/redirect.m3u8',base+'/stall-headers',base+'/stall-read'],env=e,text=True)
+ try:
+  r.wait(timeout=100)
+ except subprocess.TimeoutExpired:
+  subprocess.run(["gdb","-q","-batch","-ex","thread apply all bt","-p",str(r.pid)],timeout=20)
+  r.kill();r.wait();raise
  print('requests',len(seen),'segments',len({p for p,h in seen if p.endswith('.ts')}),flush=True)
  assert r.returncode==0,'VLC HTTP playback failed'
  assert all(h=='required' for p,h in seen),'private headers were not preserved'

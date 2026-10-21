@@ -147,7 +147,9 @@ int main(int argc, char **argv) try {
         require(b.open(o), "VLC reopen failed");
         std::cerr << "reopened " << o.url << "\n";
         wait(b, [&] { return b.picture_serial() > 0; });
+        std::cerr << "first reopened picture " << b.position() << "\n";
         b.close();
+        std::cerr << "reopen closed\n";
         std::cout << "Real VLC: open/video/audio, pause, forward/back seek and reopen passed\n";
     }
     VlcBackend bad;
