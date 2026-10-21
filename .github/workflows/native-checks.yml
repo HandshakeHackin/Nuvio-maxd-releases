@@ -48,7 +48,9 @@ jobs:
     runs-on: ubuntu-latest
     # Match the tested 3.0.23 host ABI, close to the PS5 target's 3.0.24.
     # Ubuntu 24.04 still supplies 3.0.20 with older adaptive seek behavior.
-    container: debian:trixie
+    container:
+      image: debian:trixie
+      options: --cap-add=SYS_PTRACE --security-opt seccomp=unconfined
     defaults:
       run:
         working-directory: source
