@@ -10,16 +10,27 @@
 #include <vector>
 namespace nuvio_update {
 namespace {
-bool version(const std::string& s, std::array<unsigned,3>& out) {
+bool version(const std::string& s, std::array<unsigned,4>& out) {
     std::size_t p=0;
-    for (int i=0;i<3;++i) {
+    out.fill(0);
+    for (int i=0;i<4;++i) {
         auto start=p; unsigned n=0;
         while(p<s.size() && s[p]>='0' && s[p]<='9') { if(n>999) return false; n=n*10+s[p++]-'0'; }
         if(p==start || n>9999 || (p-start>1 && s[start]=='0')) return false;
         out[i]=n;
-        if(i<2 && (p>=s.size() || s[p++]!='.')) return false;
+        if(p==s.size()) return i>=2;
+        if(i==3 || s[p++]!='.') return false;
     }
     return p==s.size();
+}
+std::string tag_version(const std::string& tag) {
+    if (!tag.starts_with('v')) return {};
+    auto value=tag.substr(1);
+    for (const std::string suffix : {"-native-experimental", "-native"}) {
+        if (value.ends_with(suffix)) { value.resize(value.size()-suffix.size()); break; }
+    }
+    std::array<unsigned,4> parsed{};
+    return version(value,parsed) ? value : std::string{};
 }
 std::string string(const Json& j, const char* key) {
     return j.is_object() && j.contains(key) && j[key].is_string() ? j[key].get<std::string>() : "";
@@ -36,11 +47,11 @@ bool write_all(int fd,const void* data,std::size_t size) {
 }
 }
 bool newer(const std::string& a,const std::string& b) {
-    std::array<unsigned,3> av{},bv{}; return version(a,av) && version(b,bv) && av>bv;
+    std::array<unsigned,4> av{},bv{}; return version(a,av) && version(b,bv) && av>bv;
 }
 bool valid_release(const Release& r) {
-    std::array<unsigned,3> v{};
-    return version(r.version,v) && r.tag=="v"+r.version+"-native-experimental" &&
+    std::array<unsigned,4> v{};
+    return version(r.version,v) && tag_version(r.tag)==r.version &&
         r.url=="https://github.com/"+std::string(repository)+"/releases/download/"+r.tag+"/NuvioMaxd-"+r.version+"-native.ffpfsc" &&
         r.sha256.size()==64 && std::all_of(r.sha256.begin(),r.sha256.end(),[](char c){return (c>='0' && c<='9') || (c>='a' && c<='f');}) &&
         r.size>=(1ull<<20) && r.size<=max_image_bytes;
@@ -49,9 +60,9 @@ Release select_release(const Json& list,const std::string& current) {
     Release best; if(!list.is_array()) return best;
     for(const auto& j:list) {
         try {
-        const auto tag=string(j,"tag_name"); const std::string suffix="-native-experimental";
-        if(j.value("draft",true) || tag.size()<=suffix.size()+1 || tag.front()!='v' || !tag.ends_with(suffix)) continue;
-        const auto v=tag.substr(1,tag.size()-suffix.size()-1);
+        const auto tag=string(j,"tag_name");
+        const auto v=tag_version(tag);
+        if(j.value("draft",true) || v.empty()) continue;
         if(!newer(v,best.version.empty()?current:best.version) || !j.contains("assets") || !j["assets"].is_array()) continue;
         // A source archive is required in the same release before advertising a binary.
         bool source=false; for(const auto& a:j["assets"]) if(string(a,"name")=="NuvioMaxd-"+v+"-source.tar.gz") source=true;

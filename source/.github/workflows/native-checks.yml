@@ -54,4 +54,6 @@ jobs:
           apt-get install -y git ca-certificates python3 g++ pkg-config ffmpeg libcurl4-openssl-dev libavformat-dev libavcodec-dev libavutil-dev libswresample-dev libvlc-dev libvlccore-dev vlc-plugin-base
       - uses: actions/checkout@v4
       - name: Test VLC file playback, authenticated HTTP/HLS, seeking and cancellation
-        run: bash native-app/tests/vlc_host.sh
+        run: |
+          bash native-app/tests/vlc_host.sh
+          bash native-app/tests/vlc_issue3.sh

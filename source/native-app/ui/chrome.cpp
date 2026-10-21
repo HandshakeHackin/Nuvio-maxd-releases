@@ -17,7 +17,7 @@ using hui::ui::text;
 namespace
 {
 
-constexpr const char *kPageNames[5] = {"Board", "Discover", "Library", "Addons", "Settings"};
+constexpr const char *kPageNames[6] = {"Board", "Discover", "Library", "Addons", "Settings", "Live TV"};
 constexpr float kItemW = 100.0f;
 constexpr float kItemH = 108.0f;
 constexpr float kItemGap = 12.0f;
@@ -31,7 +31,7 @@ Rail::Rail()
 
 Rect Rail::item_rect(int index)
 {
-    const float total = 5.0f * kItemH + 4.0f * kItemGap;
+    const float total = 6.0f * kItemH + 5.0f * kItemGap;
     const float top = (theme::kScreenH - total) * 0.5f;
     return {(theme::kRailWidth - kItemW) * 0.5f, top + static_cast<float>(index) * (kItemH + kItemGap),
             kItemW, kItemH};
@@ -53,7 +53,7 @@ void Rail::focus(bool on)
 
 void Rail::move(int delta)
 {
-    cursor_ = std::clamp(cursor_ + delta, 0, 4);
+    cursor_ = std::clamp(cursor_ + delta, 0, 5);
 }
 
 void Rail::reset(Page page)
@@ -84,7 +84,7 @@ void Rail::draw(hui::gfx::DrawList &list, const Env &env, float age) const
         list.bordered_rect(p, 26, theme::accent, 3.0f, Color::rgb(0xffffff));
         list.pop_opacity();
     }
-    for (int i = 0; i < 5; ++i)
+    for (int i = 0; i < 6; ++i)
     {
         const Rect r = item_rect(i);
         const bool active = i == page_;
@@ -96,7 +96,12 @@ void Rail::draw(hui::gfx::DrawList &list, const Env &env, float age) const
             list.rounded_rect(r, 26, theme::surface);
         const Color tint = (active || under_cursor) ? Color::rgb(0xffffff) : theme::ink_3;
         const std::uint32_t icon = (active || under_cursor) ? env.icons.nav_solid[i] : env.icons.nav_line[i];
-        if (icon != 0)
+        if(i==5){
+            const Rect tv{r.cx()-24.0f,r.y+19.0f,48.0f,34.0f};
+            list.bordered_rect(tv,6,Color::rgb(0xffffff,0),3,tint);
+            list.rounded_rect({r.cx()-10,r.y+57,20,3},1,tint);
+        }
+        else if (icon != 0)
             list.image(icon, {r.cx() - 24.0f, r.y + 14.0f + 6.0f * (1.0f - in), 48.0f, 48.0f}, kFullUv, tint);
         text(list, env.fonts.regular, kPageNames[i], r.cx(), r.y + 90.0f, theme::kLabel, tint, Align::center);
         list.pop_opacity();

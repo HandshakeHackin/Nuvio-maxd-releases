@@ -6,9 +6,14 @@
 
 namespace sx {
 bool Session::services_save(const debrid::Settings& next) {
+    if(!profile_ready_ || profile_dir_.empty())return false;
     if (!debrid::save(profile_dir_ + "/connected-services.json", next)) {
         say("Could not save Connected Services. Your previous settings are unchanged.", 7.0, true);
         return false;
+    }
+    if(services_.animeskip.key != next.animeskip.key) {
+        if(w_animeskip_cancel_)*w_animeskip_cancel_=true;
+        w_animeskip_requested_=0;w_animeskip_segments_.clear();watch_merge_segments();
     }
     services_ = next; ++services_generation_;
     detail_preparation_cancel(); next_preparation_cancel();
@@ -25,7 +30,8 @@ void Session::services_menu() {
         "Resolve playable links: " + std::string(services_.enabled ? "On (cached files)" : "Off"),
         "Resolve with: " + (services_.preferred.empty() ? std::string("Automatic") : debrid::provider_name(services_.preferred)),
         "Instant playback: " + (services_.instant_limit == 0 ? std::string("Off") : std::to_string(services_.instant_limit) + " streams"),
-        services_importing_ ? "Importing from Nuvio Sync..." : "Import connections from Nuvio Sync"
+        services_importing_ ? "Importing from Nuvio Sync..." : "Import connections from Nuvio Sync",
+        "Anime-Skip: " + std::string(services_.animeskip.key.empty() ? "Not configured" : "Configured")
     }, 0, [this](int choice) {
         if (choice == 0) service_menu("torbox");
         else if (choice == 1) service_menu("premiumize");
@@ -53,6 +59,34 @@ void Session::services_menu() {
                     services_save(next); services_menu();
                 });
         } else if (choice == 5) services_import();
+        else if (choice == 6) animeskip_menu();
+    });
+}
+
+// Anime-Skip asks each app for a client ID. It only adds anime episode timings;
+// AniSkip and IntroDB work without it.
+void Session::animeskip_menu() {
+    const auto profile=profile_generation_;
+    open_dropdown("Anime-Skip", {"Enter a client ID", "Disconnect on this PS5"}, 0, [this,profile](int choice) {
+        if(profile!=profile_generation_)return;
+        if (choice == 0) {
+            // Do not prefill an existing credential or echo it in a message.
+            say("Enter your Anime-Skip client ID from anime-skip.com. It adds anime intro and recap timings.", 8.0);
+            const int generation = services_generation_;
+            ask_text([this, generation](const std::string& text) {
+                const std::string id = trim(text);
+                if (id.empty() || generation != services_generation_) return;
+                if (!debrid::valid_client_id(id)) { say("Enter a valid client ID.", 6.0, true); return; }
+                auto next = services_; next.animeskip = {id, ""};
+                if (services_save(next)) say("Anime-Skip client ID saved");
+            });
+        } else {
+            open_dropdown("Disconnect Anime-Skip?", {"Keep connection", "Disconnect"}, 0, [this,profile](int i) {
+                if (i != 1 || profile!=profile_generation_) return;
+                auto next = services_; next.animeskip = {};
+                if (services_save(next)) say("Disconnected on this PS5. Your Nuvio connection is unchanged.", 6.0);
+            });
+        }
     });
 }
 
@@ -109,10 +143,14 @@ void Session::services_import() {
         if (!debrid::import_snapshot(next, result.result)) { say("Could not read the synced connections.", 7.0, true); return; }
         const auto& rows = jobj(result.result, "credentials");
         if (rows.empty()) {
-            say("No synced TorBox or Premiumize connection found. Connect it in Nuvio and sync, or connect it here.", 10.0);
+            say("No synced TorBox, Premiumize or Anime-Skip connection found. Connect it in Nuvio and sync, or connect it here.", 10.0);
             return;
         }
         if (!result.result.contains("enabled")) next.enabled = !next.torbox.key.empty() || !next.premiumize.key.empty();
+        if (next.torbox.key.empty() && next.premiumize.key.empty()) {
+            if (services_save(next)) say(next.animeskip.key.empty() ? "Nothing to import." : "Anime-Skip imported. Anime episodes can now show more skip buttons.", 7.0);
+            return;
+        }
         if (services_save(next)) say(next.enabled ? "Connections imported. Cached links can now resolve here." : "Connections imported. Resolve playable links is off.", 7.0);
     });
 }

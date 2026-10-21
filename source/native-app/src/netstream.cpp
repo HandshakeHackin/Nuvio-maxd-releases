@@ -58,6 +58,7 @@ bool is_http(const char* url) { return !strncmp(url, "http://", 7) || !strncmp(u
 
 int io_open_cb(AVFormatContext* s, AVIOContext** pb, const char* url, int flags, AVDictionary** options) {
 	auto* hooks = static_cast<NetStream::IoHooks*>(s->opaque);
+	if (hooks->http_only && ((flags & AVIO_FLAG_WRITE) || !is_http(url))) return AVERROR(EPERM);
 	if ((flags & AVIO_FLAG_WRITE) || !is_http(url)) return hooks->default_open(s, pb, url, flags, options);
 	std::string err;
 	*pb = NetStream::open_avio(url, hooks->headers, hooks->abort, &err, false, hooks->read_interrupt);

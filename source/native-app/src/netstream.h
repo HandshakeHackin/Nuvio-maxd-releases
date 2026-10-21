@@ -62,6 +62,7 @@ public:
 	// itself (HLS playlists and segments). opaque must point at the
 	// player's IoHooks.
 	struct IoHooks {
+		bool http_only = false; // reject file/other protocols for live HLS
 		const std::atomic<bool>* read_interrupt = nullptr;
 		std::vector<std::string> headers;
 		const std::atomic<bool>* abort = nullptr;

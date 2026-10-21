@@ -55,6 +55,7 @@ constexpr int kMaxChars = 2048;
 constexpr int kRunning = 1, kFinished = 2;
 std::uint16_t g_text[kMaxChars + 8];
 ImeParam g_param;
+std::uint16_t g_title[128];
 
 // The dialog writes UTF-16. Some firmware versions have been seen to widen the
 // units to 32 bits; both are read.
@@ -102,7 +103,7 @@ std::string utf8_of(const std::uint16_t *u)
 
 } // namespace
 
-bool Ime::open()
+bool Ime::open(const std::string& title)
 {
     if (active_)
         return true;
@@ -119,6 +120,9 @@ bool Ime::open()
     g_param.user_id = static_cast<std::uint32_t>(user);
     g_param.max_text_length = kMaxChars;
     g_param.buffer = g_text;
+    std::memset(g_title,0,sizeof(g_title));
+    for(size_t i=0;i<title.size() && i<127;++i)g_title[i]=static_cast<unsigned char>(title[i]);
+    g_param.title=g_title;
     // The dialog sits at the top right, not in the corner it opens in by default: its top right corner
     // is put at this point of the 1920 x 1080 screen (alignments: 0 left/top, 1 centre, 2 right/bottom).
     g_param.horizontal_alignment = 2;
@@ -168,6 +172,7 @@ Ime::State Ime::poll(std::string *text)
         out = State::done;
     }
     sceImeDialogTerm();
+    std::memset(g_text,0,sizeof(g_text));
     active_ = false;
     return out;
 }
@@ -178,7 +183,7 @@ Ime::State Ime::poll(std::string *text)
 
 namespace sx
 {
-bool Ime::open()
+bool Ime::open(const std::string& title)
 {
     return false;
 }

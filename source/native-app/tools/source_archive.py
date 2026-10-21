@@ -17,7 +17,7 @@ args = parser.parse_args()
 repo = Path(__file__).resolve().parents[2]
 commit = subprocess.check_output(['git', '-C', str(repo), 'rev-parse', args.commit], text=True).strip()
 build = subprocess.check_output(['git', '-C', str(repo), 'show', commit + ':native-app/tools/build_info.py'], text=True)
-version = re.search(r"'version': '([0-9.]+)-native-experimental'", build).group(1)
+version = re.search(r"'version': '([0-9.]+)-native(?:-experimental)?'", build).group(1)
 prefix = f'NuvioMaxd-{version}-source/'
 archive = subprocess.check_output(['git', '-C', str(repo), 'archive', '--format=tar', commit,
                                    'README.md', 'native-app', 'ps5/account-config.json',

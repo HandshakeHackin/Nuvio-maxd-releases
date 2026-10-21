@@ -16,19 +16,33 @@ int main() {
     }
     sx::SettingsNavigation nav;nav.refresh(content);
     assert(nav.categories.size()==3 && nav.source_row()==-1);
+    assert(!nav.open(content));nav.index=1;
     assert(nav.open(content) && nav.category=="Video" && nav.rows==std::vector<int>({0,2}));
     nav.index=1;nav.refresh(content);assert(nav.source_row()==2);
-    assert(nav.back(content) && nav.index==0 && nav.root());
-    nav.index=1;assert(nav.open(content));assert(nav.source_row()==1);
+    assert(nav.back(content) && nav.index==1 && nav.root());
+    nav.index=2;assert(nav.open(content));assert(nav.source_row()==1);
     nav.index=1;assert(nav.source_row()==4);
-    assert(nav.category_row(content,1).value=="2 settings");
-    assert(nav.back(content) && nav.index==1);
+    assert(nav.category_row(content,2).value=="2 settings");
+    assert(nav.back(content) && nav.index==2);
     nav.open(content);content.rows[4].on=true;nav.refresh(content);assert(nav.source_row()==1);
     sx::SettingsContent empty;nav.refresh(empty);assert(nav.root() && nav.count()==0);
+
+    content.rows[0].label="HDR playback";content.rows[0].help="Tone mapping for the screen";
+    content.rows[1].label="Audio output";
+    assert(nav.category_row(content,0).label=="Search settings");
+    assert(sx::SettingsNavigation::search(content,"  HDR  ")==std::vector<int>({0}));
+    assert(sx::SettingsNavigation::search(content,"VIDEO tone")==std::vector<int>({0}));
+    assert(sx::SettingsNavigation::search(content,"audio")==std::vector<int>({1,4}));
+    assert(sx::SettingsNavigation::search(content," ").empty());
+    assert(sx::SettingsNavigation::search(content,"missing").empty());
+    assert(sx::SettingsNavigation::search(empty,"HDR").empty());
 
     hui::ui::Fonts fonts;sx::Icons icons;sx::Env env{fonts,icons};
     sx::Settings page(env);page.set_content(&content);page.enter();
     assert(page.cursor_row()<0);
+    assert(page.cursor_row()==sx::SettingsNavigation::search_action);
+    press(page,hui::Action::confirm);assert(!page.navigation_consumed());
+    move(page,hui::Direction::down);
     press(page,hui::Action::confirm);assert(page.navigation_consumed() && page.cursor_row()==0);
     move(page,hui::Direction::none);assert(page.cursor_row()==0);
     move(page,hui::Direction::down);assert(page.cursor_row()==2);

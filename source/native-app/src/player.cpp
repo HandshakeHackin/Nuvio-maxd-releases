@@ -294,6 +294,7 @@ void Player::demux_thread() {
 
 void Player::demux_run() {
 	std::string input_url = opts_.url;
+	const AVInputFormat* content_format = nullptr;
 	AVDictionary* dict = nullptr;
 	av_dict_set(&dict, "user_agent", kUserAgent, 0);
 	if (!opts_.headers.empty()) av_dict_set(&dict, "headers", (join(opts_.headers, "\r\n") + "\r\n").c_str(), 0);
@@ -309,6 +310,14 @@ void Player::demux_run() {
 	// HLS keepalive assumes FFmpeg-owned URLContexts; our AVIOs belong to
 	// NetStream. Open each playlist/segment through the hooks instead.
 	av_dict_set(&dict, "http_persistent", "0", 0);
+    if(opts_.live_tv) {
+        // Xtream services commonly use signed/extensionless HTTP segment paths.
+        // Restrict protocols before relaxing HLS filename-extension checks.
+        av_dict_set(&dict,"protocol_whitelist","http,https,tcp,tls,crypto",0);
+        av_dict_set(&dict,"allowed_extensions","ALL",0);
+        av_dict_set(&dict,"allowed_segment_extensions","ALL",0);
+        av_dict_set(&dict,"extension_picky","0",0);
+    }
 	if (!http_ca_bundle().empty()) av_dict_set(&dict, "ca_file", http_ca_bundle().c_str(), 0);
 
 	fmt_ = avformat_alloc_context();
@@ -319,6 +328,7 @@ void Player::demux_run() {
 
 	// HTTP(S) goes through libcurl (see netstream.h): the stream itself here,
 	// and whatever the demuxer opens later (HLS) through the hooks.
+	io_hooks_.http_only = opts_.live_tv;
 	io_hooks_.headers = opts_.headers;
 	io_hooks_.abort = &abort_;
 	io_hooks_.read_interrupt = &seek_pending_;
@@ -348,6 +358,14 @@ void Player::demux_run() {
 		std::string magic = torrent ? TorrentStream::of(main_pb_)->peek(4) : NetStream::of(main_pb_)->peek(64);
 		if (!torrent) {
 			input_url = NetStream::of(main_pb_)->effective_url();
+			// Some providers serve genuine HLS at opaque addresses as octet-stream.
+			// FFmpeg's URL/MIME probe refuses these even after seeing EXT-X tags.
+			// Select HLS only from its actual header; keep the real resolved URL
+			// and existing I/O restrictions for relative segments and cancellation.
+			if (starts_with(magic, "#EXTM3U") && magic.find("#EXT-X-") != std::string::npos) {
+				content_format = av_find_input_format("hls");
+				dlog("player: identified HLS from playlist contents");
+			}
 			std::string prefix = lower(trim(magic));
 			if (starts_with(prefix, "<!doctype html") || starts_with(prefix, "<html")) {
 				avformat_free_context(fmt_);
@@ -367,7 +385,7 @@ void Player::demux_run() {
 			dlog("player: Matroska, starting without reading the end of the file");
 		}
 	}
-	int r = avformat_open_input(&fmt_, input_url.c_str(), nullptr, &dict);
+	int r = avformat_open_input(&fmt_, input_url.c_str(), content_format, &dict);
 	av_dict_free(&dict);
 	if (r < 0) {
 		fmt_ = nullptr;  // freed by avformat_open_input on failure
@@ -524,7 +542,7 @@ void Player::demux_run() {
 		double mbps = fmt_->bit_rate > 0 ? fmt_->bit_rate / 1e6
 		              : (size > 0 && duration_ > 0) ? size * 8.0 / duration_ / 1e6
 		                                            : 0;
-		start_target_ = mbps >= 40 ? 15 : mbps >= 20 ? 10 : mbps >= 10 ? 5 : 2;
+		start_target_ = opts_.live_tv ? 2 : mbps >= 40 ? 15 : mbps >= 20 ? 10 : mbps >= 10 ? 5 : 2;
 		dlog("player: about %.0f Mbit/s, buffering %.0f s before playing", mbps, start_target_);
 	}
 	if (opts_.start > 0) do_seek(opts_.start);
@@ -543,6 +561,9 @@ void Player::demux_run() {
 			if (seek_req_) {
 				target = seek_target_;
 				seek_req_ = false;
+                // Retire the finished timeline before releasing the UI seek gate.
+                // do_seek can block on I/O while the old queues still look drained.
+                eof_ = false;
 				seek_pending_ = false;
 			}
 		}
@@ -552,7 +573,12 @@ void Player::demux_run() {
             playback_streams::compatible_audio(fmt_, vs, sw)) {
 			AVCodecContext* nc = nullptr;
 			if (open_stream_codec(sw, &nc)) {
+                // Capture the timeline before reopening the port resets played_seconds().
+                // Keep an explicit seek (including one queued during codec open) ahead
+                // of this anchor, and retire every packet from the previous track.
+                const double anchor = target >= 0 ? target : position();
 				std::lock_guard<std::mutex> lock(actx_m_);
+                aq_.flush();
 				avcodec_free_context(&actx_);
 				actx_ = nc;
                 if (playback_streams::is_hls(fmt_)) {
@@ -560,9 +586,28 @@ void Player::demux_run() {
                     fmt_->streams[sw]->discard = AVDISCARD_DEFAULT;
                 }
 				audio_stream_ = sw;
-                { std::lock_guard<std::mutex> clock(clock_m_); pcm_.close(false); open_audio_output(sw); }
-				// Without the index (quick_) it just carries on from here.
-				if (target < 0 && !quick_) target = position();
+                {
+                    std::lock_guard<std::mutex> clock(clock_m_);
+                    pcm_.close(false);
+                    audio_base_pts_ = audio_end_pts_ = -1;
+                    wall_base_pts_ = anchor; wall_base_time_ = now_seconds();
+                    open_audio_output(sw);
+                }
+                if (!pcm_.is_open()) {
+                    fail("Could not reopen audio for the selected track. Restart playback.");
+                    break;
+                }
+                dlog("player: audio switch to #%d at %.3f s (paused %d)", sw, anchor, int(paused_.load()));
+                // A quick Matroska input must load its cues too. Otherwise the
+                // demuxer remains at its read-ahead position, seconds past playback.
+                // Keep the decoder lock until queues and clocks share the new serial.
+                if (playback_streams::is_hls(fmt_) && duration_ <= 0) {
+                    adrop_ = anchor;
+                    apply_run_state(); // Live playlists cannot rewind to a VOD timestamp.
+                } else {
+                    do_seek(anchor, true);
+                }
+                target = -1;
 			}
 		}
 		if (target >= 0) do_seek(target);
@@ -574,7 +619,7 @@ void Player::demux_run() {
             (audio_stream_>=0 && aq_.duration()<0.5);
         if(queued>=kHardQueueBytes || (queued>=kMaxQueueBytes && !other_starving) ||
             vq_.count()+aq_.count()>65536 ||
-            ((vs<0 || vq_.duration()>std::clamp(opts_.read_ahead_seconds,30,300)) && (audio_stream_<0 || aq_.duration()>std::clamp(opts_.read_ahead_seconds,30,300))) || eof_) {
+            ((vs<0 || vq_.duration()>(opts_.live_tv ? 2 : std::clamp(opts_.read_ahead_seconds,30,300))) && (audio_stream_<0 || aq_.duration()>(opts_.live_tv ? 2 : std::clamp(opts_.read_ahead_seconds,30,300)))) || eof_) {
             delay_ms(10); continue;
         }
 
@@ -651,7 +696,7 @@ void Player::demux_run() {
 	video_stream_ = audio_stream_ = -1;
 }
 
-void Player::do_seek(double target) {
+void Player::do_seek(double target, bool switching_audio) {
 	const bool short_refill = state_ == State::Playing && !recovering_;
 	// Promote a quick Matroska open to a seekable input on its demux thread.
 	// FFmpeg can load deferred cues here without discarding the decoders/tracks.
@@ -677,6 +722,7 @@ void Player::do_seek(double target) {
 			return;
 		}
 		if(recovering_.exchange(false)) { fail("Decoder recovery could not seek this source. Choose another stream."); return; }
+        if (switching_audio) { fail("Could not resynchronize the selected audio track. Restart playback or choose another stream."); return; }
 		vdrop_ = adrop_ = -1; seek_refill_ = false; buffering_ = false; apply_run_state(); return;
 	}
 	subtitle_renderer_.seek();
@@ -1120,6 +1166,12 @@ void Player::audio_thread() {
 		if (abort_) break;
 		if (r == 0 && !(pcm_.bitstream_kind() && pcm_.failed())) continue;
 		std::unique_lock<std::mutex> alock(actx_m_);
+        // A packet may have been popped just before the demux thread changed
+        // tracks. Never submit an old-track packet to the replacement decoder.
+        if (r == 1 && s != aq_.serial()) {
+            av_packet_free(&pkt);
+            continue;
+        }
 		if (!actx_) {
 			if (r == 1) av_packet_free(&pkt);
 			continue;
@@ -1167,6 +1219,10 @@ void Player::audio_thread() {
                 { std::lock_guard<std::mutex> clock(clock_m_);
                   target=clock_locked();pcm_.close(false);open_audio_output(audio_stream_,true);
                   audio_base_pts_=audio_end_pts_=-1;wall_base_pts_=target;wall_base_time_=now_seconds(); }
+                if(!pcm_.is_open()) {
+                    fail("The audio output could not be released or restored safely. Close and reopen the app before playing again.");
+                    break;
+                }
                 dlog("audio: bitstream failed; restoring PCM and rebuffering at %.3f s",target);
                 buffering_=true;pcm_.pause(true);packer.clear();packed_serial=-1;
                 {std::lock_guard<std::mutex> seek(seek_m_);seek_target_=target;seek_req_=true;}
@@ -1319,6 +1375,9 @@ bool Player::buffering(int* percent) const {
 
 void Player::update_buffering() {
 	if (state_ != State::Playing || recovering_ || seek_pending_ || reopen_target_ >= 0) return;
+    if(AudioPort::shutdown_failed) {
+        fail("The audio output could not be released safely. Close and reopen the app before playing again.");return;
+    }
     bool pcm_failed;
     {
         // The audio worker changes kind/failed together while holding this lock
@@ -1330,7 +1389,7 @@ void Player::update_buffering() {
     if(pcm_failed) { fail("The PS5 audio output stopped. Try stereo audio output in Settings."); return; }
 	bool has_v = video_stream_ >= 0, has_a = audio_stream_ >= 0 && pcm_.is_open();
 	if (buffering_) {
-		double target = seek_refill_ ? 0.5 : std::max(kBufferTargets[stalls_], start_target_);
+		double target = seek_refill_ ? 0.5 : opts_.live_tv ? 2.0 : std::max(kBufferTargets[stalls_], start_target_);
 		double vbuf = has_v ? vq_.duration() : 1e9, abuf = has_a ? aq_.duration() : 1e9;
 		double buf = std::min(vbuf, abuf);
 		buffer_percent_ = int(std::min(100.0, buf / target * 100));
@@ -1361,7 +1420,7 @@ void Player::update_buffering() {
 		const int last = int(sizeof(kBufferTargets) / sizeof(kBufferTargets[0])) - 1;
 		if (stalls_ < last) stalls_++;
 		dlog("player: the stream fell behind (stop %d); buffering %.0f s before going on", ++stall_count_,
-		     std::max(kBufferTargets[stalls_], start_target_));
+		     opts_.live_tv ? 2.0 : std::max(kBufferTargets[stalls_], start_target_));
 		buffering_ = true;
 		buffer_percent_ = 0;
 		apply_run_state();
@@ -1600,7 +1659,12 @@ nlohmann::json Player::diagnostic_snapshot() {
     const double now=now_seconds(); const int shown=shown_.load();
     nlohmann::json context={{"sourceFps",fps_},{"shownFrames",shown},{"decodedFrames",decoded_.load()},
             {"droppedFrames",dropped_.load()},{"bufferedSeconds",std::max(vq_.duration(),aq_.duration())},
-            {"paused",paused_.load()},{"buffering",buffering_.load()}};
+            {"paused",paused_.load()},{"buffering",buffering_.load()},
+            {"state",int(state_.load())},{"positionSeconds",position()},{"videoPacketSeconds",vq_.duration()},{"audioPacketSeconds",aq_.duration()},
+            {"queuedAudioSeconds",queued_audio_seconds()},{"videoSerial",vq_.serial()},{"displayedVideoSerial",displayed_serial_.load()},
+            {"videoDropUntil",vdrop_.load()},{"audioDropUntil",adrop_.load()},
+            {"eof",eof_.load()},{"audioDrained",audio_drained_.load()},{"videoDrained",video_drained_.load()},
+            {"seekPending",seek_pending_.load()},{"seekRefill",seek_refill_.load()},{"reopenTarget",reopen_target_.load()}};
     if(diagnostic_time_>0 && now-diagnostic_time_>.1) context["shownFps"]=std::max(0,shown-diagnostic_shown_)/(now-diagnostic_time_);
     diagnostic_time_=now; diagnostic_shown_=shown; return context;
 }

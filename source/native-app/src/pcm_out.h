@@ -10,6 +10,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <mutex>
+#include <memory>
 #include <pthread.h>
 #include <vector>
 #include <string>
@@ -19,6 +20,7 @@
 struct AudioPort {
 	static std::atomic<bool> player_wants;
 	static std::atomic<bool> ui_holds;
+    static std::atomic<bool> shutdown_failed;
 };
 
 class PcmOut {
@@ -64,6 +66,10 @@ private:
 	std::atomic<bool> paused_{true};
 	mutable std::mutex m_;
 	std::vector<uint8_t> ring_;
+    // Keep both the playing and queued grains alive until drain/close succeeds.
+    struct alignas(64) OutputBuffers { uint8_t grains[2][1024 * 8 * sizeof(float)]{}; };
+    std::unique_ptr<OutputBuffers> output_buffers_;
+    std::atomic<bool> drained_{true};
 	size_t head_ = 0, count_ = 0;
 	std::atomic<int> channels_{2};
 	std::atomic<int> rate_{kRate}, grain_frames_{256}, bitstream_kind_{0};

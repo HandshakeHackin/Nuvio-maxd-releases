@@ -123,6 +123,7 @@ class Backend(http.server.BaseHTTPRequestHandler):
             self.send_json(503 if state.get('services_offline') else 200, [
                 {'provider': 'debrid:torbox', 'credential_json': {'api_key': 'torbox-test'}},
                 {'provider': 'debrid:premiumize', 'credential_json': '{"api_key":"premiumize-test"}'},
+                {'provider': 'animeskip', 'credential_json': {'client_id': 'anime-client-test'}},
                 {'provider': 'mdblist', 'credential_json': {'api_key': 'unrelated-secret'}}])
         elif path.endswith('sync_pull_profile_settings_blob'):
             assert body == {'p_profile_id': state.get('expected_profile', 1), 'p_platform': 'tv'}
@@ -318,7 +319,7 @@ class AccountTests(unittest.TestCase):
         self.assertEqual(result['result']['preferred'], 'premiumize')
         self.assertTrue(result['result']['enabled'])
         self.assertEqual(result['result']['instant_limit'], 3)
-        self.assertEqual([r['provider'] for r in result['result']['credentials']], ['debrid:torbox', 'debrid:premiumize'])
+        self.assertEqual([r['provider'] for r in result['result']['credentials']], ['debrid:torbox', 'debrid:premiumize', 'animeskip'])
         self.assertNotIn('unrelated-secret', str(result))
         self.assertFalse(any('push_provider' in r[0] or 'seed_provider' in r[0] for r in self.state['calls']))
 
@@ -327,7 +328,7 @@ class AccountTests(unittest.TestCase):
         self.state['services_settings_missing'] = True
         result = self.command('connected_services')
         self.assertTrue(result['ok'], result)
-        self.assertEqual(len(result['result']['credentials']), 2)
+        self.assertEqual(len(result['result']['credentials']), 3)
         self.assertNotIn('preferred', result['result'])
 
     def test_provider_import_reports_offline_without_credentials(self):
@@ -944,7 +945,9 @@ class AccountTests(unittest.TestCase):
         key = self.pair()['result']['authKey']
         self.assertTrue(self.command('select_profile', auth_key=key, profile=2)['ok'])
         self.state['expected_profile'] = 2
-        self.assertTrue(self.command('connected_services')['ok'])
+        result=self.command('connected_services')
+        self.assertTrue(result['ok'])
+        self.assertEqual(result['result']['credentials'][-1]['provider'],'animeskip')
         calls = [b for path, b, _ in self.state['calls'] if path.endswith('sync_pull_provider_credentials')]
         self.assertEqual(calls[-1]['p_profile_id'], 2)
 
@@ -1003,10 +1006,11 @@ class AccountTests(unittest.TestCase):
     def test_legacy_data_migrates_only_to_original_primary(self):
         (self.path / 'watch-sync.json').write_text(json.dumps({'owner': 'owner-id'}))
         (self.path / 'progress.json').write_text(json.dumps({'items': {'tt123': {'time': 42}}}))
-        (self.path / 'settings.json').write_text(json.dumps({'extra_addons': ['https://example.invalid/manifest.json']}))
+        (self.path / 'settings.json').write_text(json.dumps({'extra_addons': ['https://example.invalid/manifest.json'], 'provider_settings': {'repo': {'provider': {'language': 'de'}}}}))
         self.assertTrue(self.pair()['ok'])
         self.assertEqual(json.loads((self.profile_path() / 'progress.json').read_text())['items']['tt123']['time'], 42)
         self.assertEqual(len(json.loads((self.profile_path() / 'profile-settings.json').read_text())['extra_addons']), 1)
+        self.assertEqual(json.loads((self.profile_path() / 'profile-settings.json').read_text())['provider_settings']['repo']['provider']['language'], 'de')
         self.assertTrue(self.command('select_profile', profile=2)['ok'])
         self.state['expected_profile'] = 2
         self.assertFalse((self.profile_path() / 'progress.json').exists())

@@ -89,6 +89,7 @@ bool parse_addon(const json& m, const std::string& transport_url, Addon& a) {
         a.types={"movie","series"};
         for (const auto& entry : m["scrapers"]) {
             ProviderScript p; p.id=jstr(entry,"id");p.name=jstr(entry,"name",p.id);p.filename=jstr(entry,"filename");
+            p.version=jstr(entry,"version",a.version);
             p.types=str_array(jobj(entry,"supportedTypes"));
             if(!p.id.empty() && !p.filename.empty() && p.filename.size()<2048 && a.providers.size()<256)
                 a.providers.push_back(std::move(p));
@@ -208,6 +209,11 @@ bool fetch_addon(const std::string& url, Addon& out, std::string& err, const std
 
 Meta parse_meta(const json& j) {
 	Meta m;
+    for(const auto* field:{"trailers","trailerStreams"}) {
+        if(jobj(j,field).is_array()) {
+            for(const auto& row:j[field])if(row.is_object() && m.trailers.size()<24)m.trailers.push_back(row);
+        }
+    }
 	m.id = jstr(j, "id", jstr(j, "imdb_id"));
 	m.imdb_id = jstr(j, "imdb_id", jstr(j, "imdbId"));
     for(const char* key:{"moviedb_id","tmdb_id","tmdbId"}) {
@@ -253,6 +259,8 @@ Meta parse_meta(const json& j) {
 			vid.released = jstr(v, "released", jstr(v, "firstAired"));
 			vid.season = int(jnum(v, "season", 0));
 			vid.episode = int(jnum(v, "episode", jnum(v, "number", 0)));
+			vid.imdb_season = int(jnum(v, "imdbSeason", 0));
+			vid.imdb_episode = int(jnum(v, "imdbEpisode", 0));
 			m.videos.push_back(vid);
 		}
 		std::stable_sort(m.videos.begin(), m.videos.end(), [](const Video& a, const Video& b) {

@@ -505,7 +505,9 @@ void Detail::draw_streams(hui::gfx::DrawList &list) const
     }
     list.pop_clip();
     const std::string provider = filter_ > 0 ? filters_[filter_] : "All sources";
-    text(list,env_.fonts.semibold,provider,hx,268,26,theme::ink_2);
+    text(list,env_.fonts.semibold,env_.fonts.semibold.font->fit(provider,26,280),hx,268,26,theme::ink_2);
+    if(content_->streams_loading && !visible_.empty())
+        text(list,env_.fonts.regular,env_.fonts.regular.font->fit(content_->streams_status,20,kPanel.w-350),hx+300,268,20,theme::ink_3);
 
     list.push_clip({kPanel.x,kStreamTop-4,kPanel.w,kStreamViewH+8});
     const Rect ring = ring_.value();
@@ -559,16 +561,18 @@ void Detail::draw_hints_row(hui::gfx::DrawList &list) const
     {
         const hui::ui::Hint hints[] = {{hui::ui::Button::cross, seasons_focused_ ? "Select season" : "Streams"},
                                        {hui::ui::Button::l1, "Season", hui::ui::Button::r1},
+                                       {hui::ui::Button::options, "Watch trailer"},
                                        {hui::ui::Button::circle, "Back"}};
-        hui::ui::draw_hints(list, env_.fonts, hui::ui::GlyphStyle::dark(), hints, 3, theme::kRight, true, layout);
+        hui::ui::draw_hints(list, env_.fonts, hui::ui::GlyphStyle::dark(), hints, 4, theme::kRight, true, layout);
     }
     else
     {
         const hui::ui::Hint hints[] = {{hui::ui::Button::cross, filters_focused_ ? "Select" : "Play"},
                                        {hui::ui::Button::l1, "Addon", hui::ui::Button::r1},
                                        {hui::ui::Button::triangle, "Reload"},
+                                       {hui::ui::Button::options, "Watch trailer"},
                                        {hui::ui::Button::circle, "Back"}};
-        hui::ui::draw_hints(list, env_.fonts, hui::ui::GlyphStyle::dark(), hints, 4, theme::kRight, true, layout);
+        hui::ui::draw_hints(list, env_.fonts, hui::ui::GlyphStyle::dark(), hints, 5, theme::kRight, true, layout);
     }
 }
 

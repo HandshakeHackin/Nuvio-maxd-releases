@@ -13,7 +13,7 @@ namespace sx
 class Addons : public PageBase
 {
   public:
-    explicit Addons(const Env &env) : PageBase(env, Page::addons)
+    explicit Addons(const Env &env, Page page = Page::addons) : PageBase(env, page)
     {
     }
 

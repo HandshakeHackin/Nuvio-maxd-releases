@@ -19,8 +19,8 @@ namespace sx
 // Pictures the interface draws, uploaded once by whoever owns the GL context.
 struct Icons
 {
-    std::uint32_t nav_solid[5] = {}; // the page you are on
-    std::uint32_t nav_line[5] = {};  // the others
+    std::uint32_t nav_solid[6] = {}; // the page you are on
+    std::uint32_t nav_line[6] = {};  // the others
     std::uint32_t search = 0;
     std::uint32_t logo = 0;
     std::uint32_t logo_xl = 0; // the boot screen's mark, 144 virtual px at its own size

@@ -1,0 +1,27 @@
+{
+  "feature": "Playback source badges",
+  "status": "source changes validated; installer rebuild pending",
+  "baselineCommit": "5cc8930ad1413ed0835e5f1bd152bfba95267e06",
+  "checks": {
+    "metadataParser": "passed",
+    "actualDrawListLayoutAndVisibility": "passed",
+    "existingExperienceRegression": "passed",
+    "ps5Syntax": {
+      "gl/session_watch.cpp": "passed",
+      "ui/player.cpp": "passed",
+      "src/vlc_backend.cpp (static VLC enabled)": "passed"
+    }
+  },
+  "behavior": [
+    "Decoded picture resolution and HDR facts override filename hints",
+    "Selected audio track overrides other advertised track metadata",
+    "Unknown properties are omitted",
+    "VLC channel counts are distinguished from speaker layouts",
+    "Source HDR badges do not claim confirmed HDR display output",
+    "Badges hide with playback controls and stay within the header row"
+  ],
+  "hardwareVerified": false,
+  "packaged": false,
+  "published": false,
+  "existingCandidateIncludesThisFeature": false
+}

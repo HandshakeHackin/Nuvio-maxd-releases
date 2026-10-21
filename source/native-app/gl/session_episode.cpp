@@ -5,21 +5,93 @@
 #include <cmath>
 
 namespace sx {
-void Session::watch_load_segments(int season, int episode) {
-    if (!prefs_.skip_segments) return;
-    const bool movie = w_item_.type == "movie";
-    const auto url = episode_playback::timing_url({d_meta_.imdb_id, d_meta_.id, w_item_.id, w_video_id_}, season, episode, movie);
-    if (url.empty()) { dlog("episode timings: no IMDb episode identity"); return; }
-    const int gen = w_gen_;
-    const auto cancel = w_episode_cancel_;
-    bg<std::vector<episode_playback::Segment>>([url, cancel] {
-        const auto response = http_get_https(url, 5, cancel.get());
-        if (!response.ok()) return std::vector<episode_playback::Segment>();
-        return episode_playback::parse_segments(json::parse(response.body, nullptr, false));
-    }, [this, gen](auto& segments) {
-        if (!watching || gen != w_gen_) return;
-        w_episode_.segments = std::move(segments);
-        dlog("episode timings: IntroDB returned %zu segments", w_episode_.segments.size());
+void Session::watch_reset_anime() {
+    if(w_animeskip_cancel_)*w_animeskip_cancel_=true;
+    w_anime_={};w_aniskip_requested_=w_animeskip_requested_=0;w_timing_duration_=0;
+    w_introdb_segments_.clear();w_aniskip_segments_.clear();w_animeskip_segments_.clear();
+}
+void Session::watch_merge_segments() {
+    w_episode_.segments=episode_playback::merge_segments({w_animeskip_segments_,w_aniskip_segments_,w_introdb_segments_},w_timing_duration_);
+}
+void Session::watch_load_segments(int season,int episode) {
+    if(w_trailer_ || !prefs_.skip_segments || w_item_.type=="tv")return;
+    const bool movie=w_item_.type=="movie";
+    int imdb_season=season,imdb_episode=episode;
+    for(const auto& v:d_meta_.videos)if(v.id==w_video_id_ && v.imdb_season>0 && v.imdb_episode>0){imdb_season=v.imdb_season;imdb_episode=v.imdb_episode;}
+    const std::vector<std::string> ids{d_meta_.imdb_id,d_meta_.id,w_item_.id,w_video_id_};
+    const auto anime=movie || episode<=0?std::nullopt:episode_playback::anime_source(ids);
+    const auto url=episode_playback::timing_url(ids,imdb_season,imdb_episode,movie);
+    const int gen=w_gen_;const auto cancel=w_episode_cancel_;
+    // Known MAL/AniList IDs work immediately, even if the mapping service fails.
+    if(anime){
+        if(anime->source=="myanimelist")w_anime_={anime->id,0,episode};
+        if(anime->source=="anilist")w_anime_={0,anime->id,episode};
+    }
+    const auto map=[this,gen,cancel](const std::string& arm,bool direct,int season,int episode){
+        if(arm.empty())return;
+        bg<episode_playback::AnimeIds>([arm,direct,season,episode,cancel]{
+            auto response=http_get_https(arm,5,cancel.get());
+            if(!response.ok())return episode_playback::AnimeIds{};
+            auto data=json::parse(response.body,nullptr,false);
+            return direct?episode_playback::parse_arm_ids(data,episode):episode_playback::pick_arm_season(data,season,episode);
+        },[this,gen,cancel](auto& found){
+            if(gen!=w_gen_ || !watching || !prefs_.skip_segments || *cancel || !found.any())return;
+            if(found.mal>0 && w_anime_.mal<=0)w_anime_.mal=found.mal;
+            if(found.anilist>0 && w_anime_.anilist<=0)w_anime_.anilist=found.anilist;
+            w_anime_.episode=found.episode;
+        });
+    };
+    if(anime)map(episode_playback::arm_ids_url(*anime),true,season,episode);
+    if(url.empty())return;
+    const auto arm=movie || anime?std::string():episode_playback::arm_imdb_url(ids);
+    bg<std::vector<episode_playback::Segment>>([url,cancel]{
+        const auto response=http_get_https(url,5,cancel.get());
+        return response.ok()?episode_playback::parse_segments(json::parse(response.body,nullptr,false)):std::vector<episode_playback::Segment>{};
+    },[this,gen,cancel,arm,map,imdb_season,imdb_episode](auto& segments){
+        if(gen!=w_gen_ || !watching || !prefs_.skip_segments || *cancel)return;
+        w_introdb_segments_=std::move(segments);watch_merge_segments();
+        dlog("episode timings: IntroDB returned %zu segments",w_introdb_segments_.size());
+        if(std::none_of(w_introdb_segments_.begin(),w_introdb_segments_.end(),[](const auto& s){return s.kind==episode_playback::Kind::intro;}))map(arm,false,imdb_season,imdb_episode);
+    });
+}
+void Session::watch_load_anime_segments(double duration) {
+    if(w_trailer_ || !prefs_.skip_segments || w_item_.type=="tv" || !std::isfinite(duration) || duration<=0)return;
+    const int gen=w_gen_;const auto anime=w_anime_;const auto cancel=w_episode_cancel_;
+    // Separate workers publish independently; a slow optional service cannot
+    // hold up AniSkip or erase an already usable fallback.
+    if(anime.mal>0 && w_aniskip_requested_!=anime.mal){
+        w_aniskip_requested_=anime.mal;
+        bg<std::vector<episode_playback::Segment>>([anime,duration,cancel]{
+            const auto response=http_get_https(episode_playback::aniskip_url(anime.mal,anime.episode,duration),5,cancel.get());
+            return response.ok()?episode_playback::parse_aniskip(json::parse(response.body,nullptr,false),duration):std::vector<episode_playback::Segment>{};
+        },[this,gen,cancel](auto& segments){
+            if(gen!=w_gen_ || !watching || !prefs_.skip_segments || *cancel)return;
+            w_aniskip_segments_=std::move(segments);watch_merge_segments();
+            dlog("episode timings: AniSkip returned %zu segments",w_aniskip_segments_.size());
+        });
+    }
+    const auto key=services_.animeskip.key;
+    if(key.empty() || anime.anilist<=0 || w_animeskip_requested_==anime.anilist)return;
+    w_animeskip_requested_=anime.anilist;
+    w_animeskip_cancel_=std::make_shared<std::atomic<bool>>(false);const auto optional_cancel=w_animeskip_cancel_;
+    bg<std::vector<episode_playback::Segment>>([anime,key,duration,optional_cancel]{
+        const std::vector<std::string> headers{"X-Client-ID: "+key,"Accept: application/json"};
+        const auto body=episode_playback::animeskip_shows_body(anime.anilist);
+        const auto response=http_provider_request(episode_playback::animeskip_url,&body,"application/json",headers,optional_cancel.get());
+        if(!response.ok())return std::vector<episode_playback::Segment>{};
+        for(const auto& show:episode_playback::parse_animeskip_shows(json::parse(response.body,nullptr,false))){
+            if(*optional_cancel)break;
+            const auto body=episode_playback::animeskip_episodes_body(show);
+            const auto response=http_provider_request(episode_playback::animeskip_url,&body,"application/json",headers,optional_cancel.get());
+            if(!response.ok())continue;
+            auto segments=episode_playback::parse_animeskip(json::parse(response.body,nullptr,false),anime.episode,duration);
+            if(!segments.empty())return segments;
+        }
+        return std::vector<episode_playback::Segment>{};
+    },[this,gen,key,optional_cancel](auto& segments){
+        if(gen!=w_gen_ || !watching || !prefs_.skip_segments || *optional_cancel || key!=services_.animeskip.key)return;
+        w_animeskip_segments_=std::move(segments);watch_merge_segments();
+        dlog("episode timings: Anime-Skip returned %zu segments",w_animeskip_segments_.size());
     });
 }
 
@@ -69,7 +141,9 @@ void Session::watch_prefetch_next() {
 bool Session::watch_episode_update(double now, double position, double duration, bool advancing, bool ended) {
     const double elapsed = now - w_episode_tick_;
     w_episode_tick_ = now;
-    if (!w_started_ || duration <= 0) return false;
+    if (w_trailer_ || !w_started_ || duration <= 0 || w_item_.type=="tv") return false;
+    if(w_timing_duration_!=duration){w_timing_duration_=duration;watch_merge_segments();}
+    if(w_anime_.any())watch_load_anime_segments(duration);
     if (w_next_ && position >= duration * 0.8 && !w_next_requested_) watch_prefetch_next();
     const bool complete = w_next_requested_ && w_next_answered_ >= w_next_pending_;
     const int pick = w_next_pick_;

@@ -188,6 +188,7 @@ struct PlayerState
     int menu_row = 0;
     std::string stats;           // "H264 1920x800 (hardware) · 24 fps · buffered 12.0s · dropped 0 of 450"
     std::string quality;         // source versus render/output conversion
+    std::vector<std::string> badges; // source picture/audio/release facts, not HDMI output claims
     SubtitleStyle subtitle_style;
     int sub_size = 1;            // 0 small, 1 medium, 2 large
     std::string subtitle_delay;  // "+0.25 s"
@@ -229,6 +230,7 @@ enum class Page
     library,
     addons,
     settings,
+    livetv,
 };
 
 } // namespace sx

@@ -1,20 +1,20 @@
 {
-  "version": "0.5.34-native-experimental",
-  "sourceCommit": "3662dc092b07b45e5462d7aebd02240e9ff13691",
+  "version": "1.0.0-native",
+  "sourceCommit": "c1b3db72a19183c1a296d8b09b665034db68c69b",
   "sourceDirty": false,
-  "imageBytes": 46006272,
-  "imageSha256": "e3627594a674f81b19bfcd01bb221b6c6e2d4778eca8fa85a046f0398b0a18b5",
-  "zipSha256": "88173ce44ee4e0f7145d241a539deb767b9fc05d60b0d1d71a77194ff623b46d",
-  "files": 150,
+  "imageBytes": 46202880,
+  "imageSha256": "60fbbefcc399b9ae683306efea616fb5637e5262987edb5bedd093d601ab9c1c",
+  "zipSha256": "c4d36185782da5aa247cbaeec8f79f5d3e3feb6caa4816a8206b5d40fe6c98aa",
+  "files": 151,
   "fileSha256": {
-    "nuvio-updater.elf": "e6464b6ce13427687af631b0be29f62d7a4e03834aea2e095fe701ed96f146d2",
-    "THIRD_PARTY.md": "e6575977ba7aa295d950c2866cd46650064c12e1c5fa5990f54e1647ac5e4791",
-    "eboot.bin": "b771d1e2c1f061937e2e0013020fc33e8143f7f500d96f22e316c86d57dc20de",
-    "tracker-applications.json": "ca3d163bab055381827226140568f3bef7eaac187cebd76878e0b63e9e442356",
+    "nuvio-updater.elf": "6a78998860327945bb2e98cce95780d2b668794c93caf7f109cf8b836f386d23",
+    "THIRD_PARTY.md": "3822ed412249095fffa33b25ab2ab2760d11698ab5b407b8dbb238146c5b4131",
+    "eboot.bin": "9c40a4031ffb8cf97174b466bcdc99eaac793fd1a66a1bafce6f252f2c77db1e",
+    "tracker-applications.json": "44527d59f8228d61a62c36c6226c815dc5cdf6c83b86b81d960f55aedeb4f8f1",
     "LICENSE": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
     "ca-bundle.crt": "11163db462ffae3918afdf46c70a8db70cfcbaa8077352290b62a9c03c36fe6c",
     "account-config.json": "1014f3c748bee58a832ea5d1be191ebaa2e577ef8a08e8168f01cb6d78f1921f",
-    "build-info.json": "d454be9d2b5ecdc38354606d0e7600b0b62aec5f9798316b555f51d3c52d2946",
+    "build-info.json": "88974008ebaf0b287452e9957d431bd56afdcb472df48b280b5fac534991481b",
     "sce_module/libc.prx": "e6ff45d16adf687855cc3b33b0c8a4132b6504360b221e0a34c7e99fb3ba0036",
     "fonts/NotoSansCJK-LICENSE.txt": "6a73f9541c2de74158c0e7cf6b0a58ef774f5a780bf191f2d7ec9cc53efe2bf2",
     "fonts/Inter-Regular.ttf": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
@@ -36,6 +36,7 @@
     "fonts/Montserrat-LICENSE.txt": "41f82bb4d24b304f30f7136bc47abdd083782e4265c984160f5649d1e78ea49c",
     "fonts/NotoSansCJKsc-Regular.ttf": "3012a9b63f5eca3e3b38f23a1be5ed504675e394abf8e7a4fa981506582c04aa",
     "fonts/Inter-SemiBold.ttf": "78a843fade9d4612a5567302fb595b56976eb5fcebf4fea5a5912d638bafcde3",
+    "providers/applications.json": "956f9fd66c1d8404e047445dab93b7cc65804b3b1bc412a4b731af453b3b1f42",
     "providers/runtime.js": "7075a472f310fc5c7338eab9d4aab087ea5b8fb39b0b9caff1ce29d34bd7496b",
     "hui-fonts/patrick-hand.huifont": "5e1f423eb8d330fb71d7c5a95fa59d400d6942a835a4fdd26522f69abce2fc92",
     "hui-fonts/inter-regular.huifont": "e8a7f447a5182ab466a7cc39cb99b58eda2b2717b9a0e05c5dbabe23d18051cf",
@@ -80,7 +81,7 @@
     "icons/pause.png": "53bf621371ae732a31bdbab134d068226d442b6c32976e0895dc31d0c51f1c24",
     "icons/l1.png": "74a2a11849f8b48612677acdf3c7c8badde1b761e85791f2fb59b34e59969ab4",
     "sce_sys/icon0.png": "3c655e095db72d3a3d4cef6876c6ffe825e742d13af0afda3c84b141d1eb6226",
-    "sce_sys/param.json": "e60251949aed2bbc6b82728e1fe581a6889be50efd927dd03182128a386ff391",
+    "sce_sys/param.json": "4fea0f0efce9f9148d9e49213e621bf189b30134a7f575ba13ef1a8c52c0053c",
     "licenses/native-app-boilerplate-GPL-3.0.txt": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
     "licenses/libass.txt": "f7e30699d02798351e7f839e3d3bfeb29ce65e44efa7735c225464c4fd7dfe9c",
     "licenses/Stremio-MIT.txt": "40f7f4a6bc790d341e490c56f6fd5af2f50cdce89393b9fa4c81f4510ca97976",
@@ -134,9 +135,9 @@
     "licenses/vlc/COPYING.LIB": "dc626520dcd53a22f727af3ee42c770e56c97a64fe3adb063799d8ab032fe551",
     "licenses/vlc/COPYING.ebml": "dc626520dcd53a22f727af3ee42c770e56c97a64fe3adb063799d8ab032fe551",
     "licenses/vlc/COPYING": "8177f97513213526df2cf6184d8ff986c675afb514d4e68a404010521b880643",
-    "licenses/vlc/UPSTREAM.json": "5a96ad098c68f648d954efc32179b914dd367a27e6fcb10ff5590a4e3117fac2",
+    "licenses/vlc/UPSTREAM.json": "e56f58472f839a1f51c4202af1c10f724cfa77f0e425aad86a21d5ae143f9d38",
     "licenses/vlc/COPYING.utf8cpp": "c9bff75738922193e67fa726fa225535870d2aa1059f91452c411736284ad566",
-    "licenses/vlc/README.md": "c5ab0d1f7a876b15e242bde0d17943103152fc0354347c294e7fcbfa49ec5d41",
+    "licenses/vlc/README.md": "b9661cf1046fc53f40001885430b80f608fcdd1b59374f34422ec2bbf1b2d69c",
     "licenses/ps5-homebrew-ui/THIRD_PARTY_NOTICES.md": "1d92d371d6cae90f07805101fe1dcc27cfe1b23c29452bb2093826093cfb01d6",
     "licenses/ps5-homebrew-ui/LICENSE": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
     "licenses/ps5-opengl/LICENSES/Vulkan-Headers.txt": "95ad366d23fadf701d355bc45fb8b82ae2d700239471d35d41286ac3b08ff903",
@@ -162,120 +163,12 @@
   "allExtractedFileHashesMatch": true,
   "containerErrors": 0,
   "containerWarnings": 0,
-  "contentVersion": "05.000.034",
-  "sourceArchiveFiles": 716,
+  "contentVersion": "06.000.000",
+  "sourceArchiveFiles": 762,
   "sourceArchiveHashesMatch": true,
   "hardwareVerified": false,
   "developmentValidation": {
-    "status": "staged source only; not released",
-    "date": "2026-10-18",
-    "branch": "staged/next-playback-fixes",
-    "base": "c72df0f",
-    "checks": {
-      "accountProfiles": {
-        "tests": 80,
-        "result": "passed; includes percentage resume, mixed explicit/legacy units and short-video imports"
-      },
-      "trackerContracts": "passed",
-      "episodeFlow": {
-        "tests": 37,
-        "result": "passed"
-      },
-      "gpuPresentation": {
-        "tests": 24,
-        "result": "passed"
-      },
-      "hdrTransitions": {
-        "tests": 10,
-        "result": "passed"
-      },
-      "nativeHttpHls": "passed after restricting inactive-audio discard changes to HLS; HLS/MP4/Matroska playback, audio switching, paused/rapid/backward seeks, EOF/replay, live/redirected HLS, headers, HTML rejection and blocked-read cancellation",
-      "nativeLifecycle": "passed",
-      "optionalVlcHttpHls": "passed with production bridge and host libVLC; includes seeks, EOF/replay, redirects, headers, cancellation",
-      "torrentRecovery": "passed; metadata/read-demand gating, backoff, cancellation and partial data retention",
-      "pictureMemory": "passed; injected map/unmap/release failures, reserve/cap and ownership",
-      "decoderParsers": "passed; production parser extraction with ASan/UBSan; local LeakSanitizer disabled because ptrace unsupported",
-      "profilePin": "passed",
-      "shutdown": "passed",
-      "ps5TargetSyntax": "passed for changed application, decoder module and adaptive/vmem/clock sources; existing VLC input_clock_SetJitter warning",
-      "vendorHashes": "passed",
-      "patchApplication": "five patches apply to the prior patched VLC source tree",
-      "newKernelImports": "sceKernelAvailableFlexibleMemorySize, sceKernelMunmap and sceKernelReleaseDirectMemory present in pinned SDK",
-      "ps5Hardware": "not run",
-      "fullPs5Build": "not run; no installers produced",
-      "continueWatching": "passed with production UI helper; 120 distinct titles, ordering, metadata, guest history, removals and Next Up deduplication",
-      "hlsRenditionGroups": "passed with production Player/FFmpeg/HTTP; compatible initial audio, first picture, incompatible switch rejection; shared-group/audio-only/file compatibility checks",
-      "initialNetworkAttempt": "failed at Matroska seek after EOF with all-format inactive audio discard; narrowed change to HLS and added timeout diagnostics before successful final run; does not establish exact cause of initial timeout",
-      "reporterAcceptance": "pending; exact stream/rendition grouping and missing-title IDs unavailable",
-      "ps5TargetSyntaxFollowup": "passed for player.cpp, watch_sync.cpp, continue_watching.cpp and session_browse.cpp; full PS5 build/hardware not run"
-    },
-    "logs": {
-      "pin.log": "d582249edcd8358d8b85495f02dec9a20a6d71d2d5af10f964c7322141ffa72c",
-      "recovery.log": "7c83afd23ec0ccd8257812fae81afdfcf75d6db789c5c8495e57f11b0f5f5e32",
-      "episode.log": "0e6819be36967bcd8239ee5d4fb28fc62038b252de2f0057bfe4a5c6b42c6223",
-      "hdr.log": "52cd40edd8861a81e52b1998c141aad35f5be86cdc051ec41c18e52854656779",
-      "tracking.log": "e33f311aa2033d201864af87b79e6d203da9bf64f346f510d7ffbe8995126f45",
-      "vlc.log": "5f0aa5860035bf87282d61f4c76f6c7b8ec68caceab742266e10dba6ae73171f",
-      "video.log": "7688818661b8dbe78142b352f039c46ec16c53f3afa1b29851877a50d70407b7",
-      "picture-memory.log": "ccf97ec5c1bc612c70c9804bea1cc8b9490caca928911579380550b628f2936d",
-      "decoder-headers.log": "b4c5fd6225b77776eb5afadbc882073e39445a868259082896acf66ece725715",
-      "lifecycle.log": "4b3fa2572e828326d514a4f341ca42bd51be2d1599314db07f4cd380528bcdf5",
-      "account.log": "6d4f8eb4edd7707e365aefcb1e83e626c4f2ba7830f9860168b24482e98bd1b5",
-      "target-compile.log": "d7760a250a13607606daa687f6075ee7dc48e363ee520576d6ba5b7e39e41b59",
-      "network.log": "7d48483f3016f6e004243a08b12879e4b5c0466ebae3111a5b78e19ae131b7f0",
-      "shutdown.log": "77b6433b79cbf1d66c58e924e03ff74df8f6c89e75eecbc456519d6719c75a69"
-    },
-    "followupLogs": {
-      "hls-before.log": "7df5d69e099b1e93e43a51d5729ab0f2095ba83f5682fc738bc3912743b3046f",
-      "hls-after.log": "9f92c5cad6cf57f1a4e36f5d2b6021d311ef7d969bdfb1bcbe284b686d93ab4b",
-      "history-before.log": "59dc7f6e6deab8337d9a6742ab98efe3aec9d86defc69772b56c0ffaa3503dc3",
-      "history-after.log": "3990633ca6616b5c6cf915a8e8c13fbdf866ee1cb46a53e39fdc3f6e92fd018e",
-      "progress-before.log": "d28a246c332fdc966d585acd4f6b54e47230dfc359eb53ef20b2409ee799475f",
-      "progress-after.log": "a838991536fbb00513e5e0c9fb954f9ab95f433d871e16cf684de47da68167f8",
-      "network-after.log": "47a42052c02ffb43eec674e4928c9c9646472a626a454eb2f4dee2c42c6f5b3c",
-      "network-after-scoped.log": "06a3c872e531e9e247a193e1b44d68b876cf843b69f4a44040adbf5947978dbc",
-      "target-final.log": "04c30746269f0ec413359942def6649ae4a550cc62851389e11229780ee9c147"
-    }
-  },
-  "hostTestEvidence": {
-    "conclusion": "success",
-    "url": "https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/39155909816/job/117758971763",
-    "publicCommit": "930e428b22ea514bb32a0e9053f2e42c72850886",
-    "scope": "Native/account/transport full suite and UI rendering; before subsequent VLC-only integration fixes"
-  },
-  "vlcHostTestEvidence": {
-    "conclusion": "success",
-    "url": "https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/39156438827/job/117760515928",
-    "publicCommit": "88ba18a",
-    "scope": "Real libVLC 3.0.24 playback, audio-open failure injection, seeking, HLS, cancellation and EOF/replay"
-  },
-  "hostToolsEvidence": {
-    "status": "completed",
-    "conclusion": "success",
-    "sourceCommit": "ad9f15db9717c073982ab58bc409890b35ff628d",
-    "url": "https://github.com/HandshakeHackin/nuvio-ps5/actions/runs/39142993150",
-    "jobs": [
-      {
-        "name": "protocol-and-packaging-tools",
-        "conclusion": "success",
-        "status": "completed",
-        "url": "https://github.com/HandshakeHackin/nuvio-ps5/actions/runs/39142993150/job/117721066279"
-      }
-    ],
-    "retained": true,
-    "scope": "Unchanged legacy host bridge and package wrapper; current native target/package checks recorded separately"
-  },
-  "integrationChecks": {
-    "nativeTargetLink": "413 imports resolved from loaded modules; decoder diagnostic hook linked locally",
-    "audioOpenFailure": "reports error and closes without self-deadlock",
-    "sourceArchiveFiles": 716,
-    "packagedFiles": 150
-  },
-  "knownLimits": [
-    "Physical PS5 acceptance pending",
-    "Initial VLC CI timed out; diagnostic and latest corrected VLC CI passed",
-    "Local libVLC 3.0.23 HLS reopen/close stress test still timed out during concurrent target build; not claimed resolved",
-    "Current target retains libVLC 3.0.24 with its selected PS5 patches",
-    "No universal native HDR fix or guarantee for every provider/live stream"
-  ]
+    "scope": "Full 1.0 release candidate; see VALIDATION.json",
+    "hardwareVerified": false
+  }
 }

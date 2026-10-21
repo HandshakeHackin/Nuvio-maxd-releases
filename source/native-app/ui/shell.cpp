@@ -11,11 +11,11 @@ using hui::Direction;
 
 namespace
 {
-constexpr int kPageCount = 5;
+constexpr int kPageCount = 6;
 }
 
 Shell::Shell(const Env &env, Session &session)
-    : env_(env), s_(session), board_(env), search_board_(env), discover_(env), library_(env), addons_(env), settings_(env),
+    : env_(env), s_(session), board_(env), search_board_(env), discover_(env), library_(env), addons_(env), live_tv_(env,Page::livetv), settings_(env),
       detail_(env), player_ui_(env)
 {
     board_.set_content(&s_.board);
@@ -24,6 +24,7 @@ Shell::Shell(const Env &env, Session &session)
     discover_.set_content(&s_.discover);
     library_.set_content(&s_.library);
     addons_.set_content(&s_.addons);
+    live_tv_.set_content(&s_.live_content);
     settings_.set_content(&s_.settings);
     go_page(0);
 }
@@ -61,6 +62,9 @@ void Shell::go_page(int page)
         break;
     case 3:
         addons_.enter();
+        break;
+    case 5:
+        live_tv_.enter();
         break;
     default:
         settings_.enter();
@@ -109,6 +113,7 @@ void Shell::apply_changes()
         library_.refresh();
     if (c & Session::kAddons)
         addons_.refresh();
+    if(c & Session::kLive)live_tv_.refresh();
     if (c & Session::kSettings)
         settings_.refresh();
     if (c & Session::kDetail)
@@ -142,6 +147,7 @@ void Shell::route_detail(const hui::InputFrame &input, float dt)
 {
     if (input.pressed != 0 || input.nav != Direction::none)
         s_.cancel_autoplay(); // any button cancels playing the next episode
+    if(input.is_pressed(Action::menu)) {s_.detail_trailers();return;}
     const bool streams = detail_.mode() == Detail::Mode::streams;
     const bool series = s_.detail.series;
     // Back leaves the page, except from a series' streams, where it goes back to the episodes.
@@ -253,12 +259,25 @@ void Shell::route_page(const hui::InputFrame &input, float dt)
         if (!on_rail && input.is_pressed(Action::west))
             s_.addons_reload();
         break;
+    case 5:
+        live_tv_.update(input,dt);
+        on_rail=live_tv_.rail_focused();cursor=live_tv_.rail_cursor();
+        if(!on_rail){
+            if(confirm)s_.live_activate(live_tv_.cursor_index());
+            else if(input.is_pressed(Action::west))s_.live_activate(live_tv_.cursor_index(),true);
+            else if(input.is_pressed(Action::north))s_.live_search();
+            else if(input.is_pressed(Action::menu))s_.live_menu();
+            else if(input.is_pressed(Action::page_prev))s_.live_groups();
+            else if(input.is_pressed(Action::page_next))s_.live_cycle();
+            if(!input.is_pressed(Action::back))return;
+        }
+        break;
     default:
         settings_.update(input, dt);
         if(settings_.navigation_consumed()) return;
         on_rail = settings_.rail_focused();
         cursor = settings_.rail_cursor();
-        if (confirm && settings_.cursor_row() >= 0)
+        if (confirm && (settings_.cursor_row() >= 0 || settings_.cursor_row() == SettingsNavigation::search_action))
         {
             s_.settings_activate(settings_.cursor_row());
             return;
@@ -326,6 +345,7 @@ unsigned Shell::focus_signature()
     mix(addons_.rail_focused());
     mix(addons_.rail_cursor());
     mix(addons_.cursor_index());
+    mix(live_tv_.rail_focused());mix(live_tv_.rail_cursor());mix(live_tv_.cursor_index());
     mix(settings_.rail_focused());
     mix(settings_.rail_cursor());
     mix(settings_.cursor_row());
@@ -506,6 +526,9 @@ void Shell::draw(hui::gfx::DrawList &list, hui::gfx::BackdropSpec &backdrop) con
             break;
         case 3:
             addons_.draw(list, backdrop);
+            break;
+        case 5:
+            live_tv_.draw(list,backdrop);
             break;
         default:
             settings_.draw(list, backdrop);

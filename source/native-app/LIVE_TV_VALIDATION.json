@@ -1,0 +1,85 @@
+{
+  "feature": "Live TV",
+  "status": "staged; not packaged or published",
+  "serviceImports": {
+    "m3u": {
+      "channels": 1624,
+      "error": "",
+      "groups": 1,
+      "hls": 0,
+      "mpegTs": 0,
+      "ok": true
+    },
+    "xtream": {
+      "channels": 1624,
+      "error": "",
+      "groups": 39,
+      "hls": 1624,
+      "mpegTs": 0,
+      "ok": true
+    }
+  },
+  "hostPlayback": {
+    "xtream": {
+      "selection": "a news channel",
+      "hardware": "cloud host; no PS5 GPU/audio acceptance implied",
+      "probeExitCode": 0,
+      "streams": [
+        {
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 1280,
+          "height": 720
+        },
+        {
+          "codec_name": "aac",
+          "codec_type": "audio",
+          "sample_rate": "48000",
+          "channels": 2
+        }
+      ],
+      "probeError": "",
+      "decodeExitCode": 0,
+      "decodeError": ""
+    },
+    "m3u": {
+      "selection": "a news channel from m3u",
+      "hardware": "cloud host; no PS5 GPU/audio acceptance implied",
+      "probeExitCode": 0,
+      "streams": [
+        {
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 1280,
+          "height": 720
+        },
+        {
+          "codec_name": "aac",
+          "codec_type": "audio",
+          "sample_rate": "48000",
+          "channels": 2
+        }
+      ],
+      "probeError": "",
+      "decodeExitCode": 0,
+      "decodeError": ""
+    }
+  },
+  "regressions": {
+    "playlistParserAndNetworkFixtures": "passed; valid session metadata accepted, real HLS manifests still rejected as channel lists",
+    "nativePlayerNetworkFixtures": "passed; normal HLS variant isolation and live extensionless segments, first picture/audio, forced stall/recovery, local-file/write rejection",
+    "ps5SyntaxChecks": "passed for parser, player, NetStream and session playback",
+    "credentialScan": "passed"
+  },
+  "fixes": [
+    "Accept EXT-X-SESSION-DATA in IPTV channel lists",
+    "Allow extensionless live HLS segments while rejecting nested non-HTTP inputs and writes",
+    "Keep live startup, read-ahead and recovery buffer targets consistent"
+  ],
+  "notValidated": [
+    "Physical PS5 playback",
+    "Final binary link/package",
+    "Real service playback through EVO or VLC"
+  ],
+  "credentialsIncluded": false
+}

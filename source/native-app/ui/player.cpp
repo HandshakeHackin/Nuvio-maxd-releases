@@ -96,20 +96,31 @@ void PlayerUi::draw_subtitle(hui::gfx::DrawList &list) const
 void PlayerUi::draw_controls(hui::gfx::DrawList &list, float amount) const
 {
     list.push_opacity(amount);
-    list.gradient_rect({0, 0, theme::kScreenW, 240.0f}, 0, Color::rgb(0x000000, 0.72f), Color::rgb(0x000000, 0.0f));
+    list.gradient_rect({0, 0, theme::kScreenW, 320.0f}, 0, Color::rgb(0x000000, 0.72f), Color::rgb(0x000000, 0.0f));
     list.gradient_rect({0, 740.0f, theme::kScreenW, 340.0f}, 0, Color::rgb(0x000000, 0.0f), Color::rgb(0x000000, 0.45f));
 
     text(list, env_.fonts.semibold, env_.fonts.semibold.font->fit(state.title, 42.0f, 1500.0f), 110.0f, 108.0f, 42.0f,
          theme::ink, Align::left, -0.4f);
     if (!state.subtitle.empty())
         text(list, env_.fonts.regular, state.subtitle, 110.0f, 152.0f, 28.0f, theme::ink_2);
+    const float info_y=state.subtitle.empty()?152.0f:192.0f;
+    float badge_x=110.0f;
+    for(const auto& badge:state.badges) {
+        const float width=env_.fonts.semibold.measure(badge,22.0f)+24.0f;
+        if(badge_x+width>1810.0f)break;
+        list.bordered_rect({badge_x,info_y-21.0f,width,34.0f},8.0f,
+                           Color::rgb(0x101723,theme::high_contrast?1.0f:0.8f),1.5f,Color::rgb(0xc6b7ff,theme::high_contrast?1.0f:0.9f));
+        text(list,env_.fonts.semibold,badge,badge_x+12.0f,info_y+4.0f,22.0f,Color::rgb(0xe4dcff));
+        badge_x+=width+10.0f;
+    }
+    const float badge_space=state.badges.empty()?0.0f:44.0f;
     // How it is being decoded: hardware or software, the frame rate, what was dropped.
     if (!state.stats.empty())
         text(list, env_.fonts.regular, env_.fonts.regular.font->fit(state.stats, 22.0f, 1700.0f), 110.0f,
-             state.subtitle.empty() ? 152.0f : 192.0f, 22.0f, theme::ink_3);
+             info_y+badge_space, 22.0f, theme::ink_3);
     if (!state.quality.empty())
         text(list, env_.fonts.regular, env_.fonts.regular.font->fit(state.quality, 22.0f, 1700.0f), 110.0f,
-             state.subtitle.empty() ? 186.0f : 226.0f, 22.0f, theme::ink_2);
+             info_y+badge_space+34.0f, 22.0f, theme::ink_2);
 
     // One translucent transport panel, composited over the original picture.
     // It uses ordinary alpha blending, so showing controls needs no extra video blur pass.

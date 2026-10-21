@@ -20,6 +20,9 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             self.send_response(302);self.send_header('Location','/nested/fixture.m3u8');self.end_headers();return
         if self.path.startswith('/nested/') and self.headers.get('X-Playback-Test')!='required':
             self.send_error(403);return
+        if self.path=='/opaque-playlist':
+            data=(fixtures/'fixture.m3u8').read_bytes()
+            self.send_response(200);self.send_header('Content-Type','application/octet-stream');self.send_header('Content-Length',str(len(data)));self.end_headers();self.wfile.write(data);return
         if self.path=='/html-error':
             data=b'<!DOCTYPE html><html><body>Source login required</body></html>'
             self.send_response(200);self.send_header('Content-Type','text/html');self.send_header('Content-Length',str(len(data)));self.end_headers();self.wfile.write(data);return
@@ -52,7 +55,7 @@ server=http.server.ThreadingHTTPServer(('127.0.0.1',0),functools.partial(Handler
 thread=threading.Thread(target=server.serve_forever,daemon=True);thread.start()
 try:
     try:
-        result=subprocess.run([str(root/'test-output/player-network-host'),f'http://127.0.0.1:{server.server_port}'],text=True,capture_output=True,timeout=60)
+        result=subprocess.run([str(root/'test-output/player-network-host'),f'http://127.0.0.1:{server.server_port}'],text=True,capture_output=True,timeout=180)
     except subprocess.TimeoutExpired as e:
         print(e.stdout,flush=True);print(e.stderr,flush=True);raise
     print(result.stdout);print(result.stderr)

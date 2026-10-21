@@ -33,7 +33,8 @@ struct AddonResource {
 };
 
 struct ProviderScript {
- std::string id, name, filename; std::vector<std::string> types; bool enabled=false;
+ std::string id, name, filename, version; std::vector<std::string> types; bool enabled=false;
+ json settings=json::object();
 };
 
 struct Addon {
@@ -64,9 +65,13 @@ std::string normalize_addon_url(std::string url);
 struct Video {
 	std::string id, title, thumbnail, overview, released;
 	int season = 0, episode = 0;
+	// Anime addons such as Kitsu number each entry from 1 and supply the
+	// matching IMDb numbering separately; 0 when not supplied.
+	int imdb_season = 0, imdb_episode = 0;
 };
 
 struct Meta {
+    json trailers = json::array();
 	std::string id, type, name, imdb_id, tmdb_id;
 	std::string poster, background, logo;
 	std::string description, release_info, runtime, imdb_rating, year;

@@ -7,13 +7,15 @@
 
 namespace sx {
 void Session::load_profile_settings() {
-    prefs_.extra_addons.clear(); prefs_.provider_enabled = json::object();
+    live_load();
+    prefs_.extra_addons.clear(); prefs_.provider_enabled = json::object(); prefs_.provider_settings=json::object();
     prefs_.subtitle_langs = "eng"; prefs_.audio_langs.clear(); prefs_.auto_subtitles = true;
     json j;
     load_json(profile_dir_ + "/profile-settings.json", j);
     if (jobj(j, "extra_addons").is_array())
         for (const auto& u : j["extra_addons"]) if (u.is_string()) prefs_.extra_addons.push_back(u.get<std::string>());
     if (jobj(j, "provider_enabled").is_object()) prefs_.provider_enabled = j["provider_enabled"];
+    if (jobj(j,"provider_settings").is_object()) prefs_.provider_settings=j["provider_settings"];
     prefs_.subtitle_langs = jstr(j, "subtitle_languages", "eng");
     prefs_.audio_langs = jstr(j, "audio_languages"); prefs_.auto_subtitles = jbool(j, "auto_subtitles", true);
     if (inherit_plugins_) {
@@ -21,6 +23,7 @@ void Session::load_profile_settings() {
         json primary;
         if (load_json(profile_dir_.substr(0, slash) + "/1/profile-settings.json", primary) &&
             jobj(primary, "provider_enabled").is_object()) prefs_.provider_enabled = primary["provider_enabled"];
+        if(jobj(primary,"provider_settings").is_object()) prefs_.provider_settings=primary["provider_settings"];
     }
 }
 void Session::save_profile_settings() {
@@ -30,13 +33,16 @@ void Session::save_profile_settings() {
     json j;
     load_json(profile_dir_ + "/profile-settings.json", j);
     j["extra_addons"] = prefs_.extra_addons;
-    if (!inherit_plugins_) j["provider_enabled"] = prefs_.provider_enabled;
+    if (!inherit_plugins_) {j["provider_enabled"] = prefs_.provider_enabled;j["provider_settings"]=prefs_.provider_settings;}
     j["subtitle_languages"] = prefs_.subtitle_langs;
     j["audio_languages"] = prefs_.audio_langs;
     j["auto_subtitles"] = prefs_.auto_subtitles;
     if (!save_json(profile_dir_ + "/profile-settings.json", j)) say("Could not save profile preferences", 8.0, true);
 }
 void Session::clear_profile_views() {
+    live_reset();
+    watch_reset_anime();
+    stream_result_cache_.clear();
     profile_pin_cancel();
     ++profile_generation_; ++login_gen_; ++addons_gen_; ++home_gen_; ++disc_gen_;
     close_detail(); close_search(); next_preparation_cancel();
@@ -57,7 +63,7 @@ void Session::clear_profile_views() {
     services_ = debrid::Settings{}; prepared_->configure(services_);
     active_profile_ = json::object(); profiles_ = json::array(); source_attempted_.clear();
     inherit_addons_ = inherit_plugins_ = false;
-    prefs_.extra_addons.clear(); prefs_.provider_enabled = json::object();
+    prefs_.extra_addons.clear(); prefs_.provider_enabled = json::object(); prefs_.provider_settings=json::object();
     changed_ |= kBoard | kDiscover | kDiscoverNew | kLibrary | kLibraryNew | kAddons | kDetail;
 }
 void Session::profile_apply(const json& result) {
@@ -73,7 +79,8 @@ void Session::profile_apply(const json& result) {
     debrid::load(profile_dir_ + "/connected-services.json", services_);
     const auto account = nuvio_account_user_id();
     if ((!services_.torbox.sync_owner.empty() && services_.torbox.sync_owner != account) ||
-        (!services_.premiumize.sync_owner.empty() && services_.premiumize.sync_owner != account)) services_.clear_synced();
+        (!services_.premiumize.sync_owner.empty() && services_.premiumize.sync_owner != account) ||
+        (!services_.animeskip.sync_owner.empty() && services_.animeskip.sync_owner != account)) services_.clear_synced();
     prepared_->configure(services_);
     if (signed_in()) tracking_refresh();
     load_profile_settings(); load_progress(); refresh_library(); refresh_addons(); refresh_settings();

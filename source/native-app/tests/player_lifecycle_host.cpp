@@ -13,7 +13,7 @@ extern "C" {
 #include <iostream>
 #include <stdexcept>
 static bool hardware=false;
-static std::atomic<bool> fail_bitstream{false};
+static std::atomic<bool> fail_bitstream{false},fail_drain{false};
 static std::atomic<bool> failed_hardware{false};
 void require(bool ok,const char* message) { if(!ok) throw std::runtime_error(message); }
 extern "C" int sceAudioOutInit(){return 0;}
@@ -24,8 +24,8 @@ extern "C" int sceAudioOutOpen(int,int,int,unsigned,unsigned,unsigned){
     return 42;
 }
 extern "C" int sceAudioOutClose(int){return 0;}
-extern "C" int sceAudioOutOutput(int h,const void*) {
-    if(h==47)return fail_bitstream?-1:0;
+extern "C" int sceAudioOutOutput(int h,const void* data) {
+    if(h==47)return data ? (fail_bitstream?-1:0) : (fail_drain?-1:0);
     std::this_thread::sleep_for(std::chrono::nanoseconds(5333333));return 0;
 }
 extern "C" int sceAudioOutExOpen(int,int){return 47;}
@@ -133,5 +133,13 @@ int main(int argc,char** argv) try {
     require(p.codec_summary().find("VLC")!=0,"switching back left VLC active");p.close();
     std::cout<<"Playback lifecycle: Native -> VLC -> Native dispatch and port cleanup passed\n";
 #endif
+    o.url=argv[2];o.vlc=false;o.audio_mode="bitstream";o.surround=true;
+    p.open(o);run_until(p,[&]{return !p.buffering()&&p.position()>.25;});
+    fail_drain=true;fail_bitstream=true;
+    const double deadline=now_seconds()+4;
+    while(now_seconds()<deadline && p.state()!=Player::State::Failed) {p.present();std::this_thread::sleep_for(std::chrono::milliseconds(3));}
+    require(p.state()==Player::State::Failed && p.error().find("safely")!=std::string::npos,"unsafe audio shutdown did not stop playback");
+    p.close();
+    std::cout<<"Playback lifecycle: failed audio drain stops without PCM retry loop passed\n";
     return 0;
 } catch(const std::exception& e) { std::cerr<<"FAIL: "<<e.what()<<'\n';return 1; }

@@ -28,7 +28,8 @@
   "opengl": {
     "version": "1.0.2",
     "archiveSha256": "30d8e51dd062739b629346102be5932728ba714bc50b1bdcdf08306c8843d9a4",
-    "manifestSha256": "0d432edc9d648d6e0cccb4d5eb3db8484f10ba4b075b5ccf23edda3251b66360"
+    "manifestSha256": "0d432edc9d648d6e0cccb4d5eb3db8484f10ba4b075b5ccf23edda3251b66360",
+    "repository": "https://github.com/LedyBacer/ps5-opengl"
   },
   "sdk": {
     "version": "0.44",
@@ -173,6 +174,10 @@
       "version": "0.4.5",
       "commit": "b981880d092fb9330d9c8b09d63d46f6048c10e0",
       "scope": "Updated console decoder plus selected adaptive streaming, cancellation, clock and visible-frame patches; retain libVLC 3.0.24 / FFmpeg 7 ABI"
+    },
+    "issue3Adaptations": {
+      "scope": "Planar picture bridge, forced software codec selection, unknown-dimension hardware guard and direct CPU workspace fallback",
+      "hardwareVerified": false
     }
   },
   "providerRuntime": {
@@ -188,6 +193,12 @@
     "repository": "https://github.com/LoZazaMastro/Stremio-Plus",
     "commit": "8d2a0614d4abe370fdbb27a2f3c90fc7fd23841a",
     "version": "0.5.11",
-    "scope": "Adapted blocked-reader torrent recovery and bounded picture-memory ownership; existing cache/scheduler retained"
+    "scope": "Adapted blocked-reader torrent recovery and bounded picture-memory ownership; existing cache/scheduler retained",
+    "nextRevisionUpdates": {
+      "repository": "https://github.com/LoZazaMastro/Stremio-Plus",
+      "commit": "1475f4c66202325ff5bfde9e715e1dca4420a248",
+      "version": "0.5.18",
+      "scope": "VLC seek/rebuffer backports; independent video resource cleanup and audio buffer ownership safeguards"
+    }
   }
 }

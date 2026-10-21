@@ -59,7 +59,7 @@ FLAGS+=(-DNUVIO_HAVE_VLC -DNUVIO_VLC_STATIC -I"$VLC_SRC/include")
 
 echo ">> compiling"
 sources=("$ROOT"/ui/*.cpp "$ROOT"/gl/*.cpp "$ROOT/update/core.cpp"
-	"$ROOT/src/nuvio_account.cpp" "$ROOT/src/watch_sync.cpp" "$ROOT/src/tracking.cpp" "$ROOT/src/connected_services.cpp" "$ROOT/src/connected_preparer.cpp" "$ROOT/src/bidi.cpp" "$ROOT/src/stremio.cpp" "$ROOT/src/providers.cpp" "$ROOT/src/http.cpp" "$ROOT/src/util.cpp" "$ROOT/src/tasks.cpp"
+	"$ROOT/src/trailers.cpp" "$ROOT/src/live_tv.cpp" "$ROOT/src/nuvio_account.cpp" "$ROOT/src/watch_sync.cpp" "$ROOT/src/tracking.cpp" "$ROOT/src/connected_services.cpp" "$ROOT/src/connected_preparer.cpp" "$ROOT/src/bidi.cpp" "$ROOT/src/stremio.cpp" "$ROOT/src/providers.cpp" "$ROOT/src/http.cpp" "$ROOT/src/util.cpp" "$ROOT/src/tasks.cpp"
 	"$ROOT/src/packet_storage.cpp" "$ROOT/src/diagnostics.cpp" "$ROOT/src/player.cpp" "$ROOT/src/vlc_backend.cpp" "$ROOT/src/vlc_cancel.cpp" "$ROOT/src/netstream.cpp" "$ROOT/src/hwdec_ps5.cpp" "$ROOT/src/yuv_convert.cpp" "$ROOT/src/video_frame.cpp" "$ROOT/src/display_output.cpp"
 	"$ROOT/src/evo_backend.cpp" "$ROOT/src/evo_runtime.cpp"
 	"$ROOT/src/subtitle_renderer.cpp" "$ROOT/src/subtitles.cpp" "$ROOT/src/pcm_out.cpp" "$ROOT/src/bitstream.cpp" "$ROOT"/src/torrent/*.cpp
@@ -139,7 +139,6 @@ read -r -a DEPS <<< "$("$SDK/bin/prospero-pkg-config" --static --libs libcurl li
 	--wrap=sceSystemServiceHideSplashScreen \
 	--wrap=sceVideoOutRegisterBuffers2 --wrap=sceVideoOutClose \
 	--wrap=sceAgcDcbSetFlip --wrap=sceVideoOutSubmitFlip \
-	--defsym=vlc_ps5_big_alloc=0 --defsym=vlc_ps5_big_free=0 \
 	--defsym=vlc_ps5_copy_plane=0 --defsym=vlc_ps5_copy_plane_shift=0 --defsym=vlc_ps5_split_plane16=0 \
 	--allow-multiple-definition --exclude-libs=ALL --defsym=__isthreaded=vlc_ps5_isthreaded \
 	--defsym=__cxa_thread_atexit_impl=0 --defsym=__syscall=0 \
@@ -154,6 +153,7 @@ read -r -a DEPS <<< "$("$SDK/bin/prospero-pkg-config" --static --libs libcurl li
 	--as-needed "$SDK"/target/lib/*.so "$B"/stubs/*.so "$GL/lib/libSceAgc.so" "$GL/lib/libSceAgcDriver.so"
 
 python3 "$ROOT/tools/verify_curl_socket.py" "$B/pie.elf"
+python3 "$ROOT/tools/verify_vlc_picture_hooks.py" "$B/pie.elf"
 
 python3 "$NATIVE/check_imports.py" "$B/pie.elf" "$SDK/target/lib" "$B/stubs" "$GL/lib"
 
@@ -181,6 +181,14 @@ cp "$ROOT/app/sce_sys/icon0.png" "$APP/sce_sys/"
 bash "$BP/tools/validate-assets.sh" "$APP/sce_sys" >/dev/null
 mkdir -p "$APP/providers"
 cp "$ROOT/third_party/provider-runtime/runtime.js" "$APP/providers/"
+python3 "$ROOT/tools/validate_provider_applications.py" \
+    "${NUVIO_PROVIDER_APPLICATIONS:-$ROOT/app/provider-applications.json}" "$APP/providers/applications.json"
+python3 - "$APP/providers/applications.json" "${NUVIO_ALLOW_UNCONFIGURED_PROVIDERS:-0}" <<'PY'
+import json, sys
+config = json.load(open(sys.argv[1]))
+if not config.get('tmdb', {}).get('api_key') and sys.argv[2] != '1':
+    raise SystemExit('Provider metadata is not configured. Set NUVIO_PROVIDER_APPLICATIONS to the private owner registration file. Development-only opt-out: NUVIO_ALLOW_UNCONFIGURED_PROVIDERS=1.')
+PY
 mkdir -p "$APP/licenses/provider-runtime"
 cp "$ROOT/third_party/provider-runtime/LICENSES.txt" "$APP/licenses/provider-runtime/"
 mkdir -p "$APP/fonts" "$APP/hui-fonts" "$APP/icons"
@@ -202,13 +210,10 @@ echo ">> building bundled image update helper"
 make -C "$ROOT/update" PS5_PAYLOAD_SDK="$SDK" OUTPUT="$B/nuvio-updater.elf"
 cp "$B/nuvio-updater.elf" "$APP/"
 cp "$ROOT/../ps5/account-config.json" "$APP/"
-# Optional app-owner registrations enable phone pairing without developer setup
-# on each console. Never point this at an account-token or profile backup file.
-if [ -n "${NUVIO_TRACKER_APPLICATIONS:-}" ]; then
-    python3 "$ROOT/tools/validate_tracker_applications.py" "$NUVIO_TRACKER_APPLICATIONS" "$APP/tracker-applications.json"
-else
-    printf '%s\n' '{}' > "$APP/tracker-applications.json"
-fi
+# Public owner registrations enable pairing without developer setup on each
+# console. Overrides are validated too; secrets/account backups are forbidden.
+python3 "$ROOT/tools/validate_tracker_applications.py" \
+    "${NUVIO_TRACKER_APPLICATIONS:-$ROOT/app/tracker-applications.json}" "$APP/tracker-applications.json"
 # License notices travel with the app: the GPL, the component list, the license text of everything it
 # contains (app/licenses/README.txt), and the notices of the toolkit and the OpenGL SDK.
 cp -r "$ROOT/app/licenses" "$APP/"

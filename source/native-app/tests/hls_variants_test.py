@@ -1,6 +1,7 @@
 """Two HLS video programs, each with a different external audio group."""
 from pathlib import Path
-import functools,http.server,subprocess,threading
+import functools,http.server,subprocess,threading,re,time
+from urllib.parse import urlsplit
 r=Path(__file__).resolve().parents[1];p=r/'test-output/hls-variants';p.mkdir(parents=True,exist_ok=True)
 def ff(args):subprocess.run(['ffmpeg','-hide_banner','-loglevel','error','-y']+args,check=True)
 ff(['-f','lavfi','-i','testsrc2=size=320x180:rate=25','-f','lavfi','-i','sine=frequency=440:sample_rate=48000','-t','12','-c:v','libx264','-preset','ultrafast','-g','50','-bf','0','-c:a','aac',str(p/'source.mp4')])
@@ -18,13 +19,35 @@ high-video.m3u8
 seen=[]
 class Handler(http.server.SimpleHTTPRequestHandler):
  def log_message(self,*args):pass
- def do_GET(self):seen.append(self.path);super().do_GET()
+ def do_GET(self):
+  seen.append(self.path)
+  if self.path=='/opaque-master':
+   data=(p/'master.m3u8').read_bytes();self.send_response(200);self.send_header('Content-Type','application/octet-stream');self.send_header('Content-Length',str(len(data)));self.end_headers();self.wfile.write(data);return
+  path=urlsplit(self.path).path
+  if path.startswith('/live/'):
+   name=path.removeprefix('/live/')
+   if name=='master':data=(p/'master.m3u8').read_bytes()
+   elif name.endswith('.m3u8') and '/' not in name:
+    text=(p/name).read_text()
+    data=re.sub(r'([A-Za-z-]+-\d+)\.ts',r'segments/\1?token=fixture',text).encode()
+   elif name.startswith('segments/') and re.fullmatch(r'[A-Za-z-]+-\d+',name.split('/')[-1]):
+    if name.endswith('low-video-2'):time.sleep(4)
+    data=(p/(name.split('/')[-1]+'.ts')).read_bytes()
+   else:self.send_error(404);return
+   self.send_response(200);self.send_header('Content-Type','application/octet-stream');self.send_header('Content-Length',str(len(data)));self.end_headers();self.wfile.write(data);return
+  super().do_GET()
 s=http.server.ThreadingHTTPServer(('127.0.0.1',0),functools.partial(Handler,directory=str(p)))
 threading.Thread(target=s.serve_forever,daemon=True).start()
 try:
- result=subprocess.run([str(r/'test-output/hls-variants-host'),f'http://127.0.0.1:{s.server_port}/master.m3u8'],text=True,capture_output=True,timeout=30)
+ result=subprocess.run([str(r/'test-output/hls-variants-host'),f'http://127.0.0.1:{s.server_port}/opaque-master'],text=True,capture_output=True,timeout=50)
  print(result.stdout);print(result.stderr)
  assert result.returncode==0,'HLS rendition pairing/startup regression failed'
  assert any(x.startswith('/low-video-') for x in seen),'no selected video fetched'
  print('External-rendition HLS playback passed with real FFmpeg and production HTTP input')
+ result=subprocess.run([str(r/'test-output/hls-variants-host'),f'http://127.0.0.1:{s.server_port}/live/master','--live'],text=True,capture_output=True,timeout=50)
+ print(result.stdout);print(result.stderr)
+ assert result.returncode==0,'Live HLS extensionless segment or protocol-isolation regression failed'
+ assert any(x.startswith('/live/segments/') for x in seen),'no extensionless live segments fetched'
+ assert 'stream fell behind' in result.stdout,'live fixture did not exercise buffer recovery'
+ print('Live HTTP-only extensionless HLS segments, stall recovery, audio/video playback and local-file/write rejection passed')
 finally:s.shutdown();s.server_close()

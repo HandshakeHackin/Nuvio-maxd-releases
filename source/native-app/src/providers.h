@@ -37,15 +37,28 @@ struct Identity {
 };
 Identity identify(const std::string &video_id, const Meta &meta);
 bool initialize(const std::string &runtime_path);
+bool configure(const std::string &applications_path);
+json trailer_videos(const Meta&,const std::atomic<bool>* cancel=nullptr);
+void clear_script_cache();
+json settings_layout(const Addon &, const ProviderScript &, std::string &error,
+                     const std::atomic<bool> *cancel = nullptr);
 Result streams(const Addon &, const std::string &type,
                const std::string &video_id, const Meta &,
                const std::atomic<bool> *cancel);
 // Deterministic entry point also used by host compatibility tests.
 json execute(const std::string &source, const json &arguments,
              const json &settings, std::string &error,
-             const std::atomic<bool> *cancel = nullptr, int timeout_ms = 40000);
+             const std::atomic<bool> *cancel = nullptr, int timeout_ms = 40000,
+             bool describe_settings = false);
 #else
 inline bool initialize(const std::string &) { return false; }
+inline bool configure(const std::string &) { return false; }
+inline void clear_script_cache() {}
+inline json trailer_videos(const Meta&,const std::atomic<bool>* =nullptr) {return json::object();}
+inline json settings_layout(const Addon &, const ProviderScript &, std::string &error,
+                            const std::atomic<bool> * = nullptr) {
+  error="This build does not include JavaScript providers."; return json::array();
+}
 inline Result streams(const Addon &, const std::string &, const std::string &,
                       const Meta &, const std::atomic<bool> *) {
   return {{}, "This build does not include JavaScript providers."};

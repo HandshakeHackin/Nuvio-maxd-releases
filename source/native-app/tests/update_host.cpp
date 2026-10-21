@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "../update/core.hpp"
+#include "../update/release_wait.hpp"
 #include <array>
 #include <cassert>
 #include <filesystem>
@@ -30,7 +31,26 @@ Json asset_release(const Release& r){return Json{{"draft",false},{"tag_name",r.t
 int main(){
     check(newer("0.5.10","0.5.9") && !newer("0.5.9","0.5.10"),"numeric versions and downgrade refusal");
     check(!newer("0.5.08","0.5.7") && !newer("0.5.9junk","0.5.7"),"malformed version refusal");
+    check(newer("0.5.34.1","0.5.34") && newer("0.5.35","0.5.34.1") && !newer("0.5.34","0.5.34.1"),"temporary revision ordering and upgrade to next release");
+    check(!newer("0.5.34.0","0.5.34") && !newer("0.5.34.01","0.5.34") && !newer("0.5.34.1.2","0.5.34"),"canonical temporary revision parsing");
     Fixture f;auto j=asset_release(f.release);
+    check(newer("1.0.0","0.5.34.4") && !newer("0.5.34.4","1.0.0"),"1.0 upgrade ordering");
+    auto stable=f.release;stable.version="1.0.0";stable.tag="v1.0.0";
+    const auto set_url=[](Release& r){r.url="https://github.com/"+std::string(repository)+"/releases/download/"+r.tag+"/NuvioMaxd-"+r.version+"-native.ffpfsc";};
+    set_url(stable);
+    check(valid_release(stable) && select_release(Json::array({asset_release(stable),j}),"0.5.34.4").version=="1.0.0","stable release tag and version-matched assets");
+    auto legacy=stable;legacy.tag="v1.0.0-native-experimental";set_url(legacy);
+    check(valid_release(legacy) && select_release(Json::array({asset_release(legacy)}),"0.5.34.4").version=="1.0.0","1.0 legacy upgrade tag retained");
+    auto native=stable;native.tag="v1.0.0-native";set_url(native);
+    check(valid_release(native),"native stable tag accepted");
+    auto bad_tag=stable;bad_tag.tag="v1.0.1";set_url(bad_tag);
+    check(!valid_release(bad_tag),"tag and declared version must match");
+    bad_tag=stable;bad_tag.tag="v1.0.0-rc1";set_url(bad_tag);
+    check(!valid_release(bad_tag) && select_release(Json::array({asset_release(bad_tag)}),"0.5.34.4").version.empty(),"unknown tag suffix refused");
+    auto stable_missing_source=asset_release(stable);stable_missing_source["assets"].erase(1);
+    check(select_release(Json::array({stable_missing_source}),"0.5.34.4").version.empty(),"stable binary requires matching source");
+    auto stable_draft=asset_release(stable);stable_draft["draft"]=true;
+    check(select_release(Json::array({stable_draft}),"0.5.34.4").version.empty(),"stable draft is not advertised");
     check(select_release(Json::array({j}),"0.5.7").version=="0.5.9","new native image with matching source");
     auto malformed=j;malformed["draft"]="wrong type";check(select_release(Json::array({malformed,j}),"0.5.7").version=="0.5.9","malformed release cannot hide a valid later release");
     auto no_source=j;no_source["assets"].erase(1);check(select_release(Json::array({no_source}),"0.5.7").version.empty(),"no binary advertised without matching source");
@@ -46,6 +66,19 @@ int main(){
     images["images"][0]["mapped"]=false;images["images"][0]["mounted"]=false;
     check(mount_released(images,"/data/homebrew/Nuvio.ffpfsc"),"fully released image accepted");
     images["images"][0]["source_available"]=false;check(!mount_released(images,"/data/homebrew/Nuvio.ffpfsc"),"disconnected storage is not an unmount");
+    const auto image_path="/data/homebrew/Nuvio.ffpfsc";
+    images["images"][0]["source_available"]=true;
+    images["images"][0]["mapped"]=true;
+    check(release_state({{"status",0}},images,image_path)==ReleaseState::retry,"successful runtime unmount still waits for backing image");
+    images["images"][0]["mapped"]=false;
+    check(release_state({{"status",16}},images,image_path)==ReleaseState::retry,"busy title cannot authorize replacement even with released snapshot");
+    check(release_state({{"status",0}},images,image_path)==ReleaseState::released,"later independent snapshot completes release wait");
+    check(release_state({{"status",5}},images,image_path)==ReleaseState::refused,"terminal unmount error is not retried");
+    check(release_state(Json(),images,image_path)==ReleaseState::retry,"transient API outage is retried without replacing");
+    check(release_state({{"status","bad"}},images,image_path)==ReleaseState::retry,"malformed status cannot authorize replacement");
+    check(release_state({{"status",0}},{{"status",0},{"images",Json::array()}},image_path)==ReleaseState::retry,"missing image is not proof of release");
+    images["images"][0]["source_available"]=false;
+    check(release_state({{"status",0}},images,image_path)==ReleaseState::retry,"storage disconnection cannot authorize replacement");
     {
         Fixture x;{Transaction t;check(x.stage(t) && read(x.image)=="original-image","verified staging leaves original installed");}
         check(read(x.image)=="original-image" && !fs::exists(x.image.string()+".nuvio-"+std::to_string(getpid())+".part"),"cancellation removes only the owned stage");

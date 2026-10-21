@@ -82,9 +82,26 @@ void populated_pages_keep_normal_navigation() {
     move(addons, hui::Direction::right);
     expect(!addons.rail_focused() && addons.cursor_index() == 1, "addon tile navigation changed");
 }
+void live_tv_rail_and_channel_arrival() {
+    Fixture f; sx::Board board(f.env); sx::BoardContent home;
+    board.set_content(&home); board.enter(); move(board,hui::Direction::left);
+    for(int i=0;i<5;++i)move(board,hui::Direction::down);
+    expect(board.rail_cursor()==5,"Live TV tab cannot be reached from Home");
+    sx::Addons tv(f.env,sx::Page::livetv); sx::AddonsContent content;
+    content.items.resize(1); tv.set_content(&content); tv.enter();
+    expect(!tv.rail_focused() && tv.cursor_index()==0,"source management unavailable without channels");
+    content.items.resize(10);tv.refresh();move(tv,hui::Direction::right);
+    expect(tv.cursor_index()==1,"cannot select an arriving live channel");
+    content.items.resize(1);tv.refresh();
+    expect(tv.cursor_index()==0,"source/profile change leaves an invalid channel selected");
+    move(tv,hui::Direction::left);move(tv,hui::Direction::up);
+    expect(tv.rail_focused() && tv.rail_cursor()==4,"cannot return to Settings from Live TV");
+}
+
 }
 int main() {
     const struct { const char* name; void (*run)(); } tests[] = {
+        {"live_tv_rail_and_channel_arrival",live_tv_rail_and_channel_arrival},
         {"home_without_catalogs", home_without_catalogs},
         {"home_reload_and_arrival", home_reload_and_arrival},
         {"home_empty_frames_keep_menu_selection", home_empty_frames_keep_menu_selection},
@@ -97,6 +114,6 @@ int main() {
         try { test.run(); std::printf("%s: PASS\n", test.name); }
         catch (const std::exception& e) { ++failed; std::printf("%s: FAIL (%s)\n", test.name, e.what()); }
     }
-    std::printf("UI navigation: 6 tests, %d failures\n", failed);
+    std::printf("UI navigation: 7 tests, %d failures\n", failed);
     return failed ? 1 : 0;
 }

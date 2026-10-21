@@ -1,0 +1,51 @@
+{
+  "feature": "Anime episode timings",
+  "status": "staged alongside Live TV; not packaged or published",
+  "source": {
+    "pullRequest": "https://github.com/HandshakeHackin/Nuvio-maxd-releases/pull/6",
+    "contributor": "Rasmulus",
+    "reviewedHead": "0f8bb43ef45541f67757c9dc6887429bae9e148d"
+  },
+  "checks": {
+    "episodeTests": {
+      "passed": 61,
+      "failed": 0
+    },
+    "connectedServicesTests": {
+      "passed": 19,
+      "failed": 0
+    },
+    "accountProfileFixtureTests": {
+      "passed": 80,
+      "failed": 0
+    },
+    "ps5Syntax": {
+      "passed": true,
+      "units": [
+        "gl/session_episode.cpp",
+        "gl/session_services.cpp",
+        "gl/session_profiles.cpp",
+        "gl/session.cpp",
+        "gl/session_watch.cpp",
+        "src/connected_services.cpp",
+        "src/nuvio_account.cpp",
+        "gl/episode_playback.cpp",
+        "src/stremio.cpp"
+      ]
+    }
+  },
+  "safeguards": [
+    "Validate actual duration before timing priority selection",
+    "Independent AniSkip and optional Anime-Skip requests",
+    "Preserve fallback results on failure",
+    "Profile-local credentials and stale result cancellation",
+    "Known MAL/AniList IDs remain usable without ARM",
+    "Live TV bypasses anime requests"
+  ],
+  "notValidated": [
+    "Live Anime-Skip client-ID exchange",
+    "Physical PS5 playback",
+    "Final binary link/package"
+  ],
+  "credentialsIncluded": false
+}

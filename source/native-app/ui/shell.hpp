@@ -68,6 +68,7 @@ class Shell
     Discover discover_;
     Library library_;
     Addons addons_;
+    Addons live_tv_;
     Settings settings_;
     Detail detail_;
     PlayerUi player_ui_;

@@ -3,6 +3,7 @@
 
 #include "session.hpp"
 #include "providers.h"
+#include "trailers.h"
 #include "stream_display.hpp"
 
 #include <algorithm>
@@ -121,6 +122,7 @@ void Session::open_title(const Title &t, const std::string &streams_video)
     }
 
     d_item_ = it;
+    d_trailer_loading_=false;
     d_meta_ = ::Meta();
     d_meta_loaded_ = false;
     d_season_videos_.clear();
@@ -463,6 +465,9 @@ void Session::detail_load_streams(const std::string &video_id, const std::string
     }
     detail.stream_heading = heading;
     d_answered_ = 0;
+    d_stream_errors_=false;
+    d_cached_sources_.clear();
+    d_cache_warm_=false;
 
     std::string type = d_meta_loaded_ ? d_meta_.type : d_item_.type;
     if (type.empty())
@@ -475,6 +480,13 @@ void Session::detail_load_streams(const std::string &video_id, const std::string
             sources.push_back(std::move(source));
         }
     d_pending_ = static_cast<int>(sources.size());
+    json source_identity=json::array();
+    for(const auto& a:sources) {
+        json scripts=json::array();
+        for(const auto& p:a.providers)scripts.push_back(json::array({p.id,p.version,p.filename,p.settings}));
+        source_identity.push_back(json::array({a.transport_url,a.id,a.name,a.version,scripts}));
+    }
+    d_stream_cache_key_=json::array({profile_dir_,type,video_id,source_identity}).dump();
     detail.streams_loading = d_pending_ > 0;
     if (prefetched)
     {
@@ -494,6 +506,10 @@ void Session::detail_load_streams(const std::string &video_id, const std::string
         return;
     }
     detail.streams_status = "Loading streams... (0 of " + std::to_string(sources.size()) + " sources answered)";
+    d_found_=stream_result_cache_.get(d_stream_cache_key_,now_seconds());
+    d_cache_warm_=!d_found_.empty();
+    for(const auto& s:d_found_)d_cached_sources_.insert(s.addon);
+    if(!d_found_.empty())detail_refresh_streams();
     for (const auto &s : sources)
     {
         const std::string name = s.name;
@@ -506,20 +522,31 @@ void Session::detail_load_streams(const std::string &video_id, const std::string
         };
         auto work = [s, type, video_id, meta, cancel]()
         {
-            auto found = providers::fetch(s, type, video_id, meta, cancel.get());
-            return Res{std::move(found.streams), std::move(found.error)};
+            try {
+                auto found = providers::fetch(s, type, video_id, meta, cancel.get());
+                return Res{std::move(found.streams), std::move(found.error)};
+            } catch (...) {return Res{{},"Provider search failed; try reloading this source"};}
         };
         auto done = [this, gen, name](Res &r)
         {
             if (gen != d_gen_)
                 return;
             ++d_answered_;
+            // Replace a cached source's results with its fresh answer, including
+            // empty/error responses. Never leave old links after a refresh.
+            if(d_cached_sources_.erase(name))
+                d_found_.erase(std::remove_if(d_found_.begin(),d_found_.end(),[&](const auto& s){return s.addon==name;}),d_found_.end());
             if (!r.error.empty())
+            {
+                d_stream_errors_=true;
                 dlog("streams from %s: %s", name.c_str(), r.error.c_str());
+            }
             dlog("streams: source %s returned %zu playable candidates", name.c_str(), r.streams.size());
             for (auto &st : r.streams)
                 d_found_.push_back(st);
             detail_refresh_streams();
+            if(d_answered_==d_pending_)
+                stream_result_cache_.put(d_stream_cache_key_,d_stream_errors_ ? std::vector<::Stream>{} : d_found_,now_seconds());
             if (!r.error.empty() && d_streams_.empty())
                 say(name + ": " + r.error, 6.0, true);
         };
@@ -533,7 +560,10 @@ void Session::detail_load_streams(const std::string &video_id, const std::string
 
 void Session::detail_reload_streams()
 {
-    if (d_open_ && !d_video_id_.empty()) detail_load_streams(d_video_id_, d_stream_heading_);
+    if (d_open_ && !d_video_id_.empty()) {
+        stream_result_cache_.erase(d_stream_cache_key_);
+        detail_load_streams(d_video_id_, d_stream_heading_);
+    }
 }
 
 void Session::detail_refresh_streams()
@@ -583,7 +613,7 @@ void Session::detail_refresh_streams()
             say("Choose a stream for the next episode. No matching direct/debrid quality was found.", 7.0);
     }
     if (d_answered_ < d_pending_)
-        detail.streams_status = "Loading streams... (" + std::to_string(d_answered_) + " of " + std::to_string(d_pending_) +
+        detail.streams_status = std::string(d_cache_warm_?"Refreshing sources... (":"Loading streams... (") + std::to_string(d_answered_) + " of " + std::to_string(d_pending_) +
                                 " sources answered)";
     else if (detail.streams.empty() && hidden_torrents)
         detail.streams_status = std::to_string(hidden_torrents) +
@@ -596,4 +626,35 @@ void Session::detail_refresh_streams()
     changed_ |= kDetail;
 }
 
+} // namespace sx
+
+namespace sx {
+void Session::detail_trailers() {
+    if(!d_open_ || watching || d_item_.type=="tv" || d_trailer_loading_)return;
+    const int gen=d_meta_gen_;const auto cancel=d_cancel_;
+    auto meta=d_meta_;if(meta.id.empty())meta.id=d_item_.id;
+    if(meta.type.empty())meta.type=d_item_.type;
+    d_trailer_loading_=true;say("Finding trailers...",4.0);
+    bg<std::vector<trailers::Candidate>>([meta,cancel]{
+        return trailers::candidates(meta,providers::trailer_videos(meta,cancel.get()));
+    },[this,gen,cancel](auto& found){
+        if(!d_open_ || gen!=d_meta_gen_ || *cancel)return;
+        d_trailer_loading_=false;
+        if(found.empty()){say("No trailers are available for this title.",7.0);return;}
+        std::vector<std::string> names;for(const auto& t:found)names.push_back(t.name);
+        open_dropdown("Watch trailer",names,0,[this,gen,cancel,found](int pick){
+            if(!d_open_ || watching || gen!=d_meta_gen_ || *cancel || pick<0 || pick>=int(found.size()))return;
+            d_trailer_loading_=true;say("Opening trailer...",5.0);
+            const auto candidate=found[pick];
+            bg<trailers::Playback>([candidate,cancel]{return trailers::resolve(candidate,cancel.get());},[this,gen,cancel,candidate](auto& source){
+                if(!d_open_ || watching || gen!=d_meta_gen_ || *cancel)return;
+                d_trailer_loading_=false;
+                if(source.url.empty()){if(source.error!="cancelled")say(source.error.empty()?"This trailer is currently unavailable. Try another trailer.":source.error,9.0,true);return;}
+                ::Stream stream;stream.name=candidate.name;stream.addon="Trailer";stream.url=source.url;
+                stream.request_headers=source.headers;
+                play_stream(stream,false,true);
+            });
+        });
+    });
+}
 } // namespace sx

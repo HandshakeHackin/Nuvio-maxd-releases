@@ -26,21 +26,28 @@ separate settings in Account & Services.
 **MDBList:** choose Connect with API key and enter the key from
 https://mdblist.com/preferences/. The app validates it with `/user` before saving.
 
-**Trakt / SIMKL:** phone pairing requires a registered application. No other app's
-client identity has been copied into this build. Set up application credentials
-in that tracker's menu, then choose Connect with phone / QR code. Trakt requires
-its application's client ID and secret; SIMKL requires its application client ID.
-Do not post credentials in issue reports or chat. This test build has no shared
-registered Nuvio Max'd tracker application configured, so developer setup is
-currently necessary for these two pairing flows. For a release, the app owner can
-supply a registrations-only JSON file through `NUVIO_TRACKER_APPLICATIONS` when
-building; its schema accepts only Trakt `client_id`/`client_secret` and SIMKL
-`client_id`. Account tokens/API keys are rejected. Then users can pair directly
-without registering their own developer applications.
+**Trakt:** choose Connect with phone / QR code, open
+https://auth.trakt.tv/activate on your phone and approve the displayed code with
+your regular Trakt account. Builds include the owner's public Max'd Client ID;
+users do not need a developer account or a Client Secret. TV pairing uses the
+device-code flow, including secret-free token exchange and refresh rotation.
+Approving a connection does not change your selected library/progress sources.
 
-Register applications through https://trakt.tv/oauth/applications and
-https://simkl.com/settings/developer/. Trakt uses the device-code flow and the
-out-of-band redirect URI `urn:ietf:wg:oauth:2.0:oob` for refresh.
+**SIMKL:** phone pairing still requires an owner-registered SIMKL client ID.
+Until one is included, use a compatible synced connection or the advanced
+application client ID setting. Regular users should not have to register apps.
+
+The default public registrations are in `app/tracker-applications.json`.
+`NUVIO_TRACKER_APPLICATIONS` can override that file at build time. The validator
+accepts only Trakt/SIMKL `client_id` fields and rejects secrets, account tokens
+and API keys. Existing connected profiles retain their original application
+identity; disconnect restores the bundled registration for a new pairing.
+
+The owner registered the required HTTPS callback at
+https://handshakehackin.github.io/Nuvio-maxd-releases/trakt/callback/.
+Device-code pairing does not redirect through that page or use a redirect URI
+when refreshing tokens. The static page is reserved for registration; it does
+not implement browser authorization or forward authorization codes.
 
 Import connection from Nuvio Sync is a read-only, explicit copy of a compatible
 credential record from the selected Nuvio profile. MDBList uses the synced

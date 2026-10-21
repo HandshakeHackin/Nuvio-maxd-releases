@@ -63,6 +63,7 @@ struct Prefs : ExperiencePreferences
     bool evo_player = false; // selectable experimental video engine
     std::vector<std::string> extra_addons;
     json provider_enabled=json::object();
+    json provider_settings=json::object();
     std::string auth_key, user_email;
 };
 

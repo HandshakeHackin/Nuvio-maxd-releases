@@ -9,10 +9,17 @@ extern "C" {
 }
 extern "C" int console_curl_nonblocking(int){return 0;}
 static std::atomic<int> refused_seeks{0};
+static std::atomic<bool> hold_seek{false}, seek_waiting{false}, release_seek{false};
 extern "C" int __real_avformat_seek_file(AVFormatContext*,int,int64_t,int64_t,int64_t,int);
 extern "C" int __real_av_seek_frame(AVFormatContext*,int,int64_t,int);
 extern "C" int __wrap_avformat_seek_file(AVFormatContext* f,int s,int64_t lo,int64_t t,int64_t hi,int flags) {
     if(refused_seeks>0){--refused_seeks;return AVERROR(ENOSYS);}
+    if(hold_seek.exchange(false)) {
+        seek_waiting=true;
+        const auto deadline=std::chrono::steady_clock::now()+std::chrono::seconds(2);
+        while(!release_seek && std::chrono::steady_clock::now()<deadline)
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    }
     return __real_avformat_seek_file(f,s,lo,t,hi,flags);
 }
 extern "C" int __wrap_av_seek_frame(AVFormatContext* f,int s,int64_t t,int flags) {
@@ -25,12 +32,30 @@ int main(int argc,char** argv) try {
     const std::string base=argv[1];
     for (const auto* name : {"fixture.m3u8", "fixture.mp4", "fixture.mkv"}) {
         Player p; Player::Options o; o.url=base+"/"+name;
-        p.open(o); run_until(p,[&]{return !p.buffering() && p.position()>.2;});
+        p.open(o); run_until(p,[&]{return !p.buffering() && p.position()>.2;},30);
         const auto tracks=p.audio_tracks();
         require(!tracks.empty(),"audio tracks missing");
         if(tracks.size()>1) {
+            run_until(p,[&]{return !p.buffering() && p.position()>2.2;});
+            p.set_paused(true);
+            const double anchor=p.position();
+            const int before=p.picture_serial();
             p.select_audio(tracks.back().stream);
-            run_until(p,[&]{return !p.buffering() && p.audio_stream()==tracks.back().stream;});
+            run_until(p,[&]{return !p.buffering() && p.audio_stream()==tracks.back().stream && p.picture_serial()!=before;});
+            require(p.paused(),"audio switch resumed a paused video");
+            require(std::abs(p.position()-anchor)<.08,"audio switch reset or shifted the paused position");
+            p.set_paused(false);
+            run_until(p,[&]{return p.position()>anchor+.15;});
+            const double playing=p.position();
+            p.select_audio(tracks.front().stream);
+            run_until(p,[&]{return !p.buffering() && p.audio_stream()==tracks.front().stream;});
+            require(p.position()>=playing-.08 && p.position()<playing+.8,"playing audio switch shifted the timeline");
+            run_until(p,[&]{return p.position()>playing+.2;});
+            // An explicit queued seek takes priority over the captured switch position.
+            p.set_paused(true);p.seek(5);p.select_audio(tracks.back().stream);
+            run_until(p,[&]{return !p.buffering() && p.audio_stream()==tracks.back().stream && p.position()>=5;});
+            require(p.paused() && p.position()<5.04,"audio switch lost a pending paused seek");
+            std::cout<<"Audio switch: "<<name<<" preserves paused/playing position and explicit seek\n";
         }
         const int audio=p.audio_stream();
         const auto subs=p.subtitle_tracks();
@@ -55,9 +80,22 @@ int main(int argc,char** argv) try {
         p.seek(0);run_until(p,[&]{return !p.buffering() && p.position()<1;});
         p.seek(10);run_until(p,[&]{return !p.buffering() && p.position()>10.15;});
         run_until(p,[&]{return p.state()==Player::State::Ended;});
-        p.seek(2);run_until(p,[&]{return !p.buffering() && p.position()>2.15 && p.position()<3;});
+        // Hold the demux seek after it consumes the request. The UI must not
+        // reuse the previous timeline's EOF/drained flags while the seek runs.
+        seek_waiting=false;release_seek=false;hold_seek=true;
+        p.seek(2);run_until(p,[&]{return seek_waiting.load();});
+        p.present();
+        const bool seeking_is_playing=p.state()==Player::State::Playing;
+        release_seek=true;
+        require(seeking_is_playing,"stale EOF ended playback while the seek was in flight");
+        run_until(p,[&]{return !p.buffering() && p.position()>2.15 && p.position()<3;});
         p.close();
         std::cout<<"Network playback: "<<name<<" segment playback, paused/rapid/backward seeks and tracks passed\n";
+    }
+    {
+        Player p;Player::Options o;o.url=base+"/opaque-playlist";p.open(o);
+        run_until(p,[&]{return !p.buffering() && p.position()>2.2;});p.close();
+        std::cout<<"Content-probed HLS: extensionless octet-stream playlist produces video/audio\n";
     }
     {
         Player p;Player::Options o;o.url=base+"/live.m3u8";p.open(o);
@@ -65,13 +103,15 @@ int main(int argc,char** argv) try {
         std::cout<<"Live HLS: custom-AVIO segment playback and clean close passed\n";
     }
     {
-        Player p;Player::Options o;o.url=base+"/fixture.mkv";p.open(o);
+        Player p;Player::Options o;o.url=base+"/fixture.mkv";o.initial_audio_stream=2;p.open(o);
         run_until(p,[&]{return !p.buffering() && p.position()>.2;});
         const auto tracks=p.audio_tracks();require(tracks.size()==2,"reopen audio fixture missing");
-        p.select_audio(tracks.back().stream);
-        run_until(p,[&]{return p.audio_stream()==tracks.back().stream;});
+        // A runtime audio change already loads Matroska cues. Start on the alternate
+        // track so this fixture still exercises a genuinely quick-open seek fallback.
+        require(p.audio_stream()==tracks.back().stream,"alternate initial audio track was not selected");
         p.set_paused(true);refused_seeks=2;p.seek(6);
         run_until(p,[&]{return !p.buffering() && p.position()>=6;});
+        require(refused_seeks==0,"seek failure injection did not exercise both inline seek APIs");
         require(p.paused() && p.audio_stream()==tracks.back().stream,"index-reopen fallback lost pause/audio selection");
         require(p.subtitle_tracks().size()==1,"index-reopen fallback lost embedded subtitle metadata");
         p.close();

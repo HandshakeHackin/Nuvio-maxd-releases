@@ -20,10 +20,10 @@ std::string row_title(const Catalog &c)
 
 } // namespace
 
-void Session::ask_text(const std::function<void(const std::string &)> &done)
+void Session::ask_text(const std::function<void(const std::string &)> &done, const std::string& title)
 {
     text_done_ = done;
-    if (!ime_.open())
+    if (!ime_.open(title))
     {
         text_done_ = nullptr;
         say("The keyboard could not be opened.", 4.0, true);

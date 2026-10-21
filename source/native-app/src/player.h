@@ -54,6 +54,7 @@ public:
 		// downloaded over several connections (netstream.h).
 		int read_ahead_seconds = 60; // bounded by the existing packet byte budget
 		bool parallel = false;
+		bool live_tv = false; // HTTP-only live HLS; permits extensionless segments
 		bool surround = false;
 		std::string audio_mode = "pcm"; // experimental passthrough is opt-in
 		int initial_audio_stream = -1; // retained only for a necessary seek reopen
@@ -217,7 +218,7 @@ private:
 	std::atomic<int> audio_switch_{-1};
 	double start_offset_ = 0;  // container start time; all times shown are relative to it
 	double to_sec(int64_t ts, double tb) const;
-	void do_seek(double target);
+	void do_seek(double target, bool switching_audio = false);
 	void apply_run_state();
 	double queued_audio_seconds() const;
 

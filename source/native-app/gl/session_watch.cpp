@@ -3,10 +3,13 @@
 // was watched.
 
 #include "session.hpp"
+#include "trailers.h"
 #include "diagnostics.h"
 #include "stream_json.hpp"
 #include "system_status.hpp"
 #include "hdr_output.hpp"
+#include "stream_display.hpp"
+#include "playback_badges.hpp"
 
 #include "http.h"
 #include "torrent/engine.h"
@@ -23,6 +26,9 @@ namespace sx
 
 namespace
 {
+std::string badge_metadata(const ::Stream& stream) {
+    return stream_display::plain(stream.name.substr(0,2048)+" "+stream.description.substr(0,4096)+" "+stream.filename.substr(0,2048));
+}
 
 constexpr double kInfoSeconds = 5.0;
 constexpr double kSaveEvery = 30.0;
@@ -121,7 +127,7 @@ void Session::detail_play(int index, bool with_server)
     play_stream(d_streams_[static_cast<std::size_t>(index)], with_server);
 }
 
-void Session::play_stream(const ::Stream &st, bool transcode)
+void Session::play_stream(const ::Stream &st, bool transcode, bool trailer)
 {
     const bool was_resuming = resuming_;
     const auto refuse = [&](const char *message) {
@@ -157,6 +163,7 @@ void Session::play_stream(const ::Stream &st, bool transcode)
     if (watching && !resuming_)
         return;
     resuming_ = false;
+    w_trailer_=trailer;
 
     // What is being played, for progress and the player's titles.
     w_item_ = d_item_;
@@ -169,9 +176,10 @@ void Session::play_stream(const ::Stream &st, bool transcode)
         if (!d_meta_.background.empty())
             w_item_.background = d_meta_.background;
     }
-    w_video_id_ = d_video_id_;
+    w_video_id_ = w_trailer_?std::string():d_video_id_;
     w_stream_ = st;
-    // Remembered, so that Continue Watching can play this same stream again.
+    // Live channels and trailers never persist stream URLs in title history.
+    if (trailers::records_history(w_trailer_,w_item_.type))
     {
         Progress &p = progress_[w_item_.id];
         p.type = w_item_.type;
@@ -184,7 +192,7 @@ void Session::play_stream(const ::Stream &st, bool transcode)
 
     std::string title = w_item_.name, subtitle;
     int season = -1, episode = -1;
-    if (detail.series)
+    if (detail.series && !w_trailer_)
     {
         for (const auto &v : d_meta_.videos)
             if (v.id == w_video_id_)
@@ -207,7 +215,7 @@ void Session::play_stream(const ::Stream &st, bool transcode)
 
     // Resume where it was left.
     double start = 0;
-    for (const Item &cw : continue_watching())
+    if(!w_trailer_) for (const Item &cw : continue_watching())
     {
         if (cw.id != w_item_.id)
             continue;
@@ -216,6 +224,7 @@ void Session::play_stream(const ::Stream &st, bool transcode)
             start = cw.offset;
     }
 
+    if(w_trailer_)subtitle="Trailer";
     const int gen = ++w_gen_;
     launch = LaunchState();
     launch.title = title;
@@ -230,6 +239,7 @@ void Session::play_stream(const ::Stream &st, bool transcode)
             launch.quality += "  \xC2\xB7  " + v.size;
     }
     launch.stages = {"Finding sources", "Connecting to peers", "Filling the buffer", "Starting"};
+    if(w_item_.type == "tv") launch.stages = {"Choosing channel", "Connecting", "Buffering live video", "Starting"};
     if (resolving) launch.stages = {"Checking service cache", "Resolving original file", "Filling the buffer", "Starting"};
     launch.stage = 0;
     launch.progress = -1.0f;
@@ -242,8 +252,10 @@ void Session::play_stream(const ::Stream &st, bool transcode)
     playing = PlayerState();
     playing.title = title;
     playing.subtitle = subtitle;
+    playing.badges = playback_badges::build(badge_metadata(st));
     playing.controls = true;
     w_episode_ = episode_playback::Flow();
+    watch_reset_anime();
     w_eof_recorded_ = false;
     nuvio_diagnostics::record({{"outputFailed",false},{"playerFailed",false}});
     w_next_.reset();
@@ -254,8 +266,8 @@ void Session::play_stream(const ::Stream &st, bool transcode)
     w_episode_tick_ = now_seconds();
     if (w_episode_cancel_) *w_episode_cancel_ = true;
     w_episode_cancel_ = std::make_shared<std::atomic<bool>>(false);
-    watch_load_segments(season, episode);
-    if (detail.series)
+    if(!w_trailer_ && w_item_.type != "tv") watch_load_segments(season, episode);
+    if (detail.series && !w_trailer_)
         if (const auto* next = episode_playback::next_video(d_meta_.videos, w_video_id_, now_epoch_ms())) w_next_ = *next;
     art_dirty_ = true;
 
@@ -436,7 +448,7 @@ void Session::play_stream(const ::Stream &st, bool transcode)
             // Several connections and the long read-ahead for big files: direct links
             // and the streaming server's torrent streams. Not for transcoding, which is
             // a playlist of pieces.
-            const bool par = r.url.find("/hlsv2/") == std::string::npos;
+            const bool par = !w_trailer_ && w_item_.type != "tv" && r.url.find("/hlsv2/") == std::string::npos;
             watch_start(r.url, r.headers, start, title, subtitle, par);
         });
 }
@@ -447,7 +459,8 @@ void Session::watch_start(const std::string &url, const std::vector<std::string>
     Player::Options o;
     o.url = url;
     o.parallel = direct;
-    o.read_ahead_seconds = prefs_.read_ahead_seconds;
+    o.live_tv = w_item_.type == "tv";
+    o.read_ahead_seconds = w_trailer_ || w_item_.type == "tv" ? 2 : prefs_.read_ahead_seconds;
     o.evo = prefs_.evo_player;
     o.vlc = prefs_.vlc_player;
     o.surround = prefs_.surround_audio;
@@ -478,7 +491,7 @@ void Session::watch_start(const std::string &url, const std::vector<std::string>
     w_last_saved_pos_ = start;
     w_info_until_ = now_seconds() + kInfoSeconds;
     launch.stage = 1;
-    watch_load_addon_subtitles();
+    if(!w_trailer_ && w_item_.type != "tv") watch_load_addon_subtitles();
 }
 
 // ---------------------------------------------------------------------------
@@ -593,7 +606,7 @@ void Session::watch_update()
     if (st == Player::State::Ended)
     {
         if(!w_eof_recorded_) { watch_save_progress(true, true); w_eof_recorded_=true; }
-        const bool next = prefs_.autoplay_next && detail.series && w_next_.has_value() && !w_episode_.cancelled;
+        const bool next = !w_trailer_ && prefs_.autoplay_next && detail.series && w_next_.has_value() && !w_episode_.cancelled;
         if(next) {
             playing.position=playing.duration=player_.duration(); playing.controls=true;
             playing.paused=player_.paused(); playing.buffering=-1;
@@ -739,7 +752,12 @@ void Session::watch_update()
     for (const auto &t : player_.audio_tracks())
         if (t.stream == player_.audio_stream())
             audio_label = t.label;
-    playing.audio = audio_label.empty() ? "-" : audio_label;
+    const auto next_audio=audio_label.empty()?"-":audio_label;
+    if(playing.audio!=next_audio) {
+        playing.audio=next_audio;
+        if(!audio_label.empty())playing.badges.clear(); // Refresh selected-track facts on the next picture.
+        if(video_w<=0)playing.badges=playback_badges::build(badge_metadata(w_stream_),0,0,false,false,false,audio_label,player_.codec_summary());
+    }
     playing.subs = (w_sub_active_ >= 0 && w_sub_active_ < static_cast<int>(w_subs_.size()))
                        ? w_subs_[static_cast<std::size_t>(w_sub_active_)].label
                        : "Off";
@@ -835,6 +853,10 @@ void Session::upload_video()
         (hdr ? (HdrOutput::confirmed() ? " HDR10 10-bit (output confirmed) · " : " HDR10 10-bit (checking output) · ")
              : " SDR 8-bit · ") + (output_hz_ ? std::to_string(output_hz_) + " Hz" : "refresh unverified") +
         " · Audio " + player_.audio_output();
+    if(playing.badges.empty() || playing.quality!=quality)
+        playing.badges=playback_badges::build(badge_metadata(w_stream_),pic->w,pic->h,true,
+            pic->colors==YuvColors::Hdr10,pic->format==VideoFormat::Nv12_10,
+            playing.audio=="-"?std::string():playing.audio,player_.codec_summary());
     if (playing.quality != quality) {
         playing.quality = quality;
         dlog("player: quality %s; PS5 configured %ux%u at startup; HDMI resolution requires TV signal readback",
@@ -848,12 +870,13 @@ void Session::watch_stop(bool ended)
     resuming_ = false;
     if (w_started_ && !ended)
         watch_save_progress(true);
-    if (ended && !w_video_id_.empty())
+    if (ended && trailers::records_history(w_trailer_,w_item_.type) && !w_video_id_.empty())
     {
         watched_.insert(w_video_id_);
         save_progress();
     }
     ++w_gen_;
+    watch_reset_anime();
     prepared_->cancel(w_stream_, w_season_, w_episode_number_);
     next_preparation_cancel();
     if (w_episode_cancel_) *w_episode_cancel_ = true;
@@ -895,8 +918,8 @@ void Session::fail_video_output(const std::string& error) {
 void Session::watch_save_progress(bool final, bool force_finished)
 {
     const double pos = player_.position(), dur = player_.duration();
-    if (dur <= 0 || w_item_.id.empty())
-        return; // live streams
+    if (!trailers::records_history(w_trailer_,w_item_.type) || dur <= 0 || w_item_.id.empty())
+        return; // live channels and trailers
     const bool finished = w_episode_.record_completion(pos, dur, force_finished);
     if (!final && pos < 1)
         return;
@@ -1005,7 +1028,7 @@ void Session::media_transport(int action, int direction)
             watch_save_progress(false);
         watch_show_info();
     }
-    if (direction)
+    if (direction && w_item_.type != "tv")
     {
         player_.seek(player_.position() + direction * prefs_.seek_seconds);
         watch_show_info();
@@ -1070,7 +1093,7 @@ void Session::watch_input(const hui::InputFrame &in)
         return;
     }
 
-    if (watch_episode_input(in)) return;
+    if (!w_trailer_ && w_item_.type != "tv" && watch_episode_input(in)) return;
 
     if (in.is_pressed(Action::confirm) || in.is_pressed(Action::touch))
     {
@@ -1084,6 +1107,11 @@ void Session::watch_input(const hui::InputFrame &in)
         const auto tracks = player_.audio_tracks();
         playing.menu_column = tracks.size() > 1 ? 0 : 1;
         playing.menu_row = playing.menu_column == 0 ? playing.audio_active : playing.subtitle_active;
+    }
+    else if(w_item_.type == "tv" && (in.is_pressed(Action::l3) || in.nav == Direction::left ||
+            in.nav == Direction::right || in.is_pressed(Action::page_prev) || in.is_pressed(Action::page_next)))
+    {
+        say("Seeking is unavailable for live channels",4);
     }
     else if (in.is_pressed(Action::l3))
     {

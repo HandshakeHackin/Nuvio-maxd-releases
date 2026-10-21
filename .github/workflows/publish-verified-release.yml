@@ -10,6 +10,11 @@ on:
         description: Temporary release-assets branch containing verified files
         required: true
         type: string
+      prerelease:
+        description: Mark this release as a prerelease
+        required: true
+        type: boolean
+        default: false
 permissions:
   contents: write
 jobs:
@@ -17,6 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
+      RELEASE_PRERELEASE: ${{ inputs.prerelease }}
       RELEASE_TAG: ${{ inputs.tag }}
       ASSET_REF: ${{ inputs.asset_ref }}
       GH_TOKEN: ${{ github.token }}
@@ -42,7 +48,7 @@ jobs:
           from pathlib import Path
           version=sys.argv[1]
           report=json.loads(Path('native-validation.json').read_text())
-          assert report['version']==version+'-native-experimental'
+          assert report['version'] in (version+'-native',version+'-native-experimental')
           assert report['hostTestEvidence']['conclusion']=='success'
           assert report['hostToolsEvidence']['conclusion']=='success'
           assert report['vlcHostTestEvidence']['conclusion']=='success'
@@ -65,7 +71,7 @@ jobs:
             "NuvioMaxd-$version-native.ffpfsc" PPSA99288.zip \
             "NuvioMaxd-$version-source.tar.gz" native-validation.json \
             TESTING.txt TEST_RESULTS.txt RELEASE_NOTES.md catalog-scan.log SHA256SUMS
-      - name: Verify published asset digests and publish prerelease
+      - name: Verify published asset digests and publish release
         shell: bash
         run: |
           release_api=$(gh release view "$RELEASE_TAG" --json apiUrl --jq .apiUrl)
@@ -86,5 +92,5 @@ jobs:
           PY
           version=${RELEASE_TAG#v}
           version=${version%-native-experimental}
-          gh release edit "$RELEASE_TAG" --draft=false --prerelease \
-            --title "Nuvio Max'd $version — Playback recovery, profile PINs and watch history (testing needed)" --notes-file RELEASE_NOTES.md
+          gh release edit "$RELEASE_TAG" --draft=false --prerelease="$RELEASE_PRERELEASE" --latest \
+            --title "Nuvio Max'd $version — Live TV, trailers, anime skipping and playback improvements" --notes-file RELEASE_NOTES.md

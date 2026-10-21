@@ -256,7 +256,7 @@ bool establish_context() {
         json settings, existing;
         if (!load_json(primary + "/profile-settings.json", existing) && load_json(dir + "/settings.json", settings)) {
             json scoped;
-            for (const auto* field : {"extra_addons", "provider_enabled", "subtitle_languages", "audio_languages", "auto_subtitles"})
+            for (const auto* field : {"extra_addons", "provider_enabled", "provider_settings", "subtitle_languages", "audio_languages", "auto_subtitles"})
                 if (settings.contains(field)) scoped[field] = settings[field];
             if (!save_json(primary + "/profile-settings.json", scoped)) return false;
         }
@@ -646,7 +646,7 @@ ApiResult api_connected_services_pull(const std::string& key) {
         ? "This Nuvio account does not offer provider credential sync yet. Connect a service here."
         : "Connected Services sync is unavailable. Your existing connections are unchanged.");
     json credentials = json::array();
-    for (const auto& r : rows) if (jstr(r, "provider") == "debrid:torbox" || jstr(r, "provider") == "debrid:premiumize")
+    for (const auto& r : rows) if (jstr(r, "provider") == "debrid:torbox" || jstr(r, "provider") == "debrid:premiumize" || jstr(r, "provider") == "animeskip")
         credentials.push_back(json{{"provider", jstr(r, "provider")}, {"credential_json", r.contains("credential_json") ? r["credential_json"] : jobj(r, "credentialJson")}});
     json result{{"owner_id", owner}, {"account_user_id", user_id}, {"credentials", credentials}};
     const json settings_body{{"p_profile_id", active_profile}, {"p_platform", "tv"}};

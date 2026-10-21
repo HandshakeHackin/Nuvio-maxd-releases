@@ -25,7 +25,7 @@ class Settings : public PageBase
     // The row under the cursor, or -1 while the rail has the focus.
     int cursor_row() const
     {
-        return rail_.focused() ? -1 : (nav_.root() ? -2-nav_.index : nav_.source_row());
+        return rail_.focused() ? -1 : (nav_.root() ? (nav_.index==0 ? SettingsNavigation::search_action : -2-nav_.index) : nav_.source_row());
     }
 
     bool navigation_consumed() const { return navigation_consumed_; }

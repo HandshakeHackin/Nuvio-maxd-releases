@@ -24,6 +24,8 @@
 #include "video_surface.hpp"
 #include "subtitles.h"
 #include "tasks.h"
+#include "stream_result_cache.hpp"
+#include "live_tv.h"
 #include "audio/cues.hpp"
 #include "core/input.hpp"
 
@@ -67,6 +69,7 @@ class Session
         kLibrary = 4,
         kAddons = 8,
         kSettings = 16,
+        kLive = 2048,
         kDetail = 32,
         kDiscoverNew = 64,
         kLibraryNew = 128,
@@ -139,6 +142,13 @@ class Session
     DiscoverContent discover;
     LibraryContent library;
     AddonsContent addons;
+    AddonsContent live_content;
+    void live_menu();
+    void live_reload();
+    void live_groups();
+    void live_search();
+    void live_cycle();
+    void live_activate(int index, bool favorite = false);
     SettingsContent settings;
     DetailContent detail;
     BoardContent search; // the results of a search, rows like the Board's
@@ -186,6 +196,7 @@ class Session
     void detail_toggle_watched(int index);
     void detail_play(int index, bool with_server);
     void detail_reload_streams();
+    void detail_trailers();
     void cancel_autoplay()
     {
         autoplay_pending_ = false;
@@ -195,6 +206,9 @@ class Session
     void addons_reload();
     // Cross on an addon: one added by URL can be removed; the account's are managed in Nuvio.
     void addon_activate(int index, int provider_cursor = 0);
+    void provider_options(const std::string &url);
+    void provider_options_load(const std::string &url, const std::string &id);
+    void provider_options_show(const std::string &url, const std::string &id, const json &layout);
     // Square on the Board: "See all" (a catalog opens in Discover, Continue Watching in the Library).
     void board_square(int row, int col);
     // Whether a row of the Board is Continue Watching.
@@ -279,6 +293,20 @@ class Session
     // addons, settings
     void refresh_addons();
     void refresh_settings();
+    void live_reset();
+    void live_load();
+    void live_save();
+    void live_build();
+    void live_add(json source, int step);
+    json live_state_ = json::object();
+    std::vector<live_tv::Channel> live_channels_;
+    std::vector<size_t> live_indices_;
+    std::shared_ptr<std::atomic<bool>> live_cancel_;
+    std::string live_source_, live_group_, live_query_, live_filter_;
+    size_t live_page_ = 0;
+    unsigned live_generation_ = 0;
+    int live_view_ = 0;
+    bool live_loading_ = false;
     void open_dropdown(const std::string &title, const std::vector<std::string> &options, int active,
                        std::function<void(int)> chosen);
     void login_start();
@@ -293,6 +321,7 @@ class Session
     void tracker_login_start(const std::string& provider);
     void tracker_login_poll();
     void services_menu();
+    void animeskip_menu();
     void service_menu(const std::string& provider);
     bool services_save(const debrid::Settings& next);
     void services_import();
@@ -316,7 +345,7 @@ class Session
     void refresh_art(const Cursor &cursor);
 
     // search and typing
-    void ask_text(const std::function<void(const std::string &)> &done);
+    void ask_text(const std::function<void(const std::string &)> &done, const std::string& title = "");
     void refresh_search();
     void poll_typing();
 
@@ -332,7 +361,7 @@ class Session
         bool is_default=false, forced=false, hearing_impaired=false;
         bool loading = false, failed = false;
     };
-    void play_stream(const ::Stream &stream, bool transcode);
+    void play_stream(const ::Stream &stream, bool transcode, bool trailer=false);
     void watch_start(const std::string &url, const std::vector<std::string> &headers, double start,
                      const std::string &title, const std::string &subtitle, bool direct);
     void watch_update();
@@ -345,6 +374,9 @@ class Session
     void watch_auto_subtitles();
     void watch_next_episode();
     void watch_load_segments(int season, int episode);
+    void watch_load_anime_segments(double duration);
+    void watch_reset_anime();
+    void watch_merge_segments();
     void watch_prefetch_next();
     bool watch_episode_update(double now, double position, double duration, bool advancing, bool ended = false);
     bool watch_episode_input(const hui::InputFrame &input);
@@ -474,7 +506,12 @@ class Session
     std::string d_stream_heading_;
     std::vector<::Stream> d_streams_; // in the order the screen shows them
     std::vector<::Stream> d_found_;   // as the addons sent them
+    bool d_cache_warm_=false;
     int d_gen_ = 0, d_pending_ = 0, d_answered_ = 0, d_meta_gen_ = 0;
+    StreamResultCache stream_result_cache_;
+    std::string d_stream_cache_key_;
+    std::set<std::string> d_cached_sources_;
+    bool d_stream_errors_ = false;
     bool d_open_ = false;
     std::shared_ptr<std::atomic<bool>> d_stream_cancel_ = std::make_shared<std::atomic<bool>>(false);
     std::shared_ptr<std::atomic<bool>> d_cancel_ = std::make_shared<std::atomic<bool>>(false);
@@ -498,6 +535,7 @@ class Session
     GLuint subtitle_texture_=0;
     int subtitle_width_=0, subtitle_height_=0;
     VideoSurface video_surface_;
+    bool w_trailer_=false, d_trailer_loading_=false;
     Item w_item_;
     std::string w_video_id_;
     ::Stream w_stream_;
@@ -524,6 +562,11 @@ class Session
     bool autoplay_pending_ = false;
     ::Stream autoplay_previous_;
     episode_playback::Flow w_episode_;
+    episode_playback::AnimeIds w_anime_;
+    long w_aniskip_requested_ = 0, w_animeskip_requested_ = 0;
+    double w_timing_duration_ = 0;
+    std::vector<episode_playback::Segment> w_introdb_segments_, w_aniskip_segments_, w_animeskip_segments_;
+    std::shared_ptr<std::atomic<bool>> w_animeskip_cancel_;
     std::optional<::Video> w_next_;
     std::vector<::Stream> w_next_streams_;
     int w_next_pending_ = 0, w_next_answered_ = 0, w_next_generation_ = 0;

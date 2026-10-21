@@ -14,6 +14,7 @@ public:
     ~AppUpdate();
     Status status() const;
     void check();
+    void probe(const std::string& base);
     void download(const std::string& base,const std::string& data);
     void install();
     void cancel();

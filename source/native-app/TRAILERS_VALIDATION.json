@@ -1,0 +1,49 @@
+{
+  "feature": "On-demand trailers",
+  "status": "staged source; not packaged or published",
+  "interaction": "Options on movie or series details opens Watch trailer choices; no automatic browsing previews",
+  "sources": [
+    "addon trailers and trailerStreams",
+    "TMDB video metadata through existing app registration",
+    "supported public YouTube muxed H264/AAC MP4 or HLS responses"
+  ],
+  "checks": {
+    "trailerHostFixtures": "passed: metadata merge, ranking/deduplication, public identity and URL validation, balanced JSON extraction, public player formats and HLS, unsupported/login/cipher rejection, bounded resolution, cancellation before/during request, ambiguous TMDB identity rejection and history policy",
+    "providerCompatibility": "passed: runtime, crypto, cancellation, transfers, manifest validation, dropdown and stream cache regressions",
+    "germanProviders": "four unmodified provider fixtures passed stream/header and metadata rejection checks",
+    "ps5Syntax": [
+      "src/trailers.cpp",
+      "src/stremio.cpp",
+      "src/providers.cpp",
+      "gl/session_detail.cpp",
+      "gl/session_watch.cpp",
+      "gl/session_episode.cpp",
+      "ui/detail.cpp",
+      "ui/shell.cpp"
+    ],
+    "liveTmdb": {
+      "status": 200,
+      "trailers": 5
+    },
+    "liveYoutube": {
+      "verified": false,
+      "reason": "Cloud proxy rejects YouTube CONNECT with HTTP 403 before an upstream public player response; no network bypass attempted"
+    },
+    "shellSyntax": "passed",
+    "diffWhitespace": "passed",
+    "privateCredentialScan": "passed"
+  },
+  "sessionSafeguards": [
+    "No title stream/history/resume/watched/tracker writes",
+    "No intro/recap requests or next-episode autoplay",
+    "Playback starts at zero; title selection remains available on return",
+    "Profile/title generation and cancellation guards",
+    "Expiring playable URLs not persisted"
+  ],
+  "notValidated": [
+    "Live YouTube resolution or media decode from this cloud environment",
+    "Physical PS5 trailer playback on Native/EVO/VLC",
+    "Final app link and packaging"
+  ],
+  "credentialsIncluded": false
+}
