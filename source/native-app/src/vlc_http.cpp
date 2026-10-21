@@ -71,11 +71,14 @@ static void interrupt(void *opaque) {
 }
 static ssize_t read(stream_t *access, void *bytes, size_t count) {
     auto &s = *static_cast<NuvioHttp *>(access->p_sys);
-    if (nuvio_vlc_stream_cancelled(s.serial)) { errno = EINTR; return -1; }
+    // The owner has closed this stream. EOF lets VLC prefetch/probing
+    // unwind; EINTR can be retried indefinitely by adaptive child readers.
+    if (nuvio_vlc_stream_cancelled(s.serial)) return 0;
     s.interrupt = false;
     vlc_interrupt_register(interrupt, &s);
     const int n = s.read_data(static_cast<uint8_t *>(bytes), int(std::min(count, size_t(INT32_MAX))));
     const int cancelled = vlc_interrupt_unregister();
+    if (nuvio_vlc_stream_cancelled(s.serial)) return 0;
     if (n == AVERROR_EOF)
         return 0;
     if (n < 0 || cancelled) {
