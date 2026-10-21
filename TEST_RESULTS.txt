@@ -24,3 +24,5 @@
 - PS5 syntax for session_watch, player UI and static VLC backend: passed
 
 Full candidate PS5 acceptance remains pending. Historical feature evidence is included under validation/. See VALIDATION.json for scope, corrections and limits.
+
+Full Native CI and real VLC 3.0.24 integration CI passed; see native-validation.json for exact commits and scope. VLC HTTP teardown fix validated for HLS reopen and blocked reads.

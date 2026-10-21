@@ -7,7 +7,7 @@
 - Recent sources appear faster while fresh results load in the background.
 - Fixed audio-track changes losing playback position or pause state.
 - Fixed seeking back after playback ends getting stuck buffering; added clearer queue/seek diagnostics.
-- Improved audio/video cleanup and optional VLC seek and HEVC recovery.
+- Improved audio/video cleanup and optional VLC seek, HEVC recovery and HLS shutdown.
 - Includes Trakt phone pairing, provider, profile, history and updater improvements.
 
 The affected tester confirmed the audio/source fixes in [issue #8](https://github.com/HandshakeHackin/Nuvio-maxd-releases/issues/8#issuecomment-6294939778). Provider compatibility work relates to [issue #3](https://github.com/HandshakeHackin/Nuvio-maxd-releases/issues/3); tracker and updater work relates to [#2](https://github.com/HandshakeHackin/Nuvio-maxd-releases/issues/2) and [#7](https://github.com/HandshakeHackin/Nuvio-maxd-releases/issues/7). Anime timings adapt [community PR #6](https://github.com/HandshakeHackin/Nuvio-maxd-releases/pull/6).

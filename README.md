@@ -125,7 +125,7 @@ not add motion interpolation or guarantee smooth playback.
 - Faster return to recent sources, plus the reporter-confirmed Native audio-track fix.
 - Seeking back after playback ends resumes correctly instead of remaining buffered.
 - Trakt pairing, provider compatibility and updater fixes from the test revisions.
-- Audio-output/GPU cleanup safeguards and optional VLC seeking/HEVC recovery.
+- Audio-output/GPU cleanup safeguards and optional VLC seeking, HEVC recovery and HLS shutdown fixes.
 - Retains Hebrew/HLS fixes, profile PIN entry, torrent recovery and Continue Watching improvements.
 
 Native remains the default. Enable optional VLC under **Settings → Video → Playback engine**.

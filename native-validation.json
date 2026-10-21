@@ -1,20 +1,20 @@
 {
   "version": "1.0.0-native",
-  "sourceCommit": "c1b3db72a19183c1a296d8b09b665034db68c69b",
+  "sourceCommit": "bb8144c7f158c6f37e1236d08b7932814e2cac50",
   "sourceDirty": false,
   "imageBytes": 46202880,
-  "imageSha256": "60fbbefcc399b9ae683306efea616fb5637e5262987edb5bedd093d601ab9c1c",
-  "zipSha256": "c4d36185782da5aa247cbaeec8f79f5d3e3feb6caa4816a8206b5d40fe6c98aa",
+  "imageSha256": "636ba00c40bb7dee121ff1df33c37f5b8910ea3f8489248934d983d7fefadb49",
+  "zipSha256": "c86623a44acda55039e65bc04535488967b92b3e94c8f1fbaeab7de2e7958c74",
   "files": 151,
   "fileSha256": {
     "nuvio-updater.elf": "6a78998860327945bb2e98cce95780d2b668794c93caf7f109cf8b836f386d23",
     "THIRD_PARTY.md": "3822ed412249095fffa33b25ab2ab2760d11698ab5b407b8dbb238146c5b4131",
-    "eboot.bin": "9c40a4031ffb8cf97174b466bcdc99eaac793fd1a66a1bafce6f252f2c77db1e",
+    "eboot.bin": "f0bfc322002ca859934755aaba0164aa990c5b76f64c6167723546aea6ccc207",
     "tracker-applications.json": "44527d59f8228d61a62c36c6226c815dc5cdf6c83b86b81d960f55aedeb4f8f1",
     "LICENSE": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
     "ca-bundle.crt": "11163db462ffae3918afdf46c70a8db70cfcbaa8077352290b62a9c03c36fe6c",
     "account-config.json": "1014f3c748bee58a832ea5d1be191ebaa2e577ef8a08e8168f01cb6d78f1921f",
-    "build-info.json": "88974008ebaf0b287452e9957d431bd56afdcb472df48b280b5fac534991481b",
+    "build-info.json": "447735f7aa600528f0f83e8c0680440aad4f4743ba040ca0406d5f2d71e37b9a",
     "sce_module/libc.prx": "e6ff45d16adf687855cc3b33b0c8a4132b6504360b221e0a34c7e99fb3ba0036",
     "fonts/NotoSansCJK-LICENSE.txt": "6a73f9541c2de74158c0e7cf6b0a58ef774f5a780bf191f2d7ec9cc53efe2bf2",
     "fonts/Inter-Regular.ttf": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
@@ -169,6 +169,45 @@
   "hardwareVerified": false,
   "developmentValidation": {
     "scope": "Full 1.0 release candidate; see VALIDATION.json",
+    "hardwareVerified": false
+  },
+  "hostTestEvidence": {
+    "conclusion": "success",
+    "url": "https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/39610283120/job/119257052158",
+    "publicCommit": "a538390bef9c54f435eee8f7da2b69d72eb34300",
+    "scope": "Full Native/account/transport suite and UI rendering; before subsequent VLC HTTP-only fix and VLC test diagnostics"
+  },
+  "vlcHostTestEvidence": {
+    "conclusion": "success",
+    "url": "https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/39613325635/job/119267670351",
+    "publicCommit": "a1a5b4fae93df45e04a214ad75ca8d980e49a2a7",
+    "scope": "Real VLC 3.0.24 file/authenticated HTTP/HLS playback, pause, seeks, EOF replay, reopening and blocked request cancellation; includes HTTP shutdown fix"
+  },
+  "hostToolsEvidence": {
+    "status": "completed",
+    "conclusion": "success",
+    "sourceCommit": "ad9f15db9717c073982ab58bc409890b35ff628d",
+    "url": "https://github.com/HandshakeHackin/nuvio-ps5/actions/runs/39142993150",
+    "jobs": [
+      {
+        "name": "protocol-and-packaging-tools",
+        "conclusion": "success",
+        "status": "completed",
+        "url": "https://github.com/HandshakeHackin/nuvio-ps5/actions/runs/39142993150/job/117721066279"
+      }
+    ],
+    "retained": true,
+    "scope": "Unchanged legacy host bridge and package wrapper; current native target/package checks recorded separately"
+  },
+  "catalogScan": {
+    "errors": 0,
+    "warnings": 2,
+    "notices": 1,
+    "helperApproval": "Bundled updater requires catalog maintainer review; approval unchanged"
+  },
+  "playbackBadges": {
+    "metadataParser": "passed",
+    "drawListLayoutAndVisibility": "passed",
     "hardwareVerified": false
   }
 }
