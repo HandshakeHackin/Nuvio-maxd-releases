@@ -64,12 +64,13 @@ int main() {
     sx::events.clear();
     sx::Session session;
     session.device_cancel_ = std::make_shared<std::atomic<bool>>(false);
+    session.live_cancel_ = std::make_shared<std::atomic<bool>>(false);
     session.w_episode_cancel_ = std::make_shared<std::atomic<bool>>(false);
     const auto episode_cancel = session.w_episode_cancel_;
     session.watching = true;
     session.updater_.closing = true;
     session.shutdown();
-    assert(*episode_cancel && *session.device_cancel_ && *session.d_cancel_ && *session.d_stream_cancel_);
+    assert(*session.live_cancel_ && *episode_cancel && *session.device_cancel_ && *session.d_cancel_ && *session.d_stream_cancel_);
     assert(!session.watching);
     session.updater_.finish_exit();
     assert(session.updater_.handed_off);
