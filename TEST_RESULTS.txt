@@ -1,1 +1,11 @@
-1.0.0.1 local validation: native lifecycle, four independent previews, single PCM owner, gain/clipping, sync, preferences, grid input, large imports and isolated VLC file/HTTP/HLS/seek/cancellation passed. PS5 build and 151-file image/ZIP verification passed. Public host CI pending. Physical-console testing pending. See native-validation.json.
+Max’d 1.0.0.1 validation
+
+PASS: PS5 build, module imports, exact image/ZIP round trips (151 files), clean source commit 4cd3c33fd81f57c21d211e71a62a073d8aad56f8 and matching source archive (768 hashes).
+PASS: Full Native/account/transport/UI suite, including large imports, PCM gain/clipping, persistent preferences, audio sync without watch-progress reset, four independent local software previews with simulated audio-port ownership, grid controls, bounds and cleanup.
+Native CI: https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/40427909391/job/121938183332
+PASS: Real host VLC 3.0.24 file/HTTP/HLS, gain/delay, pause, seek, replay, reopen, authenticated headers, redirected segments and cancellation.
+VLC CI: https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/40427909391/job/121941843222
+The first VLC CI attempt failed the final request-header assertion after playback/cancellation passed. The same source and assertions passed on rerun; no assertion was weakened. Local diagnostic rerun also passed.
+PASS: Catalog offline validation and static ZIP scan (zero errors; two helper-review warnings and one sandbox notice).
+
+NOT VERIFIED: Physical PS5 four-live-channel performance, provider connection limits, console GPU behavior and Bluetooth latency. Four-screen is experimental; use SD feeds first and retain a working installer for rollback. See TESTING.txt and native-validation.json.

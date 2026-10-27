@@ -6,9 +6,9 @@
   "description": "A native Nuvio client for PS5 with profiles, synced watch progress, addons, Live TV, trailers, anime skipping and optional playback engines.",
   "license": "GPL-3.0",
   "author": "HandshakeHackin",
-  "version": "1.0.0-native-experimental",
+  "version": "1.0.0.1-native-experimental",
   "source_repo": "https://github.com/HandshakeHackin/Nuvio-maxd-releases",
-  "artifact_url": "https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/download/v1.0.0-native-experimental/PPSA99288.zip",
-  "sha256": "c86623a44acda55039e65bc04535488967b92b3e94c8f1fbaeab7de2e7958c74",
-  "icon_url": "https://raw.githubusercontent.com/HandshakeHackin/Nuvio-maxd-releases/v1.0.0-native-experimental/sce_sys/icon0.png"
+  "artifact_url": "https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/download/v1.0.0.1-native-experimental/PPSA99288.zip",
+  "sha256": "682aee99d26be7ecb372a8b70be007842183541f905ce938a5ce514fe0e1516f",
+  "icon_url": "https://raw.githubusercontent.com/HandshakeHackin/Nuvio-maxd-releases/v1.0.0.1-native-experimental/sce_sys/icon0.png"
 }

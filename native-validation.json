@@ -168,7 +168,7 @@
   "sourceArchiveHashesMatch": true,
   "hardwareVerified": false,
   "developmentValidation": {
-    "scope": "Issue #10 local test; see VALIDATION.json",
+    "scope": "1.0.0.1 public test release; full Native/VLC CI plus local feature tests and exact installer/source verification; physical-console validation pending.",
     "hardwareVerified": false
   },
   "hostToolsEvidence": {
@@ -255,15 +255,22 @@
     ]
   },
   "hostTestEvidence": {
-    "conclusion": "pending"
+    "conclusion": "success",
+    "url": "https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/40427909391/job/121938183332",
+    "publicCommit": "23552dbf1c8efb8578f89fd0944c01a1256087f0",
+    "scope": "Full Native/account/transport suite, large imports, multiview controls, PCM gain/sync, four preview lifecycle and UI rendering"
   },
   "vlcHostTestEvidence": {
-    "conclusion": "pending"
+    "conclusion": "success",
+    "url": "https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/40427909391/job/121941843222",
+    "publicCommit": "23552dbf1c8efb8578f89fd0944c01a1256087f0",
+    "scope": "Real VLC 3.0.24 file/authenticated HTTP/HLS playback, gain/delay, pause, forward/back seek, EOF replay, reopen, redirected relative segments and blocked request cancellation; unchanged assertions passed on rerun"
   },
   "catalogScan": {
     "errors": 0,
     "warnings": 2,
     "notices": 1,
     "helperApproval": "Bundled updater helper requires catalog maintainer review; no helper approvals changed"
-  }
+  },
+  "ciRetryNote": "First VLC CI attempt passed playback/cancellation stages but failed the final private-header assertion. The same source and assertions passed on rerun. Local diagnostic rerun also passed with no header-free fixture requests. No installer change or assertion relaxation was made."
 }
