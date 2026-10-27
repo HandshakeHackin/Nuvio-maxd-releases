@@ -1,6 +1,6 @@
 # 1.0.0.2 catalog submission
 
-Prepared one-record update; submission follows verified GitHub publication.
+Status: validated and pushed; upstream PR creation was rejected with GitHub integration error 403. Use the [direct prefilled submission link](README.md). A maintainer must merge and deploy before the store updates.
 
 Update Nuvio Max’d to **1.0.0.2-native-experimental**.
 
