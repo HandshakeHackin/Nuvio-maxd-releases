@@ -1,22 +1,22 @@
 /*
  * sce_videodec2.h — libSceVideodec2 ABI (hardware H.264/HEVC/VP9 decode).
  *
- * Native-decode plan Phase 0 (docs/evo-pro/native-decode-plan.md §4).
+ * Native-decode plan Phase 0 (docs/hardware/video-decode.md §4).
  * Nothing here is linked at build time: the module is loaded and every symbol
  * resolved by NID at run time, module absent => feature absent.
  *
  * SOURCE OF TRUTH
  * ---------------
- * These struct layouts and the call sequence in docs/evo-pro/videodec2-abi.md were
+ * These struct layouts and the call sequence in docs/hardware/videodec2-abi.md were
  * lifted verbatim from blackbearreloaded/ProsperoLight
  * (src/moonlight_stream.cpp), a real Moonlight/PS5 streaming client that
  * decodes on the VCN block in production. On 2026-09-01 that exact sequence
  * was run on hardware from a fake-signed game-category app module (the
  * PROSPEROLIGHT_VDEC_SELF_TEST build) and every call returned 0, producing a
  * valid 1920x1088 NV12 H.264 frame. See [[native-decode-app-slot-plan]] and
- * the status block of docs/evo-pro/native-decode-plan.md.
+ * the status block of docs/hardware/video-decode.md.
  *
- * The errno 5200 wall recorded in docs/hardware-decode.md was a process-context
+ * The errno 5200 wall recorded in docs/hardware/video-decode.md was a process-context
  * limit (elfldr payload / hbldr borrowed slot), NOT a driver or signing limit.
  * EVO Player reaches this path only once it ships as a registered app module.
  *

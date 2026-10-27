@@ -17,6 +17,7 @@
 
 #include <algorithm>
 #include <cctype>
+#include <chrono>
 #include <cstdlib>
 
 namespace sx
@@ -214,6 +215,8 @@ void Session::shutdown()
     *d_stream_cancel_ = true;
     if (w_episode_cancel_) *w_episode_cancel_ = true;
     if(live_cancel_)*live_cancel_=true;
+    if(iptv_cancel_)*iptv_cancel_=true;
+    if(iptv_probe_cancel_)*iptv_probe_cancel_=true;
     provider_tasks_.stop();
     g_tasks.stop();
     tex_.shutdown();
@@ -352,6 +355,7 @@ void Session::load_addons()
     bg<Result>(
         [key, extra]() {
             Result r;
+            const auto manifest_deadline = std::chrono::steady_clock::now() + std::chrono::seconds(8);
             std::set<std::string> seen;
             if (!key.empty())
             {
@@ -369,6 +373,13 @@ void Session::load_addons()
                             const std::string url = jstr(e, "transportUrl");
                             if (parse_addon(jobj(e, "manifest"), url, *a))
                             {
+                                ::Addon fresh;
+                                std::string refresh_error;
+                                const auto remaining = std::chrono::duration_cast<std::chrono::seconds>(
+                                    manifest_deadline - std::chrono::steady_clock::now()).count();
+                                if (remaining > 0 && fetch_addon(url, fresh, refresh_error, nullptr,
+                                                               std::min<long>(3, remaining)))
+                                    *a = std::move(fresh);
                                 a->from_account = true;
                                 if (seen.insert(url).second)
                                     r.addons.push_back(a);
@@ -703,7 +714,7 @@ void Session::refresh_settings()
         "Follow the PS5's output resolution, or choose an override. Close and reopen Nuvio Max'd to apply a change.");
     set(kHdr, Kind::value, "HDR playback", prefs_.native_hdr ? "Native HDR10 (experimental)" : "Convert HDR to SDR",
         "Native HDR10 keeps PQ colour and highlights on a compatible TV. SDR conversion changes the colour range. Applies to the next stream.");
-    set(kPlaybackEngine, Kind::value, "Playback engine", prefs_.vlc_player ? "VLC 3.0.24 (experimental)" : prefs_.evo_player ? "EVO Player 0.12.0 (experimental)" : "Nuvio native",
+    set(kPlaybackEngine, Kind::value, "Playback engine", prefs_.vlc_player ? "VLC 3.0.24 (experimental)" : prefs_.evo_player ? "EVO Player 0.13.0 (experimental)" : "Nuvio native",
         "Choose the video engine. Applies to the next stream; subtitles and Watch Progress stay available.");
     set(kReadAhead, Kind::value, "Read-ahead (Native/EVO)", std::to_string(prefs_.read_ahead_seconds) + " s",
         "How far to buffer ahead. Memory limits may shorten the target. Applies to the next Native/EVO stream; VLC "
@@ -870,7 +881,7 @@ void Session::settings_activate(int row)
         });
         break;
     case kPlaybackEngine: {
-        std::vector<std::string> engines={"Nuvio native", "EVO Player 0.12.0 (experimental)"};
+        std::vector<std::string> engines={"Nuvio native", "EVO Player 0.13.0 (experimental)"};
         if(VlcBackend::available())engines.push_back("VLC 3.0.24 (experimental)");
         open_dropdown("Playback engine", engines,
                       prefs_.vlc_player && VlcBackend::available() ? 2 : prefs_.evo_player ? 1 : 0, [this](int i) {
@@ -1355,7 +1366,7 @@ void Session::update(float dt, const Cursor &cursor)
         discover_load(true);
 
     const bool moved = cursor.board_row != last_cursor_.board_row || cursor.board_col != last_cursor_.board_col ||
-                       cursor.discover != last_cursor_.discover || cursor.library != last_cursor_.library ||
+                       cursor.discover != last_cursor_.discover || cursor.library != last_cursor_.library || cursor.iptv != last_cursor_.iptv ||
                        cursor.episode != last_cursor_.episode || cursor.search_row != last_cursor_.search_row ||
                        cursor.search_col != last_cursor_.search_col;
     last_cursor_ = cursor;
@@ -1460,6 +1471,14 @@ void Session::refresh_art(const Cursor &cursor)
     {
         const int d = static_cast<int>(i) - cursor.library;
         library.items[i].poster = fetch(lib_items_[i].poster, ArtKind::poster, d > -14 && d < 28);
+    }
+
+    // IPTV artwork stays on its own page; these IDs never ask addon metadata.
+    if(page_==Page::iptv)for(size_t i=0;i<iptv_content.items.size()&&i<iptv_indices_.size();++i){
+        const auto& e=iptv_catalog_.entries[iptv_indices_[i]];
+        const auto& image=e.poster.empty()?iptv_series_poster_:e.poster;
+        int d=int(i)-cursor.iptv;
+        iptv_content.items[i].poster=fetch(image,ArtKind::poster,d>-14&&d<28);
     }
 
     // Addons

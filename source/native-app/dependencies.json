@@ -8,12 +8,12 @@
     }
   },
   "boilerplate": {
-    "repository": "https://github.com/blackbearreloaded/ps5-native-app-boilerplate",
+    "repository": "https://github.com/LedyBacer/ps5-native-app-boilerplate",
     "commit": "2f672d1c2f508e26f82ce6e27cef289a0861413c",
     "runtimeSha256": "e6ff45d16adf687855cc3b33b0c8a4132b6504360b221e0a34c7e99fb3ba0036"
   },
   "ui": {
-    "repository": "https://github.com/blackbearreloaded/ps5-homebrew-ui",
+    "repository": "https://github.com/LedyBacer/ps5-homebrew-ui",
     "commit": "4bd942579dd981b3df9c740438489ca6a614ddc0",
     "vendored": true,
     "appliedUpdates": {
@@ -23,6 +23,10 @@
     "graphicsConsumerUpdate": {
       "commit": "dbf8286661224c7d8b01fdea62052251eec43eca",
       "scope": "OpenGL SDK 1.0.2 integration; vendored rendering/input code unchanged"
+    },
+    "paragraphLayoutUpdate": {
+      "commit": "bbe19054ee",
+      "scope": "Shared paragraph drawing/measurement lines and max-lines handling; existing Unicode font loader retained"
     }
   },
   "opengl": {
@@ -32,18 +36,19 @@
     "repository": "https://github.com/LedyBacer/ps5-opengl"
   },
   "sdk": {
-    "version": "0.44",
+    "version": "0.45",
     "pacbrewVersion": "0.40.2",
-    "archiveUrl": "https://github.com/ps5-payload-dev/sdk/releases/download/v0.44/ps5-payload-sdk.zip",
-    "archiveSha256": "4d06eab777bb135705b5a6816688c9132efb246093fe606ac488ab6cf65ca5b0",
+    "archiveUrl": "https://github.com/ps5-payload-dev/sdk/releases/download/v0.45/ps5-payload-sdk.zip",
+    "archiveSha256": "5fac64093d0e3e69f2584ce7935f24f703f622d9681f1495c85b9f00d1291a2c",
     "coreFileSha256": {
-      "target/lib/libkernel.so": "c6579f2614d8b8f905a673f810a1b562f1432b07397d61c11e876b5648428753",
-      "target/lib/libSceAgc.so": "5eaf8339858c134e2f28b2abd1a0b52542683be8a75ee0bca16147b0c76f485a",
-      "target/lib/libSceAgcDriver.so": "3b2cbfea6cbeee48f06bbd78a2c1f8b1f0e9066a9759130ff160cb3a8aa8eca6",
+      "target/lib/libkernel.so": "3bc1a6679e06f935787aec50c7f91d5aa51cd9c833503a07fb4f60130d056dc9",
+      "target/lib/libSceAgc.so": "42060d7197c624b6e1284c74908736bd6a22db6cc840018bdb75a6e8b4c04cc4",
+      "target/lib/libSceAgcDriver.so": "a128a7d79ffe46820d3c4a8adc24ace69376a71f16d66e4244dee15caa44f18e",
       "target/user/homebrew/include/quickjs/quickjs.h": "2165f47772af9faee1798999a599fa9de850d1bf0259502dade1c25d4a588316",
       "target/user/homebrew/lib/quickjs/libquickjs.a": "99772f9e9999479d36151b4df31868f25f8264960432fe8616850a4f0d0a7b6e",
       "target/user/homebrew/lib/libcurl.a": "c29815b2e111e12c68975626b7d53418533d0718b18ee229943081068c11527d"
-    }
+    },
+    "librarySetNote": "PacBrew 0.40.2 retained unchanged; SDK 0.45 toolchain/headers/stubs overlaid in an isolated SDK directory"
   },
   "mkpfs": {
     "repository": "https://github.com/PSBrew/MkPFS",
@@ -70,8 +75,8 @@
   },
   "evoPlayer": {
     "repository": "https://github.com/sainsaji/EVO-PLAYER-PS5",
-    "version": "0.12.0",
-    "commit": "9ee9a5420c73b5be448610e5f0a90a29a75592f3",
+    "version": "0.13.0",
+    "commit": "2db44b5294657b12bf91666154a05f029ddb5aa2",
     "vendored": true,
     "scope": "video decoder dispatcher, native decoder, presentation core and clock"
   },
@@ -178,6 +183,11 @@
     "issue3Adaptations": {
       "scope": "Planar picture bridge, forced software codec selection, unknown-dimension hardware guard and direct CPU workspace fallback",
       "hardwareVerified": false
+    },
+    "auditedPortRelease": {
+      "version": "0.6.0",
+      "commit": "c0ffdca8351a3a7210eabae26897e36f83b26bd8",
+      "scope": "Embedded PS5 decoder matches current upstream except retained Nuvio workspace/dimension guards; libVLC remains 3.0.24. Standalone app UI, renderer-specific upscalers and equalizer UI are not embedded."
     }
   },
   "providerRuntime": {
@@ -199,6 +209,21 @@
       "commit": "1475f4c66202325ff5bfde9e715e1dca4420a248",
       "version": "0.5.18",
       "scope": "VLC seek/rebuffer backports; independent video resource cleanup and audio buffer ownership safeguards"
+    }
+  },
+  "upstreamRefresh20261027": {
+    "stremioPlus": {
+      "version": "0.5.20",
+      "commit": "c2635c121774f2efd3553348f7df995d08484b95",
+      "scope": "Independent rectangle YUV upload adaptation; normal 2D output and state/fence ownership retained"
+    },
+    "prosperoTv": {
+      "commit": "7757b10f09",
+      "scope": "Bounded multi-category Xtream membership; existing HDMI-CEC reader retained and tested"
+    },
+    "nuvioTvSmart": {
+      "commit": "50d1a57f74",
+      "scope": "Account addon manifest revalidation; existing profile-isolated trackers and search state retained"
     }
   }
 }

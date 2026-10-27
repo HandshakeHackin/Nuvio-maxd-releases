@@ -197,11 +197,11 @@ int main(int argc, char** argv) try {
         gray(render(surface,f),0,255,255);
     });
     test("GPU upload restores display, texture and pixel-store state", [] {
-        GLuint fbo[2], tex[2], pbo, vao;
-        glGenFramebuffers(2,fbo); glGenTextures(2,tex); glGenBuffers(1,&pbo); glGenVertexArrays(1,&vao);
+        GLuint fbo[2], tex[2], rect[2], pbo, vao;
+        glGenFramebuffers(2,fbo); glGenTextures(2,tex); glGenTextures(2,rect); glGenBuffers(1,&pbo); glGenVertexArrays(1,&vao);
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER,fbo[0]); glBindFramebuffer(GL_READ_FRAMEBUFFER,fbo[1]);
         glBindVertexArray(vao); glViewport(7,9,11,13);
-        for(int i=0;i<2;++i) { glActiveTexture(GL_TEXTURE0+i); glBindTexture(GL_TEXTURE_2D,tex[i]); }
+        for(int i=0;i<2;++i) { glActiveTexture(GL_TEXTURE0+i); glBindTexture(GL_TEXTURE_2D,tex[i]); glBindTexture(GL_TEXTURE_RECTANGLE,rect[i]); }
         glActiveTexture(GL_TEXTURE5); glBindBuffer(GL_PIXEL_UNPACK_BUFFER,pbo);
         glPixelStorei(GL_UNPACK_ALIGNMENT,8); glPixelStorei(GL_UNPACK_ROW_LENGTH,77);
         glPixelStorei(GL_UNPACK_SKIP_ROWS,3); glPixelStorei(GL_UNPACK_SKIP_PIXELS,5); glPixelStorei(GL_UNPACK_SWAP_BYTES,GL_TRUE);
@@ -221,13 +221,13 @@ int main(int argc, char** argv) try {
         GLboolean mask[4]; glGetBooleanv(GL_COLOR_WRITEMASK,mask);
         require(!mask[0]&&mask[1]&&!mask[2]&&mask[3]&&glIsEnabled(GL_BLEND)&&glIsEnabled(GL_DEPTH_TEST)&&
             glIsEnabled(GL_CULL_FACE)&&glIsEnabled(GL_SCISSOR_TEST)&&glIsEnabled(GL_FRAMEBUFFER_SRGB),"raster state changed");
-        for(int i=0;i<2;++i) { glActiveTexture(GL_TEXTURE0+i); equal(GL_TEXTURE_BINDING_2D,tex[i]); }
+        for(int i=0;i<2;++i) { glActiveTexture(GL_TEXTURE0+i); equal(GL_TEXTURE_BINDING_2D,tex[i]); equal(GL_TEXTURE_BINDING_RECTANGLE,rect[i]); }
         glBindFramebuffer(GL_FRAMEBUFFER,0); glBindBuffer(GL_PIXEL_UNPACK_BUFFER,0); glBindVertexArray(0);
         glPixelStorei(GL_UNPACK_ALIGNMENT,4); glPixelStorei(GL_UNPACK_ROW_LENGTH,0);
         glPixelStorei(GL_UNPACK_SKIP_ROWS,0); glPixelStorei(GL_UNPACK_SKIP_PIXELS,0); glPixelStorei(GL_UNPACK_SWAP_BYTES,GL_FALSE);
         glDisable(GL_BLEND); glDisable(GL_DEPTH_TEST); glDisable(GL_CULL_FACE); glDisable(GL_SCISSOR_TEST);
         glDisable(GL_FRAMEBUFFER_SRGB); glColorMask(GL_TRUE,GL_TRUE,GL_TRUE,GL_TRUE);
-        glDeleteFramebuffers(2,fbo); glDeleteTextures(2,tex); glDeleteBuffers(1,&pbo); glDeleteVertexArrays(1,&vao);
+        glDeleteFramebuffers(2,fbo); glDeleteTextures(2,tex); glDeleteTextures(2,rect); glDeleteBuffers(1,&pbo); glDeleteVertexArrays(1,&vao);
     });
     test("format and size changes including RGBA software fallback", [] {
         sx::VideoSurface surface; VideoFrame f;

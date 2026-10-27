@@ -1,14 +1,14 @@
 {
   "repository": "https://github.com/sainsaji/EVO-PLAYER-PS5",
-  "version": "0.12.0",
-  "commit": "9ee9a5420c73b5be448610e5f0a90a29a75592f3",
+  "version": "0.13.0",
+  "commit": "2db44b5294657b12bf91666154a05f029ddb5aa2",
   "fileSha256": {
-    "media/include/evo_vdec.h": "e8bc49823eb63c02d423411cb478f3300574fdb581ad5522fa348a6016820a51",
+    "media/include/evo_vdec.h": "c3e9c8337a4914aa5ddd18608e12350675eb64c933c67adf4e5e3ec0d16c483b",
     "media/include/evo_dovi.h": "45b469622a2c910e1721b8d74a701d117171b591200a7e0e86ac371c81ecb91c",
-    "media/include/sce/sce_videodec2.h": "9aa5c16e6efbf8bca0b694f88d3ad1581f2f75a67b20416237377e24b2d5c2e6",
-    "media/src/evo_vdec_native.h": "ca4ba6a373c1e01df5a8aba7fd55bae42e03a13d334d89dd93ed5baf9158bcde",
-    "media/src/evo_vdec_native.c": "e83c7a3f69b5ecff3c8b2df5acf36d6f1f48bb0edc7142491ae2618f0c0f112f",
-    "media/src/evo_vdec_ffmpeg.c": "bea7ab0bf88228561f5ce0fae417df15500c767e2701beffc187483fa306b45f",
+    "media/include/sce/sce_videodec2.h": "93b7636683e53e4f00b9a329ffe922d5c5e26dcfad268b3306e70ac281746115",
+    "media/src/evo_vdec_native.h": "4cfcd1b4123452245786d811ec19cbbd1fc291566b25f3a95e8796d61c5e3877",
+    "media/src/evo_vdec_native.c": "a883d3a0c0faec9ab06cff92b1279852c7cc30b178a7d457dd1f766ffb31d3c0",
+    "media/src/evo_vdec_ffmpeg.c": "492a567801e48c1bc6f4c8bbd07dea02510b2d3e95c63cc6d160497eccba0cbe",
     "pp/include/pp_frame.h": "8ebf825955a7bf42bb6535da9c85214038bb5d7de01ce9ca81d2cca06450e76f",
     "pp/include/pp_clock.h": "0b9f0d5269bce81463d1730d7817ed158090a2fa7a3b0d44c3c155d346fdd233",
     "pp/include/pp_playback.h": "8bdb5bc988ef75b8035554944ce518cceabc111feb1dc59fcff6edf175291ef4",
@@ -17,6 +17,6 @@
     "pp/src/pp_playback.c": "3390473b7822f9ae81379240e886f2e9f94563c0ffbd7c765e8b6b7ff8b74153",
     "include/evo_boot_log.h": "ea617ed0a53c92d20de989aa7c4ac8b59f2a148a2c84a2a56e42cf5b4699ef89",
     "LICENSE": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
-    "VERSION": "a3f2c68bcd98fbd9d80baa8ab17a9db4213ae13882562913ef0a5f065c69cc63"
+    "VERSION": "f9a397ab92ada6170545b1faf0600dc4679a9d81b9ddaaf222b620a47c73863f"
   }
 }

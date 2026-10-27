@@ -1,3 +1,14 @@
+# Live TV and separate IPTV Library
+
+Live TV is included in the published app. New VOD support is staged for the next
+build in a separate **IPTV Library** sidebar page; see [IPTV_LIBRARY.md](IPTV_LIBRARY.md).
+It reuses imported Xtream accounts or recognized Xtream get.php M3U links and
+appears only when movie/series support is found. The Live TV importer still reads
+only channels. The historical implementation/validation notes below describe the
+original Live TV scope; their VOD exclusion refers to that channel importer.
+
+---
+
 # Live TV — staged for the next build
 
 This feature is staged after the published 0.5.34.3 provider test. No replacement

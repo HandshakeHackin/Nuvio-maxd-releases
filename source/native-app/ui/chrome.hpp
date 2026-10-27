@@ -32,6 +32,7 @@ struct Env
     const hui::ui::Fonts &fonts;
     const Icons &icons;
     std::string clock = "21:45";
+    const bool* iptv_visible = nullptr;
 };
 
 // The left navigation: five pages. When it holds the focus a
@@ -54,11 +55,13 @@ class Rail
     void move(int delta); // up/down while focused
     // A page opened: the rail lets go of the focus and rests on that page, with no glide.
     void reset(Page page);
-    void update(float dt);
+    void set_iptv_visible(bool visible);
+    void update(float dt, bool iptv_visible=false);
     void draw(hui::gfx::DrawList &list, const Env &env, float age) const;
 
   private:
-    static hui::gfx::Rect item_rect(int index);
+    hui::gfx::Rect item_rect(int index) const;
+    bool iptv_visible_=false;
 
     int page_ = 0;
     int cursor_ = 0;
@@ -73,7 +76,7 @@ class Rail
 void draw_logo(hui::gfx::DrawList &list, const Env &env);
 
 void draw_topbar(hui::gfx::DrawList &list, const Env &env, bool search_focused, float age,
-                 const std::string *query = nullptr, float clock = 0.0f);
+                 const std::string *query = nullptr, float clock = 0.0f, const char* hint = nullptr);
 
 // A controller glyph with its label in a soft pill: "(X) Open".
 // Returns the width, so chips can be placed in a row. max_text (0 = none)

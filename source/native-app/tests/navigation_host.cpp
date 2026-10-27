@@ -98,9 +98,20 @@ void live_tv_rail_and_channel_arrival() {
     expect(tv.rail_focused() && tv.rail_cursor()==4,"cannot return to Settings from Live TV");
 }
 
+void iptv_visibility_changes() {
+    Fixture f;bool visible=false;f.env.iptv_visible=&visible;
+    sx::Board b(f.env);sx::BoardContent empty;b.set_content(&empty);b.enter();move(b,hui::Direction::left);
+    for(int i=0;i<10;++i)move(b,hui::Direction::down);
+    expect(b.rail_cursor()==5,"hidden IPTV tab receives focus");
+    visible=true;move(b,hui::Direction::down);expect(b.rail_cursor()==6,"enabled IPTV tab unreachable");
+    visible=false;move(b,hui::Direction::none);expect(b.rail_cursor()==0,"removed IPTV tab retains invalid focus");
+    move(b,hui::Direction::down);expect(b.rail_cursor()==1,"existing rail changed after hiding IPTV tab");
+}
+
 }
 int main() {
     const struct { const char* name; void (*run)(); } tests[] = {
+        {"iptv_visibility_changes",iptv_visibility_changes},
         {"live_tv_rail_and_channel_arrival",live_tv_rail_and_channel_arrival},
         {"home_without_catalogs", home_without_catalogs},
         {"home_reload_and_arrival", home_reload_and_arrival},
@@ -114,6 +125,6 @@ int main() {
         try { test.run(); std::printf("%s: PASS\n", test.name); }
         catch (const std::exception& e) { ++failed; std::printf("%s: FAIL (%s)\n", test.name, e.what()); }
     }
-    std::printf("UI navigation: 7 tests, %d failures\n", failed);
+    std::printf("UI navigation: 8 tests, %d failures\n", failed);
     return failed ? 1 : 0;
 }

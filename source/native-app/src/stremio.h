@@ -141,7 +141,7 @@ LinkCode link_create();
 ApiResult link_read(const std::string& code);
 
 // Fetches a manifest and parses it.
-bool fetch_addon(const std::string& url, Addon& out, std::string& err, const std::atomic<bool>* cancel = nullptr);
+bool fetch_addon(const std::string& url, Addon& out, std::string& err, const std::atomic<bool>* cancel = nullptr, long timeout_s = 15);
 
 // GET an addon resource as JSON.
 bool fetch_json(const std::string& url, json& out, std::string& err, long timeout_s = 20,

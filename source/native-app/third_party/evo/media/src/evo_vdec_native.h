@@ -5,7 +5,7 @@
  *
  * Native-decode plan Phase 4 (#31). The backend is a near-verbatim port of the
  * hardware-verified sceVideodec2 bring-up proven in the PPSA99039 player —
- * see docs/evo-pro/videodec2-abi.md.
+ * see docs/hardware/videodec2-abi.md.
  *
  * Everything here is a hard stub on host + payload builds: evo_vdec_native.c
  * compiles its real body only under EVO_APP_MODULE (sceVideodec2 + a real
@@ -31,7 +31,7 @@ typedef struct evo_vdec_native evo_vdec_native;
  * Preload libSceVideodec2 (sysmodule 207). MUST be called from main() BEFORE
  * the first evo_jailbreak_self() — the self-unjail's mid-run credential swap
  * makes sceSysmoduleLoadModule(207) return ESDKVERSION and the module never
- * finishes loading (docs/evo-pro/status.md, 2026-09-03). Idempotent.
+ * finishes loading (docs/hardware/video-decode.md, 2026-09-03). Idempotent.
  *   1 => native decode may be available this session
  *   0 => host / payload build, or the module could not be prepared
  */

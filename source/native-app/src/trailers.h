@@ -15,5 +15,5 @@ std::vector<Candidate> candidates(const Meta& meta,const json& tmdb);
 json embedded_player(const std::string& html);
 Playback player_source(const json& response);
 Playback resolve(const Candidate& candidate,const std::atomic<bool>* cancel=nullptr,const Request& request={});
-inline bool records_history(bool trailer,const std::string& type) {return !trailer && type!="tv";}
+inline bool records_history(bool trailer,const std::string& type) {return !trailer && type!="tv" && type!="iptv-movie" && type!="iptv-series";}
 } // namespace trailers

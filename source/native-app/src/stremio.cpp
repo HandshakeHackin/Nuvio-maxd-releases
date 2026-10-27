@@ -194,9 +194,9 @@ bool fetch_json(const std::string& url, json& out, std::string& err, long timeou
 	return true;
 }
 
-bool fetch_addon(const std::string& url, Addon& out, std::string& err, const std::atomic<bool>* cancel) {
+bool fetch_addon(const std::string& url, Addon& out, std::string& err, const std::atomic<bool>* cancel, long timeout_s) {
 	json m;
-	if (!fetch_json(url, m, err, 15, cancel)) return false;
+	if (!fetch_json(url, m, err, std::clamp(timeout_s, 1L, 15L), cancel)) return false;
 	if (!parse_addon(m, url, out)) {
 		err = "not an addon manifest";
 		return false;

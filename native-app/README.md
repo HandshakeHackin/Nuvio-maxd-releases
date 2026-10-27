@@ -367,3 +367,12 @@ From a movie or show's details, press **Options → Watch trailer**, select a tr
 ### Staged source-list caching
 
 Returning to the same title or episode can show recent eligible sources immediately while refreshing in the background. Torrent descriptors last up to five minutes; stable direct URLs last sixty seconds. Signed links and credential-bearing resolver payloads are not reused. Reload forces a fresh search. The bounded cache is session-only, scoped to profile and addon/provider options, and is cleared on profile changes. This reduces repeated empty-list waits without treating cached availability or seeder counts as a fresh check.
+
+## Staged IPTV Library
+
+The next build adds a separate **IPTV Library** sidebar page for movies and
+series from VOD-enabled Xtream services, including recognized Xtream M3U export
+links. It stays hidden for live-only services, retains cached browsing during
+outages, and keeps provider playback/resume separate from addon catalogs and
+Nuvio/tracker history. See [IPTV Library](IPTV_LIBRARY.md) for controls, limits
+and validation. This is staged source, not a replacement 1.0.0.1 installer.

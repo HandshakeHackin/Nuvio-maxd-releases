@@ -31,7 +31,7 @@ std::unique_ptr<EvoDecoder> EvoDecoder::open(const AVCodecParameters* par, std::
                 evo_vdec_open_result_name(evo_vdec_last_open_result());
         return nullptr;
     }
-    dlog("player: EVO Player 0.12.0 video engine (9ee9a542), %s decoding",
+    dlog("player: EVO Player 0.13.0 video engine (2db44b52), %s decoding",
          out->hardware() ? "hardware" : "software");
     return out;
 }

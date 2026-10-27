@@ -7,6 +7,7 @@
 #include "player.hpp"
 #include "settings.hpp"
 #include "board.hpp"
+#include "library.hpp"
 #include <cmath>
 #include "dynamic_font.hpp"
 #include "gfx/renderer.hpp"
@@ -45,7 +46,8 @@ int main(int argc, char** argv) {
     for (int y = 0; y < state.qr_size; ++y) for (int x = 0; x < state.qr_size; ++x)
         state.qr_modules[y * state.qr_size + x] = qrcodegen_getModule(qr, x, y);
     hui::gfx::DrawList list;
-    const sx::Env env{fonts,icons};
+    bool iptv_visible=argc==4 && std::string(argv[3])=="iptv";
+    const sx::Env env{fonts,icons,"21:45",&iptv_visible};
     const std::string mode = argc == 4 ? argv[3] : "login";
     const auto artwork = [&](int w, int h, float tint) {
         std::vector<std::uint8_t> px(static_cast<std::size_t>(w)*h*4);
@@ -63,7 +65,19 @@ int main(int argc, char** argv) {
     };
     const auto backdrop_texture=artwork(1920,1080,0);
     const auto poster_texture=artwork(480,720,3);
-    if(mode=="donation") {
+    if(mode=="iptv") {
+        sx::LibraryContent catalog;catalog.heading="IPTV Library";
+        catalog.notice="Movies and series from your IPTV service · Options: library controls";
+        catalog.filters={{"Server","My Xtream Server"},{"Type","Movies"},{"Category","Recently added"}};
+        catalog.count="8 titles · 1/1";
+        for(int i=0;i<8;++i){sx::Title t;t.id="iptv:example:movies:"+std::to_string(i);
+            t.name=std::vector<std::string>{"The Last Horizon","City After Dark","Wild Coast","The Long Way Home","Northbound","Another World","Deep Water","The Explorer"}[i];
+            t.poster=poster_texture;t.year="2025";t.badge="Provider stream";if(i==0)t.progress=.35f;catalog.items.push_back(t);}
+        sx::Library page(env,sx::Page::iptv);page.set_content(&catalog);page.enter();hui::InputFrame idle;
+        for(int i=0;i<120;++i)page.update(idle,1.f/60);
+        hui::gfx::BackdropSpec bg;page.draw(list,bg);
+    }
+    else if(mode=="donation") {
         state.link_only=true;state.title="Support on Ko-fi";state.link=sx::donation_link;state.cancel_label="Close";
         std::uint8_t temp[qrcodegen_BUFFER_LEN_MAX],donation_qr[qrcodegen_BUFFER_LEN_MAX];
         assert(qrcodegen_encodeText(sx::donation_url,temp,donation_qr,qrcodegen_Ecc_MEDIUM,qrcodegen_VERSION_MIN,20,qrcodegen_Mask_AUTO,true));

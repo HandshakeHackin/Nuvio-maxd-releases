@@ -8,7 +8,7 @@ ${HOST_CC:-gcc} -O2 -c "$ROOT/third_party/qrcodegen.c" -o "$B/qr-host.o"
 ${HOST_CXX:-g++} -std=c++20 -O1 -DGL_GLEXT_PROTOTYPES=1 \
     -I"$ROOT/ui" -I"$ROOT/src" -I"$ROOT/third_party" -I"$HUI/src" -I"$HUI/third_party/stb" \
     "$ROOT/tests/ui_preview.cpp" "$ROOT/tests/system_host.cpp" "$ROOT/ui/overlays.cpp" "$ROOT/ui/chrome.cpp" \
-    "$ROOT/ui/settings.cpp" "$ROOT/ui/page.cpp" "$ROOT/ui/player.cpp" "$ROOT/ui/board.cpp" "$ROOT/ui/dynamic_font.cpp" "$ROOT/ui/cards.cpp" "$ROOT/ui/detail.cpp" "$ROOT/src/bidi.cpp" \
+    "$ROOT/ui/settings.cpp" "$ROOT/ui/page.cpp" "$ROOT/ui/player.cpp" "$ROOT/ui/board.cpp" "$ROOT/ui/library.cpp" "$ROOT/ui/grid.cpp" "$ROOT/ui/dynamic_font.cpp" "$ROOT/ui/cards.cpp" "$ROOT/ui/detail.cpp" "$ROOT/src/bidi.cpp" \
     "$HUI"/src/gfx/*.cpp "$HUI/src/core/save_file.cpp" "$HUI/src/ui/glyphs.cpp" \
     "$B/qr-host.o" ${HOST_GL_LIBS:--lEGL -lGL} -o "$B/ui-preview"
 if [ -z "${PREVIEW_MODES:-}" ]; then
@@ -21,7 +21,7 @@ EGL_PLATFORM=surfaceless LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=llvmpipe \
 
 fi
 
-read -r -a modes <<< "${PREVIEW_MODES:-movie series seasons player tracks home skip skip-focused recap-focused credits-focused next-focused subtitle-preview subtitle-preview-high-contrast release-notes install-source store-update github-update donation audio-output settings-categories settings-lighting profile-pin}"
+read -r -a modes <<< "${PREVIEW_MODES:-iptv movie series seasons player tracks home skip skip-focused recap-focused credits-focused next-focused subtitle-preview subtitle-preview-high-contrast release-notes install-source store-update github-update donation audio-output settings-categories settings-lighting profile-pin}"
 for mode in "${modes[@]}"; do
     EGL_PLATFORM=surfaceless LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=llvmpipe \
         MESA_GL_VERSION_OVERRIDE=4.6 MESA_GLSL_VERSION_OVERRIDE=460 MESA_SHADER_CACHE_DISABLE=true \

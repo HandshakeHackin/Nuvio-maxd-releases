@@ -1,6 +1,9 @@
 #include "video_surface.hpp"
 #include "gfx/gl_program.hpp"
 #include "hdr_tone_map.h"
+#include <initializer_list>
+// Rectangle sampled YUV planes avoid the PS5 driver's CPU tiling on each upload.
+// The converted output remains a normal 2D UI texture.
 
 namespace sx {
 namespace {
@@ -17,8 +20,8 @@ void main() {
 constexpr const char* kFragment = R"GLSL(
 in vec2 uv;
 layout(location = 0) out vec4 color;
-layout(location = 0) uniform sampler2D luma;
-layout(location = 1) uniform sampler2D chroma;
+layout(location = 0) uniform sampler2DRect luma;
+layout(location = 1) uniform sampler2DRect chroma;
 layout(location = 2) uniform float sampleScale;
 layout(location = 3) uniform int wide;
 layout(location = 4) uniform int colors;
@@ -59,8 +62,8 @@ vec3 toSdr(vec3 light) {
 void main() {
     // R16/RG16 are normalized storage. The hardware can return low-aligned
     // 10-bit words; P010 software output is high-aligned. Keep both explicit.
-    float rawY = texture(luma, uv).r * sampleScale;
-    vec2 rawC = texture(chroma, uv).rg * sampleScale;
+    float rawY = texture(luma, uv * vec2(textureSize(luma))).r * sampleScale;
+    vec2 rawC = texture(chroma, uv * vec2(textureSize(chroma))).rg * sampleScale;
     float unit = wide != 0 ? 4.0 : 1.0;
     float maximum = wide != 0 ? 1023.0 : 255.0;
     float y = fullRange != 0 ? rawY / maximum : (rawY - 16.0 * unit) / (219.0 * unit);
@@ -87,7 +90,7 @@ void main() {
 // Upload happens before the UI draws. Restore caller state so fonts, artwork,
 // the display framebuffer and even skipped UI frames remain independent.
 struct State {
-    GLint draw, read, viewport[4], program, vao, active, textures[2], alignment, row_length;
+    GLint draw, read, viewport[4], program, vao, active, textures[2], rectangles[2], alignment, row_length;
     GLint skip_rows, skip_pixels, unpack_buffer, swap_bytes;
     GLboolean blend, depth, cull, scissor, srgb, dither, mask[4];
     State() {
@@ -100,6 +103,7 @@ struct State {
         for (int i = 0; i < 2; ++i) {
             glActiveTexture(GL_TEXTURE0 + i);
             glGetIntegerv(GL_TEXTURE_BINDING_2D, &textures[i]);
+            glGetIntegerv(GL_TEXTURE_BINDING_RECTANGLE, &rectangles[i]);
         }
         glGetIntegerv(GL_UNPACK_ALIGNMENT, &alignment);
         glGetIntegerv(GL_UNPACK_ROW_LENGTH, &row_length);
@@ -125,6 +129,7 @@ struct State {
         glUseProgram(program); glBindVertexArray(vao);
         for (int i = 0; i < 2; ++i) {
             glActiveTexture(GL_TEXTURE0 + i); glBindTexture(GL_TEXTURE_2D, textures[i]);
+            glBindTexture(GL_TEXTURE_RECTANGLE, rectangles[i]);
         }
         glActiveTexture(active);
         glPixelStorei(GL_UNPACK_ALIGNMENT, alignment);
@@ -140,12 +145,12 @@ struct State {
     }
 };
 
-void texture_parameters(GLint filter) {
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+void texture_parameters(GLint filter, GLenum target = GL_TEXTURE_2D) {
+    glTexParameteri(target, GL_TEXTURE_MAX_LEVEL, 0);
+    glTexParameteri(target, GL_TEXTURE_MIN_FILTER, filter);
+    glTexParameteri(target, GL_TEXTURE_MAG_FILTER, filter);
+    glTexParameteri(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 }
 } // namespace
 
@@ -162,8 +167,9 @@ bool VideoSurface::upload(const VideoPicture& p, std::string* error, bool hdr_ou
     const bool resize = !rgba_ || p.w != w_ || p.h != h_ || p.format != format_;
     if(resize) {
         // Deleted texture names must not be rebound by the caller-state guard.
-        for(auto& texture:state.textures)
-            if(GLuint(texture)==rgba_ || GLuint(texture)==y_ || GLuint(texture)==uv_)texture=0;
+        for(auto* bindings : {state.textures, state.rectangles})
+            for(int i=0;i<2;++i)
+                if(GLuint(bindings[i])==rgba_ || GLuint(bindings[i])==y_ || GLuint(bindings[i])==uv_)bindings[i]=0;
         release_textures();
     }
     glActiveTexture(GL_TEXTURE0);
@@ -189,21 +195,21 @@ bool VideoSurface::upload(const VideoPicture& p, std::string* error, bool hdr_ou
         if (!uv_) glGenTextures(1, &uv_);
         const bool wide = p.format == VideoFormat::Nv12_10;
         const GLenum type = wide ? GL_UNSIGNED_SHORT : GL_UNSIGNED_BYTE;
-        glBindTexture(GL_TEXTURE_2D, y_);
+        glBindTexture(GL_TEXTURE_RECTANGLE, y_);
         if (resize) {
-            glTexImage2D(GL_TEXTURE_2D, 0, wide ? GL_R16 : GL_R8, p.w, p.h, 0, GL_RED, type, nullptr);
-            texture_parameters(GL_NEAREST);
+            glTexImage2D(GL_TEXTURE_RECTANGLE, 0, wide ? GL_R16 : GL_R8, p.w, p.h, 0, GL_RED, type, nullptr);
+            texture_parameters(GL_NEAREST, GL_TEXTURE_RECTANGLE);
             if(!y_ || glGetError()!=GL_NO_ERROR) {release_textures();return fail("Cannot allocate the video luma texture");}
         }
-        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, p.w, p.h, GL_RED, type, p.y);
-        glActiveTexture(GL_TEXTURE1); glBindTexture(GL_TEXTURE_2D, uv_);
+        glTexSubImage2D(GL_TEXTURE_RECTANGLE, 0, 0, 0, p.w, p.h, GL_RED, type, p.y);
+        glActiveTexture(GL_TEXTURE1); glBindTexture(GL_TEXTURE_RECTANGLE, uv_);
         const int cw = (p.w + 1) / 2, ch = (p.h + 1) / 2;
         if (resize) {
-            glTexImage2D(GL_TEXTURE_2D, 0, wide ? GL_RG16 : GL_RG8, cw, ch, 0, GL_RG, type, nullptr);
-            texture_parameters(GL_LINEAR);
+            glTexImage2D(GL_TEXTURE_RECTANGLE, 0, wide ? GL_RG16 : GL_RG8, cw, ch, 0, GL_RG, type, nullptr);
+            texture_parameters(GL_LINEAR, GL_TEXTURE_RECTANGLE);
             if(!uv_ || glGetError()!=GL_NO_ERROR) {release_textures();return fail("Cannot allocate the video chroma texture");}
         }
-        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, cw, ch, GL_RG, type, p.uv);
+        glTexSubImage2D(GL_TEXTURE_RECTANGLE, 0, 0, 0, cw, ch, GL_RG, type, p.uv);
         if (!framebuffer_) glGenFramebuffers(1, &framebuffer_);
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffer_);
         glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rgba_, 0);

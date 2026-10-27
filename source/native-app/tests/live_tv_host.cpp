@@ -47,6 +47,13 @@ int main(int argc, char **argv) {
          r.channels[0].group == "News channels");
   assert(r.channels[0].url ==
          "https://example.test:8443/live/a%2Fb/p%3Fss/15.ts");
+  auto multi = parse_xtream(
+    R"([{"stream_id":9,"name":"Multi","category_id":"1","category_ids":[1,"2",2,"unknown"]}])",
+    R"([{"category_id":"1","category_name":"News"},{"category_id":"2","category_name":"Sports"}])",
+    "https://example.test", "u", "p");
+  assert(multi.error.empty() && multi.channels.size() == 1);
+  assert(multi.channels[0].groups.size() == 2 && multi.channels[0].in_group("News") &&
+         multi.channels[0].in_group("Sports") && !multi.channels[0].in_group("Movies"));
   assert(!parse_xtream("{}", "[]", "https://example.test", "u", "p")
               .error.empty());
   assert(!parse_xtream("[]", "[]", "https://example.test?leak=1", "u", "p")

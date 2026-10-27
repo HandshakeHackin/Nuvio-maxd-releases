@@ -79,9 +79,9 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
     assert actual['sce_module/libc.prx'] == info['dependencies']['boilerplate']['runtimeSha256']
     assert info['hardwareVerified'] is False
     assert info['playbackEngines']['default'] == 'native'
-    assert info['playbackEngines']['optional'] == 'EVO Player 0.12.0'
+    assert info['playbackEngines']['optional'] == ['EVO Player 0.13.0', 'VLC 3.0.24']
     evo = info['dependencies']['evoPlayer']
-    assert evo['version'] == '0.12.0' and evo['commit'] == '9ee9a5420c73b5be448610e5f0a90a29a75592f3'
+    assert evo['version'] == '0.13.0' and evo['commit'] == '2db44b5294657b12bf91666154a05f029ddb5aa2'
     for name in ('LICENSE', 'UPSTREAM.json', 'INTEGRATION.md'):
         assert 'licenses/evo-player/' + name in actual
     assert info['applicationDisplayProfile'] == display_profile

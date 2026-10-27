@@ -10,20 +10,32 @@ Sign in with a QR code to load your addons and saved library from your selected
 Nuvio profile. **Watch Progress now uses Nuvio Sync**, so you can pause on the
 PS5 and pick up where you left off on another Nuvio device.
 
-**Current release: [v0.5.34 native experimental](https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/tag/v0.5.34-native-experimental).**
-Download `PPSA99288.zip` or `NuvioMaxd-0.5.34-native.ffpfsc`. The validation report,
-matching source archive and `SHA256SUMS` are included. The development repository
-stays private; the source for each released version is available with its public
-downloads.
+**Current test release: [1.0.0.2](https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/tag/v1.0.0.2-native-experimental).**
+Download `PPSA99288.zip` or `NuvioMaxd-1.0.0.2-native.ffpfsc`. Matching source,
+checksums and validation are included. Physical-console testing remains pending.
 
 Nuvio Max'd is also available in the
 [ProsperoStore homebrew shop](https://prosperostore.net/app/PPSA99288/).
 Find **Nuvio Max'd** in the store to install it, or use the GitHub downloads.
 
+## New in 1.0.0.2: IPTV Library
+
+Add your Xtream server/login through Live TV’s sources/filters menu. If it offers
+movies or series, **IPTV Library** appears as a separate sidebar tab. For an
+existing account, choose **Check IPTV Library availability** in that menu.
+Live-only services keep the tab hidden. Choose Server, Type and Category, search
+the loaded category, or open a show’s seasons and episodes. IPTV resume and
+completed markers stay local to that profile; saved catalogs remain during outages.
+
+EVO is updated to 0.13.0. Native adds 10-bit VP9 hardware selection and the GPU
+upload path is optimized. Try ordinary playback, pause/seek, colour and subtitles
+and report console results in [issue #10](https://github.com/HandshakeHackin/Nuvio-maxd-releases/issues/10).
+See [test instructions](native-app/TESTING-1.0.0.2.md).
+
 ## New in 1.0.0.1
 
-Live TV lists support up to 100,000 channels / 128 MiB. Xtream imports live
-channels only. For four-screen TV, open Live TV’s sources/filters menu and choose
+Live TV lists support up to 100,000 channels / 128 MiB. The Live TV tab imports
+live channels; from 1.0.0.2, IPTV Library handles VOD separately. For four-screen TV, open Live TV’s sources/filters menu and choose
 four SDR channels. Start with SD feeds and a provider allowing four connections.
 D-pad focuses, Cross listens, Square replaces, Triangle opens full-screen and
 Circle exits. This software-preview mode is experimental and needs console testing.
@@ -118,12 +130,12 @@ Let ShadowMount+ finish scanning, then open **Nuvio Max'd**.
 
 ### FFPFSC image
 
-1. Download `NuvioMaxd-0.5.34-native.ffpfsc` and put it in a `/homebrew/` folder
+1. Download `NuvioMaxd-1.0.0.2-native.ffpfsc` and put it in a `/homebrew/` folder
    on storage that ShadowMount+ scans, just like your other homebrew apps.
    For a USB drive, that might be:
 
    ```text
-   /mnt/usb0/homebrew/NuvioMaxd-0.5.34-native.ffpfsc
+   /mnt/usb0/homebrew/NuvioMaxd-1.0.0.2-native.ffpfsc
    ```
 
    Leave the image in that folder so ShadowMount+ can identify it automatically.

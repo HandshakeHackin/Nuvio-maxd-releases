@@ -13,7 +13,7 @@ The development repository stays private; code for released builds is available
 without an account through the matching archives here.
 
 A browsable copy of this branch's released source is in [`source/`](source/README.md).
-This branch contains 1.0.0.1; `source/source-archive.json` identifies its exact
+This branch contains 1.0.0.2; `source/source-archive.json` identifies its exact
 development commit and original file hashes. The main and build branches
 retain their respective release versions. GitHub's language statistics count this
 app source, excluding vendored libraries and release-only verification scripts.
@@ -21,6 +21,6 @@ app source, excluding vendored libraries and release-only verification scripts.
 The project is GPL-3.0-or-later. Components retain their own notices and license
 texts in the source and packaged app. The native UI and player build on
 [Sp9nky's unofficial Stremio port](https://github.com/Sp9nky/unofficial-stremio-ps5-port),
-[BlackBearReloaded's Prospero UI](https://github.com/blackbearreloaded/ps5-homebrew-ui)
+[BlackBearReloaded's Prospero UI](https://github.com/LedyBacer/ps5-homebrew-ui)
 and the other components listed in [THIRD_PARTY.md](source/native-app/THIRD_PARTY.md).
 This is an unofficial Nuvio client, not an official Nuvio or Sony release.

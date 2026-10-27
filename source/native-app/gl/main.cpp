@@ -205,6 +205,7 @@ int main()
                                       selected.query_result == 0 ? selected.configured_height : 0,
                                       display_fallback);
     static sx::Env env{fonts, icons};
+    env.iptv_visible=&session.iptv_visible;
     static sx::Shell shell(env, session);
     shell.start_sound(root + "/sounds"); // the interface's sounds
     shell.start_boot_at(boot_seconds()); // the animation goes on from where the frames above left it

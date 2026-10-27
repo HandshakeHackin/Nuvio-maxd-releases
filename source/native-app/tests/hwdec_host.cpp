@@ -10,6 +10,7 @@ extern "C" {
 #define AV_PROFILE_HEVC_MAIN FF_PROFILE_HEVC_MAIN
 #define AV_PROFILE_HEVC_MAIN_10 FF_PROFILE_HEVC_MAIN_10
 #define AV_PROFILE_VP9_2 FF_PROFILE_VP9_2
+#define AV_PROFILE_VP9_0 FF_PROFILE_VP9_0
 #endif
 // The backend stays in this one test translation unit, including its private
 // slot types; GCC's cross-unit subobject linkage warning does not apply here.
@@ -135,6 +136,13 @@ int main() {
         catch (const std::exception& e) { ++failures; printf("%s: FAIL (%s)\n", name, e.what()); test::clean(); }
     };
     auto main10 = [] { return test::open(AV_CODEC_ID_HEVC, AV_PROFILE_HEVC_MAIN_10, AV_PIX_FMT_YUV420P10LE); };
+    run("vp9_profile2_uses_hardware_and_retries_depth", [&] {
+        test::failure = test::DeepQuery;
+        auto d = test::open(AV_CODEC_ID_VP9, AV_PROFILE_VP9_2, AV_PIX_FMT_YUV420P10LE);
+        test::require(bool(d) && test::created_depth == 1, "VP9-2 hardware retry unavailable");
+        test::require(kCodecs[VP92].profile == 2 && kCodecs[VP92].level_4k == 51,
+                      "VP9-2 profile or 4K level changed");
+    });
     run("main10_prefers_deep_pipeline", [&] {
         auto d = main10(); test::require(bool(d) && test::created_depth == 4, "deep hardware setup was lost");
     });

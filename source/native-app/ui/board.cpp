@@ -196,6 +196,7 @@ void Board::update(const hui::InputFrame &input, float dt)
 {
     age_ += dt;
     clock_ += dt;
+    rail_.set_iptv_visible(env_.iptv_visible && *env_.iptv_visible);
     const bool has_rows = content_ && !content_->rows.empty();
     // Loading or catalog-free addons must not trap the cursor on an empty
     // home page. Keep the menu usable while data arrives.
@@ -249,7 +250,7 @@ void Board::update(const hui::InputFrame &input, float dt)
         col_[row_] = std::min(col_[row_], std::max(0, n - 1));
     }
     rail_.set_page(Page::board);
-    rail_.update(dt);
+    rail_.update(dt,env_.iptv_visible && *env_.iptv_visible);
     if (!has_rows)
     {
         focus_on_.target = 0.0f;

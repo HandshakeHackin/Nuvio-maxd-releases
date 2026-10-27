@@ -67,6 +67,7 @@ class Shell
     Board search_board_;
     Discover discover_;
     Library library_;
+    Library iptv_library_;
     Addons addons_;
     Addons live_tv_;
     Settings settings_;

@@ -1,20 +1,20 @@
 {
-  "version": "1.0.0.1-native",
-  "sourceCommit": "4cd3c33fd81f57c21d211e71a62a073d8aad56f8",
+  "version": "1.0.0.2-native",
+  "sourceCommit": "fc4d98bf6d19c45956fe09426184e4504a88fa33",
   "sourceDirty": false,
-  "imageBytes": 46202880,
-  "imageSha256": "35acdb51a6fec7a1cdcebdefcc024027cb1a36605fa282306954907872a2bdad",
-  "zipSha256": "682aee99d26be7ecb372a8b70be007842183541f905ce938a5ce514fe0e1516f",
+  "imageBytes": 46268416,
+  "imageSha256": "1b7700b15d94ac0c5236a4830b051fcd54778da709d16a8268c5180a9e4f064f",
+  "zipSha256": "ceed5b8ba24309782da184e91dd660b6dda781eaeacf25fa12e26f2f23cad0a6",
   "files": 151,
   "fileSha256": {
-    "nuvio-updater.elf": "228293532c67d98b1a8aca99071cc9db928a1f548e1087b35e4843aa829c7572",
-    "THIRD_PARTY.md": "3822ed412249095fffa33b25ab2ab2760d11698ab5b407b8dbb238146c5b4131",
-    "eboot.bin": "8a9d77c21b677685758b847c25776c0c15892eaab4414db0fb80b1c54e391bcd",
+    "nuvio-updater.elf": "1f89d03e8b3dec5f19525df1424f2406d67762b7a2010b92951681338f6d46df",
+    "THIRD_PARTY.md": "ef06d8c8ae790f0e07b23820ffa58deebb127ee982784cf9802ff5ebfbaf61d6",
+    "eboot.bin": "2633936f423ce70f610975d97d46f8995c504fc309691d456cb1a9f6935f6475",
     "tracker-applications.json": "44527d59f8228d61a62c36c6226c815dc5cdf6c83b86b81d960f55aedeb4f8f1",
     "LICENSE": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
     "ca-bundle.crt": "11163db462ffae3918afdf46c70a8db70cfcbaa8077352290b62a9c03c36fe6c",
     "account-config.json": "1014f3c748bee58a832ea5d1be191ebaa2e577ef8a08e8168f01cb6d78f1921f",
-    "build-info.json": "a60d4afa75a47b3027dc073c948d591865accf25e3df0bb155e940732bdef08f",
+    "build-info.json": "4f85e13197c77578a0addaf3a6f8fe3b41ec9fdb65fbce393a8f3aee944bb678",
     "sce_module/libc.prx": "e6ff45d16adf687855cc3b33b0c8a4132b6504360b221e0a34c7e99fb3ba0036",
     "fonts/NotoSansCJK-LICENSE.txt": "6a73f9541c2de74158c0e7cf6b0a58ef774f5a780bf191f2d7ec9cc53efe2bf2",
     "fonts/Inter-Regular.ttf": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
@@ -81,7 +81,7 @@
     "icons/pause.png": "53bf621371ae732a31bdbab134d068226d442b6c32976e0895dc31d0c51f1c24",
     "icons/l1.png": "74a2a11849f8b48612677acdf3c7c8badde1b761e85791f2fb59b34e59969ab4",
     "sce_sys/icon0.png": "3c655e095db72d3a3d4cef6876c6ffe825e742d13af0afda3c84b141d1eb6226",
-    "sce_sys/param.json": "440131b11cd2bef924d95fd4536349a20b3abb0db8703c3c7548d35fb69f9214",
+    "sce_sys/param.json": "081cd2eea29ae290e15dc8e9f7048523b5eb6efc6a46381f079d83b3efd02c4b",
     "licenses/native-app-boilerplate-GPL-3.0.txt": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
     "licenses/libass.txt": "f7e30699d02798351e7f839e3d3bfeb29ce65e44efa7735c225464c4fd7dfe9c",
     "licenses/Stremio-MIT.txt": "40f7f4a6bc790d341e490c56f6fd5af2f50cdce89393b9fa4c81f4510ca97976",
@@ -128,8 +128,8 @@
     "licenses/ps5-opengl/LICENSE": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
     "licenses/provider-runtime/LICENSES.txt": "5446c6a5466c24787fa9a154bc70b5d94596eb8af1d754264ba67abdee174052",
     "licenses/evo-player/LICENSE": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
-    "licenses/evo-player/INTEGRATION.md": "63bcdfc713e25fb161d87b060471918002582a9cf049c6c1da794abca1c75400",
-    "licenses/evo-player/UPSTREAM.json": "519a63bee0e9ab2a2de11f557ac848ce41670f6f78d12e93c4a9fb65dc21950f",
+    "licenses/evo-player/INTEGRATION.md": "1403b516bb8e9b58747a132411de44e3932fa019625bb07b22cf379c62b56fad",
+    "licenses/evo-player/UPSTREAM.json": "fc53f398e3da65e93fde2059404bbf614e6c2e279e7f56f58d4254f3acda2a53",
     "licenses/vlc/COPYING.matroska": "dc626520dcd53a22f727af3ee42c770e56c97a64fe3adb063799d8ab032fe551",
     "licenses/vlc/COPYING.dvbpsi": "dc626520dcd53a22f727af3ee42c770e56c97a64fe3adb063799d8ab032fe551",
     "licenses/vlc/COPYING.LIB": "dc626520dcd53a22f727af3ee42c770e56c97a64fe3adb063799d8ab032fe551",
@@ -163,12 +163,12 @@
   "allExtractedFileHashesMatch": true,
   "containerErrors": 0,
   "containerWarnings": 0,
-  "contentVersion": "06.000.001",
-  "sourceArchiveFiles": 768,
+  "contentVersion": "06.000.002",
+  "sourceArchiveFiles": 780,
   "sourceArchiveHashesMatch": true,
   "hardwareVerified": false,
   "developmentValidation": {
-    "scope": "1.0.0.1 public test release; full Native/VLC CI plus local feature tests and exact installer/source verification; physical-console validation pending.",
+    "scope": "Combined upstream/IPTV test build; see VALIDATION.json",
     "hardwareVerified": false
   },
   "hostToolsEvidence": {
@@ -188,89 +188,141 @@
     "scope": "Unchanged legacy host bridge and package wrapper; current native target/package checks recorded separately"
   },
   "featureValidation": {
-    "version": "1.0.0.1",
-    "purpose": "Local issue #10 feature test; not published",
-    "sourceCommit": "4cd3c33fd81f57c21d211e71a62a073d8aad56f8",
+    "version": "1.0.0.2",
+    "sourceCommit": "fc4d98bf6d19c45956fe09426184e4504a88fa33",
+    "branch": "builds/v1.0.0.2",
+    "status": "PS5 build, host tests, source archive and installer/ZIP integrity verification passed; console testing pending",
     "hardwareVerified": false,
+    "published": false,
     "checks": {
-      "nativeLifecycle": "passed: PCM gain at output, sync without progress reset, four local 960x540 software previews scaled to at most 640x360, one audio owner and cleanup, 4K/PQ rejection, existing lifecycle recovery",
-      "pcmSamples": "passed: stereo/downmix/clock and PCM gain/clipping",
-      "preferencesAndUi": "passed: defaults, bounds, persistence and existing UI draw checks",
-      "multiviewControls": "passed: production input body with fake session boundaries; focus, ordered audio transfer, replacement, full-screen, exit",
-      "largeImport": "passed: prior commit 884313a; 60k-channel M3U/gzip Xtream, bounds/cancellation and error handling",
-      "vlcIntegration": "passed isolated rerun: real host VLC 3.0.23 file/HTTP/HLS, PCM gain/delay, pause, seek, replay, reopen, private request headers, redirected relative segments, cancellation; baseline also passed",
-      "ps5Build": "passed: pinned PS5 SDK 0.44, OpenGL 1.0.2, static VLC 3.0.24; import validation passed",
-      "packaging": "passed: zero container errors/warnings; all 151 image and ZIP file hashes match; matching clean source commit; 768 source archive hashes checked; credentials/privacy audit passed"
-    },
-    "limitations": [
-      "Four live provider connections and console GPU/CPU performance are unverified. SD feeds recommended; four HD sources may be too demanding.",
-      "Four-screen uses independent native software previews and one PCM port; normal full-screen retains Native/EVO/VLC options.",
-      "Host tests do not establish PS5 HDMI/Bluetooth audio latency or multiview compatibility.",
-      "Host VLC is 3.0.23; packaged static PS5 VLC is pinned 3.0.24."
-    ],
-    "logs": {
-      "nativeLifecycle": {
-        "file": "nativeLifecycle.log",
-        "sha256": "3a9ba3b0bf10968b8e481e08aaa00d42dfea4bb0694f2313325aebdc82f5b84a"
+      "evo": {
+        "result": "passed",
+        "log": "evo.log",
+        "sha256": "d3444a18e1b14c1c2260c92cfc424bbc42a8ebd21294ad3c673efacec97f45b5"
       },
-      "pcmSamples": {
-        "file": "pcmSamples.log",
-        "sha256": "6cd14e844aa3bd9c3987d7b985eac3118141ec9922a84d4056dcdb95e1f288b1"
+      "evo-vp9-profile2": {
+        "result": "passed",
+        "log": "evo-vp9-profile2.log",
+        "sha256": "ccfc6625c98cfb7f84c114447ab3979a329882d0188ee291f01695e8420b399c"
       },
-      "preferencesAndUi": {
-        "file": "preferencesAndUi.log",
-        "sha256": "8330606db39daf4812ecd30f3ebf19835847cf1e7d223c5e9c3fcad08edf054a"
+      "hwdec": {
+        "result": "passed",
+        "log": "hwdec.log",
+        "sha256": "95f1d4445eb99a782a23c7b8b9db97611d451cf79ef016b2f374a1403d778939"
       },
-      "multiviewControls": {
-        "file": "multiviewControls.log",
-        "sha256": "b44c9bbfc5f7efa316880aff7071280895c75c6b0943d7d159b7bdead47fb881"
+      "video": {
+        "result": "passed",
+        "log": "video.log",
+        "sha256": "afeddcb3e23135b7b15a9baf32a841e85482ca0b1db63f0afeb750b86445f96f"
       },
-      "largeImport": {
-        "file": "largeImport.log",
-        "sha256": "e6be3d5e63944cae7606af50f87b915a4ccd1a08d76c996f8e18faf1f65599fe"
+      "video-safety": {
+        "result": "passed",
+        "log": "video-safety.log",
+        "sha256": "f30a5157ed06086a7580964d185e6b2daaa7beaad632cc225a8c9c960f55924d"
       },
-      "ps5Syntax": {
-        "file": "ps5Syntax.log",
-        "sha256": "4484f1b713ed5bd9979775187b6eb2c3b29a0966a756252c0611e17009fc9724"
+      "upstream": {
+        "result": "passed",
+        "log": "upstream.log",
+        "sha256": "b4306da34546db85e1f6e7e493a9a10b9af5be98737c139b874a7e9179713130"
       },
-      "vlcIntegration": {
-        "file": "vlcIntegration.log",
-        "sha256": "f782cea039b73f333c231fd00190d7aa0f784bd0e5d1cf75764a222b7eb2adf6"
+      "remote": {
+        "result": "passed",
+        "log": "remote.log",
+        "sha256": "ab6575ccb54eb87340cd0086b8158e0b76c510aec364bd416b6c6424132ffcb8"
+      },
+      "live-tv": {
+        "result": "passed",
+        "log": "live-tv.log",
+        "sha256": "55e155f2842a90d272947b1bf91de7d951afb83ae62fafcc30551d0c204295e8"
+      },
+      "iptv-library": {
+        "result": "passed",
+        "log": "iptv-library.log",
+        "sha256": "daf08dc2d421af929b81505b38ccc28f50bdf28a55ad54efa667abeae5674bfb"
+      },
+      "iptv-session": {
+        "result": "passed",
+        "log": "iptv-session.log",
+        "sha256": "2d187bbb70f2f7099f3afd9c0c837abdb070c8abbcd64f5285685e1dbe4a49c5"
+      },
+      "settings": {
+        "result": "passed",
+        "log": "settings.log",
+        "sha256": "0cf6b53139cd08aba5c244373c2916ca4e3b16ea96dbc102d363921068dc1409"
+      },
+      "tracking": {
+        "result": "passed",
+        "log": "tracking.log",
+        "sha256": "492d5e5ee5a40e177cdd90e452a0af2fba530d369b54bb2489e40c3eb80eb4d5"
+      },
+      "updater": {
+        "result": "passed",
+        "log": "updater.log",
+        "sha256": "129442780cf5d438a7e1f6d343be0292059922ab035c010e67b630958b717b70"
+      },
+      "navigation": {
+        "result": "passed",
+        "log": "navigation.log",
+        "sha256": "ef3dc8e671b4a798fb98ae350b97d05dec795657f57fbe0df62824e5e17d9406"
+      },
+      "vlc-workspace": {
+        "result": "passed",
+        "log": "vlc-workspace.log",
+        "sha256": "0c5613f67aefa2419a5d7d086542e966b4bfc243bdf48eb5b0277e219afbb573"
+      },
+      "player-lifecycle": {
+        "result": "passed",
+        "log": "player-lifecycle.log",
+        "sha256": "a65177adbb23f300bda424ae61a2e89137ba76e2af058592b43cdbb5323dbbe5"
       },
       "ps5Build": {
-        "file": "ps5Build.log",
-        "sha256": "78b17cd1f526e65f104e05807ca578e684fc1a52aefe829a90bd2e928bb89557"
+        "result": "passed",
+        "importsVerified": 413,
+        "log": "ps5-build.log",
+        "sha256": "dd89ca75bbce3cbd180601c913112026c54fe07b67179ca8d7c7cdde67be243e",
+        "driverWarnings": "five unused-function warnings in pinned upstream driver; no build errors"
       },
-      "packaging": {
-        "file": "packaging.log",
-        "sha256": "fb53fd6c778eaee111ae874fafccec93903701bb94c867d571a8355858d91b90"
-      },
-      "privacy": {
-        "file": "privacy.log",
-        "sha256": "a87193e367195ce88c521e4a173b19cb5d364566aab4c01fa8c8cc26fd8ff958"
+      "packageVerification": {
+        "result": "passed",
+        "files": 151,
+        "sourceFiles": 780,
+        "deepImageAndZipRoundTrips": true,
+        "privateRuntimeJsonFilesAbsent": true,
+        "receipt": "BUILD-VERIFICATION.json",
+        "sha256": "408eeee4ef0cc69c4cdf3c8784c8576ca8bafb769ff6d66e1f13ccaf5cd20281"
       }
     },
-    "testNotes": [
-      "Earlier host VLC runs saw an HLS timing failure and a close timing failure during concurrent work; unmodified baseline and final isolated full suite passed without weakening assertions. Physical-console testing is pending."
-    ]
+    "limitations": [
+      "Physical PS5 GPU/decoder/HDR behaviour needs console testing.",
+      "VLC standalone UI/upscalers/equalizer UI are not embedded.",
+      "ShadowMount+ remains a separate console installation.",
+      "MDBList personal API key connection remains; another app registration is not copied."
+    ],
+    "upstreamAudit": {
+      "vlcPort": "0.6.0",
+      "libvlc": "3.0.24",
+      "decoderMatchesUpstreamExceptRetainedGuards": true,
+      "guards": [
+        "unknown dimensions",
+        "direct-memory CPU workspace fallback"
+      ],
+      "upstreamDecoderSha256": "3abebee9291042bd439e5c2a6e2d44f1cedaebabedecdb3cde8e426cd2c65111",
+      "localDecoderSha256": "c3fe8d52fb8ec633c722397888a0c4ea1a75f1c340230ad8941e1f87600464f7",
+      "huiParagraphSourceExact": true,
+      "sdkArchiveEntriesVerified": 2926,
+      "sdkVersion": "0.45",
+      "pacbrewLibrariesRetained": "0.40.2",
+      "hardwareVerified": false
+    },
+    "objectCache": {
+      "receipt": "object-reuse.json",
+      "reusedIdenticalInputObjects": 30
+    }
   },
   "hostTestEvidence": {
-    "conclusion": "success",
-    "url": "https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/40427909391/job/121938183332",
-    "publicCommit": "23552dbf1c8efb8578f89fd0944c01a1256087f0",
-    "scope": "Full Native/account/transport suite, large imports, multiview controls, PCM gain/sync, four preview lifecycle and UI rendering"
+    "conclusion": "pending"
   },
   "vlcHostTestEvidence": {
-    "conclusion": "success",
-    "url": "https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/40427909391/job/121941843222",
-    "publicCommit": "23552dbf1c8efb8578f89fd0944c01a1256087f0",
-    "scope": "Real VLC 3.0.24 file/authenticated HTTP/HLS playback, gain/delay, pause, forward/back seek, EOF replay, reopen, redirected relative segments and blocked request cancellation; unchanged assertions passed on rerun"
-  },
-  "catalogScan": {
-    "errors": 0,
-    "warnings": 2,
-    "notices": 1,
-    "helperApproval": "Bundled updater helper requires catalog maintainer review; no helper approvals changed"
-  },
-  "ciRetryNote": "First VLC CI attempt passed playback/cancellation stages but failed the final private-header assertion. The same source and assertions passed on rerun. Local diagnostic rerun also passed with no header-free fixture requests. No installer change or assertion relaxation was made."
+    "conclusion": "pending"
+  }
 }

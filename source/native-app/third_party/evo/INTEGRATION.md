@@ -1,7 +1,7 @@
-# EVO Player 0.12.0 integration
+# EVO Player 0.13.0 integration
 
-Source: sainsaji/EVO-PLAYER-PS5, release v0.12.0, commit
-`9ee9a5420c73b5be448610e5f0a90a29a75592f3` (latest release when integrated).
+Source: sainsaji/EVO-PLAYER-PS5, release v0.13.0, commit
+`2db44b5294657b12bf91666154a05f029ddb5aa2` (latest release when integrated).
 The files in UPSTREAM.json are unmodified copies, checked before every build.
 The upstream GPL-3.0 license is included here and in every app package.
 
@@ -38,7 +38,11 @@ Do not describe host validation as proof of console decoding, HDR, cadence or
 watchdog recovery.
 
 Nuvio native remains the default. Select Settings → Playback engine → EVO
-Player 0.12.0 (experimental); the choice applies to the next stream. Compare
+Player 0.13.0 (experimental); the choice applies to the next stream. Compare
 the same SDR and HDR10 streams, pause/resume, seeks/Skip Intro, audio/subtitle
 selection and next episode. The player log identifies the engine and actual
 hardware/software backend and retains shown-fps/drop/buffer statistics.
+
+0.13.0 refresh: enable the upstream VP9 Profile 2 slot and 4K level 5.1.
+The standalone audio-lead and scrub-preview defects do not apply: Max’d uses
+its own PCM clock and commits seeks without waiting for a thumbnail worker.

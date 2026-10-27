@@ -17,7 +17,7 @@ using hui::ui::text;
 namespace
 {
 
-constexpr const char *kPageNames[6] = {"Board", "Discover", "Library", "Addons", "Settings", "Live TV"};
+constexpr const char *kPageNames[7] = {"Board", "Discover", "Library", "Addons", "Settings", "Live TV", "IPTV Library"};
 constexpr float kItemW = 100.0f;
 constexpr float kItemH = 108.0f;
 constexpr float kItemGap = 12.0f;
@@ -29,9 +29,10 @@ Rail::Rail()
     pill_.snap(item_rect(0));
 }
 
-Rect Rail::item_rect(int index)
+Rect Rail::item_rect(int index) const
 {
-    const float total = 6.0f * kItemH + 5.0f * kItemGap;
+    const float count=iptv_visible_?7.0f:6.0f;
+    const float total = count * kItemH + (count-1) * kItemGap;
     const float top = (theme::kScreenH - total) * 0.5f;
     return {(theme::kRailWidth - kItemW) * 0.5f, top + static_cast<float>(index) * (kItemH + kItemGap),
             kItemW, kItemH};
@@ -53,7 +54,7 @@ void Rail::focus(bool on)
 
 void Rail::move(int delta)
 {
-    cursor_ = std::clamp(cursor_ + delta, 0, 5);
+    cursor_ = std::clamp(cursor_ + delta, 0, iptv_visible_?6:5);
 }
 
 void Rail::reset(Page page)
@@ -65,8 +66,14 @@ void Rail::reset(Page page)
     glow_.snap(0.0f);
 }
 
-void Rail::update(float dt)
+void Rail::set_iptv_visible(bool visible) {
+    iptv_visible_=visible;
+    if(!iptv_visible_&&cursor_==6)cursor_=0;
+    if(!iptv_visible_&&page_==6)page_=0;
+}
+void Rail::update(float dt, bool iptv_visible)
 {
+    set_iptv_visible(iptv_visible);
     pill_.target(item_rect(cursor_));
     pill_.update(dt, 22.0f);
     glow_.target = focused_ ? 1.0f : 0.0f;
@@ -84,7 +91,7 @@ void Rail::draw(hui::gfx::DrawList &list, const Env &env, float age) const
         list.bordered_rect(p, 26, theme::accent, 3.0f, Color::rgb(0xffffff));
         list.pop_opacity();
     }
-    for (int i = 0; i < 6; ++i)
+    for (int i = 0; i < (iptv_visible_?7:6); ++i)
     {
         const Rect r = item_rect(i);
         const bool active = i == page_;
@@ -95,7 +102,7 @@ void Rail::draw(hui::gfx::DrawList &list, const Env &env, float age) const
         if (active && !under_cursor)
             list.rounded_rect(r, 26, theme::surface);
         const Color tint = (active || under_cursor) ? Color::rgb(0xffffff) : theme::ink_3;
-        const std::uint32_t icon = (active || under_cursor) ? env.icons.nav_solid[i] : env.icons.nav_line[i];
+        const std::uint32_t icon = (active || under_cursor) ? env.icons.nav_solid[i==6?2:i] : env.icons.nav_line[i==6?2:i];
         if(i==5){
             const Rect tv{r.cx()-24.0f,r.y+19.0f,48.0f,34.0f};
             list.bordered_rect(tv,6,Color::rgb(0xffffff,0),3,tint);
@@ -103,7 +110,10 @@ void Rail::draw(hui::gfx::DrawList &list, const Env &env, float age) const
         }
         else if (icon != 0)
             list.image(icon, {r.cx() - 24.0f, r.y + 14.0f + 6.0f * (1.0f - in), 48.0f, 48.0f}, kFullUv, tint);
-        text(list, env.fonts.regular, kPageNames[i], r.cx(), r.y + 90.0f, theme::kLabel, tint, Align::center);
+        if(i==6){
+            text(list,env.fonts.regular,"IPTV",r.cx(),r.y+81,theme::kLabel,tint,Align::center);
+            text(list,env.fonts.regular,"Library",r.cx(),r.y+101,theme::kLabel,tint,Align::center);
+        } else text(list, env.fonts.regular, kPageNames[i], r.cx(), r.y + 90.0f, theme::kLabel, tint, Align::center);
         list.pop_opacity();
     }
 }
@@ -117,7 +127,7 @@ void draw_logo(hui::gfx::DrawList &list, const Env &env)
 }
 
 void draw_topbar(hui::gfx::DrawList &list, const Env &env, bool search_focused, float age, const std::string *query,
-                 float clock)
+                 float clock, const char* hint)
 {
     const float in = hui::tween::stagger(age, 0, 0.0f, 0.4f);
     list.push_opacity(in);
@@ -145,7 +155,7 @@ void draw_topbar(hui::gfx::DrawList &list, const Env &env, bool search_focused, 
     }
     else
     {
-        text(list, env.fonts.regular, "Search movies, series and more", pill.x + 70.0f, pill.cy() + 8.0f, theme::kBody,
+        text(list, env.fonts.regular, hint?hint:"Search movies, series and more", pill.x + 70.0f, pill.cy() + 8.0f, theme::kBody,
              search_focused ? theme::ink_2 : theme::ink_3);
     }
     hui::ui::draw_button(list, env.fonts, hui::ui::GlyphStyle::dark(), hui::ui::Button::triangle,

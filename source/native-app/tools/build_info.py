@@ -32,11 +32,13 @@ display_profile = validate_display_metadata(json.loads(
     (Path(sys.argv[1]).parent / 'sce_sys/param.json').read_text()))
 info = {
     'name': "Nuvio Max'd",
-    'version': '1.0.0.1-native',
+    'version': '1.0.0.2-native',
     'releaseChannel': 'release-candidate',
     'titleId': sys.argv[2],
     'providerPlugins': {'engine': 'QuickJS 2026-06-04', 'repositories': True, 'perProviderOptIn': True, 'consoleSocketMode': 'direct SO_NBIO via wrapped pinned curlx_nonblock; retains public-address checks', 'hardwareVerified': False},
     'mediaRemote': {'hdmiCec': True, 'hardwareVerified': False},
+    'iptvLibrary': {'conditionalSidebar': True, 'xtreamVod': True, 'profileLocalResume': True, 'cachedCatalogs': True, 'providerErrorGuidance': True, 'hardwareVerified': False},
+    'upstreamRefresh': {'date': '2026-10-27', 'rectangleYuvUploads': True, 'nativeVp9Profile2': True, 'xtreamMultiCategory': True, 'addonManifestRevalidation': 'best effort, bounded worker budget', 'hardwareVerified': False},
     'readAheadSeconds': [30, 60, 120, 300],
     'architecture': 'single native OpenGL app with integrated playback',
     'sourceCommit': source_commit,
@@ -48,7 +50,7 @@ info = {
     'experimentalAv': {'driverOwnedHdrSwitch': True, 'pcmDefault': True, 'audioModes': ['pcm','auto','bitstream'], 'bitstreamCodecs': ['AC3','EAC3','DTS core'], 'trueHdDtsHd': 'decoded PCM; S16 output preferred for compatibility', 'autoHonorsStereo': True, 'hardwareVerified': False, 'driverPatchSha256': hashlib.sha256((root/'gl/scanout_driver_extension.inc').read_bytes()).hexdigest(), 'driverObjectSha256': hashlib.sha256(Path(sys.argv[3]).read_bytes()).hexdigest()},
     'consoleLightSync': {'default': True, 'setting': 'Appearance & Lighting', 'channels': ['blue','white','amber'], 'approximateLogoColours': True, 'backgroundWorker': True, 'maxUpdatesPerSecond': 5, 'restoreOnDisableAndExit': True, 'respectSystemOwnership': True, 'hardwareVerified': False},
     'settingsCategories': True,
-    'localTestBuild': {'issue': 10, 'multiviewExperimental': True, 'hardwareVerified': False},
+    'localTestBuild': {'revision': '1.0.0.2', 'multiviewExperimental': True, 'hardwareVerified': False},
     'playbackBadges': {'sourceResolution': True, 'sourceHdr': True, 'selectedAudioChannels': True, 'releaseType': True, 'codecs': True, 'decodedFactsOverrideFilename': True, 'hardwareVerified': False},
     'settingsSearch': {'allCategories': True, 'caseInsensitive': True, 'hardwareVerified': False},
     'liveTv': {'sources': ['M3U', 'Xtream Codes'], 'groups': True, 'search': True, 'favorites': True, 'profileLocal': True, 'guideRecordingCatchup': False, 'hardwareVerified': False},
@@ -104,7 +106,7 @@ info = {
     'displaySelection': 'PS5 configured resolution by default; 1080p, 1440p and 2160p overrides',
     'displayRefresh': {'default': 60, 'optional': 120, 'restartRequired': True, 'acceptedRateReadback': True, 'resolutionReducedForRefresh': False, 'hardwareVerified': False},
     'hdrToSdr': {'toneMap': 'luminance extended Reinhard', 'outputResponse': 'BT.1886 ideal black (2.4)', 'gamut': 'BT.2020 to BT.709 with luminance-preserving neutral-axis fitting', 'sourcePeak': 'MaxCLL, mastering display, otherwise 1000 nits', 'exposureGain': 1, 'hardwareVerified': False},
-    'playbackEngines': {'default': 'native', 'optional': ['EVO Player 0.12.0', 'VLC 3.0.24'], 'scope': 'integrated optional playback engines', 'hardwareVerified': False},
+    'playbackEngines': {'default': 'native', 'optional': ['EVO Player 0.13.0', 'VLC 3.0.24'], 'scope': 'integrated optional playback engines', 'hardwareVerified': False},
     'presentationSafety': {'lowRatePacing': 'PTS deadlines at accepted 120 Hz; GPU completion before scheduled swap', 'refreshLattice': '119.88 Hz calibration from ProsperoTube; console validation pending', 'reset': ['pause', 'buffering', 'seek', 'output mode change'], 'textureLifetime': 'GPU fences before overwrite and teardown', 'hardwareVerified': False},
     'videoConversion': 'Native-resolution YUV to RGB10_A2; compatible PQ/BT.2020 sources use experimental 10-bit HDR10 output',
     'nativeHdr': {

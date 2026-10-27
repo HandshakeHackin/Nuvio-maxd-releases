@@ -12,7 +12,7 @@ namespace sx
 class Library : public PageBase
 {
   public:
-    explicit Library(const Env &env) : PageBase(env, Page::library)
+    explicit Library(const Env &env, Page page=Page::library) : PageBase(env, page)
     {
     }
 

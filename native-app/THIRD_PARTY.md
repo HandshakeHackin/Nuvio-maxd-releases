@@ -28,7 +28,7 @@ This native adaptation incorporates [Sp9nky/unofficial-stremio-ps5-port](https:/
 | `gl/hdr_output.cpp`, `gl/hdr_compositor.cpp` (RGB HDR10 scanout token and channel layout) | [ProsperoLight's shared VideoOut format definitions](https://github.com/blackbearreloaded/ProsperoLight/blob/a6e56cf4e8e9e469d5bc5cc06ff71ad4ca16a6a9/include/ps5_videoout_formats.h), commit `a6e56cf4e8e9e469d5bc5cc06ff71ad4ca16a6a9`; its [validation notes](https://github.com/blackbearreloaded/ProsperoLight/blob/a6e56cf4e8e9e469d5bc5cc06ff71ad4ca16a6a9/docs/VALIDATION.md) record native HDR10 hardware acceptance | GPL-3.0-or-later |
 | `src/netstream.cpp` (several connections for big files) | the approach and sizes of Nuvio PS5's `evo_parallel_io.c` | GPL-3.0-or-later |
 | `gl/session_watch.cpp` (torrent stream set-up) | follows the behaviour of `createTorrent` in [stremio-video](https://github.com/Stremio/stremio-video) (Stremio) | MIT |
-| `third_party/evo/` | EVO Player 0.12.0 video decoder, native decoder, presentation core and clock, commit `9ee9a5420c73b5be448610e5f0a90a29a75592f3`. Unmodified upstream files are listed in `UPSTREAM.json`; Nuvio host integration and limitations are described in `INTEGRATION.md`. | GPL-3.0 |
+| `third_party/evo/` | EVO Player 0.13.0 video decoder, native decoder, presentation core and clock, commit `2db44b5294657b12bf91666154a05f029ddb5aa2`. Unmodified upstream files are listed in `UPSTREAM.json`; Nuvio host integration and limitations are described in `INTEGRATION.md`. | GPL-3.0 |
 
 ## Linked into the app (downloaded at build time, not included here)
 
@@ -160,7 +160,7 @@ release sources and full license texts are included with the test distribution.
 
 ## JavaScript provider runtime
 
-QuickJS 2026-06-04 (MIT), linked from Payload SDK 0.44, and a pinned browser bundle of cheerio-without-node-native, CryptoJS, whatwg-url, Buffer and their dependencies. Source/build recipe, lockfile, provenance and notices are in `third_party/provider-runtime/`; notices are copied into the app's licenses folder. Provider host integration is implemented locally.
+QuickJS 2026-06-04 (MIT), retained from the Payload SDK 0.44 library set and linked with the SDK 0.45 toolchain, and a pinned browser bundle of cheerio-without-node-native, CryptoJS, whatwg-url, Buffer and their dependencies. Source/build recipe, lockfile, provenance and notices are in `third_party/provider-runtime/`; notices are copied into the app's licenses folder. Provider host integration is implemented locally.
 
 Noto Sans Hebrew (google/fonts, pinned in dependencies.json) is bundled for UI and subtitle fallback under SIL OFL 1.1; see app/fonts/NotoSansHebrew-LICENSE.txt and NotoSansHebrew-NOTICE.txt.
 

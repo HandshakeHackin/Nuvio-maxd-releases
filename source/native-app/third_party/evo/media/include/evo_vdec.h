@@ -7,13 +7,13 @@
  * The FFmpeg implementation is PURE: no clocks, no sleeps, no pp_playback,
  * no globals. The play loop (evo_playback.c / main.c) owns pacing and present.
  *
- * Track A step A6 of docs/modularisation-plan.md.
+ * Track A step A6 of docs/architecture/architecture.md.
  *
  * PHASE 4 SLOT-IN (native decode)
  * ------------------------------
  * The native backend is a second .c file — evo_vdec_native.c — that
  * implements exactly this header against sceVideodec2 (see
- * docs/evo-pro/videodec2-abi.md). Nothing in main.c / evo_playback.c /
+ * docs/hardware/videodec2-abi.md). Nothing in main.c / evo_playback.c /
  * evo_demux.c changes: they already speak only evo_vdec_open / _send /
  * _receive / _flush / _close. evo_vdec_open() picks the backend from
  * p->backend and reports what it actually built through *chosen; the ffmpeg
@@ -72,7 +72,7 @@ typedef struct {
 /* Preload the native backend's system module (libSceVideodec2, sysmodule 207).
  * MUST be called from main() BEFORE the first evo_jailbreak_self() — the
  * self-unjail's mid-run credential swap makes the module load fail
- * (docs/evo-pro/status.md, 2026-09-03). No-op returning 0 on host + payload
+ * (docs/hardware/video-decode.md, 2026-09-03). No-op returning 0 on host + payload
  * builds. Returns 1 if native decode may be available this session — the
  * caller then requests EVO_VDEC_BACKEND_NATIVE; evo_vdec_open() still falls
  * back to FFmpeg if bring-up fails. Idempotent. */

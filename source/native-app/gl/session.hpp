@@ -26,6 +26,7 @@
 #include "tasks.h"
 #include "stream_result_cache.hpp"
 #include "live_tv.h"
+#include "iptv_library.h"
 #include "audio/cues.hpp"
 #include "core/input.hpp"
 
@@ -54,6 +55,7 @@ class Session
         int board_row = 0, board_col = 0;
         int discover = 0;
         int library = 0;
+        int iptv = 0;
         int episode = 0;
         int search_row = 0, search_col = 0;
         int stream = -1;
@@ -71,6 +73,8 @@ class Session
         kAddons = 8,
         kSettings = 16,
         kLive = 2048,
+        kIptv = 4096,
+        kIptvNew = 8192,
         kDetail = 32,
         kDiscoverNew = 64,
         kLibraryNew = 128,
@@ -145,6 +149,13 @@ class Session
     LibraryContent library;
     AddonsContent addons;
     AddonsContent live_content;
+    LibraryContent iptv_content;
+    bool iptv_visible = false;
+    void iptv_menu();
+    void iptv_search();
+    void iptv_filter(int);
+    void iptv_activate(int);
+    bool iptv_back();
     struct MultiTileView { std::uint32_t texture=0; int w=0,h=0; double sar=1; std::string name,status; };
     bool multiview_active=false;
     int multiview_focus=0,multiview_audio=0;
@@ -311,6 +322,30 @@ class Session
     std::array<VideoSurface,4> multi_surfaces_;
     std::array<live_tv::Channel,4> multi_channels_;
 
+    void iptv_reset();
+    void iptv_load();
+    void iptv_sources_changed();
+    void iptv_probe();
+    void iptv_probe_source(size_t index, unsigned generation, unsigned profile, const std::shared_ptr<std::atomic<bool>>& cancel);
+    std::vector<iptv::Account> iptv_probe_accounts_;
+    void iptv_save();
+    void iptv_build(bool reset=false);
+    void iptv_reload(bool refresh=false);
+    void iptv_progress(bool finished=false);
+    double iptv_resume(const std::string&) const;
+    void iptv_play(const iptv::Entry&);
+    std::vector<iptv::Account> iptv_accounts_;
+    json iptv_state_ = json::object();
+    iptv::Catalog iptv_catalog_;
+    std::vector<size_t> iptv_indices_;
+    std::string iptv_source_,iptv_category_,iptv_query_,iptv_series_,iptv_series_name_,iptv_series_poster_,iptv_status_;
+    iptv::Kind iptv_kind_ = iptv::Kind::movies;
+    size_t iptv_page_=0;
+    int iptv_season_=-1;
+    bool iptv_loading_=false,iptv_probing_=false;
+    unsigned iptv_generation_=0,iptv_probe_generation_=0;
+    std::shared_ptr<std::atomic<bool>> iptv_cancel_;
+    std::shared_ptr<std::atomic<bool>> iptv_probe_cancel_;
     void live_load();
     void live_save();
     void live_build();

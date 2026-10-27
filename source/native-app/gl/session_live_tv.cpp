@@ -27,6 +27,7 @@ bool contains(const json &a, const std::string &s) {
 }
 } // namespace
 void Session::live_reset() {
+  iptv_reset();
   if(multiview_active)multi_stop();
   if (live_cancel_)
     *live_cancel_ = true;
@@ -56,6 +57,7 @@ void Session::live_load() {
   if (!jobj(live_state_, "recent").is_array())
     live_state_["recent"] = json::array();
   live_source_ = jstr(live_state_, "selected");
+  iptv_load();
   live_build();
 }
 void Session::live_save() {
@@ -117,7 +119,7 @@ void Session::live_build() {
   const auto query = lower(live_query_);
   for (size_t i = 0; i < live_channels_.size(); ++i) {
     const auto &c = live_channels_[i];
-    if (!live_group_.empty() && live_group_ != c.group)
+    if (!c.in_group(live_group_))
       continue;
     if (!query.empty() &&
         lower(c.name).find(query) == std::string::npos)
@@ -179,6 +181,7 @@ void Session::live_build() {
   changed_ |= kLive;
 }
 void Session::live_reload() {
+  iptv_probe();
   if (!profile_ready_) {
     say("Choose a profile first", 5);
     return;
@@ -223,9 +226,11 @@ void Session::live_reload() {
 void Session::live_groups() {
   std::vector<std::string> groups{"All groups"};
   std::set<std::string> seen;
-  for (const auto &c : live_channels_)
-    if (seen.insert(c.group).second)
-      groups.push_back(c.group);
+  for (const auto &c : live_channels_) {
+    if (seen.insert(c.group).second) groups.push_back(c.group);
+    for (const auto& group : c.groups)
+      if (seen.insert(group).second) groups.push_back(group);
+  }
   const auto generation = live_generation_;
   open_dropdown("Live TV groups", groups, 0, [this, groups, generation](int i) {
     if (generation != live_generation_ || i < 0 || size_t(i) >= groups.size())
@@ -331,6 +336,7 @@ void Session::live_add(json source, int step) {
     live_query_.clear();
     live_view_ = 0;
     live_save();
+    iptv_sources_changed();
     live_reload();
     return;
   }
@@ -368,11 +374,12 @@ void Session::live_menu() {
       "Channel groups",    "Search channels",
       "All channels",      "Favorites",
       "Recent channels",   "Remove current source",
-      "Next channel page", "Previous channel page", "Four-screen TV (experimental)"};
+      "Next channel page", "Previous channel page", "Four-screen TV (experimental)", "Check IPTV Library availability"};
   open_dropdown("Live TV", options, 0, [this, generation](int i) {
     if (generation != profile_generation_)
       return;
     if (i == 12) {multi_choose();return;}
+    if (i == 13) {iptv_probe();say("Checking IPTV movie and series availability in the background",6);return;}
     if (i == 0 || i == 1) {
       live_add(json{{"type", i ? "xtream" : "m3u"}}, 0);
       return;
@@ -461,6 +468,7 @@ void Session::live_menu() {
             live_query_.clear();
             live_view_ = 0;
             live_save();
+            iptv_sources_changed();
             live_build();
             live_reload();
           });
@@ -468,6 +476,6 @@ void Session::live_menu() {
   });
   dropdown.message =
       "Use your own M3U playlist or Xtream Codes subscription. Sources, "
-      "favorites and recent channels are saved locally for this profile.";
+      "favorites and recent channels are saved locally for this profile. IPTV Library appears separately when the service provides movies or series.";
 }
 } // namespace sx

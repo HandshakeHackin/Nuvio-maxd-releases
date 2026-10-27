@@ -29,7 +29,8 @@ void Library::set_content(const LibraryContent *content)
     content_ = content;
     in_filters_ = false;
     filter_ = 0;
-    grid_.set_items(content ? &content->items : nullptr, layout());
+    auto l=layout();if(page_==Page::iptv){l.y+=90;l.view_top+=90;}
+    grid_.set_items(content ? &content->items : nullptr, l);
 }
 
 void Library::update(const hui::InputFrame &input, float dt)
@@ -78,11 +79,16 @@ void Library::draw(hui::gfx::DrawList &list, hui::gfx::BackdropSpec &backdrop) c
     const float in = tween::stagger(age_, 0, 0.0f, 0.45f);
     list.push_opacity(in);
     float x = theme::kLeft;
+    const float shift=page_==Page::iptv?90.0f:0.0f;
+    if(page_==Page::iptv){
+        text(list,env_.fonts.semibold,env_.fonts.semibold.font->fit(content_->heading,32,1500),x,144,32,theme::ink);
+        text(list,env_.fonts.regular,env_.fonts.regular.font->fit(content_->notice,20,1500),x,178,20,theme::ink_2);
+    }
     for (std::size_t i = 0; i < content_->filters.size(); ++i)
-        x += draw_filter_chip(list, env_, content_->filters[i], x, 148.0f,
+        x += draw_filter_chip(list, env_, content_->filters[i], x, 148.0f+shift,
                               in_filters_ && static_cast<int>(i) == filter_ && !rail_.focused()) +
              16.0f;
-    text(list, env_.fonts.regular, content_->count, theme::kRight - 6.0f, 157.0f, theme::kBody, theme::ink_3,
+    text(list, env_.fonts.regular, content_->count, theme::kRight - 6.0f, 157.0f+shift, theme::kBody, theme::ink_3,
          Align::right);
     list.pop_opacity();
 
@@ -92,7 +98,7 @@ void Library::draw(hui::gfx::DrawList &list, hui::gfx::BackdropSpec &backdrop) c
 
     fade_down(list, theme::kRailWidth, 0.0f, theme::kScreenW, 118.0f, 0.62f);
     fade_up(list, theme::kRailWidth, 990.0f, theme::kScreenW, 90.0f, 0.94f);
-    draw_topbar(list, env_, false, age_);
+    draw_topbar(list, env_, false, age_,nullptr,0,page_==Page::iptv?"Search this IPTV category":nullptr);
     rail_.draw(list, env_, age_);
 }
 

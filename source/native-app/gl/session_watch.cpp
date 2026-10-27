@@ -224,6 +224,7 @@ void Session::play_stream(const ::Stream &st, bool transcode, bool trailer)
             start = cw.offset;
     }
 
+    if(iptv::library_type(w_item_.type))start=iptv_resume(w_item_.id);
     if(w_trailer_)subtitle="Trailer";
     const int gen = ++w_gen_;
     launch = LaunchState();
@@ -240,6 +241,7 @@ void Session::play_stream(const ::Stream &st, bool transcode, bool trailer)
     }
     launch.stages = {"Finding sources", "Connecting to peers", "Filling the buffer", "Starting"};
     if(w_item_.type == "tv") launch.stages = {"Choosing channel", "Connecting", "Buffering live video", "Starting"};
+    if(iptv::library_type(w_item_.type))launch.stages={"Opening IPTV title","Connecting to provider","Buffering video","Starting"};
     if (resolving) launch.stages = {"Checking service cache", "Resolving original file", "Filling the buffer", "Starting"};
     launch.stage = 0;
     launch.progress = -1.0f;
@@ -266,7 +268,7 @@ void Session::play_stream(const ::Stream &st, bool transcode, bool trailer)
     w_episode_tick_ = now_seconds();
     if (w_episode_cancel_) *w_episode_cancel_ = true;
     w_episode_cancel_ = std::make_shared<std::atomic<bool>>(false);
-    if(!w_trailer_ && w_item_.type != "tv") watch_load_segments(season, episode);
+    if(!w_trailer_ && w_item_.type != "tv" && !iptv::library_type(w_item_.type)) watch_load_segments(season, episode);
     if (detail.series && !w_trailer_)
         if (const auto* next = episode_playback::next_video(d_meta_.videos, w_video_id_, now_epoch_ms())) w_next_ = *next;
     art_dirty_ = true;
@@ -448,7 +450,7 @@ void Session::play_stream(const ::Stream &st, bool transcode, bool trailer)
             // Several connections and the long read-ahead for big files: direct links
             // and the streaming server's torrent streams. Not for transcoding, which is
             // a playlist of pieces.
-            const bool par = !w_trailer_ && w_item_.type != "tv" && r.url.find("/hlsv2/") == std::string::npos;
+            const bool par = !w_trailer_ && w_item_.type != "tv" && !iptv::library_type(w_item_.type) && r.url.find("/hlsv2/") == std::string::npos;
             watch_start(r.url, r.headers, start, title, subtitle, par);
         });
 }
@@ -492,7 +494,7 @@ void Session::watch_start(const std::string &url, const std::vector<std::string>
     w_last_saved_pos_ = start;
     w_info_until_ = now_seconds() + kInfoSeconds;
     launch.stage = 1;
-    if(!w_trailer_ && w_item_.type != "tv") watch_load_addon_subtitles();
+    if(!w_trailer_ && w_item_.type != "tv" && !iptv::library_type(w_item_.type)) watch_load_addon_subtitles();
 }
 
 // ---------------------------------------------------------------------------
@@ -600,9 +602,11 @@ void Session::watch_update()
         nuvio_diagnostics::record(player_.diagnostic_snapshot());
         watch_stop(false);
         nuvio_diagnostics::record({{"playerFailed",true}});
-        say("Playback failed: " + err +
-                (w_stream_.torrent() ? ". The torrent may have no seeders; try another stream." : ""),
-            8.0, true);
+        say(iptv::library_type(w_item_.type)
+                ? iptv::failure_message(err)
+                : "Playback failed: " + err +
+                      (w_stream_.torrent() ? ". The torrent may have no seeders; try another stream." : ""),
+            iptv::library_type(w_item_.type) ? 14.0 : 8.0, true);
         return;
     }
     if (st == Player::State::Ended)
@@ -874,6 +878,7 @@ void Session::watch_stop(bool ended)
     resuming_ = false;
     if (w_started_ && !ended)
         watch_save_progress(true);
+    if(w_started_ && ended && iptv::library_type(w_item_.type))iptv_progress(true);
     if (ended && trailers::records_history(w_trailer_,w_item_.type) && !w_video_id_.empty())
     {
         watched_.insert(w_video_id_);
@@ -905,6 +910,7 @@ void Session::watch_stop(bool ended)
     if (d_open_)
         for (std::size_t i = 0; i < detail.episodes.size() && i < d_season_videos_.size(); ++i)
             detail.episodes[i].watched = watched(d_season_videos_[i]->id);
+    if(iptv::library_type(w_item_.type))iptv_build();
     changed_ |= kDetail;
     refresh_board();
     refresh_library();
@@ -921,6 +927,7 @@ void Session::fail_video_output(const std::string& error) {
 
 void Session::watch_save_progress(bool final, bool force_finished)
 {
+    if(iptv::library_type(w_item_.type)){iptv_progress(force_finished);return;}
     const double pos = player_.position(), dur = player_.duration();
     if (!trailers::records_history(w_trailer_,w_item_.type) || dur <= 0 || w_item_.id.empty())
         return; // live channels and trailers
@@ -1125,7 +1132,7 @@ void Session::watch_input(const hui::InputFrame &in)
         return;
     }
 
-    if (!w_trailer_ && w_item_.type != "tv" && watch_episode_input(in)) return;
+    if (!w_trailer_ && w_item_.type != "tv" && !iptv::library_type(w_item_.type) && watch_episode_input(in)) return;
 
     if (in.is_pressed(Action::confirm) || in.is_pressed(Action::touch))
     {

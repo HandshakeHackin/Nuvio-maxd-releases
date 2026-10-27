@@ -162,7 +162,7 @@ void Player::open(const Options& opts) {
     gain_percent_=std::clamp(opts.gain_percent,50,300);pcm_.set_gain(gain_percent_);
 	evo_presenter_ = opts.evo ? std::make_unique<EvoPresenter>() : nullptr;
 	evo_presenter_serial_ = -1;
-	dlog("player: playback engine %s", opts.evo ? "EVO Player 0.12.0 (experimental)" : "Nuvio native");
+	dlog("player: playback engine %s", opts.evo ? "EVO Player 0.13.0 (experimental)" : "Nuvio native");
 	abort_ = false;
 	quick_ = false;
 	eof_ = false;

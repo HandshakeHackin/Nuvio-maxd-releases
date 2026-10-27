@@ -1,4 +1,4 @@
-// EVO Player 0.12.0 video engine adapter. SPDX-License-Identifier: GPL-3.0-or-later
+// EVO Player 0.13.0 video engine adapter. SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 #include "video_frame.h"
 #include "evo_vdec.h"

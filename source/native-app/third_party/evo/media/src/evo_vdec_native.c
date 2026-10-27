@@ -5,7 +5,7 @@
  * A port of the hardware-verified sceVideodec2 bring-up / decode / teardown
  * sequence proven inside the full PPSA99039 player on 2026-09-03 (a 1920x1088
  * NV12 H.264 frame, every call 0). The ABI transcription lives in
- * third_party/ps5-hardware-video-decoding-research/ and docs/evo-pro/videodec2-abi.md.
+ * third_party/ps5-hardware-video-decoding-research/ and docs/hardware/videodec2-abi.md.
  *
  * Real body only under EVO_APP_MODULE — sceVideodec2, a user session and the
  * GPU driver stack exist only in the registered app module. Host + payload
@@ -330,7 +330,7 @@ static const nat_codec_desc g_codec[NAT_CODEC_COUNT] = {
      * Level 5.1, the same level the 8-bit HEVC slot uses for 4K. */
     { NAT_HEVC10, AV_CODEC_ID_HEVC, SCE_VIDEODEC2_CODEC_HEVC,   2, 123, 153,
       "hevc_mp4toannexb",     0, "HEVC10", 1 },
-    { NAT_VP92,   AV_CODEC_ID_VP9,  SCE_VIDEODEC2_CODEC_VP9,    2,  41,  41,
+    { NAT_VP92,   AV_CODEC_ID_VP9,  SCE_VIDEODEC2_CODEC_VP9,    2,  41,  51,
       "vp9_superframe_split", 1, "VP9-2",  1 },
 };
 
@@ -821,8 +821,9 @@ int evo_vdec_native_probe(void)
 #if EVO_VDEC_NATIVE_10BIT
     /* #41 Phase D: 10-bit resident decoders (HEVC Main10).
      * 1080p only (1920x1088), non-fatal. Depth 1 keeps flexible memory footprint
-     * minimal (~14MB). VP9-2 is omitted to protect the flex-memory budget. */
+     * minimal (~14MB). VP9-2 joins it (#162): flex is 1 GiB now, not 448 MB. */
     probe_slot(NAT_HEVC10, 1920, 1088, 0, sm);
+    probe_slot(NAT_VP92,   1920, 1088, 0, sm);
 #endif
 #endif
 

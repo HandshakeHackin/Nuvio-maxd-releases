@@ -2,7 +2,7 @@
  * evo_vdec_ffmpeg.c — the FFmpeg implementation of evo_vdec.h.
  *
  * A near-verbatim lift of the inline avcodec_* video path out of main.c
- * (Track A step A6, docs/modularisation-plan.md §5). It owns the
+ * (Track A step A6, docs/architecture/architecture.md §5). It owns the
  * AVCodecContext and the receive AVFrame, and adapts decoded frames into the
  * FFmpeg-free pp_frame. PURE: no clocks, no sleeps, no pp_playback, no
  * globals — pacing and present stay in the play loop.

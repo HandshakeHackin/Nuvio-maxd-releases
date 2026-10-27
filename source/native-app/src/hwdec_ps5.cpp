@@ -151,7 +151,7 @@ const int kMaxW = 3840, kMaxH = 2176;
 
 bool g_module_loaded = false;
 
-enum Kind { H264, HEVC, VP9, HEVC10, KIND_COUNT };
+enum Kind { H264, HEVC, VP9, HEVC10, VP92, KIND_COUNT };
 
 struct CodecDesc {
 	Kind kind;
@@ -169,6 +169,7 @@ const CodecDesc kCodecs[KIND_COUNT] = {
     {HEVC, kCodecHevc, 1, 123, 153, "hevc_mp4toannexb", false, "HEVC", 4},
     {VP9, kCodecVp9, 0, 41, 51, "vp9_superframe_split", true, "VP9", 4},
     {HEVC10, kCodecHevc, 2, 123, 153, "hevc_mp4toannexb", false, "HEVC 10-bit", 4},
+    {VP92, kCodecVp9, 2, 41, 51, "vp9_superframe_split", true, "VP9 10-bit", 4},
 };
 
 size_t align16k(size_t v) { return (v + 0x3fffu) & ~size_t(0x3fff); }
@@ -629,7 +630,7 @@ struct HwDecoder::Impl {
 				break;
 			}
 		if (!s || !out.buffer) return;
-		bool ten = out.pitch_bytes ? out.pitch_bytes >= out.pitch * 2u : desc->kind == HEVC10;
+		bool ten = out.pitch_bytes ? out.pitch_bytes >= out.pitch * 2u : (desc->kind == HEVC10 || desc->kind == VP92);
 		uint32_t pitch = out.pitch_bytes ? out.pitch_bytes : out.pitch;
 		if (ten && pitch < out.pitch * 2u) pitch = out.pitch * 2u;
 		// The frame stays in the decoder's pool until it reuses the slot,
@@ -800,8 +801,10 @@ HwDecoder* HwDecoder::open(const AVCodecParameters* par, std::string* why) {
 		d = &kCodecs[depth == 10 ? HEVC10 : HEVC];
 		break;
 	case AV_CODEC_ID_VP9:
-		if (depth > 8) return refuse("10-bit VP9");
-		d = &kCodecs[VP9];
+		if (depth > 10 || (par->profile != AV_PROFILE_UNKNOWN &&
+            par->profile != AV_PROFILE_VP9_0 && par->profile != AV_PROFILE_VP9_2))
+            return refuse("Unsupported VP9 depth/profile");
+		d = &kCodecs[depth > 8 ? VP92 : VP9];
 		break;
 	default:
 		return refuse(std::string(avcodec_get_name(par->codec_id)) + " has no hardware decoder");
@@ -830,7 +833,7 @@ HwDecoder* HwDecoder::open(const AVCodecParameters* par, std::string* why) {
 		// H.264 can fail at CreateDecoder under flexible-memory pressure even
 		// when its direct-memory allocations succeeded.
 		// slot_bringup releases the failed attempt's allocations first.
-		if (rc != 0 && (d->kind == HEVC10 || d->kind == H264) && d->depth > 1) {
+		if (rc != 0 && (d->kind == HEVC10 || d->kind == VP92 || d->kind == H264) && d->depth > 1) {
 			dlog("hwdec: %s %dx%d at depth %u failed (rc 0x%08x); retrying at depth 1", d->tag, w, h,
 			     d->depth, unsigned(rc));
 			rc = slot_bringup(slot, *d, w, h, 1);

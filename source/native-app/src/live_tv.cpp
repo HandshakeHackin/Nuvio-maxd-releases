@@ -9,6 +9,11 @@
 #include <string_view>
 #include <functional>
 namespace live_tv {
+bool Channel::in_group(const std::string& name) const {
+  return name.empty() || group == name ||
+    std::find(groups.begin(), groups.end(), name) != groups.end();
+}
+
 namespace {
 std::string trim(std::string s) {
   const auto a = s.find_first_not_of(" \t\r\n");
@@ -226,7 +231,7 @@ Result parse(const std::string &body, const std::string &base,
   return r;
 }
 HttpResponse download(const std::string &url, const std::atomic<bool> *cancel,
-                      bool redirects, size_t limit = max_bytes) {
+                      bool redirects, size_t limit) {
   HttpResponse r;
   if (!http_url(url)) {
     r.error = "Enter an HTTP or HTTPS M3U playlist URL.";
@@ -336,7 +341,10 @@ class XtreamItems : public nlohmann::json_sax<nlohmann::json> {
   bool active() const { return !(cancel_ && *cancel_); }
   bool scalar(const std::string &s) {
     if (depth_ == 0 || !active()) return false;
-    if (depth_ == 2 && !key_.empty()) {
+    if (depth_ == 3 && key_ == "category_ids" && s.size() <= 64) {
+      if (item_[key_].size() < 128) item_[key_].push_back(s);
+    }
+    if (depth_ == 2 && !key_.empty() && key_ != "category_ids") {
       const size_t limit = key_ == "stream_icon" ? 8192 : key_ == "stream_id" ? 20 : 256;
       if (s.size() <= limit || key_ == "name") item_[key_] = s.substr(0, limit);
     }
@@ -360,7 +368,7 @@ public:
   bool key(string_t &v) override {
     if (depth_ == 2) {
       key_ = (v == "stream_id" || v == "name" || v == "category_id" ||
-          v == "stream_icon" || v == "container_extension") ? v : std::string();
+          v == "stream_icon" || v == "container_extension" || v == "category_ids") ? v : std::string();
       if (!key_.empty()) item_.erase(key_);
     }
     return active();
@@ -413,8 +421,17 @@ Result parse_xtream(const std::string &body, const std::string &groups,
     if (c.name.empty())
       return true;
     seen.insert(id);
-    auto category = names.find(value(item, "category_id"));
-    c.group = category == names.end() ? "Other" : category->second;
+    std::set<std::string> memberships;
+    auto add_group = [&](const std::string& id) {
+      auto category = names.find(id);
+      if (category != names.end() && memberships.insert(category->second).second)
+        c.groups.push_back(category->second);
+    };
+    add_group(value(item, "category_id"));
+    if (item.contains("category_ids") && item["category_ids"].is_array())
+      for (const auto& id : item["category_ids"])
+        if (id.is_string()) add_group(id.get<std::string>());
+    c.group = c.groups.empty() ? "Other" : c.groups.front();
     auto icon = value(item, "stream_icon");
     if (!icon.empty())
       c.logo = resolve(server, icon);

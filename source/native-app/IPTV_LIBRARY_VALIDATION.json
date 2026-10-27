@@ -1,0 +1,98 @@
+{
+  "feature": "IPTV Library",
+  "status": "Implemented and staged for the next build; no installer or public release created in this change",
+  "baseSourceCommit": "4cd3c33fd81f57c21d211e71a62a073d8aad56f8",
+  "hardwareVerified": false,
+  "checks": {
+    "catalogAndCache": "passed: 60,000 entries over 8 MiB, 100,001-item rejection without partial results, strict parsing, credential escaping, login/capabilities, M3U Xtream account extraction, direct-source rejection, lazy episodes, corrupt/private/isolated caches, concurrent writes and cancellation",
+    "sessionFlow": "passed: production Session IPTV methods with synthetic HTTP server and platform boundaries; live-only hiding, incremental discovery, direct movie/episode endpoints, seasons, isolated resume, offline retention, source/profile callback races, capability removal versus a late catalog reply and cache cleanup",
+    "navigation": "passed: eight existing/new controller navigation tests; hidden tab cannot receive focus; new tab can be reached immediately; hiding resets invalid focus",
+    "shutdown": "passed: fresh/update exits and cancellation of live/IPTV catalog/discovery work before task shutdown",
+    "liveTvRegression": "passed: existing M3U/Xtream network/parser suite, including 60k-channel HTTP/gzip imports; VOD endpoints are not added to the live importer",
+    "ps5Syntax": "passed for new parser/session, Shell, Rail, Library, Board and affected existing session/main paths",
+    "uiPreview": "passed: real UI draw list rendered with software OpenGL; GL error 0x0",
+    "providerAvailability": "passed: HTTP 5xx outage guidance; separate 401/403, 404/410, 429 and transport messages; decoder errors not labeled as outages; messages omit raw URLs; synthetic HTTP 503 retains saved catalog",
+    "availabilityPs5Syntax": "passed: updated parser, IPTV Session and watch error handler; no new installer or hardware test"
+  },
+  "limits": {
+    "catalogResponseBytes": 134217728,
+    "catalogEntries": 100000,
+    "metadataResponseBytes": 8388608,
+    "categoriesOrEpisodes": 10000,
+    "visiblePageEntries": 100,
+    "cacheFileBytes": 33554432,
+    "cacheTotalTargetBytes": 134217728,
+    "localProgressEntries": 500
+  },
+  "isolation": [
+    "IPTV tab appears only with a known movie/series capability in the active profile",
+    "Live TV and ordinary addon discovery retain existing routes",
+    "IPTV IDs, resume and completed markers stay outside Nuvio library/history and tracker sync",
+    "IPTV media uses direct authenticated service endpoints and sequential native HTTP; addon subtitle/timing/source lookups are bypassed",
+    "Generic M3U has no assumed VOD capability; recognized Xtream get.php links can supply their account locally"
+  ],
+  "pending": [
+    "Actual PS5 installation and provider playback acceptance",
+    "New installer packaging and any public/store release",
+    "IPTV cloud sync and automatic next-episode playback are not included"
+  ],
+  "logEvidence": {
+    "catalogAndCache": {
+      "file": "/workspace/nuvio-iptv-model-final.log",
+      "sha256": "daf08dc2d421af929b81505b38ccc28f50bdf28a55ad54efa667abeae5674bfb"
+    },
+    "sessionFlow": {
+      "file": "/workspace/nuvio-iptv-session-final.log",
+      "sha256": "2d187bbb70f2f7099f3afd9c0c837abdb070c8abbcd64f5285685e1dbe4a49c5"
+    },
+    "navigation": {
+      "file": "/workspace/nuvio-iptv-navigation.log",
+      "sha256": "ef3dc8e671b4a798fb98ae350b97d05dec795657f57fbe0df62824e5e17d9406"
+    },
+    "shutdown": {
+      "file": "/workspace/nuvio-iptv-shutdown.log",
+      "sha256": "77b6433b79cbf1d66c58e924e03ff74df8f6c89e75eecbc456519d6719c75a69"
+    },
+    "liveTvRegression": {
+      "file": "/workspace/nuvio-iptv-live-regression.log",
+      "sha256": "6152fa908bb72a68639c1263e26a7c21097914b8135eb504e492086e6f7622ea"
+    },
+    "ps5InitialSyntax": {
+      "file": "/workspace/nuvio-iptv-syntax.log",
+      "sha256": "e4be8c55fa70f911d085bfe1a76bc9e0889d8e320e8c46512879896509258913"
+    },
+    "ps5FinalSyntax": {
+      "file": "/workspace/nuvio-iptv-final-platform.log",
+      "sha256": "44847c6d2dd69e5b345739f3ebf5691a367e051cebb4462f7cff88f47260fd33"
+    },
+    "uiPreview": {
+      "file": "/workspace/nuvio-iptv-preview-final.log",
+      "sha256": "1ea5ef4194d35d3e8034a893e7c2386183ae461c948cfbe041ef1d6d9473fc7e"
+    }
+  },
+  "codeSha256": {
+    "src/iptv_library.cpp": "50d85464f0201c97bd38986769123c65c5ef6eddcd2bac3226b4b3932589bfca",
+    "src/iptv_library.h": "9de868cffd59db131880adecd8c891756757bfcd425b4d2c27abeee49069b79b",
+    "gl/session_iptv.cpp": "0eaef9cd284776aa90e93bdec763cf07be31bd528d6c1e36ac60d37ee10f90ed",
+    "gl/session_watch.cpp": "b10e339b5f9cd97662d264642dc2bc605ea7d23c49883795d02e721dbd999b8d",
+    "gl/session_live_tv.cpp": "9e5a023226cf2a540720c030101e198be8a3b8632ca2ad11962b5989371b0e8a",
+    "ui/shell.cpp": "493e2ded0cece2bca69eccc30fb6298fdc3f0cf88c5abfa7f9f08de0b014e4f8",
+    "ui/chrome.cpp": "28761e2099252cd007e0dcc92310196d2e649ddb860a641e2154b7c9ee7c8f66",
+    "ui/library.cpp": "32f3cd340ff2df47c22091c48c711cb19e5bab7bc2ec4013cb3011e42b6f926c"
+  },
+  "availabilityTestNote": "Initial session fixture could not bind a localhost socket in the sandbox; reran the compiled test with local network permission and passed.",
+  "availabilityEvidence": {
+    "providerMessages": {
+      "file": "/workspace/nuvio-iptv-availability-model.log",
+      "sha256": "daf08dc2d421af929b81505b38ccc28f50bdf28a55ad54efa667abeae5674bfb"
+    },
+    "providerSession": {
+      "file": "/workspace/nuvio-iptv-availability-session-network.log",
+      "sha256": "2d187bbb70f2f7099f3afd9c0c837abdb070c8abbcd64f5285685e1dbe4a49c5"
+    },
+    "providerPs5Syntax": {
+      "file": "/workspace/nuvio-iptv-availability-syntax.log",
+      "sha256": "df11073091a3d10d32ba0a47ba76e51c4c69295dfabb6cb0733a08605a013b24"
+    }
+  }
+}

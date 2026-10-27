@@ -1,3 +1,26 @@
+# Max’d 1.0.0.2 — combined upstream/IPTV test candidate
+
+See UPSTREAM_REFRESH_1.0.0.2.md for changes, adapted components, exclusions and console checks. Unpublished; no store submission in this build-only task.
+
+---
+
+IPTV VOD availability messages (staged)
+- Provider server errors explain a possible provider outage and suggest retrying or contacting the provider.
+- Separate guidance for rejected access, missing titles, connection limits and network failures.
+- Decoder/output failures stay playback errors; no unsupported claim that the provider has an outage.
+- Saved IPTV catalogs and private resume progress remain available after a failed request.
+
+# Next build: IPTV Library
+
+- Add a separate IPTV Library sidebar tab, hidden until an imported service has movie or series support in the active profile.
+- Reuse Xtream accounts and recognized Xtream get.php M3U links; keep Live TV and addon movie/TV sources unchanged.
+- Add category/server/type filters, paged posters, search, direct movie playback and on-demand series seasons/episodes.
+- Keep IPTV resume data local and isolated from addon history, Nuvio Sync and trackers; prefer in-file subtitles without asking addons for unrelated matches.
+- Add bounded per-profile catalog caches, cached-first refresh, outage retention and stale-response/profile/source-removal protection.
+- See IPTV_LIBRARY.md and IPTV_LIBRARY_VALIDATION.json. Staged in source; a new installer/public release is not included in this change.
+
+---
+
 # Max’d 1.0.0.1 — local test build for issue #10
 
 - Large Live TV imports: up to 100,000 live channels and 128 MiB per channel list, with per-channel Xtream parsing. Authentication/category metadata keeps smaller bounds. Xtream VOD and series libraries are not imported.

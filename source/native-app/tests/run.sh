@@ -19,6 +19,8 @@ bash "$ROOT/tests/playback_badges.sh"
 bash "$ROOT/tests/playback_badges_ui.sh"
 bash "$ROOT/tests/multiview_controls.sh"
 bash "$ROOT/tests/live_tv.sh"
+bash "$ROOT/tests/iptv_library.sh"
+bash "$ROOT/tests/iptv_session.sh"
 ${HOST_CXX:-g++} -std=c++20 -O1 -g -Wall -Wextra -Werror -pthread \
     -I"$ROOT/src" -I"$ROOT/third_party" "$ROOT/tests/account_host.cpp" \
     "$ROOT/src/nuvio_account.cpp" "$ROOT/src/watch_sync.cpp" "$ROOT/src/tracking.cpp" "$ROOT/src/stremio.cpp" "$ROOT/src/http.cpp" "$ROOT/src/util.cpp" \

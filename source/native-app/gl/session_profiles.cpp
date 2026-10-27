@@ -45,7 +45,7 @@ void Session::clear_profile_views() {
     stream_result_cache_.clear();
     profile_pin_cancel();
     ++profile_generation_; ++login_gen_; ++addons_gen_; ++home_gen_; ++disc_gen_;
-    close_detail(); close_search(); next_preparation_cancel();
+    close_detail(); close_search(); search_query.clear(); next_preparation_cancel();
     if (launch_cancel_) *launch_cancel_ = true;
     if (w_episode_cancel_) *w_episode_cancel_ = true;
     cancel_autoplay(); resuming_ = false; open_req_.reset(); want_streams_video_.clear();

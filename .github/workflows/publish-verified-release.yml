@@ -95,4 +95,4 @@ jobs:
           latest=(--latest)
           if [ "$RELEASE_PRERELEASE" = true ]; then latest=(--latest=false); fi
           gh release edit "$RELEASE_TAG" --draft=false --prerelease="$RELEASE_PRERELEASE" "${latest[@]}" \
-            --title "Nuvio Max'd $version — Live TV imports, multiscreen and audio controls" --notes-file RELEASE_NOTES.md
+            --title "Nuvio Max'd $version — IPTV Library and playback updates" --notes-file RELEASE_NOTES.md

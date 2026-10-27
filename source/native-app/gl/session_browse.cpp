@@ -486,6 +486,7 @@ void Session::board_square(int row, int col)
 void Session::page_opened(Page page)
 {
     page_ = page;
+    if(page==Page::iptv && iptv_visible && iptv_catalog_.entries.empty() && !iptv_loading_)iptv_reload();
     if(page == Page::livetv && live_channels_.empty() && !live_loading_)live_reload();
     if (page == Page::discover)
         enter_discover();

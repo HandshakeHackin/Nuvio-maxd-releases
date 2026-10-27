@@ -57,6 +57,7 @@ struct DiscoverContent
 
 struct LibraryContent
 {
+    std::string heading, notice;
     std::vector<Filter> filters;
     std::vector<Title> items;
     std::string count; // "128 titles"
@@ -232,6 +233,7 @@ enum class Page
     addons,
     settings,
     livetv,
+    iptv,
 };
 
 } // namespace sx
