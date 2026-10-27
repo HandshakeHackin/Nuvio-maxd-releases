@@ -1,0 +1,40 @@
+## Release scan: PPSA99288
+
+**This app can leave the sandbox.** Review how, below, before listing it.
+
+Archive: 169 entries, 108,550,629 bytes unpacked, sha256 `682aee99d26be7ecb372a8b70be007842183541f905ce938a5ce514fe0e1516f`. Nothing from it was run.
+
+| Level | Finding |
+| --- | --- |
+| warning | `PPSA99288/nuvio-updater.elf` is a payload: code the payload loader runs outside the sandbox (sha256 `228293532c67d98b1a8aca99071cc9db928a1f548e1087b35e4843aa829c7572`) |
+| warning | `PPSA99288/nuvio-updater.elf` is NOT on the approved helper list (sha256 `228293532c67d98b1a8aca99071cc9db928a1f548e1087b35e4843aa829c7572`): read its source before listing, then add it to `helpers/approved.json` |
+
+### `PPSA99288/nuvio-updater.elf` (payload, 8,931,640 bytes)
+
+- Imports 0 system function(s); none on the watch list
+- Hosts named in URLs: 127.0.0.1, curl.se, github.com
+
+### `PPSA99288/eboot.bin` (title executable, 69,080,731 bytes)
+
+- Links to: libSceAgc, libSceAgcDriver, libSceAudioOut, libSceImeDialog, libSceLibcInternal, libSceNet, libScePad, libSceSysmodule, libSceSystemService, libSceUserService, libSceVideoOut, libSceVideodec2, libkernel
+- Imports 413 system function(s)
+  - makes memory executable: `sceKernelMprotect`
+  - network: `accept`, `bind`, `connect`, `listen`, `recvfrom`, `sceNetConnect`, `sceNetSend`, `sceNetSocket`, `send`, `sendto`, `socket`
+  - starts or controls processes: `sceSystemServiceLoadExec`
+  - system state: `ioctl`, `sysctl`, `sysctlbyname`
+- Hosts named in URLs: api.anime-skip.com, api.aniskip.com, api.github.com, api.introdb.app, api.mdblist.com, api.simkl.com, api.them, api.themoviedb.org, api.torbox.app, api.trakt.tv, arm.haglund.dev, auth.trakt.tv and 29 more
+
+### `PPSA99288/sce_module/libc.prx` (module, 1,284,674 bytes)
+
+- Links to: libSceLibcInternalExt, libSceSysmodule, libkernel
+- Imports 102 system function(s); none on the watch list
+
+Not examined: payload imports (pyelftools is not installed); code examination (capstone is not installed); pattern rules (yara-python is not installed).
+
+A scan like this can't prove an app is harmless: code can hide from every check here. It shows what honest code does, in the same way for every release.
+
+warning: /workspace/nuvio-test-1.0.0.1/PPSA99288.zip: PPSA99288/nuvio-updater.elf is a payload: code the payload loader runs outside the sandbox (sha256 228293532c67d98b1a8aca99071cc9db928a1f548e1087b35e4843aa829c7572)
+warning: /workspace/nuvio-test-1.0.0.1/PPSA99288.zip: PPSA99288/nuvio-updater.elf is NOT on the approved helper list (sha256 228293532c67d98b1a8aca99071cc9db928a1f548e1087b35e4843aa829c7572): read its source before listing, then add it to helpers/approved.json
+notice: /workspace/nuvio-test-1.0.0.1/PPSA99288.zip: release scan: this app can leave the sandbox; the full report is in the job summary
+Release scan passed (0 error(s), 2 warning(s), 1 notice(s)).
+Scanned.
