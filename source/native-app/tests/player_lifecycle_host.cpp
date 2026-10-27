@@ -7,12 +7,14 @@
 extern "C" {
 #include <libavcodec/avcodec.h>
 }
+#include <array>
 #include <chrono>
 #include <cstring>
 #include <thread>
 #include <iostream>
 #include <stdexcept>
 static bool hardware=false;
+static std::atomic<int> pcm_ports{0},max_pcm_ports{0},hw_opens{0},pcm_peak{0};
 static std::atomic<bool> fail_bitstream{false},fail_drain{false};
 static std::atomic<bool> failed_hardware{false};
 void require(bool ok,const char* message) { if(!ok) throw std::runtime_error(message); }
@@ -21,10 +23,12 @@ extern "C" int sceAudioOutOpen(int,int,int,unsigned,unsigned,unsigned){
     // Widen the failed-bitstream -> closed -> PCM-open transition. The main
     // thread must wait for that transaction, not fail on its intermediate kind.
     if(fail_bitstream) std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    const int ports=++pcm_ports;max_pcm_ports=std::max(max_pcm_ports.load(),ports);
     return 42;
 }
-extern "C" int sceAudioOutClose(int){return 0;}
+extern "C" int sceAudioOutClose(int){--pcm_ports;return 0;}
 extern "C" int sceAudioOutOutput(int h,const void* data) {
+    if(h==42 && data) {const auto* s=static_cast<const int16_t*>(data);for(int i=0;i<512;++i)pcm_peak=std::max(pcm_peak.load(),std::abs(int(s[i])));}
     if(h==47)return data ? (fail_bitstream?-1:0) : (fail_drain?-1:0);
     std::this_thread::sleep_for(std::chrono::nanoseconds(5333333));return 0;
 }
@@ -67,6 +71,7 @@ int EvoPresenter::publish(const VideoPicture&,double,double){return 0;}
 struct HwDecoder::Impl { int w=0,h=0,sent=0; bool ready=false; int64_t pts=0; std::vector<uint8_t> pixels; };
 void HwDecoder::load_module(){}
 HwDecoder* HwDecoder::open(const AVCodecParameters* p,std::string* why) {
+    ++hw_opens;
     if(!hardware){*why="host software test"; return nullptr;}
     auto* d=new HwDecoder; d->d_=new Impl; d->d_->w=p->width;d->d_->h=p->height;
     d->d_->pixels.assign(size_t(p->width)*p->height*3/2,128); return d;
@@ -94,7 +99,7 @@ void run_until(Player& p,const std::function<bool()>& ready,double timeout=8) {
     throw std::runtime_error("player timed out: "+p.stats()+" diagnostics="+p.diagnostic_snapshot().dump());
 }
 int main(int argc,char** argv) try {
-    require(argc==3,"fixtures missing");
+    require(argc>=3,"fixtures missing");
     Player p; Player::Options o;o.url=argv[1];o.surround=true;
     p.open(o); run_until(p,[&]{return p.position()>.25 && !p.buffering();});
     const auto subs=p.subtitle_tracks();
@@ -133,6 +138,42 @@ int main(int argc,char** argv) try {
     require(p.codec_summary().find("VLC")!=0,"switching back left VLC active");p.close();
     std::cout<<"Playback lifecycle: Native -> VLC -> Native dispatch and port cleanup passed\n";
 #endif
+    o.url=argv[1];o.vlc=false;o.surround=false;o.audio_mode="pcm";
+    p.open(o);run_until(p,[&]{return !p.buffering() && p.position()>.4;});
+    pcm_peak=0;std::this_thread::sleep_for(std::chrono::milliseconds(180));const int normal=pcm_peak;
+    require(p.set_audio_gain(200),"PCM boost rejected");pcm_peak=0;
+    std::this_thread::sleep_for(std::chrono::milliseconds(180));
+    require(normal>100 && pcm_peak>normal*1.7 && pcm_peak<normal*2.3,"PCM output gain did not double samples");
+    const double clock=p.position();p.set_audio_delay(.5);
+    run_until(p,[&]{return p.picture_pts()-p.position()>.25;});
+    require(p.position()>=clock && p.picture_pts()-p.position()<.8,"sync offset altered progress or exceeded bounds");
+    p.set_audio_delay(0);p.close();
+    std::cout<<"PCM gain reaches real output boundary; video sync changes without resetting progress passed\n";
+    for(int fixture=3;fixture<argc;++fixture) {
+        Player limited;auto rejected=o;rejected.url=argv[fixture];rejected.preview=true;rejected.video_only=true;
+        const int opens=hw_opens;limited.open(rejected);const double bound=now_seconds()+4;
+        while(now_seconds()<bound && limited.state()!=Player::State::Failed)std::this_thread::sleep_for(std::chrono::milliseconds(3));
+        require(limited.state()==Player::State::Failed && limited.error().find("1080p")!=std::string::npos,"preview did not reject oversized/HDR source");
+        limited.close();require(hw_opens==opens && pcm_ports==0,"rejected preview acquired decoder/audio ownership");
+    }
+    std::array<std::unique_ptr<Player>,4> screens;
+    const int before_hw=hw_opens;max_pcm_ports=0;
+    for(int i=0;i<4;++i) {screens[i]=std::make_unique<Player>();auto preview=o;preview.preview=true;preview.live_tv=false;preview.video_only=i!=0;screens[i]->open(preview);}
+    const double until=now_seconds()+12;bool ready=false;
+    while(now_seconds()<until && !ready) {
+        ready=true;for(auto& screen:screens) {
+            if(const auto* picture=screen->present())require(picture->w<=640 && picture->h<=360,"preview exceeded bounded surface");require(screen->state()!=Player::State::Failed,"preview playback failed");
+            if(screen->picture_serial()!=screen->video_serial() || screen->buffering())ready=false;
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(3));
+    }
+    require(ready && hw_opens==before_hw && max_pcm_ports==1,"four previews did not play with software video and one PCM owner");
+    require(screens[0]->subtitle_tracks().empty(),"preview unnecessarily decoded subtitles");
+    screens[0]->close();auto muted=o;muted.preview=true;muted.live_tv=false;muted.video_only=true;screens[0]->open(muted);
+    screens[1]->close();muted.video_only=false;screens[1]->open(muted);
+    for(auto& screen:screens)screen->close();
+    require(pcm_ports==0 && max_pcm_ports==1,"audio focus/stop leaked or duplicated PCM ports");
+    std::cout<<"Four independent previews, software-only decoding, single audio owner, focus transfer and cleanup passed\n";
     o.url=argv[2];o.vlc=false;o.audio_mode="bitstream";o.surround=true;
     p.open(o);run_until(p,[&]{return !p.buffering()&&p.position()>.25;});
     fail_drain=true;fail_bitstream=true;

@@ -143,3 +143,14 @@ and HDR precision. They do not reproduce the PS5 GPU,
 prove the actual HDMI signal, or establish that the reported haze and stutter
 are fixed. Player controls now show decoded picture dimensions and bit depth,
 render resolution, accepted refresh, color conversion and stereo audio.
+
+## EVO Player option in v0.5.15
+
+Settings → Playback engine can select EVO Player **0.12.0**, the latest release
+at integration, for the next stream. This uses EVO's video decoder dispatcher
+and presentation core while retaining Nuvio's native-resolution owned picture
+buffers and existing colour/HDR output. It adds no downscaling. Native remains
+the default. Audio output, tone mapping, HDR scanout and refresh selection are
+unchanged; EVO audio passthrough and automatic frame-rate matching are not
+bundled. No improvement in console motion or HDR acceptance is claimed before
+a console comparison. See [scope and testing](third_party/evo/INTEGRATION.md).

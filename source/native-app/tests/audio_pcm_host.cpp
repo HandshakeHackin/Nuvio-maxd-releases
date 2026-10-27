@@ -1,4 +1,5 @@
 #include "audio_pcm.h"
+#include "pcm_gain.h"
 #include <cstdio>
 #include <stdexcept>
 #include <vector>
@@ -34,6 +35,11 @@ int main() try {
     require(pcm_audible_seconds(1,192000,1024,true)==1,"bitstream clock altered");
     PcmLevels levels;levels.add(s.data(),s.size(),false);
     require(std::abs(levels.peak_db()+6.0206)<.001 && levels.rms_db()<levels.peak_db(),"level diagnostics wrong");
+    int16_t boost[]={1000,-1000,20000,-20000};pcm_apply_gain(boost,4,false,200);
+    require(boost[0]==2000 && boost[1]==-2000 && boost[2]==32767 && boost[3]==-32768,"integer gain overflow");
+    float gain[]={.2f,-.7f,std::nanf("")};pcm_apply_gain(gain,3,true,200);
+    require(std::abs(gain[0]-.4f)<1e-6 && gain[1]==-1 && gain[2]==0,"float gain clipping/NaN failed");
+    pcm_apply_gain(boost,4,false,0);require(boost[0]==0 && boost[3]==0,"PCM mute failed");
     std::puts("Audio PCM: stereo identity, mono, isolated dialogue/surround/bass, headroom, clock and level diagnostics passed");
     return 0;
 } catch(const std::exception& e) {std::fprintf(stderr,"FAIL: %s\n",e.what());return 1;}

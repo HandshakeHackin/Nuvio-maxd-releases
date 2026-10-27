@@ -464,7 +464,8 @@ void Session::watch_start(const std::string &url, const std::vector<std::string>
     o.evo = prefs_.evo_player;
     o.vlc = prefs_.vlc_player;
     o.surround = prefs_.surround_audio;
-    o.audio_mode=prefs_.audio_output_mode;
+    o.audio_mode=prefs_.audio_gain_percent==100?prefs_.audio_output_mode:"pcm";
+    o.gain_percent=prefs_.audio_gain_percent;o.audio_delay=prefs_.audio_delay_ms/1000.0;
     o.headers = headers;
     o.start = start;
     o.audio_langs = pref_langs(prefs_.audio_langs);
@@ -485,7 +486,7 @@ void Session::watch_start(const std::string &url, const std::vector<std::string>
     w_auto_sub_done_ = false;
     w_subs_.clear();
     w_sub_active_ = -1;
-    w_sub_delay_ = 0;
+    w_sub_delay_ = prefs_.subtitle_delay_ms/1000.0;
     subtitle_shown_.clear();
     w_last_save_ = now_seconds();
     w_last_saved_pos_ = start;
@@ -577,6 +578,7 @@ void Session::watch_show_info()
 
 void Session::watch_update()
 {
+    if(multiview_active){multi_update();return;}
     const double now = now_seconds();
     const Player::State st = player_.state();
     player_.log_stats();
@@ -690,7 +692,7 @@ void Session::watch_update()
     {
         WatchSub &ws = w_subs_[static_cast<std::size_t>(w_sub_active_)];
         rich_id=ws.embedded>=0?ws.embedded:ws.rich_id;
-        const double t = pos - w_sub_delay_;
+        const double t = pos + player_.video_sync_offset() - w_sub_delay_;
         if (ws.embedded >= 0)
             sub = player_.embedded_subtitle(ws.embedded, t);
         else if (!ws.cues.empty())
@@ -700,13 +702,13 @@ void Session::watch_update()
     if(w_sub_active_>=0 && w_sub_active_<int(w_subs_.size())) embedded_stream=w_subs_[size_t(w_sub_active_)].embedded;
     player_.select_embedded_subtitle(embedded_stream,w_sub_delay_);
     const auto& style=prefs_.subtitle_style;
-    auto overlay=player_.subtitle_renderer().render(rich_id,pos-w_sub_delay_,video_w,video_h,video_sar,
+    auto overlay=player_.subtitle_renderer().render(rich_id,pos+player_.video_sync_offset()-w_sub_delay_,video_w,video_h,video_sar,
         playing.controls?125.0f:0.0f,style.font,style.colour,style.effect,style.background,
         prefs_.sub_size=="sub-s"?0:prefs_.sub_size=="sub-l"?2:1);
     if(!overlay.supported && rich_id < -1 && w_sub_active_>=0 && w_sub_active_<int(w_subs_.size())) {
         auto& selected=w_subs_[size_t(w_sub_active_)];
         if(!selected.rich_text.empty() && player_.subtitle_renderer().external(rich_id,selected.rich_text,selected.lang))
-            overlay=player_.subtitle_renderer().render(rich_id,pos-w_sub_delay_,video_w,video_h,video_sar,
+            overlay=player_.subtitle_renderer().render(rich_id,pos+player_.video_sync_offset()-w_sub_delay_,video_w,video_h,video_sar,
                 playing.controls?125.0f:0.0f,style.font,style.colour,style.effect,style.background,
                 prefs_.sub_size=="sub-s"?0:prefs_.sub_size=="sub-l"?2:1);
     }
@@ -811,6 +813,7 @@ void Session::arm_presentation_timing() {
 
 void Session::upload_video()
 {
+    if(multiview_active)return;
     const int64_t selected_us = int64_t(now_seconds()*1000000);
     const Player::Picture *pic = player_.present();
     if (!pic)
@@ -866,6 +869,7 @@ void Session::upload_video()
 
 void Session::watch_stop(bool ended)
 {
+    if(multiview_active){multi_stop();return;}
     resume_play_ = false;
     resuming_ = false;
     if (w_started_ && !ended)
@@ -1019,6 +1023,10 @@ void Session::watch_save_progress(bool final, bool force_finished)
 
 void Session::media_transport(int action, int direction)
 {
+    if(multiview_active) {
+        if(action)for(auto& p:multi_players_)if(p)p->set_paused(action==1?!p->paused():action==3);
+        return;
+    }
     if (!watching || launch_open || !w_started_ || typing() || dropdown_open || sign_in_open)
         return;
     if (action)
@@ -1041,6 +1049,7 @@ void Session::watch_input(const hui::InputFrame &in)
     using hui::Direction;
     if (!watching)
         return;
+    if(multiview_active){multi_input(in);return;}
     if (launch_open)
     {
         // The stream is still starting: only a way out.
@@ -1079,10 +1088,33 @@ void Session::watch_input(const hui::InputFrame &in)
             }
             w_menu_dirty_ = true;
         }
-        if (in.is_pressed(Action::jump_prev))
-            w_sub_delay_ -= 0.25;
-        if (in.is_pressed(Action::jump_next))
-            w_sub_delay_ += 0.25;
+        const int sync_step=in.is_pressed(Action::jump_next)?50:in.is_pressed(Action::jump_prev)?-50:0;
+        bool adjusted=false;
+        if(sync_step) {
+            if(playing.menu_column==0) {
+                prefs_.audio_delay_ms=std::clamp(prefs_.audio_delay_ms+sync_step,-2000,2000);
+                player_.set_audio_delay(prefs_.audio_delay_ms/1000.0);
+            } else {
+                prefs_.subtitle_delay_ms=std::clamp(int(std::lround(w_sub_delay_*1000))+sync_step,-10000,10000);
+                w_sub_delay_=prefs_.subtitle_delay_ms/1000.0;
+            }
+            adjusted=true;
+        }
+        if(playing.menu_column==0) {
+            const int step=in.is_pressed(Action::page_next)?25:in.is_pressed(Action::page_prev)?-25:0;
+            if(step) {
+                const int gain=std::clamp(prefs_.audio_gain_percent+step,50,300);
+                if(player_.set_audio_gain(gain)) {prefs_.audio_gain_percent=gain;adjusted=true;}
+                else say("Audio boost needs PCM output. Select PCM in Settings before reopening this stream.",7);
+            }
+        }
+        if(in.is_pressed(Action::north)) {
+            if(playing.menu_column==0) {prefs_.audio_delay_ms=0;player_.set_audio_delay(0);
+                if(player_.set_audio_gain(100))prefs_.audio_gain_percent=100;
+            } else {prefs_.subtitle_delay_ms=0;w_sub_delay_=0;}
+            adjusted=true;
+        }
+        if(adjusted)save_prefs();
         if (in.is_pressed(Action::back) || in.is_pressed(Action::menu) || in.is_pressed(Action::touch))
         {
             playing.menu = false;
@@ -1214,6 +1246,7 @@ void Session::watch_build_menu()
     char delay[48];
     std::snprintf(delay, sizeof(delay), "%+.2f s", w_sub_delay_);
     playing.subtitle_delay = delay;
+    playing.audio_adjustments=std::to_string(prefs_.audio_gain_percent)+"% · "+std::to_string(prefs_.audio_delay_ms)+" ms";
 }
 
 // ---------------------------------------------------------------------------

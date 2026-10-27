@@ -245,9 +245,11 @@ void PlayerUi::draw_menu(hui::gfx::DrawList &list, float amount) const
         }
         list.pop_opacity();
     }
-    text(list, env_.fonts.regular, "Subtitle delay  " + (state.subtitle_delay.empty() ? std::string("0.00 s") : state.subtitle_delay) + "   (L2 / R2)",
+    text(list, env_.fonts.regular, "Audio  " + state.audio_adjustments, panel.x+50.0f,panel.y+panel.h-90.0f,22.0f,theme::ink_2);
+    text(list, env_.fonts.regular, "L2/R2 sync · L1/R1 volume · Triangle reset",panel.x+50.0f,panel.y+panel.h-44.0f,20.0f,theme::ink_3);
+    text(list, env_.fonts.regular, "Subtitle delay  " + (state.subtitle_delay.empty() ? std::string("0.00 s") : state.subtitle_delay) + "   (L2 / R2 · Triangle reset)",
          panel.x + 710.0f, panel.y + panel.h - 44.0f, 24.0f, theme::ink_3);
-    draw_chip(list, env_, hui::ui::Button::circle, "Close", panel.x + panel.w - 200.0f, panel.y + panel.h - 56.0f);
+    draw_chip(list, env_, hui::ui::Button::circle, "Close", panel.x + panel.w - 200.0f, panel.y + 30.0f);
     list.pop_transform();
     list.pop_opacity();
 }

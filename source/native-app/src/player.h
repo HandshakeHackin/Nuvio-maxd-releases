@@ -54,6 +54,10 @@ public:
 		// downloaded over several connections (netstream.h).
 		int read_ahead_seconds = 60; // bounded by the existing packet byte budget
 		bool parallel = false;
+        bool preview = false; // bounded software SDR preview, no hardware decoder ownership
+        bool video_only = false;
+        int gain_percent = 100;
+        double audio_delay = 0; // positive: sound later relative to picture
 		bool live_tv = false; // HTTP-only live HLS; permits extensionless segments
 		bool surround = false;
 		std::string audio_mode = "pcm"; // experimental passthrough is opt-in
@@ -84,6 +88,9 @@ public:
 	std::vector<Track> audio_tracks() const;
 	int audio_stream() const { return vlc_ ? vlc_->audio_stream() : audio_stream_.load(); }
 	void select_audio(int stream);
+    bool set_audio_gain(int percent);
+    void set_audio_delay(double seconds);
+    double video_sync_offset() const { return vlc_ ? 0 : audio_delay_.load(); }
 	void select_embedded_subtitle(int stream, double delay) { if(vlc_) vlc_->select_subtitle(stream,delay); }
 
 	// Text and bitmap subtitles inside the file (SRT/ASS/WebVTT/mov_text).
@@ -232,6 +239,8 @@ private:
 	Picture pic_;
 	bool have_picture_ = false;
 	double video_lead_ = 0;
+    std::atomic<double> audio_delay_{0};
+    std::atomic<int> gain_percent_{100};
 	SwsContext* sws_ = nullptr;
 
 	// Audio

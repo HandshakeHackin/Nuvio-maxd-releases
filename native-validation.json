@@ -1,20 +1,20 @@
 {
-  "version": "1.0.0-native",
-  "sourceCommit": "bb8144c7f158c6f37e1236d08b7932814e2cac50",
+  "version": "1.0.0.1-native",
+  "sourceCommit": "4cd3c33fd81f57c21d211e71a62a073d8aad56f8",
   "sourceDirty": false,
   "imageBytes": 46202880,
-  "imageSha256": "636ba00c40bb7dee121ff1df33c37f5b8910ea3f8489248934d983d7fefadb49",
-  "zipSha256": "c86623a44acda55039e65bc04535488967b92b3e94c8f1fbaeab7de2e7958c74",
+  "imageSha256": "35acdb51a6fec7a1cdcebdefcc024027cb1a36605fa282306954907872a2bdad",
+  "zipSha256": "682aee99d26be7ecb372a8b70be007842183541f905ce938a5ce514fe0e1516f",
   "files": 151,
   "fileSha256": {
-    "nuvio-updater.elf": "6a78998860327945bb2e98cce95780d2b668794c93caf7f109cf8b836f386d23",
+    "nuvio-updater.elf": "228293532c67d98b1a8aca99071cc9db928a1f548e1087b35e4843aa829c7572",
     "THIRD_PARTY.md": "3822ed412249095fffa33b25ab2ab2760d11698ab5b407b8dbb238146c5b4131",
-    "eboot.bin": "f0bfc322002ca859934755aaba0164aa990c5b76f64c6167723546aea6ccc207",
+    "eboot.bin": "8a9d77c21b677685758b847c25776c0c15892eaab4414db0fb80b1c54e391bcd",
     "tracker-applications.json": "44527d59f8228d61a62c36c6226c815dc5cdf6c83b86b81d960f55aedeb4f8f1",
     "LICENSE": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
     "ca-bundle.crt": "11163db462ffae3918afdf46c70a8db70cfcbaa8077352290b62a9c03c36fe6c",
     "account-config.json": "1014f3c748bee58a832ea5d1be191ebaa2e577ef8a08e8168f01cb6d78f1921f",
-    "build-info.json": "447735f7aa600528f0f83e8c0680440aad4f4743ba040ca0406d5f2d71e37b9a",
+    "build-info.json": "a60d4afa75a47b3027dc073c948d591865accf25e3df0bb155e940732bdef08f",
     "sce_module/libc.prx": "e6ff45d16adf687855cc3b33b0c8a4132b6504360b221e0a34c7e99fb3ba0036",
     "fonts/NotoSansCJK-LICENSE.txt": "6a73f9541c2de74158c0e7cf6b0a58ef774f5a780bf191f2d7ec9cc53efe2bf2",
     "fonts/Inter-Regular.ttf": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
@@ -81,7 +81,7 @@
     "icons/pause.png": "53bf621371ae732a31bdbab134d068226d442b6c32976e0895dc31d0c51f1c24",
     "icons/l1.png": "74a2a11849f8b48612677acdf3c7c8badde1b761e85791f2fb59b34e59969ab4",
     "sce_sys/icon0.png": "3c655e095db72d3a3d4cef6876c6ffe825e742d13af0afda3c84b141d1eb6226",
-    "sce_sys/param.json": "4fea0f0efce9f9148d9e49213e621bf189b30134a7f575ba13ef1a8c52c0053c",
+    "sce_sys/param.json": "440131b11cd2bef924d95fd4536349a20b3abb0db8703c3c7548d35fb69f9214",
     "licenses/native-app-boilerplate-GPL-3.0.txt": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
     "licenses/libass.txt": "f7e30699d02798351e7f839e3d3bfeb29ce65e44efa7735c225464c4fd7dfe9c",
     "licenses/Stremio-MIT.txt": "40f7f4a6bc790d341e490c56f6fd5af2f50cdce89393b9fa4c81f4510ca97976",
@@ -163,25 +163,13 @@
   "allExtractedFileHashesMatch": true,
   "containerErrors": 0,
   "containerWarnings": 0,
-  "contentVersion": "06.000.000",
-  "sourceArchiveFiles": 762,
+  "contentVersion": "06.000.001",
+  "sourceArchiveFiles": 768,
   "sourceArchiveHashesMatch": true,
   "hardwareVerified": false,
   "developmentValidation": {
-    "scope": "Full 1.0 release candidate; see VALIDATION.json",
+    "scope": "Issue #10 local test; see VALIDATION.json",
     "hardwareVerified": false
-  },
-  "hostTestEvidence": {
-    "conclusion": "success",
-    "url": "https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/39610283120/job/119257052158",
-    "publicCommit": "a538390bef9c54f435eee8f7da2b69d72eb34300",
-    "scope": "Full Native/account/transport suite and UI rendering; before subsequent VLC HTTP-only fix and VLC test diagnostics"
-  },
-  "vlcHostTestEvidence": {
-    "conclusion": "success",
-    "url": "https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/39613325635/job/119267670351",
-    "publicCommit": "a1a5b4fae93df45e04a214ad75ca8d980e49a2a7",
-    "scope": "Real VLC 3.0.24 file/authenticated HTTP/HLS playback, pause, seeks, EOF replay, reopening and blocked request cancellation; includes HTTP shutdown fix"
   },
   "hostToolsEvidence": {
     "status": "completed",
@@ -199,15 +187,83 @@
     "retained": true,
     "scope": "Unchanged legacy host bridge and package wrapper; current native target/package checks recorded separately"
   },
+  "featureValidation": {
+    "version": "1.0.0.1",
+    "purpose": "Local issue #10 feature test; not published",
+    "sourceCommit": "4cd3c33fd81f57c21d211e71a62a073d8aad56f8",
+    "hardwareVerified": false,
+    "checks": {
+      "nativeLifecycle": "passed: PCM gain at output, sync without progress reset, four local 960x540 software previews scaled to at most 640x360, one audio owner and cleanup, 4K/PQ rejection, existing lifecycle recovery",
+      "pcmSamples": "passed: stereo/downmix/clock and PCM gain/clipping",
+      "preferencesAndUi": "passed: defaults, bounds, persistence and existing UI draw checks",
+      "multiviewControls": "passed: production input body with fake session boundaries; focus, ordered audio transfer, replacement, full-screen, exit",
+      "largeImport": "passed: prior commit 884313a; 60k-channel M3U/gzip Xtream, bounds/cancellation and error handling",
+      "vlcIntegration": "passed isolated rerun: real host VLC 3.0.23 file/HTTP/HLS, PCM gain/delay, pause, seek, replay, reopen, private request headers, redirected relative segments, cancellation; baseline also passed",
+      "ps5Build": "passed: pinned PS5 SDK 0.44, OpenGL 1.0.2, static VLC 3.0.24; import validation passed",
+      "packaging": "passed: zero container errors/warnings; all 151 image and ZIP file hashes match; matching clean source commit; 768 source archive hashes checked; credentials/privacy audit passed"
+    },
+    "limitations": [
+      "Four live provider connections and console GPU/CPU performance are unverified. SD feeds recommended; four HD sources may be too demanding.",
+      "Four-screen uses independent native software previews and one PCM port; normal full-screen retains Native/EVO/VLC options.",
+      "Host tests do not establish PS5 HDMI/Bluetooth audio latency or multiview compatibility.",
+      "Host VLC is 3.0.23; packaged static PS5 VLC is pinned 3.0.24."
+    ],
+    "logs": {
+      "nativeLifecycle": {
+        "file": "nativeLifecycle.log",
+        "sha256": "3a9ba3b0bf10968b8e481e08aaa00d42dfea4bb0694f2313325aebdc82f5b84a"
+      },
+      "pcmSamples": {
+        "file": "pcmSamples.log",
+        "sha256": "6cd14e844aa3bd9c3987d7b985eac3118141ec9922a84d4056dcdb95e1f288b1"
+      },
+      "preferencesAndUi": {
+        "file": "preferencesAndUi.log",
+        "sha256": "8330606db39daf4812ecd30f3ebf19835847cf1e7d223c5e9c3fcad08edf054a"
+      },
+      "multiviewControls": {
+        "file": "multiviewControls.log",
+        "sha256": "b44c9bbfc5f7efa316880aff7071280895c75c6b0943d7d159b7bdead47fb881"
+      },
+      "largeImport": {
+        "file": "largeImport.log",
+        "sha256": "e6be3d5e63944cae7606af50f87b915a4ccd1a08d76c996f8e18faf1f65599fe"
+      },
+      "ps5Syntax": {
+        "file": "ps5Syntax.log",
+        "sha256": "4484f1b713ed5bd9979775187b6eb2c3b29a0966a756252c0611e17009fc9724"
+      },
+      "vlcIntegration": {
+        "file": "vlcIntegration.log",
+        "sha256": "f782cea039b73f333c231fd00190d7aa0f784bd0e5d1cf75764a222b7eb2adf6"
+      },
+      "ps5Build": {
+        "file": "ps5Build.log",
+        "sha256": "78b17cd1f526e65f104e05807ca578e684fc1a52aefe829a90bd2e928bb89557"
+      },
+      "packaging": {
+        "file": "packaging.log",
+        "sha256": "fb53fd6c778eaee111ae874fafccec93903701bb94c867d571a8355858d91b90"
+      },
+      "privacy": {
+        "file": "privacy.log",
+        "sha256": "a87193e367195ce88c521e4a173b19cb5d364566aab4c01fa8c8cc26fd8ff958"
+      }
+    },
+    "testNotes": [
+      "Earlier host VLC runs saw an HLS timing failure and a close timing failure during concurrent work; unmodified baseline and final isolated full suite passed without weakening assertions. Physical-console testing is pending."
+    ]
+  },
+  "hostTestEvidence": {
+    "conclusion": "pending"
+  },
+  "vlcHostTestEvidence": {
+    "conclusion": "pending"
+  },
   "catalogScan": {
     "errors": 0,
     "warnings": 2,
     "notices": 1,
-    "helperApproval": "Bundled updater requires catalog maintainer review; approval unchanged"
-  },
-  "playbackBadges": {
-    "metadataParser": "passed",
-    "drawListLayoutAndVisibility": "passed",
-    "hardwareVerified": false
+    "helperApproval": "Bundled updater helper requires catalog maintainer review; no helper approvals changed"
   }
 }

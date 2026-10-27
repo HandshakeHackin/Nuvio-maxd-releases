@@ -154,10 +154,12 @@ void Player::open(const Options& opts) {
 		opts_=opts;
 		vlc_=std::make_unique<VlcBackend>();
 		VlcBackend::Options v{opts.url,opts.headers,opts.audio_langs,opts.start,opts.surround,opts.start_paused};
-		v.audio=opts.initial_audio_stream;vlc_->open(v);
+		v.audio=opts.initial_audio_stream;v.gain_percent=opts.gain_percent;v.audio_delay=opts.audio_delay;vlc_->open(v);
 		return;
 	}
 	opts_ = opts;
+    audio_delay_=std::isfinite(opts.audio_delay)?std::clamp(opts.audio_delay,-2.0,2.0):0;
+    gain_percent_=std::clamp(opts.gain_percent,50,300);pcm_.set_gain(gain_percent_);
 	evo_presenter_ = opts.evo ? std::make_unique<EvoPresenter>() : nullptr;
 	evo_presenter_serial_ = -1;
 	dlog("player: playback engine %s", opts.evo ? "EVO Player 0.12.0 (experimental)" : "Nuvio native");
@@ -263,7 +265,7 @@ bool Player::open_stream_codec(int stream, AVCodecContext** out) {
 	ctx->pkt_timebase = st->time_base;
 	if (st->codecpar->codec_type == AVMEDIA_TYPE_VIDEO) {
 		// The PS5 has 8 Zen 2 cores; FFmpeg can't count them here, so say it.
-		ctx->thread_count = 8;
+		ctx->thread_count = opts_.preview ? 1 : 8;
 		ctx->thread_type = FF_THREAD_FRAME | FF_THREAD_SLICE;
 	}
 	int r = avcodec_open2(ctx, codec, nullptr);
@@ -476,13 +478,18 @@ void Player::demux_run() {
 	}
 	// Video: the hardware decoder when it takes the stream; FFmpeg's software
 	// decoder otherwise (and if the hardware one fails later).
-	if (vs >= 0 && opts_.evo) {
+    if(opts_.preview && (vs<0 || fmt_->streams[vs]->codecpar->width>1920 ||
+       fmt_->streams[vs]->codecpar->height>1088 || colors_==YuvColors::Hdr10 ||
+       fmt_->streams[vs]->codecpar->color_trc==AVCOL_TRC_ARIB_STD_B67)) {
+        avformat_close_input(&fmt_);fail("Four-screen TV supports SDR channels up to 1080p. Choose a lower-quality channel.");return;
+    }
+	if (vs >= 0 && opts_.evo && !opts_.preview) {
 		std::string why;
 		evo_ = EvoDecoder::open(fmt_->streams[vs]->codecpar, why);
 		if (!evo_) { avformat_close_input(&fmt_); fail(why); return; }
 		hw_active_ = evo_->hardware();
 	}
-	if (vs >= 0 && !opts_.evo) {
+	if (vs >= 0 && !opts_.evo && !opts_.preview) {
 		std::string why;
 		hw_.reset(HwDecoder::open(fmt_->streams[vs]->codecpar, &why));
 		hw_active_ = hw_ != nullptr;
@@ -496,11 +503,12 @@ void Player::demux_run() {
 		fail("This video's format (" + name + ") can't be played. Pick another stream.");
 		return;
 	}
+    if(opts_.video_only)as=-1;
 	if (as >= 0 && !open_stream_codec(as, &actx_)) as = -1;
 	for (unsigned i = 0; i < fmt_->nb_streams; i++) {
 		AVStream* st = fmt_->streams[i];
 		bool keep = int(i) == vs || int(i) == as;
-		if (is_supported_subtitle(st->codecpar)) {
+		if (!opts_.preview && is_supported_subtitle(st->codecpar)) {
 			AVCodecContext* sc = nullptr;
 			if (open_stream_codec(int(i), &sc)) {
 				sctx_[int(i)] = sc;
@@ -512,7 +520,7 @@ void Player::demux_run() {
 		// Keep ordinary file tracks readable for switching. For HLS, inactive
         // audio playlists must not compete with the selected video.
         if (st->codecpar->codec_type == AVMEDIA_TYPE_AUDIO)
-            keep = !playback_streams::is_hls(fmt_) || int(i) == as;
+            keep = !opts_.video_only && (!playback_streams::is_hls(fmt_) || int(i) == as);
 		st->discard = keep ? AVDISCARD_DEFAULT : AVDISCARD_ALL;
 	}
     if (playback_streams::is_hls(fmt_))
@@ -617,7 +625,7 @@ void Player::demux_run() {
         const size_t queued=vq_.bytes()+aq_.bytes();
         const bool other_starving=(vs>=0 && vq_.duration()<0.5) ||
             (audio_stream_>=0 && aq_.duration()<0.5);
-        if(queued>=kHardQueueBytes || (queued>=kMaxQueueBytes && !other_starving) ||
+        if(queued>=(opts_.preview?16u<<20:kHardQueueBytes) || (queued>=(opts_.preview?8u<<20:kMaxQueueBytes) && !other_starving) ||
             vq_.count()+aq_.count()>65536 ||
             ((vs<0 || vq_.duration()>(opts_.live_tv ? 2 : std::clamp(opts_.read_ahead_seconds,30,300))) && (audio_stream_<0 || aq_.duration()>(opts_.live_tv ? 2 : std::clamp(opts_.read_ahead_seconds,30,300)))) || eof_) {
             delay_ms(10); continue;
@@ -858,8 +866,8 @@ void Player::video_thread() {
 			bool ok = emit_frame(pts, serial, [&](Frame& f) {
 				// Keep common 4:2:0 formats intact for native-resolution GPU
 				// conversion, including software-decoded HDR and P010.
-				if (frame->format == AV_PIX_FMT_YUV420P10LE || frame->format == AV_PIX_FMT_YUV420P ||
-				    frame->format == AV_PIX_FMT_NV12 || frame->format == AV_PIX_FMT_P010LE) {
+				if (!opts_.preview && (frame->format == AV_PIX_FMT_YUV420P10LE || frame->format == AV_PIX_FMT_YUV420P ||
+				    frame->format == AV_PIX_FMT_NV12 || frame->format == AV_PIX_FMT_P010LE)) {
 					YuvPicture yp;
 					yp.y = frame->data[0];
 					yp.u = frame->data[1];
@@ -953,6 +961,7 @@ void Player::video_thread_evo() {
 // playback was closed or seeked meanwhile.
 bool Player::emit_frame(double pts, int serial, const std::function<bool(Frame&)>& fill, int src_w, int src_h,
                         double sar) {
+    if(opts_.preview && (src_w>1920 || src_h>1088)) {fail("Four-screen channel switched above 1080p. Choose an SD/HD channel.");return false;}
 	if (!video_dimensions_valid(src_w, src_h)) {
 		fail("Unsupported video dimensions (maximum 4096 pixels per side)");
 		return false;
@@ -968,7 +977,7 @@ bool Player::emit_frame(double pts, int serial, const std::function<bool(Frame&)
 		double clk;
 		{
 			std::lock_guard<std::mutex> cl(clock_m_);
-			clk = clock_locked();
+			clk = clock_locked() + audio_delay_.load();
 		}
 		std::lock_guard<std::mutex> fl(fq_m_);
 		if (!buffering_ && !frames_.empty() && pts >= 0 && pts < clk - 0.2) {
@@ -993,6 +1002,10 @@ bool Player::emit_frame(double pts, int serial, const std::function<bool(Frame&)
 	lock.unlock();
 
 	f.w = src_w; f.h = src_h;
+    if(opts_.preview) {
+        const double scale=std::min(1.0,std::min(640.0/src_w,360.0/src_h));
+        f.w=std::max(2,int(src_w*scale)/2*2);f.h=std::max(2,int(src_h*scale)/2*2);
+    }
 	f.format = VideoFormat::Rgba; f.shift = 0;
 	f.colors = colors_; f.full_range = full_range_;
 	f.hdr10_compatible = hdr10_compatible_;
@@ -1135,6 +1148,7 @@ double Player::queued_audio_seconds() const {
 }
 
 void Player::open_audio_output(int stream, bool pcm_only) {
+    pcm_only=pcm_only || gain_percent_.load()!=100;
     const auto* p=fmt_->streams[stream]->codecpar;
     const int kind=bitstream::kind(p);
     // HDMI EDID cannot describe a TV's downstream optical connection. Honor
@@ -1455,6 +1469,16 @@ void Player::seek(double t) {
 	if (state_ == State::Ended) state_ = State::Playing;
 }
 
+bool Player::set_audio_gain(int percent) {
+    if(vlc_) {vlc_->set_audio_gain(percent);return true;}
+    if(pcm_.bitstream_kind())return false;
+    opts_.gain_percent=std::clamp(percent,50,300);gain_percent_=opts_.gain_percent;pcm_.set_gain(gain_percent_);return true;
+}
+void Player::set_audio_delay(double seconds) {
+    seconds=std::isfinite(seconds)?std::clamp(seconds,-2.0,2.0):0;
+    opts_.audio_delay=seconds;
+    if(vlc_)vlc_->set_audio_delay(seconds);else audio_delay_=seconds;
+}
 const Player::Picture* Player::present() {
 	if(vlc_) return vlc_->present();
 	const double reopen = reopen_target_.exchange(-1);
@@ -1471,7 +1495,7 @@ const Player::Picture* Player::present() {
 		double clk;
 		{
 			std::lock_guard<std::mutex> lock(clock_m_);
-			clk = clock_locked() + ((!paused_ && !buffering_) ? video_lead_ : 0);
+			clk = clock_locked() + audio_delay_.load() + ((!paused_ && !buffering_) ? video_lead_ : 0);
 		}
 		std::lock_guard<std::mutex> lock(fq_m_);
 		int cur = vq_.serial();

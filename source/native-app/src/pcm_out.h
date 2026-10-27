@@ -53,11 +53,13 @@ public:
 	// Paused: silence goes out and the queue stays where it is.
 	void pause(bool p) { paused_ = p; }
 	void clear();
+    void set_gain(int percent) { gain_percent_=percent<0?0:percent>300?300:percent; }
 
 private:
 	static void* thread_main(void* self);
 	void run();
 
+    std::atomic<int> gain_percent_{100};
 	std::atomic<bool> open_{false};
 	int handle_ = -1;
 	pthread_t thread_{};

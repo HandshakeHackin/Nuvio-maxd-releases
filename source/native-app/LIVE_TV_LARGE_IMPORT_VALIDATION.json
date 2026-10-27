@@ -1,0 +1,29 @@
+{
+  "issue": "https://github.com/HandshakeHackin/Nuvio-maxd-releases/issues/10",
+  "status": "source fix validated; installer and console testing pending",
+  "limits": {
+    "channelListBytes": 134217728,
+    "channels": 100000,
+    "metadataBytes": 8388608,
+    "categories": 10000,
+    "renderedPageChannels": 500
+  },
+  "hostTests": {
+    "httpM3u60000ChannelsAbove8MiB": "passed",
+    "httpGzipXtream60000ChannelsAbove8MiBDecoded": "passed",
+    "exact100000AndOverflowNoPartialImport": "passed",
+    "nestedAndMalformedJson": "passed",
+    "credentialEncodingAndAuthRejection": "passed",
+    "redirectAndCancellation": "passed",
+    "xtreamDoesNotFetchVod": "passed"
+  },
+  "hostSuitePeakRssKiB": 143604,
+  "memoryNote": "Host suite peak includes the 128 MiB rejection fixture; this is not a PS5 measurement.",
+  "ps5Syntax": {
+    "src/live_tv.cpp": "passed",
+    "gl/session_live_tv.cpp": "passed"
+  },
+  "hardwareVerified": false,
+  "packaged": false,
+  "published": false
+}

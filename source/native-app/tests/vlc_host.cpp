@@ -100,6 +100,10 @@ int main(int argc, char **argv) try {
         require(b.position() < 2, "VLC skipped the requested start");
         require(!b.tracks(false).empty(), "VLC audio metadata missing");
         require(audio_writes > 0 && audio_peak > 100, "VLC audio samples did not reach console boundary");
+        const int normal_peak=audio_peak;
+        audio_peak=0;b.set_audio_gain(200);b.set_audio_delay(.05);
+        wait(b,[&]{return audio_peak>normal_peak*1.6;},3);
+        b.set_audio_gain(100);b.set_audio_delay(0);
         const auto audio = b.tracks(false);
         if (audio.size() > 1) {
             b.select_audio(audio.back().stream);

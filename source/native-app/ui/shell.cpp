@@ -483,7 +483,25 @@ void Shell::draw(hui::gfx::DrawList &list, hui::gfx::BackdropSpec &backdrop) con
     }
     if (s_.watching)
     {
-        if (s_.launch_open)
+        if(s_.multiview_active) {
+            backdrop.mode=hui::gfx::BackdropMode::none;
+            using hui::gfx::Color;
+            list.rounded_rect({0,0,theme::kScreenW,theme::kScreenH},0,Color::rgb(0x070b14));
+            text(list,env_.fonts.semibold,"Live TV · Four screens (experimental)",40,55,30,theme::ink);
+            for(int i=0;i<4;++i) {
+                const auto& tile=s_.multiview_tiles[i];
+                const float x=40.0f+(i%2)*940.0f,y=85.0f+(i/2)*460.0f;
+                list.bordered_rect({x,y,920,440},14,Color::rgb(0x101723),s_.multiview_focus==i?4:1,s_.multiview_focus==i?theme::accent_soft:theme::hairline);
+                if(tile.texture) {
+                    const auto r=video_fit(tile.w,tile.h,tile.sar,900,370);
+                    list.image(tile.texture,{x+10+r.x,y+10+r.y,r.w,r.h},hui::gfx::kFullUv,Color::rgb(0xffffff));
+                }
+                text(list,env_.fonts.semibold,env_.fonts.semibold.font->fit(tile.name,24,870),x+20,y+402,24,theme::ink);
+                text(list,env_.fonts.regular,env_.fonts.regular.font->fit(tile.status,20,870),x+20,y+429,20,theme::ink_2);
+            }
+            text(list,env_.fonts.regular,"D-pad: focus · Cross: listen · Square: replace · Triangle: full screen · Circle: stop",40,1040,24,theme::ink_2);
+        }
+        else if (s_.launch_open)
         {
             backdrop.mode = hui::gfx::BackdropMode::none;
             draw_launch(list, env_, s_.launch, watch_t_, std::min(1.0f, watch_t_ * 3.0f));

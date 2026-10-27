@@ -31,7 +31,7 @@ jobs:
       - name: Validate version inputs
         shell: bash
         run: |
-          [[ "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+-native-experimental$ ]]
+          [[ "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(\.[0-9]+)?-native-experimental$ ]]
           [[ "$ASSET_REF" == "release-assets/$RELEASE_TAG" ]]
       - uses: actions/checkout@v4
         with:
@@ -92,5 +92,7 @@ jobs:
           PY
           version=${RELEASE_TAG#v}
           version=${version%-native-experimental}
-          gh release edit "$RELEASE_TAG" --draft=false --prerelease="$RELEASE_PRERELEASE" --latest \
-            --title "Nuvio Max'd $version — Live TV, trailers, anime skipping and playback improvements" --notes-file RELEASE_NOTES.md
+          latest=(--latest)
+          if [ "$RELEASE_PRERELEASE" = true ]; then latest=(--latest=false); fi
+          gh release edit "$RELEASE_TAG" --draft=false --prerelease="$RELEASE_PRERELEASE" "${latest[@]}" \
+            --title "Nuvio Max'd $version — Live TV imports, multiscreen and audio controls" --notes-file RELEASE_NOTES.md

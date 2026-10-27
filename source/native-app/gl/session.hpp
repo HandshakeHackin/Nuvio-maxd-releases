@@ -29,6 +29,7 @@
 #include "audio/cues.hpp"
 #include "core/input.hpp"
 
+#include <array>
 #include <atomic>
 #include <functional>
 #include <map>
@@ -88,7 +89,8 @@ class Session
     void fail_video_output(const std::string& error);
     void poll_presentation_timing();
     void arm_presentation_timing();
-    void mark_video_submitted() { if(video_texture) video_surface_.submitted(); }
+    void mark_video_submitted() { if(video_texture) video_surface_.submitted();
+        if(multiview_active)for(size_t i=0;i<4;++i)if(multiview_tiles[i].texture)multi_surfaces_[i].submitted(); }
 
     unsigned take_changed()
     {
@@ -143,6 +145,10 @@ class Session
     LibraryContent library;
     AddonsContent addons;
     AddonsContent live_content;
+    struct MultiTileView { std::uint32_t texture=0; int w=0,h=0; double sar=1; std::string name,status; };
+    bool multiview_active=false;
+    int multiview_focus=0,multiview_audio=0;
+    std::array<MultiTileView,4> multiview_tiles;
     void live_menu();
     void live_reload();
     void live_groups();
@@ -294,6 +300,17 @@ class Session
     void refresh_addons();
     void refresh_settings();
     void live_reset();
+    void live_play(const live_tv::Channel&);
+    void multi_choose(std::vector<live_tv::Channel> chosen={}, int replace=-1);
+    void multi_start(const std::vector<live_tv::Channel>&);
+    void multi_open(int tile, bool audio);
+    void multi_stop();
+    void multi_update();
+    void multi_input(const hui::InputFrame&);
+    std::array<std::unique_ptr<Player>,4> multi_players_;
+    std::array<VideoSurface,4> multi_surfaces_;
+    std::array<live_tv::Channel,4> multi_channels_;
+
     void live_load();
     void live_save();
     void live_build();

@@ -50,8 +50,25 @@ channel selections separately, including a selection whose playback later fails.
 
 Sources, favorites and the 30 most recent selections belong to the current local
 profile. Switching profiles cancels pending source requests and clears channel
-state before loading the new profile. The initial limits are 16 sources, 1,000
-favorites, 10,000 channels per response and 8 MB per downloaded response.
+state before loading the new profile. Limits are 16 sources, 1,000 favorites,
+100,000 live channels and 128 MiB per channel-list response. Authentication and
+category metadata retain an 8 MiB cap; category lists are limited to 10,000 groups.
+Channel-list requests have a 120-second timeout (metadata requests: 30 seconds).
+
+The large-import fix for [issue #10](https://github.com/HandshakeHackin/Nuvio-maxd-releases/issues/10)
+processes Xtream JSON one channel at a time and retains only the fields used by
+the live-channel list. It avoids constructing a JSON tree for the entire response.
+M3U parsing also avoids a second copy of the playlist. Xtream imports request
+only live categories/channels, never the account's VOD or series library.
+Cancellation is checked during parsing as well as downloading. Rendering remains
+paged at 500 channels; channel/group filtering covers the imported list.
+
+Large-import host fixtures pass with 60,000 channels for both an HTTP M3U over
+8 MiB and a gzip-compressed Xtream response over 8 MiB when decoded. Exact
+100,000-channel capacity, overflow rejection without partial imports, invalid and
+deeply nested JSON, cancellation, redirect handling and credential escaping are
+covered. This fix is staged in source; console acceptance and a new installer
+remain pending.
 
 ## Initial scope and validation
 

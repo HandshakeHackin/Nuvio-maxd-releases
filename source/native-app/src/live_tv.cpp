@@ -6,7 +6,8 @@
 #include <curl/curl.h>
 #include <map>
 #include <set>
-#include <sstream>
+#include <string_view>
+#include <functional>
 namespace live_tv {
 namespace {
 std::string trim(std::string s) {
@@ -73,15 +74,16 @@ struct Download {
   std::string body;
   const std::atomic<bool> *cancel;
   bool large = false;
+  size_t limit = max_bytes;
 };
 size_t write(char *p, size_t a, size_t b, void *v) {
   auto &d = *static_cast<Download *>(v);
-  if (a && b > max_bytes / a) {
+  if (a && b > d.limit / a) {
     d.large = true;
     return 0;
   }
   const size_t n = a * b;
-  if (n > max_bytes - d.body.size()) {
+  if (n > d.limit - d.body.size()) {
     d.large = true;
     return 0;
   }
@@ -115,19 +117,25 @@ bool http_url(const std::string &url) {
   curl_url_cleanup(u);
   return ok;
 }
-Result parse(const std::string &body, const std::string &base) {
+Result parse(const std::string &body, const std::string &base,
+             const std::atomic<bool> *cancel) {
   Result r;
   if (body.size() > max_bytes) {
-    r.error = "The playlist exceeds the 8 MB limit.";
+    r.error = "The channel list exceeds the 128 MB import limit.";
     return r;
   }
-  std::istringstream in(body);
+  std::string_view remaining(body);
   std::string line;
   Channel c;
   bool entry = false, header = false;
   std::set<std::string> seen;
-  while (std::getline(in, line)) {
-    line = trim(line);
+  while (!remaining.empty()) {
+    if (cancel && *cancel) return {{}, "Playlist loading cancelled."};
+    const auto end = remaining.find('\n');
+    const auto length = end == std::string_view::npos ? remaining.size() : end;
+    if (length > 65536) return {{}, "A playlist entry exceeds the supported line length."};
+    line = trim(std::string(remaining.substr(0, length)));
+    remaining.remove_prefix(end == std::string_view::npos ? remaining.size() : end + 1);
     if (line.compare(0, 3, "\xef\xbb\xbf") == 0)
       line = line.substr(3);
     if (line.empty())
@@ -206,7 +214,7 @@ Result parse(const std::string &body, const std::string &base) {
       c.group = "Other";
     if (r.channels.size() == max_channels) {
       r.channels.clear();
-      r.error = "The playlist exceeds the 10,000 channel limit.";
+      r.error = "The playlist exceeds the 100,000 channel limit.";
       return r;
     }
     r.channels.push_back(std::move(c));
@@ -218,7 +226,7 @@ Result parse(const std::string &body, const std::string &base) {
   return r;
 }
 HttpResponse download(const std::string &url, const std::atomic<bool> *cancel,
-                      bool redirects) {
+                      bool redirects, size_t limit = max_bytes) {
   HttpResponse r;
   if (!http_url(url)) {
     r.error = "Enter an HTTP or HTTPS M3U playlist URL.";
@@ -229,17 +237,18 @@ HttpResponse download(const std::string &url, const std::atomic<bool> *cancel,
     r.error = "Could not start the playlist request.";
     return r;
   }
-  Download d{{}, cancel};
+  Download d{{}, cancel, false, limit};
   http_setup_handle(h);
   curl_easy_setopt(h, CURLOPT_URL, url.c_str());
   curl_easy_setopt(h, CURLOPT_USERAGENT, kUserAgent);
   curl_easy_setopt(h, CURLOPT_FOLLOWLOCATION, redirects ? 1L : 0L);
   curl_easy_setopt(h, CURLOPT_MAXREDIRS, 5L);
+  curl_easy_setopt(h, CURLOPT_MAXFILESIZE_LARGE, curl_off_t(limit));
   curl_easy_setopt(h, CURLOPT_PROTOCOLS_STR, "http,https");
   curl_easy_setopt(h, CURLOPT_REDIR_PROTOCOLS_STR,
                    url.rfind("https://", 0) == 0 ? "https" : "http,https");
   curl_easy_setopt(h, CURLOPT_CONNECTTIMEOUT, 10L);
-  curl_easy_setopt(h, CURLOPT_TIMEOUT, 30L);
+  curl_easy_setopt(h, CURLOPT_TIMEOUT, limit > max_metadata_bytes ? 120L : 30L);
   curl_easy_setopt(h, CURLOPT_NOSIGNAL, 1L);
   curl_easy_setopt(h, CURLOPT_ACCEPT_ENCODING, "");
   if (!http_ca_bundle().empty())
@@ -260,8 +269,9 @@ HttpResponse download(const std::string &url, const std::atomic<bool> *cancel,
     r.error = "Playlist loading cancelled.";
     return r;
   }
-  if (d.large) {
-    r.error = "The playlist exceeds the 8 MB limit.";
+  if (d.large || rc == CURLE_FILESIZE_EXCEEDED) {
+    r.error = limit == max_bytes ? "The channel list exceeds the 128 MB import limit."
+                                : "The server metadata exceeds the 8 MB limit.";
     return r;
   }
   if (status < 200 || status >= 300) {
@@ -284,7 +294,7 @@ Result fetch(const std::string &url, const std::atomic<bool> *cancel) {
   auto r = download(url, cancel, true);
   if (!r.error.empty())
     return {{}, r.error};
-  return parse(r.body, r.content_type);
+  return parse(r.body, r.content_type, cancel);
 }
 namespace {
 std::string encoded(const std::string &s) {
@@ -314,25 +324,73 @@ bool credentials(const std::string &server, const std::string &user,
          !user.empty() && !password.empty() && user.size() <= 256 &&
          password.size() <= 256;
 }
+// Process one top-level channel object at a time. Provider EPG/VOD metadata and
+// nested fields are scanned but never retained as a whole-response JSON DOM.
+class XtreamItems : public nlohmann::json_sax<nlohmann::json> {
+  using J = nlohmann::json;
+  int depth_ = 0;
+  std::string key_;
+  J item_ = J::object();
+  std::function<bool(const J&)> emit_;
+  const std::atomic<bool> *cancel_;
+  bool active() const { return !(cancel_ && *cancel_); }
+  bool scalar(const std::string &s) {
+    if (depth_ == 0 || !active()) return false;
+    if (depth_ == 2 && !key_.empty()) {
+      const size_t limit = key_ == "stream_icon" ? 8192 : key_ == "stream_id" ? 20 : 256;
+      if (s.size() <= limit || key_ == "name") item_[key_] = s.substr(0, limit);
+    }
+    return true;
+  }
+public:
+  XtreamItems(std::function<bool(const J&)> emit, const std::atomic<bool> *cancel)
+      : emit_(std::move(emit)), cancel_(cancel) {}
+  bool null() override { return depth_ > 0 && active(); }
+  bool boolean(bool) override { return depth_ > 0 && active(); }
+  bool number_integer(number_integer_t v) override { return scalar(std::to_string(v)); }
+  bool number_unsigned(number_unsigned_t v) override { return scalar(std::to_string(v)); }
+  bool number_float(number_float_t, const string_t&) override { return depth_ > 0 && active(); }
+  bool string(string_t &v) override { return scalar(v); }
+  bool binary(binary_t&) override { return false; }
+  bool start_object(std::size_t) override {
+    if (depth_ == 0 || depth_ >= 64 || !active()) return false;
+    if (++depth_ == 2) { item_ = J::object(); key_.clear(); }
+    return true;
+  }
+  bool key(string_t &v) override {
+    if (depth_ == 2) {
+      key_ = (v == "stream_id" || v == "name" || v == "category_id" ||
+          v == "stream_icon" || v == "container_extension") ? v : std::string();
+      if (!key_.empty()) item_.erase(key_);
+    }
+    return active();
+  }
+  bool end_object() override {
+    if (depth_ == 2 && !emit_(item_)) return false;
+    --depth_; return active();
+  }
+  bool start_array(std::size_t) override {
+    if (depth_ >= 64 || !active()) return false;
+    ++depth_; return true;
+  }
+  bool end_array() override { --depth_; return active(); }
+  bool parse_error(std::size_t, const std::string&, const nlohmann::detail::exception&) override { return false; }
+};
 } // namespace
 Result parse_xtream(const std::string &body, const std::string &groups,
                     const std::string &server, const std::string &user,
-                    const std::string &password, const std::string &output) {
+                    const std::string &password, const std::string &output,
+                    const std::atomic<bool> *cancel) {
   Result r;
   if (!credentials(server, user, password) || body.size() > max_bytes ||
-      groups.size() > max_bytes) {
+      groups.size() > max_metadata_bytes) {
     r.error = "Invalid Xtream configuration or oversized response.";
     return r;
   }
-  auto data = nlohmann::json::parse(body, nullptr, false),
-       cats = nlohmann::json::parse(groups, nullptr, false);
-  if (!data.is_array() || !cats.is_array()) {
+  auto cats = nlohmann::json::parse(groups, nullptr, false);
+  if (!cats.is_array() || cats.size() > 10000) {
     r.error = "The Xtream server did not return live channels. Check your "
               "login and subscription.";
-    return r;
-  }
-  if (data.size() > max_channels) {
-    r.error = "The service exceeds the 10,000 channel limit.";
     return r;
   }
   std::map<std::string, std::string> names;
@@ -341,18 +399,20 @@ Result parse_xtream(const std::string &body, const std::string &groups,
     if (!id.empty() && !name.empty())
       names[id] = name;
   }
+  const auto prefix = root(server) + "/live/" + encoded(user) + "/" + encoded(password) + "/";
   std::set<std::string> seen;
-  for (const auto &item : data) {
+  XtreamItems items([&](const nlohmann::json &item) {
     Channel c;
     auto id = value(item, "stream_id");
     if (id.empty() || id.size() > 20 ||
         id.find_first_not_of("0123456789") != std::string::npos ||
-        !seen.insert(id).second)
-      continue;
+        seen.count(id))
+      return true;
     c.id = id;
     c.name = clean(value(item, "name"));
     if (c.name.empty())
-      continue;
+      return true;
+    seen.insert(id);
     auto category = names.find(value(item, "category_id"));
     c.group = category == names.end() ? "Other" : category->second;
     auto icon = value(item, "stream_icon");
@@ -362,9 +422,19 @@ Result parse_xtream(const std::string &body, const std::string &groups,
     auto extension = lower(value(item, "container_extension"));
     if (extension != "ts" && extension != "m3u8")
       extension = output == "m3u8" ? "m3u8" : "ts";
-    c.url = root(server) + "/live/" + encoded(user) + "/" + encoded(password) +
-            "/" + id + "." + extension;
+    c.url = prefix + id + "." + extension;
+    if (r.channels.size() == max_channels) {
+      r.error = "The service exceeds the 100,000 channel import limit.";
+      return false;
+    }
     r.channels.push_back(std::move(c));
+    return true;
+  }, cancel);
+  if (!nlohmann::json::sax_parse(body, &items)) {
+    r.channels.clear();
+    if (r.error.empty()) r.error = cancel && *cancel ? "Playlist loading cancelled."
+        : "The Xtream server returned an invalid live channel list.";
+    return r;
   }
   if (r.channels.empty())
     r.error = "This Xtream account returned no live channels.";
@@ -377,7 +447,7 @@ Result fetch_xtream(const std::string &server, const std::string &user,
     return {{}, "Enter a valid server address, username and password."};
   const auto api = root(server) + "/player_api.php?username=" + encoded(user) +
                    "&password=" + encoded(password);
-  auto auth = download(api, cancel, false);
+  auto auth = download(api, cancel, false, max_metadata_bytes);
   if (!auth.error.empty())
     return {{}, auth.error};
   auto j = nlohmann::json::parse(auth.body, nullptr, false);
@@ -389,7 +459,7 @@ Result fetch_xtream(const std::string &server, const std::string &user,
   const auto status = value(j["user_info"], "status");
   if (!status.empty() && lower(status) != "active")
     return {{}, "This Xtream subscription is not active."};
-  auto cats = download(api + "&action=get_live_categories", cancel, false);
+  auto cats = download(api + "&action=get_live_categories", cancel, false, max_metadata_bytes);
   if (!cats.error.empty())
     return {{}, cats.error};
   auto channels = download(api + "&action=get_live_streams", cancel, false);
@@ -402,6 +472,6 @@ Result fetch_xtream(const std::string &server, const std::string &user,
     for (const auto &v : info["allowed_output_formats"])
       if (v.is_string() && v.get<std::string>() == "m3u8")
         output = "m3u8";
-  return parse_xtream(channels.body, cats.body, server, user, password, output);
+  return parse_xtream(channels.body, cats.body, server, user, password, output, cancel);
 }
 } // namespace live_tv

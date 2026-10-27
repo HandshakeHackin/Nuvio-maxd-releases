@@ -20,6 +20,22 @@ Nuvio Max'd is also available in the
 [ProsperoStore homebrew shop](https://prosperostore.net/app/PPSA99288/).
 Find **Nuvio Max'd** in the store to install it, or use the GitHub downloads.
 
+## New in 1.0.0.1
+
+Live TV lists support up to 100,000 channels / 128 MiB. Xtream imports live
+channels only. For four-screen TV, open Live TV’s sources/filters menu and choose
+four SDR channels. Start with SD feeds and a provider allowing four connections.
+D-pad focuses, Cross listens, Square replaces, Triangle opens full-screen and
+Circle exits. This software-preview mode is experimental and needs console testing.
+
+Settings → Audio adds PCM volume/boost (50–300%) and audio delay (±2 s).
+Settings → Subtitles adds subtitle delay (±10 s). Positive delays make sound or
+captions later relative to the picture. In the playback track menu, Left/Right
+chooses Audio/Subtitles, L2/R2 adjusts sync, L1/R1 changes Audio volume and Triangle
+resets the selected column. Boost can clip loud peaks and requires PCM.
+
+See [test instructions](native-app/TESTING-1.0.0.1.md) for installation and reporting.
+
 ## New in 0.5.34: playback, profiles and watch history
 
 Profile PIN entry uses a masked controller keypad. Continue Watching no longer

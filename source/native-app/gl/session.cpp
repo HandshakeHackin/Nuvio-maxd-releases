@@ -70,6 +70,9 @@ enum SettingIndex
     kConsoleLights,
     kReadAhead,
     kMetadataCredits,
+    kAudioGain,
+    kAudioDelay,
+    kSubtitleDelay,
     kSettingCount
 };
 
@@ -707,6 +710,9 @@ void Session::refresh_settings()
         "manages its own buffer.");
     set(kRefresh, Kind::value, "Display refresh", prefs_.display_refresh == 120 ? "Prefer 120 Hz" : "60 Hz",
         "120 Hz can make 24 fps films feel steadier on a compatible TV. Keeps the selected resolution; uses 60 Hz if unavailable. Close and reopen to apply.");
+    set(kAudioGain, Kind::value, "Audio volume / boost", std::to_string(prefs_.audio_gain_percent)+"%", "50–300%; uses PCM. Boost can distort loud peaks. Default 100%.");
+    set(kAudioDelay, Kind::value, "Audio sync delay", std::to_string(prefs_.audio_delay_ms)+" ms", "Positive: sound later relative to picture. Negative: sound earlier. Default 0 ms.");
+    set(kSubtitleDelay, Kind::value, "Subtitle sync delay", std::to_string(prefs_.subtitle_delay_ms)+" ms", "Positive: subtitles later; negative: earlier. Also adjustable during playback.");
     set(kAudioMode, Kind::value, "Audio output", prefs_.vlc_player?"PCM (VLC)":prefs_.audio_output_mode=="pcm"?"PCM":prefs_.audio_output_mode=="auto"?"Auto (experimental)":"Bitstream (experimental)",
         prefs_.vlc_player ? "VLC currently uses decoded PCM. Auto and Bitstream apply to Native/EVO playback." : "Auto uses PCM with Surround off; with Surround on it checks HDMI capabilities. Bitstream forces a compressed-format attempt. Applies to the next video.");
     set(kAudioOutput, Kind::toggle, "Surround audio", "", "Use 7.1 PCM for compatible HDMI surround systems. Keep off for TV speakers or optical stereo. Applies to the next video.", prefs_.surround_audio);
@@ -761,8 +767,8 @@ void Session::refresh_settings()
     };
     group("Account & Services", {kAccount,kProfiles,kTracking,kLibrarySource,kConnectedServices,kServer});
     group("Video", {kDisplay,kRefresh,kHdr,kPlaybackEngine});
-    group("Audio", {kAudioMode,kAudioOutput,kAudioLangs});
-    group("Subtitles", {kSubLangs,kAutoSubs,kSubSize,kSubFont,kSubColour,kSubEffect,kSubBackground});
+    group("Audio", {kAudioMode,kAudioOutput,kAudioLangs,kAudioGain,kAudioDelay});
+    group("Subtitles", {kSubLangs,kAutoSubs,kSubSize,kSubFont,kSubColour,kSubEffect,kSubBackground,kSubtitleDelay});
     group("Playback", {kSeek, kShoulderSeek, kCountdown, kAutoplay, kSkipSegments, kReadAhead});
     group("Appearance & Lighting", {kReducedMotion,kHighContrast,kUiSounds,kCalmBackgrounds,kConsoleLights});
     group("Addons", {kTorrents,kAddAddon,kReload});
@@ -949,6 +955,17 @@ void Session::settings_activate(int row)
     }
     case kReducedMotion: prefs_.reduced_motion=!prefs_.reduced_motion; save_prefs(); cue(hui::audio::Cue::toggle); break;
     case kHighContrast: prefs_.high_contrast=!prefs_.high_contrast; save_prefs(); cue(hui::audio::Cue::toggle); break;
+    case kAudioGain: {
+        std::vector<std::string> labels;for(int v=50;v<=300;v+=25)labels.push_back(std::to_string(v)+"%");
+        open_dropdown("Audio volume / boost",labels,(prefs_.audio_gain_percent-50)/25,[this](int i){prefs_.audio_gain_percent=50+i*25;save_prefs();refresh_settings();});break;
+    }
+    case kAudioDelay:
+    case kSubtitleDelay: {
+        const bool audio=row==kAudioDelay;const int limit=audio?2000:10000;
+        std::vector<std::string> labels;for(int v=-limit;v<=limit;v+=50)labels.push_back(std::to_string(v)+" ms");
+        open_dropdown(audio?"Audio sync delay":"Subtitle sync delay",labels,((audio?prefs_.audio_delay_ms:prefs_.subtitle_delay_ms)+limit)/50,[this,audio,limit](int i){
+            if(audio)prefs_.audio_delay_ms=-limit+i*50;else prefs_.subtitle_delay_ms=-limit+i*50;save_prefs();refresh_settings();});break;
+    }
     case kAudioMode: {
         const int active=prefs_.audio_output_mode=="pcm"?0:prefs_.audio_output_mode=="auto"?1:2;
         open_dropdown("Audio output",{"PCM","Auto (experimental)","Bitstream (experimental)"},active,[this](int i){

@@ -4,8 +4,9 @@
 #include <string>
 #include <vector>
 namespace live_tv {
-constexpr size_t max_bytes = 8u << 20;
-constexpr size_t max_channels = 10000;
+constexpr size_t max_bytes = 128u << 20;
+constexpr size_t max_metadata_bytes = 8u << 20;
+constexpr size_t max_channels = 100000;
 struct Channel {
   std::string id, name, group, logo, url;
   std::vector<std::string> headers;
@@ -15,11 +16,13 @@ struct Result {
   std::string error;
 };
 bool http_url(const std::string &url);
-Result parse(const std::string &body, const std::string &base);
+Result parse(const std::string &body, const std::string &base,
+             const std::atomic<bool> *cancel = nullptr);
 Result parse_xtream(const std::string &channels, const std::string &categories,
                     const std::string &server, const std::string &user,
                     const std::string &password,
-                    const std::string &output = "ts");
+                    const std::string &output = "ts",
+                    const std::atomic<bool> *cancel = nullptr);
 Result fetch_xtream(const std::string &server, const std::string &user,
                     const std::string &password,
                     const std::atomic<bool> *cancel);

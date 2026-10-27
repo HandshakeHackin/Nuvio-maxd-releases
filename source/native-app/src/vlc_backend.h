@@ -14,6 +14,8 @@ class VlcBackend {
         bool surround = false, paused = false, software = false;
         int audio = -1, subtitle = -2;
         double subtitle_delay = 0;
+        int gain_percent=100;
+        double audio_delay=0;
     };
     struct Track {
         int stream = -1;
@@ -40,6 +42,8 @@ class VlcBackend {
     std::vector<Track> tracks(bool subtitles) const;
     int audio_stream() const;
     void select_audio(int);
+    void set_audio_gain(int);
+    void set_audio_delay(double);
     void select_subtitle(int, double delay);
     std::string audio_output() const;
     std::string codec_summary() const;

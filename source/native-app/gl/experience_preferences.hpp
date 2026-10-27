@@ -11,6 +11,7 @@ struct ExperiencePreferences {
     std::string install_source; // user-selected, local only; empty means not asked yet
     SubtitleStyle subtitle_style;
     int seek_seconds = 10, shoulder_seek_seconds = 60, next_episode_seconds = 10;
+    int audio_gain_percent=100, audio_delay_ms=0, subtitle_delay_ms=0;
     bool surround_audio = false;
     bool console_light_sync = true;
     std::string audio_output_mode="pcm";
@@ -36,6 +37,9 @@ inline void load_experience(const nlohmann::json& j, ExperiencePreferences& p) {
     }
     if(j.contains("surround_audio") && j["surround_audio"].is_boolean()) p.surround_audio=j["surround_audio"];
     if(j.contains("console_light_sync") && j["console_light_sync"].is_boolean()) p.console_light_sync=j["console_light_sync"];
+    p.audio_gain_percent=preference_int(j,"audio_gain_percent",100,50,300);
+    p.audio_delay_ms=preference_int(j,"audio_delay_ms",0,-2000,2000);
+    p.subtitle_delay_ms=preference_int(j,"subtitle_delay_ms",0,-10000,10000);
     p.subtitle_style.font=preference_int(j,"subtitle_font",1,0,2);
     p.subtitle_style.colour=preference_int(j,"subtitle_colour",0,0,2);
     p.subtitle_style.effect=preference_int(j,"subtitle_effect",1,0,2);
@@ -47,6 +51,9 @@ inline void load_experience(const nlohmann::json& j, ExperiencePreferences& p) {
     if(j.contains("high_contrast") && j["high_contrast"].is_boolean()) p.high_contrast=j["high_contrast"];
 }
 inline void save_experience(nlohmann::json& j, const ExperiencePreferences& p) {
+    j["audio_gain_percent"]=p.audio_gain_percent;
+    j["audio_delay_ms"]=p.audio_delay_ms;
+    j["subtitle_delay_ms"]=p.subtitle_delay_ms;
     j["console_light_sync"]=p.console_light_sync;
     j["surround_audio"]=p.surround_audio;
     j["audio_output_mode"]=p.audio_output_mode;

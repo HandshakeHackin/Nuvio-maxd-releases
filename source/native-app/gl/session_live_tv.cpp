@@ -27,6 +27,7 @@ bool contains(const json &a, const std::string &s) {
 }
 } // namespace
 void Session::live_reset() {
+  if(multiview_active)multi_stop();
   if (live_cancel_)
     *live_cancel_ = true;
   ++live_generation_;
@@ -113,14 +114,15 @@ void Session::live_build() {
     manage.version += " · Recent";
   live_content.items.push_back(manage);
   std::vector<size_t> indices;
+  const auto query = lower(live_query_);
   for (size_t i = 0; i < live_channels_.size(); ++i) {
     const auto &c = live_channels_[i];
-    const auto key = channel_key(live_source_, c);
     if (!live_group_.empty() && live_group_ != c.group)
       continue;
-    if (!live_query_.empty() &&
-        lower(c.name).find(lower(live_query_)) == std::string::npos)
+    if (!query.empty() &&
+        lower(c.name).find(query) == std::string::npos)
       continue;
+    const auto key = live_view_ ? channel_key(live_source_, c) : std::string();
     if (live_view_ == 1 && !contains(live_state_["favorites"], key))
       continue;
     if (live_view_ == 2 && !contains(live_state_["recent"], key))
@@ -272,6 +274,10 @@ void Session::live_activate(int index, bool favorite) {
     live_build();
     return;
   }
+  live_play(channel);
+}
+void Session::live_play(const live_tv::Channel& channel) {
+  const auto key=channel_key(live_source_,channel);
   // Live channels never enter title Continue Watching, Trakt or episode flows.
   d_item_ = Item{};
   d_item_.id = "live:" + key;
@@ -362,10 +368,11 @@ void Session::live_menu() {
       "Channel groups",    "Search channels",
       "All channels",      "Favorites",
       "Recent channels",   "Remove current source",
-      "Next channel page", "Previous channel page"};
+      "Next channel page", "Previous channel page", "Four-screen TV (experimental)"};
   open_dropdown("Live TV", options, 0, [this, generation](int i) {
     if (generation != profile_generation_)
       return;
+    if (i == 12) {multi_choose();return;}
     if (i == 0 || i == 1) {
       live_add(json{{"type", i ? "xtream" : "m3u"}}, 0);
       return;

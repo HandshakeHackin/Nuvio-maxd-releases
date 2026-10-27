@@ -51,6 +51,24 @@ int main(int argc, char **argv) {
               .error.empty());
   assert(!parse_xtream("[]", "[]", "https://example.test?leak=1", "u", "p")
               .error.empty());
+  // Do not silently accept partial lists after syntax, nesting or capacity failures.
+  assert(!parse_xtream("[{'bad':1}]", "[]", "https://example.test", "u", "p").error.empty());
+  assert(!parse_xtream("[[[{}]]]", "[]", "https://example.test", "u", "p").error.empty());
+  assert(!parse_xtream(std::string(80, '[')+std::string(80, ']'), "[]", "https://example.test", "u", "p").error.empty());
+  r=parse_xtream(R"([{"stream_id":1,"name":"A","ignored":{"stream_id":2,"name":"Wrong"}},{"stream_id":2,"name":"B"},null,7])", "[]", "https://example.test", "u", "p");
+  assert(r.error.empty() && r.channels.size()==2 && r.channels[0].name=="A");
+  std::string full="[";
+  for(size_t i=0;i<=max_channels;++i) {
+    if(i)full+=",";
+    full+="{\"stream_id\":"+std::to_string(i)+",\"name\":\"Channel\"}";
+  }
+  r=parse_xtream(full.substr(0,full.rfind(",{"))+"]", "[]", "https://example.test", "u", "p");
+  assert(r.error.empty() && r.channels.size()==max_channels);
+  r=parse_xtream(full+"]", "[]", "https://example.test", "u", "p");
+  assert(!r.error.empty() && r.channels.empty());
+  std::atomic<bool> cancelled{true};
+  assert(!parse_xtream(full+"]", "[]", "https://example.test", "u", "p", "ts", &cancelled).error.empty());
+  assert(!parse("#EXTM3U\n", "https://example.test", &cancelled).error.empty());
   if (argc > 1) {
     std::string base = argv[1];
     std::atomic<bool> cancel{false};
@@ -58,7 +76,12 @@ int main(int argc, char **argv) {
     assert(r.error.empty() && r.channels.size() == 1);
     assert(r.channels[0].url == base + "/channels/news.m3u8");
     r = fetch(base + "/oversized", &cancel);
-    assert(!r.error.empty());
+    assert(r.error.find("128 MB")!=std::string::npos);
+    r = fetch(base + "/large.m3u", &cancel);
+    assert(r.error.empty() && r.channels.size()==60000 && r.channels.back().name=="Channel 60000");
+    r = fetch_xtream(base+"/large", "user &", "secret/?", &cancel);
+    assert(r.error.empty() && r.channels.size()==60000 && r.channels.back().group=="News");
+    assert(r.channels.back().url==base+"/large/live/user%20%26/secret%2F%3F/60000.ts");
     r = fetch_xtream(base, "user &", "secret/?", &cancel);
     assert(r.error.empty() && r.channels.size() == 1);
     assert(r.channels[0].url.ends_with(".m3u8"));

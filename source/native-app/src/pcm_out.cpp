@@ -1,6 +1,7 @@
 #include "pcm_out.h"
 #include "bitstream.h"
 #include "audio_pcm.h"
+#include "pcm_gain.h"
 
 #include <algorithm>
 #include <cstring>
@@ -193,6 +194,7 @@ void PcmOut::run() {
 			}
 		}
 		if (got < grain_bytes) std::memset(grain + got, 0, grain_bytes - got);
+        if(!bitstream_kind_)pcm_apply_gain(grain,grain_bytes/(floating_?sizeof(float):sizeof(int16_t)),floating_,gain_percent_);
 #ifdef PLATFORM_PS5_NATIVE
 		const double output_started=now_seconds();
 		drained_=false;

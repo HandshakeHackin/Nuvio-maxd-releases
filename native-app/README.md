@@ -340,3 +340,30 @@ This is an unofficial client. See [LICENSE](LICENSE) and
 Standard Stremio addons remain supported. Settings > Addons > **Add addon or plugin URL** also accepts a raw Nuvio provider manifest with a `scrapers` list. Select its repository on the Addons page to enable individual providers, then open a title. Providers start disabled and run separately from normal addon requests. Movie/episode IDs are mapped to TMDB through metadata rather than passing IMDb IDs to TMDB scrapers.
 
 The isolated QuickJS runtime includes common HTML, cryptography and URL helpers. Providers requiring unsupported APIs, custom settings or browser challenges may not work. See [testing and limitations](TESTING-0.5.29.md). Console compatibility remains unverified until tested on PS5.
+
+## Tracking accounts (0.5.31 test build)
+
+Settings → Account & Services now includes Trakt, SIMKL and MDBList connections,
+plus independent Library Source and Watch Progress selectors. Both default to
+Nuvio. See [Tracking setup and testing](TRACKING.md), including the application
+registration required for Trakt/SIMKL phone pairing in this test build.
+
+## Staged Live TV
+
+The next build adds M3U playlists and Xtream Codes live channels in a dedicated tab. See [Live TV](LIVE_TV.md) for setup, controls, limits and testing status. The published 0.5.34.3 test package does not contain this staged feature.
+
+## Staged anime timings
+
+The next build adds free AniSkip and optional Anime-Skip coverage alongside IntroDB. See [Anime timings](ANIME_TIMINGS.md) for setup, contribution provenance, profile handling and validation limits.
+
+### Staged settings search
+
+Select **Search settings** at the top of Settings, enter words from a setting name, description or category, then select a matching result to open or change it. Search ignores letter case and searches every category. Cancelling leaves settings unchanged. Pending packaging and PS5 testing.
+
+### Staged trailers
+
+From a movie or show's details, press **Options → Watch trailer**, select a trailer, and return with Circle when finished. The selected player is used. Trailer playback leaves title watch progress/history and trackers untouched. Discovery uses addon trailer metadata and our TMDB application registration. Direct HTTPS trailers and supported public YouTube MP4/HLS sources can play; YouTube restrictions or unsupported playback methods can make individual trailers unavailable. No browsing autoplay is enabled. See [trailer setup and limits](TRAILERS.md).
+
+### Staged source-list caching
+
+Returning to the same title or episode can show recent eligible sources immediately while refreshing in the background. Torrent descriptors last up to five minutes; stable direct URLs last sixty seconds. Signed links and credential-bearing resolver payloads are not reused. Reload forces a fresh search. The bounded cache is session-only, scoped to profile and addon/provider options, and is cleared on profile changes. This reduces repeated empty-list waits without treating cached availability or seeder counts as a fresh check.

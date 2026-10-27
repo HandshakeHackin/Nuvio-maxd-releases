@@ -72,7 +72,7 @@ struct VlcBackend::Impl {
     std::thread audio_worker;
     int selected_sub = -2;
     int restore_audio = -1, restore_sub = -2;
-    int64_t sub_delay = INT64_MIN;
+    int64_t sub_delay = INT64_MIN, applied_audio_delay=0;
     double logged_at = 0, video_wait_since = 0;
     void fail(const char *why) {
         std::lock_guard<std::mutex> lock(mutex);
@@ -424,6 +424,7 @@ bool VlcBackend::open(const Options &o) {
     d_ = std::make_unique<Impl>();
     auto &s = *d_;
     s.options = o;
+    s.pcm.set_gain(o.gain_percent);
     s.stream_serial = nuvio_vlc_stream_begin();
     if(o.start>0)s.seek_target=o.start;
     s.user_paused = o.paused;
@@ -615,7 +616,16 @@ void VlcBackend::seek(double t) {
     libvlc_media_player_set_time(d_->player, int64_t(std::max(0.0, t) * 1000));
     d_->cv.notify_all();
 }
+void VlcBackend::set_audio_gain(int percent) {
+    d_->options.gain_percent=std::clamp(percent,50,300);d_->pcm.set_gain(d_->options.gain_percent);
+}
+void VlcBackend::set_audio_delay(double seconds) {
+    d_->options.audio_delay=std::isfinite(seconds)?std::clamp(seconds,-2.0,2.0):0;
+}
 const VideoPicture *VlcBackend::present() {
+    const auto delay=int64_t(d_->options.audio_delay*1000000);
+    if(d_->player && delay!=d_->applied_audio_delay && libvlc_audio_set_delay(d_->player,delay)==0)
+        d_->applied_audio_delay=delay;
 #ifdef NUVIO_VLC_STATIC
     if (vlc_hw_failed.exchange(false) && !d_->options.software) {
         auto o = d_->options;
@@ -812,9 +822,7 @@ double VlcBackend::duration() const {
     return 0;
 }
 void VlcBackend::seek(double) {}
-const VideoPicture *VlcBackend::present() {
-    return nullptr;
-}
+const VideoPicture *VlcBackend::present() { return nullptr; }
 int VlcBackend::serial() const {
     return 0;
 }
@@ -828,6 +836,8 @@ int VlcBackend::audio_stream() const {
     return -1;
 }
 void VlcBackend::select_audio(int) {}
+void VlcBackend::set_audio_gain(int) {}
+void VlcBackend::set_audio_delay(double) {}
 void VlcBackend::select_subtitle(int, double) {}
 std::string VlcBackend::audio_output() const {
     return "unavailable";

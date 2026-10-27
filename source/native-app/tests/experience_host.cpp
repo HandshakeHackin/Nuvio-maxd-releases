@@ -21,6 +21,11 @@ int main() {
  assert(!sx::should_show_release_notes("0.5.17","0.5.17"));
  sx::ExperiencePreferences defaults;
  assert(defaults.console_light_sync);
+ sx::ExperiencePreferences sync;
+ sx::load_experience({{"audio_gain_percent",999},{"audio_delay_ms",-9999},{"subtitle_delay_ms",100000}},sync);
+ assert(sync.audio_gain_percent==300 && sync.audio_delay_ms==-2000 && sync.subtitle_delay_ms==10000);
+ nlohmann::json saved_sync;sx::save_experience(saved_sync,sync);sx::ExperiencePreferences restored_sync;
+ sx::load_experience(saved_sync,restored_sync);assert(restored_sync.audio_gain_percent==300 && restored_sync.audio_delay_ms==-2000 && restored_sync.subtitle_delay_ms==10000);
  sx::load_experience({{"console_light_sync",false}},defaults); assert(!defaults.console_light_sync);
  nlohmann::json lighting; sx::save_experience(lighting,defaults); sx::ExperiencePreferences lighting_loaded;
  sx::load_experience(lighting,lighting_loaded); assert(!lighting_loaded.console_light_sync);

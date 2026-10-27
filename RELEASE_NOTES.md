@@ -1,17 +1,15 @@
-# Max’d 1.0.0
+# Max’d 1.0.0.1 — Live TV imports, multiscreen and audio controls
 
-- Added playback badges for resolution, HDR/SDR, source audio channels, codecs and release types such as WEB-DL, Blu-ray and DVD-Rip.
-- Added Live TV with M3U and Xtream Codes, channel search, groups, favorites and recent channels.
-- Added anime intro/credits timings through AniSkip and optional Anime-Skip.
-- Added settings search and a Watch trailer action on movie/show details.
-- Recent sources appear faster while fresh results load in the background.
-- Fixed audio-track changes losing playback position or pause state.
-- Fixed seeking back after playback ends getting stuck buffering; added clearer queue/seek diagnostics.
-- Improved audio/video cleanup and optional VLC seek, HEVC recovery and HLS shutdown.
-- Includes Trakt phone pairing, provider, profile, history and updater improvements.
+- Fixed large Live TV imports reported in [issue #10](https://github.com/HandshakeHackin/Nuvio-maxd-releases/issues/10). Channel lists now support up to 100,000 channels and 128 MiB. Xtream channels are parsed individually to reduce temporary memory use; authentication and category metadata retain smaller limits. Xtream VOD/series libraries are not imported.
+- Added experimental four-screen Live TV. Open Live TV’s sources/filters menu → Four-screen TV, then choose four different channels from the current page/filter. D-pad focuses a tile, Cross listens to it, Square replaces it, Triangle opens it full-screen, and Circle exits.
+- Added PCM volume/boost from 50–300%, with 100% as default. Boost can distort loud peaks; compressed bitstream audio is never amplified.
+- Added audio sync from −2 to +2 seconds and subtitle sync from −10 to +10 seconds. Positive audio delay makes sound later relative to the picture; positive subtitle delay shows captions later. Defaults persist in Settings → Audio/Subtitles.
+- Added playback menu controls: Left/Right selects Audio/Subtitles; L2/R2 adjusts sync in 50 ms steps; L1/R1 changes Audio volume; Triangle resets the selected column. Active bitstream playback needs PCM before live boost adjustments.
 
-The affected tester confirmed the audio/source fixes in [issue #8](https://github.com/HandshakeHackin/Nuvio-maxd-releases/issues/8#issuecomment-6294939778). Provider compatibility work relates to [issue #3](https://github.com/HandshakeHackin/Nuvio-maxd-releases/issues/3); tracker and updater work relates to [#2](https://github.com/HandshakeHackin/Nuvio-maxd-releases/issues/2) and [#7](https://github.com/HandshakeHackin/Nuvio-maxd-releases/issues/7). Anime timings adapt [community PR #6](https://github.com/HandshakeHackin/Nuvio-maxd-releases/pull/6).
+## Four-screen testing limits
 
-Live TV requires your own playlist/server. Anime-Skip is optional and requires a client ID; AniSkip does not. Some trailers are unavailable when their host requires unsupported playback methods. Native is the default player; VLC remains optional. HDR output depends on the console/display path.
+Your provider must allow four simultaneous connections. Start with SD channels. The grid uses independent software previews up to 640×360, one audio output, and bounded queues; sources must be SDR and no larger than 1920×1088. Four HD feeds may exceed console performance. 4K/HDR sources are rejected in the grid; normal full-screen playback retains Native, EVO and VLC options.
 
-Version 1.0.0. The legacy tag suffix is retained so older in-app updaters can discover this release. Host and package checks passed; console acceptance of the combined new features remains pending. Homebrew Store availability follows catalog approval and deployment.
+Host playback, gain, sync, import and grid-control tests passed. The PS5 build and installer checks passed, including matching image/ZIP contents and source hashes. Four live streams, console GPU/CPU performance and Bluetooth sync still need physical-console confirmation. This is a public test release; please report results in issue #10 with sanitized playback logs if problems remain. Keep a known-working installer for rollback.
+
+Package revision: 06.000.001; title ID: PPSA99288. Preserve existing app user data when updating. Homebrew Store availability follows catalog approval and deployment.
