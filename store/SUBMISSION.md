@@ -1,13 +1,19 @@
-# 1.0.0.1 catalog submission
+# 1.0.0.2 catalog submission
 
-Status: validated and pushed; PR creation blocked by GitHub integration permissions. Use the [prefilled submission link](README.md).
+Prepared one-record update; submission follows verified GitHub publication.
 
-Update Nuvio Max'd to 1.0.0.1-native-experimental.
+Update Nuvio Max’d to **1.0.0.2-native-experimental**.
 
-Fixes large M3U/Xtream live-channel imports and adds experimental four-screen Live TV, PCM volume/boost and audio/subtitle sync controls. Four-screen mode needs four provider connections; SD feeds are recommended, and physical-console confirmation remains pending.
+Adds a separate, profile-scoped IPTV VOD library with cached catalogs and resume, clearer provider failures, EVO 0.13.0, GPU-upload/VP9 improvements, complete Xtream category membership and addon/profile fixes. This is a public test release; physical-console validation remains pending.
 
-Release: https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/tag/v1.0.0.1-native-experimental
+Release: https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/tag/v1.0.0.2-native-experimental
 
-Only `apps/PPSA99288.json` changes. The ZIP and icon are pinned to the new release tag. Tagged and packaged `contentVersion` is `06.000.001`, increased from `06.000.000`. The record's SHA-256 matches the published GitHub asset digest.
+Only `apps/PPSA99288.json` changes. The ZIP, GitHub asset SHA-256 and icon are pinned to the release tag. Tagged and packaged `contentVersion` is `06.000.002`, increased from `06.000.001`.
 
-Validation: catalog format and online checks; static ZIP scan (zero errors). The scan flags the bundled update helper (`228293532c67d98b1a8aca99071cc9db928a1f548e1087b35e4843aa829c7572`) for maintainer review, as with the previous release. Matching source is included in the release and browsable under `source/native-app/update/` at its tag. This PR does not alter helper approvals. Native/VLC host CI and package verification evidence accompany the release.
+Validation: catalog format check (147 records, zero errors/warnings), online verification of the published artifact, native/VLC CI, source/package verification and static archive scan with pyelftools, Capstone and YARA. The scan reports zero errors and four review warnings:
+
+- Bundled updater ELF and its pending helper approval: SHA-256 `1f89d03e8b3dec5f19525df1424f2406d67762b7a2010b92951681338f6d46df`.
+- Loopback loader address: `source/native-app/gl/update_channel.cpp` starts the bundled update helper on port 9021.
+- The device-path finding refers to `/dev/icc_indicator`, used by optional console-light synchronization in `source/native-app/gl/console_lights.cpp`.
+
+Matching updater source is under `source/native-app/update/` at the release tag and in the release source archive. No helper approval or other app record is changed by this PR. Maintainer review and store deployment are still required.

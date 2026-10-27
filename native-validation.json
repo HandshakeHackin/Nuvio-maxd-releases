@@ -320,9 +320,37 @@
     }
   },
   "hostTestEvidence": {
-    "conclusion": "pending"
+    "status": "completed",
+    "conclusion": "success",
+    "publicSourceCommit": "ba2b3abf18c5a22560ba557e2f3a7c0e9bd7ab5c",
+    "url": "https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/40552321812/job/122359074580",
+    "runUrl": "https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/40552321812",
+    "jobId": 122359074580
   },
   "vlcHostTestEvidence": {
-    "conclusion": "pending"
-  }
+    "status": "completed",
+    "conclusion": "success",
+    "publicSourceCommit": "ba2b3abf18c5a22560ba557e2f3a7c0e9bd7ab5c",
+    "url": "https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/40552321812/job/122359075115",
+    "runUrl": "https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/40552321812",
+    "jobId": 122359075115
+  },
+  "publicSourceArchiveCorrespondence": {
+    "filesVerified": 780,
+    "developmentSourceCommit": "fc4d98bf6d19c45956fe09426184e4504a88fa33",
+    "publicHostCiCommit": "ba2b3abf18c5a22560ba557e2f3a7c0e9bd7ab5c",
+    "allHashesMatch": true
+  },
+  "catalogScan": {
+    "errors": 0,
+    "warnings": 4,
+    "notices": 1,
+    "pyelftools": true,
+    "capstone": true,
+    "yara": true,
+    "helperSha256": "1f89d03e8b3dec5f19525df1424f2406d67762b7a2010b92951681338f6d46df",
+    "helperApprovalModified": false,
+    "log": "catalog-scan.log"
+  },
+  "publicTestRelease": true
 }
