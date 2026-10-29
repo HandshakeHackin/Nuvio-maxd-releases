@@ -8,7 +8,7 @@ import zipfile
 
 root = Path(sys.argv[1])
 report = json.loads((root / 'native-validation.json').read_text())
-version = report['version'].removesuffix('-native-experimental')
+version = report['version'].removesuffix('-native-experimental').removesuffix('-native')
 image = root / f'NuvioMaxd-{version}-native.ffpfsc'
 assert image.stat().st_size == report['imageBytes']
 assert hashlib.sha256(image.read_bytes()).hexdigest() == report['imageSha256']
@@ -30,7 +30,10 @@ with zipfile.ZipFile(package) as archive:
     assert {k:param[k] for k in profile} == profile
     assert report['applicationDisplayProfile'] == profile
     assert report['hostTestEvidence']['conclusion'] == 'success'
-    assert report['hostTestEvidence']['headSha'] == report['sourceCommit']
+    correspondence = report['publicSourceArchiveCorrespondence']
+    assert correspondence['developmentSourceCommit'] == report['sourceCommit']
+    assert report['hostTestEvidence']['publicSourceCommit'] == correspondence['publicHostCiCommit']
+    assert correspondence['allHashesMatch'] is True
     assert report['hostToolsEvidence']['conclusion'] == 'success'
     assert report['vlcHostTestEvidence']['conclusion'] == 'success'
     assert param['localizedParameters']['en-US']['titleName'] == "Nuvio Max'd"

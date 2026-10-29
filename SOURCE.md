@@ -13,7 +13,7 @@ The development repository stays private; code for released builds is available
 without an account through the matching archives here.
 
 A browsable copy of this branch's released source is in [`source/`](source/README.md).
-This branch contains 1.0.0.2; `source/source-archive.json` identifies its exact
+This branch contains 1.0.0.3; `source/source-archive.json` identifies its exact
 development commit and original file hashes. The main and build branches
 retain their respective release versions. GitHub's language statistics count this
 app source, excluding vendored libraries and release-only verification scripts.
@@ -24,3 +24,5 @@ texts in the source and packaged app. The native UI and player build on
 [BlackBearReloaded's Prospero UI](https://github.com/LedyBacer/ps5-homebrew-ui)
 and the other components listed in [THIRD_PARTY.md](source/native-app/THIRD_PARTY.md).
 This is an unofficial Nuvio client, not an official Nuvio or Sony release.
+
+For 1.0.0.3, networking/subtitle maintenance libraries use a separate, checksum-verified SDK overlay. See [build details](source/native-app/MAINTENANCE_IPTV_NEXT.md).

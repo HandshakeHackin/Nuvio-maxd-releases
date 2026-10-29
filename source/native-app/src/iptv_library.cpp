@@ -712,7 +712,7 @@ bool save_private(const std::string &path, const Json &value) {
 }
 Json load_private(const std::string &path) {
   struct stat st{};
-  if (stat(path.c_str(), &st) != 0 || st.st_size < 0 ||
+  if (lstat(path.c_str(), &st) != 0 || !S_ISREG(st.st_mode) || st.st_size < 0 ||
       size_t(st.st_size) > max_info_bytes)
     return Json::object();
   std::ifstream in(path);
@@ -778,10 +778,11 @@ bool save_cache(const std::string &dir, const std::string &source, Kind kind,
   return true;
 }
 bool load_cache(const std::string &dir, const std::string &source, Kind kind,
-                const std::string &category, Catalog &out) {
+                const std::string &category, Catalog &out,
+                const std::atomic<bool> *cancel) {
   auto path = dir + "/" + cache_key(source, kind, category);
   struct stat st{};
-  if (stat(path.c_str(), &st) != 0 || st.st_size < 0 ||
+  if (lstat(path.c_str(), &st) != 0 || !S_ISREG(st.st_mode) || st.st_size < 0 ||
       size_t(st.st_size) > max_cache_file)
     return false;
   std::ifstream in(path);
@@ -797,7 +798,8 @@ bool load_cache(const std::string &dir, const std::string &source, Kind kind,
       value(h, "category") != category)
     return false;
   while (std::getline(in, line)) {
-    if (line.size() > 8192 || loaded.entries.size() >= max_items)
+    if (cancelled(cancel) || line.size() > 8192 ||
+        loaded.entries.size() >= max_items)
       return false;
     auto j = parse_json(line);
     if (!j.is_object())
@@ -811,6 +813,157 @@ bool load_cache(const std::string &dir, const std::string &source, Kind kind,
     return false;
   out = std::move(loaded);
   return true;
+}
+// Small UTF-8 fold for controller navigation/search, independent of locale.
+// Unsupported scripts retain their text for exact search and group under #.
+std::string search_key(const std::string &text) {
+  std::string out;
+  for (size_t i = 0; i < text.size();) {
+    const auto start = i;
+    unsigned char c = text[i++];
+    unsigned cp = c;
+    int tail = c < 0x80                   ? 0
+               : (c >= 0xc2 && c < 0xe0)  ? 1
+               : (c < 0xf0 && c >= 0xe0)  ? 2
+               : (c <= 0xf4 && c >= 0xf0) ? 3
+                                          : -1;
+    if (tail < 0 || i + size_t(tail) > text.size()) {
+      out += '?';
+      continue;
+    }
+    cp &= tail ? (1u << (6 - tail)) - 1 : 0x7f;
+    bool valid = true;
+    for (int t = 0; t < tail; ++t) {
+      unsigned char b = text[i];
+      if ((b & 0xc0) != 0x80) {
+        valid = false;
+        break;
+      }
+      cp = (cp << 6) | (b & 63);
+      ++i;
+    }
+    if (!valid) {
+      out += '?';
+      continue;
+    }
+    if (cp >= 0x300 && cp <= 0x36f)
+      continue;
+    if (cp < 128) {
+      out += char(std::tolower(static_cast<unsigned char>(cp)));
+      continue;
+    }
+    const char *fold = nullptr;
+    if ((cp >= 0xc0 && cp <= 0xc5) || (cp >= 0xe0 && cp <= 0xe5) ||
+        cp == 0x100 || cp == 0x101 || cp == 0x102 || cp == 0x103 ||
+        cp == 0x104 || cp == 0x105)
+      fold = "a";
+    else if (cp == 0xc6 || cp == 0xe6)
+      fold = "ae";
+    else if (cp == 0xc7 || cp == 0xe7 || (cp >= 0x106 && cp <= 0x10d))
+      fold = "c";
+    else if ((cp >= 0xc8 && cp <= 0xcb) || (cp >= 0xe8 && cp <= 0xeb) ||
+             (cp >= 0x112 && cp <= 0x11b))
+      fold = "e";
+    else if ((cp >= 0xcc && cp <= 0xcf) || (cp >= 0xec && cp <= 0xef) ||
+             (cp >= 0x128 && cp <= 0x131))
+      fold = "i";
+    else if (cp == 0xd1 || cp == 0xf1 || (cp >= 0x143 && cp <= 0x148))
+      fold = "n";
+    else if ((cp >= 0xd2 && cp <= 0xd6) || (cp >= 0xf2 && cp <= 0xf6) ||
+             cp == 0xd8 || cp == 0xf8 || (cp >= 0x14c && cp <= 0x151))
+      fold = "o";
+    else if ((cp >= 0xd9 && cp <= 0xdc) || (cp >= 0xf9 && cp <= 0xfc) ||
+             (cp >= 0x168 && cp <= 0x173))
+      fold = "u";
+    else if (cp == 0xdd || cp == 0xfd || cp == 0xff || cp == 0x178)
+      fold = "y";
+    else if (cp == 0xdf || cp == 0x1e9e)
+      fold = "ss";
+    else if (cp == 0x141 || cp == 0x142)
+      fold = "l";
+    else if (cp >= 0x15a && cp <= 0x161)
+      fold = "s";
+    else if (cp >= 0x179 && cp <= 0x17e)
+      fold = "z";
+    else if (cp >= 0x154 && cp <= 0x159)
+      fold = "r";
+    if (fold)
+      out += fold;
+    else
+      out.append(text, start, i - start);
+  }
+  return out;
+}
+std::string initial(const std::string &name) {
+  const auto key = search_key(name);
+  const auto i = key.find_first_not_of(" \t\r\n");
+  return i != std::string::npos && key[i] >= 'a' && key[i] <= 'z'
+             ? std::string(1, char(key[i] - 'a' + 'A'))
+             : "#";
+}
+SearchResults search_saved(const std::string &dir,
+                           const std::vector<Account> &accounts,
+                           const std::string &query,
+                           const std::atomic<bool> *cancel) {
+  SearchResults result;
+  const auto key = search_key(query);
+  if (key.empty() || key.size() > 512 || cancelled(cancel))
+    return result;
+  auto files = cache_files(dir);
+  // Newer saved categories win when a title appears in both All and category
+  // caches.
+  std::sort(files.begin(), files.end(), [](const auto &a, const auto &b) {
+    return a.modified != b.modified ? a.modified > b.modified : a.path < b.path;
+  });
+  std::set<std::string> seen;
+  size_t bytes = 0, count = 0;
+  for (const auto &f : files) {
+    if (cancelled(cancel))
+      return {};
+    if (++count > 512 || f.bytes > max_cache_total - bytes) {
+      result.limited = true;
+      break;
+    }
+    bytes += f.bytes;
+    if (f.bytes > max_cache_file)
+      continue;
+    std::ifstream in(f.path);
+    std::string line;
+    if (!std::getline(in, line) || line.size() > 1024)
+      continue;
+    auto h = parse_json(line);
+    const auto source = value(h, "source"), kind = value(h, "kind"),
+               category = value(h, "category");
+    const auto a = std::find_if(accounts.begin(), accounts.end(),
+                                [&](const auto &a) { return a.id == source; });
+    if (a == accounts.end() || (kind != "movies" && kind != "series"))
+      continue;
+    const auto k = kind == "movies" ? Kind::movies : Kind::series;
+    if (f.path != dir + "/" + cache_key(source, k, category))
+      continue;
+    Catalog catalog;
+    if (!load_cache(dir, source, k, category, catalog, cancel))
+      continue;
+    for (auto &e : catalog.entries) {
+      if (cancelled(cancel))
+        return {};
+      if (search_key(e.name).find(key) == std::string::npos)
+        continue;
+      if (!seen.insert(identity(source, k, e.id)).second)
+        continue;
+      if (result.hits.size() >= 2000) {
+        result.limited = true;
+        break;
+      }
+      result.hits.push_back({source, a->name, k, std::move(e)});
+    }
+    if (result.limited) break;
+  }
+  std::stable_sort(result.hits.begin(), result.hits.end(),
+                   [](const auto &a, const auto &b) {
+                     return search_key(a.entry.name) < search_key(b.entry.name);
+                   });
+  return result;
 }
 void remove_cache(const std::string &dir, const std::string &source) {
   std::lock_guard<std::mutex> lock(cache_mutex);

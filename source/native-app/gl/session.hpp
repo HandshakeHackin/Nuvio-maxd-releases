@@ -323,6 +323,11 @@ class Session
     std::array<live_tv::Channel,4> multi_channels_;
 
     void iptv_reset();
+    void iptv_saved_search(const std::string &query);
+    void iptv_letters();
+    std::vector<iptv::SearchHit> iptv_hits_;
+    bool iptv_searching_saved_=false;
+    std::string iptv_letter_;
     void iptv_load();
     void iptv_sources_changed();
     void iptv_probe();
@@ -421,6 +426,7 @@ class Session
     void watch_save_progress(bool final, bool force_finished = false);
     void watch_show_info();
     void watch_build_menu();
+    void watch_refresh_tracks();
     void watch_select_sub(int index);
     void watch_load_addon_subtitles();
     void watch_auto_subtitles();
@@ -598,6 +604,8 @@ class Session
     double w_info_until_ = 0, w_last_save_ = 0, w_last_saved_pos_ = -1;
     bool w_started_ = false, w_menu_built_ = false, w_auto_sub_done_ = false, w_heavy_warned_ = false;
     bool w_menu_dirty_ = false;
+    uint64_t w_player_revision_=0;
+    double w_chapters_at_=0;
     double w_stats_at_ = 0, w_stats_logged_ = 0;
     int w_gen_ = 0;
     std::shared_ptr<std::atomic<bool>> launch_cancel_;

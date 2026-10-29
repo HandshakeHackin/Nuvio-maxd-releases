@@ -45,10 +45,13 @@ for sub in ('include','lib'):
   target=p/sub/f.name
   if f.suffix=='.la':
    if target.is_symlink():target.unlink()
-   target.write_text(f.read_text().replace('/opt/ps5-payload-sdk/target/user/homebrew',str(p)).replace('/user/homebrew',str(p)))
-  elif not target.exists():target.symlink_to(f)
+   target.write_text(f.read_text().replace(str(sdk),str(p)).replace('/opt/ps5-payload-sdk/target/user/homebrew',str(p)).replace('/user/homebrew',str(p)))
+  else:
+   # Refresh SDK symlinks after an isolated dependency upgrade; retain VLC's own real files.
+   if target.is_symlink() and target.resolve()!=f.resolve():target.unlink()
+   if not target.exists():target.symlink_to(f)
 for f in (sdk/'lib/pkgconfig').glob('*.pc'):
- (p/'lib/pkgconfig'/f.name).write_text(f.read_text().replace('/opt/ps5-payload-sdk/target/user/homebrew',str(p)).replace('/user/homebrew',str(p)))
+ (p/'lib/pkgconfig'/f.name).write_text(f.read_text().replace(str(sdk),str(p)).replace('/opt/ps5-payload-sdk/target/user/homebrew',str(p)).replace('/user/homebrew',str(p)))
 PREFIX_PY
 export CC=$SDK/bin/prospero-clang CXX=$SDK/bin/prospero-clang++ AR=$SDK/bin/prospero-ar RANLIB=$SDK/bin/prospero-ranlib NM=$SDK/bin/prospero-nm STRIP=$SDK/bin/prospero-strip
 export VLC_PS5_PREFIX=$PREFIX PKG_CONFIG=$VENDOR/pkg-config PKG_CONFIG_LIBDIR=$PREFIX/lib/pkgconfig

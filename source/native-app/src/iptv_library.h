@@ -65,6 +65,22 @@ bool save_cache(const std::string &dir, const std::string &source, Kind,
                 const std::string &category, const Catalog &,
                 const std::atomic<bool> *cancel = nullptr);
 bool load_cache(const std::string &dir, const std::string &source, Kind,
-                const std::string &category, Catalog &);
+                const std::string &category, Catalog &,
+                const std::atomic<bool> *cancel = nullptr);
+// Search only saved catalogs belonging to the supplied active-profile accounts.
+struct SearchHit {
+  std::string source, provider;
+  Kind kind;
+  Entry entry;
+};
+struct SearchResults {
+  std::vector<SearchHit> hits;
+  bool limited = false;
+};
+std::string search_key(const std::string &);
+std::string initial(const std::string &);
+SearchResults search_saved(const std::string &dir, const std::vector<Account> &,
+                           const std::string &query,
+                           const std::atomic<bool> *cancel);
 void remove_cache(const std::string &dir, const std::string &source);
 } // namespace iptv

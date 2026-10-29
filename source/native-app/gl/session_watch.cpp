@@ -3,6 +3,7 @@
 // was watched.
 
 #include "session.hpp"
+#include "track_restore.hpp"
 #include "trailers.h"
 #include "diagnostics.h"
 #include "stream_json.hpp"
@@ -485,6 +486,8 @@ void Session::watch_start(const std::string &url, const std::vector<std::string>
     w_started_ = false;
     w_heavy_warned_ = false;
     w_menu_built_ = false;
+    w_player_revision_=0;w_chapters_at_=0;
+    playing.chapters.clear();playing.chapter_labels.clear();playing.chapter_active=-1;
     w_auto_sub_done_ = false;
     w_subs_.clear();
     w_sub_active_ = -1;
@@ -662,29 +665,22 @@ void Session::watch_update()
         }
     }
 
-    if (st == Player::State::Playing && !w_menu_built_)
-    {
-        // The file is open: its own subtitle tracks go first.
-        w_menu_built_ = true;
-        std::vector<WatchSub> embedded;
-        for (const auto &t : player_.subtitle_tracks())
-        {
-            WatchSub s;
-            s.label = t.label + " (in file)";
-            s.lang = t.lang;
-            s.embedded = t.stream;
-            s.is_default=t.is_default; s.forced=t.forced; s.hearing_impaired=t.hearing_impaired;
-            embedded.push_back(s);
-        }
-        w_subs_.insert(w_subs_.begin(), embedded.begin(), embedded.end());
-        if (w_sub_active_ >= 0)
-            w_sub_active_ += static_cast<int>(embedded.size());
-        watch_auto_subtitles();
-        w_menu_dirty_ = true;
-    }
+    if(st==Player::State::Playing && (!w_menu_built_ || w_player_revision_!=player_.revision()))
+        watch_refresh_tracks();
 
     const double pos = player_.position();
     const double dur = player_.duration();
+    if(st==Player::State::Playing && now>=w_chapters_at_) {
+        w_chapters_at_=now+1;
+        auto chapters=player_.chapters();
+        if(chapters.size()<2)chapters.clear();
+        if(chapters.size()!=playing.chapters.size() || !std::equal(chapters.begin(),chapters.end(),playing.chapters.begin(),
+            [](const auto& a,const auto& b){return a.start==b.start && a.title==b.title;})) {
+            playing.chapters=std::move(chapters);
+            w_menu_dirty_=true;
+        }
+    }
+    playing.chapter_active=playback::current_chapter(playing.chapters,pos);
 
     if (watch_episode_update(now, pos, dur, w_started_ && !buffering && !player_.paused() && !playing.menu))
         return;
@@ -704,7 +700,7 @@ void Session::watch_update()
     }
     int embedded_stream=-1;
     if(w_sub_active_>=0 && w_sub_active_<int(w_subs_.size())) embedded_stream=w_subs_[size_t(w_sub_active_)].embedded;
-    player_.select_embedded_subtitle(embedded_stream,w_sub_delay_);
+    if(st==Player::State::Playing)player_.select_embedded_subtitle(embedded_stream,w_sub_delay_);
     const auto& style=prefs_.subtitle_style;
     auto overlay=player_.subtitle_renderer().render(rich_id,pos+player_.video_sync_offset()-w_sub_delay_,video_w,video_h,video_sar,
         playing.controls?125.0f:0.0f,style.font,style.colour,style.effect,style.background,
@@ -1071,15 +1067,16 @@ void Session::watch_input(const hui::InputFrame &in)
     if (playing.menu)
     {
         const std::size_t audio_count = playing.audio_tracks.size(), sub_count = playing.subtitle_tracks.size();
+        const int columns=playing.chapters.empty()?2:3;
         if (in.nav == Direction::left)
-            playing.menu_column = 0;
+            playing.menu_column = std::max(0,playing.menu_column-1);
         else if (in.nav == Direction::right)
-            playing.menu_column = 1;
+            playing.menu_column = std::min(columns-1,playing.menu_column+1);
         else if (in.nav == Direction::up)
             playing.menu_row = std::max(0, playing.menu_row - 1);
         else if (in.nav == Direction::down)
             playing.menu_row += 1;
-        const int count = static_cast<int>(playing.menu_column == 0 ? audio_count : sub_count);
+        const int count = static_cast<int>(playing.menu_column == 0 ? audio_count : playing.menu_column==1?sub_count:playing.chapters.size());
         playing.menu_row = std::clamp(playing.menu_row, 0, std::max(0, count - 1));
         if (in.is_pressed(Action::confirm))
         {
@@ -1089,15 +1086,19 @@ void Session::watch_input(const hui::InputFrame &in)
                 if (playing.menu_row < static_cast<int>(tracks.size()))
                     player_.select_audio(tracks[static_cast<std::size_t>(playing.menu_row)].stream);
             }
-            else
+            else if(playing.menu_column==1)
             {
                 watch_select_sub(playing.menu_row - 1);
+            }
+            else if(playing.menu_row<int(playing.chapters.size())) {
+                player_.seek(playing.chapters[size_t(playing.menu_row)].start);
+                playing.menu=false;watch_show_info();
             }
             w_menu_dirty_ = true;
         }
         const int sync_step=in.is_pressed(Action::jump_next)?50:in.is_pressed(Action::jump_prev)?-50:0;
         bool adjusted=false;
-        if(sync_step) {
+        if(sync_step && playing.menu_column<2) {
             if(playing.menu_column==0) {
                 prefs_.audio_delay_ms=std::clamp(prefs_.audio_delay_ms+sync_step,-2000,2000);
                 player_.set_audio_delay(prefs_.audio_delay_ms/1000.0);
@@ -1115,7 +1116,7 @@ void Session::watch_input(const hui::InputFrame &in)
                 else say("Audio boost needs PCM output. Select PCM in Settings before reopening this stream.",7);
             }
         }
-        if(in.is_pressed(Action::north)) {
+        if(in.is_pressed(Action::north) && playing.menu_column<2) {
             if(playing.menu_column==0) {prefs_.audio_delay_ms=0;player_.set_audio_delay(0);
                 if(player_.set_audio_gain(100))prefs_.audio_gain_percent=100;
             } else {prefs_.subtitle_delay_ms=0;w_sub_delay_=0;}
@@ -1222,6 +1223,42 @@ void Session::watch_input(const hui::InputFrame &in)
     }
 }
 
+void Session::watch_refresh_tracks()
+{
+    const bool reopened=w_menu_built_;
+    std::optional<WatchSub> selected;
+    if(w_sub_active_>=0 && w_sub_active_<int(w_subs_.size())) {
+        const auto& old=w_subs_[size_t(w_sub_active_)];selected.emplace();
+        selected->embedded=old.embedded;selected->label=old.label;selected->lang=old.lang;selected->url=old.url;
+        selected->forced=old.forced;selected->hearing_impaired=old.hearing_impaired;
+    }
+    // Keep downloaded addon cues and explicit Off, but discard old in-file IDs.
+    w_subs_.erase(std::remove_if(w_subs_.begin(),w_subs_.end(),[](const auto& s){return s.embedded>=0;}),w_subs_.end());
+    w_sub_active_=-1;
+    w_menu_built_ = true;
+    w_player_revision_=player_.revision();w_chapters_at_=0;
+    std::vector<WatchSub> embedded;
+    for (const auto &t : player_.subtitle_tracks())
+    {
+        WatchSub s;
+        s.label = t.label + " (in file)";
+        s.lang = t.lang;
+        s.embedded = t.stream;
+        s.is_default=t.is_default; s.forced=t.forced; s.hearing_impaired=t.hearing_impaired;
+        embedded.push_back(s);
+    }
+    w_subs_.insert(w_subs_.begin(), embedded.begin(), embedded.end());
+    if(selected) {
+        if(selected->embedded>=0)w_sub_active_=restored_subtitle(*selected,w_subs_);
+        else for(size_t i=0;i<w_subs_.size();++i)
+            if(w_subs_[i].embedded<0 && w_subs_[i].url==selected->url){w_sub_active_=int(i);break;}
+    }
+    // A vanished selected track becomes Off, rather than a different language.
+    if(!reopened)watch_auto_subtitles();
+    w_menu_dirty_ = true;
+
+}
+
 void Session::watch_build_menu()
 {
     w_menu_dirty_ = false;
@@ -1246,10 +1283,15 @@ void Session::watch_build_menu()
         playing.subtitle_tracks.push_back(label);
     }
     playing.subtitle_active = w_sub_active_ + 1;
-    playing.menu_row = std::min(playing.menu_row,
-                                std::max(0, static_cast<int>(playing.menu_column == 0 ? playing.audio_tracks.size()
-                                                                                       : playing.subtitle_tracks.size()) -
-                                                1));
+    playing.chapter_labels.clear();
+    for(const auto& chapter:playing.chapters) {
+        const int seconds=int(std::min(chapter.start,359999.0));char at[32];
+        std::snprintf(at,sizeof(at),"%d:%02d:%02d",seconds/3600,seconds/60%60,seconds%60);
+        playing.chapter_labels.push_back(std::string(at)+"  "+chapter.title);
+    }
+    playing.menu_column=std::clamp(playing.menu_column,0,playing.chapters.empty()?1:2);
+    const auto count=playing.menu_column==0?playing.audio_tracks.size():playing.menu_column==1?playing.subtitle_tracks.size():playing.chapter_labels.size();
+    playing.menu_row=std::clamp(playing.menu_row,0,std::max(0,int(count)-1));
     char delay[48];
     std::snprintf(delay, sizeof(delay), "%+.2f s", w_sub_delay_);
     playing.subtitle_delay = delay;

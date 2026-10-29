@@ -4,6 +4,7 @@
 #pragma once
 
 #include <cstdint>
+#include "../src/chapters.hpp"
 #include "subtitle_style.hpp"
 #include <string>
 #include <vector>
@@ -185,6 +186,9 @@ struct PlayerState
     std::vector<std::string> subtitle_tracks;
     int audio_active = 0;
     int subtitle_active = 0;
+    std::vector<playback::Chapter> chapters;
+    std::vector<std::string> chapter_labels;
+    int chapter_active = -1;
     int menu_column = 0;
     int menu_row = 0;
     std::string stats;           // "H264 1920x800 (hardware) · 24 fps · buffered 12.0s · dropped 0 of 450"

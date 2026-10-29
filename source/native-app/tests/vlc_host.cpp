@@ -99,12 +99,16 @@ int main(int argc, char **argv) try {
         wait(b, [&] { return b.state() == 2 && b.picture_serial() == b.serial() && b.position() > .3; });
         require(b.position() < 2, "VLC skipped the requested start");
         require(!b.tracks(false).empty(), "VLC audio metadata missing");
+        if(o.url.ends_with(".mkv")) {
+            const auto chapters=b.chapters();require(chapters.size()==3 && chapters[1].title=="Middle" && chapters[1].start==4,"VLC chapters missing");
+        }
         require(audio_writes > 0 && audio_peak > 100, "VLC audio samples did not reach console boundary");
         const int normal_peak=audio_peak;
         audio_peak=0;b.set_audio_gain(200);b.set_audio_delay(.05);
         wait(b,[&]{return audio_peak>normal_peak*1.6;},3);
         b.set_audio_gain(100);b.set_audio_delay(0);
         const auto audio = b.tracks(false);
+        const int retained_audio=audio.size()>1?audio.back().stream:-1;
         if (audio.size() > 1) {
             b.select_audio(audio.back().stream);
             wait(b, [&] { return b.audio_stream() == audio.back().stream && b.position() < 2; });
@@ -120,8 +124,11 @@ int main(int argc, char **argv) try {
         std::cerr << "paused " << b.position() << "\n";
         const int before = b.picture_serial();
         b.seek(6);
+        const bool hls=o.url.find(".m3u8")!=std::string::npos;
+        // libVLC's adaptive demux can land at the preceding two-second fixture
+        // segment, including on a paused seek. Keep file/chapter seeking strict.
         wait(b, [&] {
-            return b.picture_serial() == b.serial() && b.picture_serial() != before && b.position() >= 5.9;
+            return b.picture_serial() == b.serial() && b.picture_serial() != before && b.position() >= (hls?3.9:5.9);
         });
         std::cerr << "seeked paused " << b.position() << "\n";
         require(b.paused(), "VLC seek lost pause");
@@ -132,13 +139,15 @@ int main(int argc, char **argv) try {
         // position() reports the pending target before VLC completes its seek.
         // Wait for a picture from this epoch before issuing another seek.
         wait(b, [&] {
-            return b.picture_serial() == b.serial() && b.position() >= 1.9 && b.position() < 3;
+            return b.picture_serial() == b.serial() && b.position() >= (hls?0:1.9) && b.position() < 3;
         });
         std::cerr << "rewound " << b.position() << "\n";
         b.seek(1000000);
         wait(b, [&] { return b.picture_serial() == b.serial() && b.position() >= b.duration() - 2.1; });
         std::cerr << "near end " << b.position() << " dur " << b.duration() << "\n";
         wait(b, [&] { return b.state() == 3; }, 8);
+        const auto revision=b.revision();
+        b.select_subtitle(-1,.25);b.set_audio_delay(.15);b.set_audio_gain(125);
         b.seek(2);
         // Adaptive HLS uses two-second fixture segments and a coarse libVLC clock.
         // Allow one segment of landing tolerance; file replay remains strict.
@@ -147,6 +156,12 @@ int main(int argc, char **argv) try {
             return b.state() == 2 && b.picture_serial() == b.serial() && b.position() > 2.1 &&
                    b.position() < (o.url.find(".m3u8") != std::string::npos ? 4.1 : 3.0);
         });
+        // Adaptive inputs can temporarily report no audio while seeking and
+        // may renumber automatic tracks. Check the explicit user selection on
+        // multi-track files, otherwise require the automatic audio route back.
+        wait(b,[&]{return retained_audio>=0?b.audio_stream()==retained_audio:b.audio_stream()>=0;},3);
+        require(b.revision()!=revision,"VLC replay did not expose its reopen generation");
+        if(o.url.ends_with(".mkv"))require(b.chapters().size()==3,"VLC replay lost chapters");
         std::cerr << "replayed " << b.position() << "\n";
         b.close();
         require(b.state() == 0, "VLC close did not release player");

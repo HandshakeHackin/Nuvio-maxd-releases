@@ -72,6 +72,8 @@ int main(int argc, char **argv) {
   g_tasks.drain();
   assert(s.iptv_content.items.size() == 3 &&
          s.iptv_catalog_.entries[0].season == 1);
+  s.iptv_letters();
+  assert(s.messages.back().find("season order")!=std::string::npos);
   s.iptv_filter(2);
   assert(s.choices.size() == 3);
   choose = s.pick;
@@ -85,6 +87,68 @@ int main(int argc, char **argv) {
   assert(s.iptv_back());
   g_tasks.drain();
   assert(s.iptv_series_.empty() && s.iptv_content.items.size() == 1);
+  // Controller A–Z offers only populated initials; search switches provider
+  // before playback and never leaks addon library/history or stale callbacks.
+  s.iptv_letters();
+  assert(s.choices == std::vector<std::string>({"All", "P"}));
+  choose = s.pick;
+  choose(1);
+  assert(s.iptv_letter_ == "P" && s.iptv_content.items.size() == 1);
+  auto second = source("second", "/vod/second");
+  second["name"] = "Second IPTV";
+  s.live_state_["sources"].push_back(second);
+  s.iptv_sources_changed();
+  g_tasks.drain();
+  iptv::Catalog found;
+  found.entries.push_back({"88", "Search movie", "4", "", "mkv", "2026", 0, 0});
+  assert(iptv::save_cache(s.profile_dir_ + "/iptv-cache", "second",
+                          iptv::Kind::movies, "4", found));
+  s.iptv_saved_search("Search movie");
+  assert(s.iptv_loading_);
+  g_tasks.drain();
+  assert(s.iptv_searching_saved_ && s.iptv_content.items.size() == 1);
+  assert(s.iptv_content.items[0].badge.find("Second IPTV") !=
+         std::string::npos);
+  s.iptv_activate(0);
+  assert(s.iptv_source_ == "second" &&
+         s.played.back().url ==
+             base + "/vod/second/movie/fixture-user/fixture-pass/88.mkv");
+  s.watching = false;
+  assert(s.iptv_back());
+  g_tasks.drain();
+  iptv::Catalog found_series;
+  found_series.entries.push_back(
+      {"7", "Search series", "2", "", "", "2026", 0, 0});
+  assert(iptv::save_cache(s.profile_dir_ + "/iptv-cache", "second",
+                          iptv::Kind::series, "2", found_series));
+  s.iptv_saved_search("Search series");
+  g_tasks.drain();
+  assert(s.iptv_content.items.size() == 1);
+  s.iptv_activate(0);
+  g_tasks.drain();
+  assert(!s.iptv_searching_saved_ && s.iptv_source_ == "second" &&
+         s.iptv_series_ == "7" && s.iptv_content.items.size() == 3);
+  s.iptv_activate(0);
+  assert(s.played.back().url ==
+         base + "/vod/second/series/fixture-user/fixture-pass/19.mp4");
+  s.watching = false;
+  assert(s.iptv_back());
+  g_tasks.drain();
+  s.iptv_saved_search("Search movie");
+  g_tasks.drain();
+  s.iptv_menu();
+  choose = s.pick;
+  choose(0);
+  assert(!s.iptv_searching_saved_ && s.choices.size() == 2);
+  s.iptv_saved_search("first");
+  g_tasks.one_work();
+  s.iptv_saved_search("Search movie");
+  g_tasks.drain();
+  assert(s.iptv_query_ == "Search movie" && s.iptv_content.items.size() == 1);
+  s.iptv_saved_search("Search movie");
+  g_tasks.one_work();
+  auto old_result = std::move(g_tasks.ready.back());
+  g_tasks.ready.pop_back();
   // Async keyboard and selection callbacks must not affect another profile.
   s.iptv_search();
   auto old_text = s.text;
@@ -96,6 +160,7 @@ int main(int argc, char **argv) {
   std::filesystem::create_directories(s.profile_dir_);
   s.live_state_["sources"] = json::array();
   s.iptv_load();
+  old_result();
   old_text("other profile");
   old_pick(0);
   g_tasks.drain();
@@ -156,8 +221,14 @@ int main(int argc, char **argv) {
   g_tasks.drain();
   assert(!s.iptv_visible && s.iptv_state_["sources"].empty() &&
          s.iptv_state_["progress"].empty());
-  assert(std::filesystem::is_empty(s.profile_dir_ + "/iptv-cache"));
+  iptv::Catalog removed;
+  assert(!iptv::load_cache(s.profile_dir_ + "/iptv-cache", "vod",
+                           iptv::Kind::movies, "1", removed));
+  assert(iptv::search_saved(s.profile_dir_ + "/iptv-cache", s.iptv_accounts_,
+                            "Search", nullptr)
+             .hits.empty());
   std::cout << "IPTV Session: hidden/live-only, immediate VOD discovery, "
                "direct playback, lazy seasons, isolated resume, offline cache, "
-               "profile races and removal passed\n";
+               "A–Z, cross-provider movie/series search, profile races and "
+               "removal passed\n";
 }

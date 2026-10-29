@@ -1,0 +1,126 @@
+{
+  "schema": 1,
+  "date": "2026-10-29",
+  "status": "staged, unreleased",
+  "baselineCommit": "fc4d98bf6d19c45956fe09426184e4504a88fa33",
+  "branch": "builds/next-playback",
+  "checks": [
+    {
+      "name": "HEVC colour metadata and bounds",
+      "script": "tests/playback_metadata.sh",
+      "result": "passed",
+      "logFile": "/workspace/next-playback-metadata.log",
+      "logSha256": "eddd3773776a009d823eb340dc90032cc89ddf08576e0ea7713253c2ada052ca"
+    },
+    {
+      "name": "Artwork producer/queue/cache cleanup",
+      "script": "tests/artwork_queue.sh",
+      "result": "passed",
+      "logFile": "/workspace/next-playback-artwork.log",
+      "logSha256": "d7693342378c286a433e0036945bca759f3ec4c9a4caae1b223cdef623b683eb"
+    },
+    {
+      "name": "Production Session track recovery and chapter controls",
+      "script": "tests/track_recovery.sh",
+      "result": "passed",
+      "logFile": "/workspace/next-playback-track-recovery.log",
+      "logSha256": "41c1db2c017d3b26967ea5c7f32ed70a7112cc531dc617320576400b8114054a"
+    },
+    {
+      "name": "Playback UI rendering",
+      "script": "tests/playback_badges_ui.sh",
+      "result": "passed",
+      "logFile": "/workspace/next-playback-ui-check.log",
+      "logSha256": "49e27f8609a4f5c03d0e7f9482d0cbb579f91df8ae5ca2d8f1180cbe484b4835"
+    },
+    {
+      "name": "Native production network playback, chapter seek and recovery",
+      "script": "tests/player_network.sh",
+      "result": "passed",
+      "logFile": "/workspace/next-playback-network.log",
+      "logSha256": "95959f7c611c75998a7c09e78fb00af44bce1ebf514fd09319fa3c2ac372a6fe"
+    },
+    {
+      "name": "Native playback lifecycle and PCM/multiview regressions",
+      "script": "tests/player_lifecycle.sh",
+      "result": "passed",
+      "logFile": "/workspace/next-playback-lifecycle.log",
+      "logSha256": "b579c9f26d2685915f74d11a67c5c1a8663768418b3b1de8076604fd6afac4d2"
+    },
+    {
+      "name": "Real libVLC playback, chapters, selected audio and replay",
+      "script": "tests/vlc_host.sh",
+      "result": "passed",
+      "logFile": "/workspace/next-playback-vlc.log",
+      "logSha256": "3678982160bdde7e0cd882d6bd61048318e7520cd83599c5cbd3ef82820ad85a"
+    },
+    {
+      "name": "Chapter UI preview",
+      "script": "tests/preview.sh",
+      "result": "passed",
+      "logFile": "/workspace/next-playback-preview.log",
+      "logSha256": "f9cbcd09818b17db6728d137a8f8ce0bf04cc1a93c6fe7a849001cdd6479501c"
+    },
+    {
+      "name": "PS5 compile/link/imports",
+      "script": "gl/build.sh (compile/link/import stages, stop before packaging)",
+      "result": "passed",
+      "logFile": "/workspace/next-playback-target-link.log",
+      "logSha256": "88f76056d65e5fe7be481c85b85c418938bb78a673b64445763a16c1340f6aa3"
+    }
+  ],
+  "host": {
+    "ffmpeg": "7 ABI (libavcodec 61 / libavformat 61)",
+    "libVLC": "3.0.23 packaged host runtime; PS5 links retained 3.0.24",
+    "gpu": "Mesa software GL",
+    "consoleAudio": "mocked output boundary",
+    "asan": "AddressSanitizer and UndefinedBehaviorSanitizer for HEVC/metadata malformed-input checks; LeakSanitizer disabled because managed ptrace environment does not support it",
+    "hlsSeek": "Adaptive libVLC checks allow two-second segment landing granularity. Strict seek expectations retained for file/chapter fixtures. HLS seeking was intermittent under concurrent compiler load; final isolated full run passed.",
+    "baselineVlcComparison": "Unchanged 1.0.0.2 libVLC host regression passed against the same host runtime and HTTP plugin."
+  },
+  "ps5": {
+    "sdk": "0.45",
+    "compile": true,
+    "link": true,
+    "importFunctionsVerified": 413,
+    "binary": "/workspace/nuvio-vlc-build/app-build-0.5.30/app/eboot.elf",
+    "binarySha256": "cd0d9c55a2bccac63bccd85840a20ff2cda909ee8d1a3147c725259dbe0db852",
+    "installerCreated": false,
+    "published": false,
+    "physicalConsoleTested": false,
+    "warnings": "Five existing unused-function warnings in the pinned experimental HDR runtime."
+  },
+  "sourceSha256": {
+    "native-app/NEXT_REVISION.md": "3e96c243f9f620d5f9d02fa94a40693decd8c550fc686a1cc034b6824273b110",
+    "native-app/UPSTREAM_PLAYBACK_NEXT.md": "f420c060567ced86313f299a94d19af63d389777f58030dd9c9ad7c37b89dfe8",
+    "native-app/dependencies.json": "90fb273296cfcc996b5139b72c30751e4c90bf1735b219a36fb4aabbcb1fa12f",
+    "native-app/gl/art.cpp": "79129fcf61718cfe27601b7300fa65159dde5adcc4e07abafdd716f19ea6ea59",
+    "native-app/gl/art.hpp": "48343db5b0cd87089146058bcdabc8d0e7c0042dada50a0ca456191441778eed",
+    "native-app/gl/artwork_limits.hpp": "6832b46dc9e6e3a7a51c34c8c127adb4b8c4349a5d881f722675b2475fea15d2",
+    "native-app/gl/session.hpp": "71f80416db510b90e8ed1e4cc7a113da9b0cc920002ea31890fb4ea98e84091c",
+    "native-app/gl/session_watch.cpp": "3e71f62be40001213d6971d59da0403de5d6af125ed03984b5e28fcc57dda78b",
+    "native-app/gl/track_restore.hpp": "111aa27ba508c3c57beb1a94b5695750042a70c5fe7642def7728a209479620c",
+    "native-app/src/chapters.hpp": "41984a7cd4f011d3ebc69a8e03f15de05c028d559536737b7be5d7b4dc1e333d",
+    "native-app/src/hevc_colour.hpp": "78c26c87ca3f6bd365a322d1c1ce239a03ca3a1d7ad0184cc836b4aadaace85f",
+    "native-app/src/player.cpp": "b9727bde349457d394f7a4baa079f2f586e602bed0efaf54e2e75609abe77164",
+    "native-app/src/player.h": "8b4a355c54375f2c69497ea543321f8e76fc9e5f50958d7e1cb37c34ff9cc250",
+    "native-app/src/stream_colour.hpp": "e52050fd809c442c842850f045eab2a55175c3d24627fb509d07a70dedf05a77",
+    "native-app/src/vlc_backend.cpp": "11e20ae1f94fe657b14dd14139150cbf2e77cd6dcf076c25bbb32587803b5376",
+    "native-app/src/vlc_backend.h": "01df41516facd9a4c9939def7a92ad72b3819d01a34b65d80a3738b9a0125225",
+    "native-app/tests/artwork_queue.sh": "6eaaa85dece1d8540975bfc9fc4a6ba455bfaf09cc27cb27b419556683894e69",
+    "native-app/tests/artwork_queue_host.cpp": "3f9ac8bea47f07490864098aa24d9e98d7e469306796d2782ecac48662e74657",
+    "native-app/tests/playback_metadata.sh": "4db4294970a8ef6a2a43970d842672bfa9e451104f2d6c615fa70c1d632e7137",
+    "native-app/tests/playback_metadata_host.cpp": "5130e03aa1cac4a3969aad03aad2447d6ffe4ff33007cce80237022aa9234c49",
+    "native-app/tests/player_network_host.cpp": "cf725c3c9c0457cda7d025876cd57a4e3b1eed3fdbbfb2a7d91f82af0f18e693",
+    "native-app/tests/player_network_test.py": "e46476febf82d4f9aa194d5856fc16e903dc34a1453eccaf7d4fd57d614630bb",
+    "native-app/tests/preview.sh": "f2ec202d4b33779c0aa9d3be98dd4fb35aeeac3be7b1cc8bfb7f1f32f2007acb",
+    "native-app/tests/run.sh": "eeb0804f788901faa6392048d59310708b4ebfdd25f36a10d29f358163b59cfd",
+    "native-app/tests/track_recovery.sh": "3b945a1b2991a3ba4e91789bf6ebb75e6e9ee65f84d473363996f5d5a31aedac",
+    "native-app/tests/track_recovery_host.cpp": "fa256e2eb0991e1e559802ca7acdc22200e457cbdf0ebd0552fdf0e646e491ae",
+    "native-app/tests/ui_preview.cpp": "fc2ba2be9d802401930dd0f2c4765142fb92022ce55f4abddd08060cd4fa5fbc",
+    "native-app/tests/vlc_fixtures.sh": "24af7b934d4b1f8bdb366077a3c384c0dcf703e9fbccf71ab588d415be6c3d61",
+    "native-app/tests/vlc_host.cpp": "8e08b91835d6c7b7f0d3d0fef18353b384f05f0134df6cb87609af5d2768d283",
+    "native-app/ui/content.hpp": "a4372294db45c3a00c6e81e02e554dcc00154ffe9aeeb89a04eda6af848da8fd",
+    "native-app/ui/player.cpp": "db68644453744211a7d497701de677d9c424d54112b0849a0933d20bcbc8e7c2"
+  }
+}

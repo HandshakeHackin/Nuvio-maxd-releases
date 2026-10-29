@@ -10,6 +10,7 @@
 #pragma once
 
 #include "gfx/renderer.hpp"
+#include "artwork_limits.hpp"
 
 #include <atomic>
 #include <condition_variable>
@@ -63,6 +64,7 @@ class TexCache
     }
 
   private:
+    friend struct TexCacheProbe; // host concurrency fixture, no runtime API
     struct Entry
     {
         std::uint32_t id = 0;
@@ -99,8 +101,9 @@ class TexCache
     std::condition_variable cv_;
     std::vector<Job> queue_; // newest last: served first
     std::vector<Ready> ready_;
+    std::size_t ready_bytes_ = 0;
     std::vector<std::thread> threads_;
-    bool stopping_ = false;
+    std::atomic<bool> stopping_{false};
 };
 
 } // namespace sx

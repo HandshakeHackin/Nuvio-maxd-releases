@@ -20,6 +20,9 @@ void Session::iptv_reset() {
   iptv_probe_accounts_.clear();
   iptv_state_ = json::object();
   iptv_catalog_ = {};
+  iptv_hits_.clear();
+  iptv_searching_saved_ = false;
+  iptv_letter_.clear();
   iptv_indices_.clear();
   iptv_source_.clear();
   iptv_category_.clear();
@@ -63,6 +66,9 @@ void Session::iptv_sources_changed() {
   ++iptv_generation_;
   ++iptv_probe_generation_;
   iptv_loading_ = iptv_probing_ = false;
+  iptv_hits_.clear();
+  iptv_searching_saved_ = false;
+  iptv_letter_.clear();
   auto next = iptv::accounts(jobj(live_state_, "sources"));
   for (const auto &a : iptv_accounts_)
     if (std::none_of(next.begin(), next.end(),
@@ -129,7 +135,7 @@ void Session::iptv_probe_source(
         iptv_save();
         const auto after = iptv_source_ + ":" + iptv::kind_name(iptv_kind_) +
                            ":" + iptv_category_;
-        if (before != after || !iptv_visible) {
+        if ((before != after || !iptv_visible) && !iptv_searching_saved_) {
           if (iptv_cancel_)
             *iptv_cancel_ = true;
           ++iptv_generation_;
@@ -138,8 +144,8 @@ void Session::iptv_probe_source(
           iptv_series_.clear();
           iptv_build(true);
         }
-        if (iptv_visible && page_ == Page::iptv && !watching &&
-            !iptv_loading_ &&
+        if (!iptv_searching_saved_ && iptv_visible && page_ == Page::iptv &&
+            !watching && !iptv_loading_ &&
             (before != after || iptv_catalog_.entries.empty()))
           iptv_reload();
         iptv_probe_source(index + 1, generation, profile, cancel);
@@ -216,16 +222,38 @@ void Session::iptv_build(bool reset) {
         group = c.name;
   iptv_content.filters.push_back(
       {iptv_series_.empty() ? "Category" : "Season", short_label(group)});
+  if (iptv_searching_saved_) {
+    iptv_content.heading = "IPTV Library · Saved search";
+    iptv_content.notice =
+        iptv_loading_
+            ? "Searching saved catalogs…"
+            : "Saved movies and series across this profile’s providers · " +
+                  iptv_status_;
+    iptv_content.filters.clear();
+    iptv_content.filters.push_back({"Search", iptv_query_});
+  }
+  if (iptv_series_.empty())
+    iptv_content.filters.push_back(
+        {"A–Z", iptv_letter_.empty() ? "All" : iptv_letter_});
   std::vector<size_t> matching;
-  const auto query = lower(iptv_query_);
+  const auto query = iptv::search_key(iptv_query_);
   for (size_t i = 0; i < iptv_catalog_.entries.size(); ++i) {
     const auto &e = iptv_catalog_.entries[i];
     if (!iptv_series_.empty() && iptv_season_ >= 0 && e.season != iptv_season_)
       continue;
-    if (!query.empty() && lower(e.name).find(query) == std::string::npos)
+    if (!iptv_searching_saved_ && !query.empty() &&
+        iptv::search_key(e.name).find(query) == std::string::npos)
+      continue;
+    if (iptv_series_.empty() && !iptv_letter_.empty() &&
+        iptv::initial(e.name) != iptv_letter_)
       continue;
     matching.push_back(i);
   }
+  if (iptv_series_.empty() && !iptv_searching_saved_ && !iptv_letter_.empty())
+    std::stable_sort(matching.begin(), matching.end(), [&](size_t a, size_t b) {
+      return iptv::search_key(iptv_catalog_.entries[a].name) <
+             iptv::search_key(iptv_catalog_.entries[b].name);
+    });
   if (reset)
     iptv_page_ = 0;
   iptv_page_ = std::min(
@@ -237,14 +265,22 @@ void Session::iptv_build(bool reset) {
     const auto i = matching[at];
     const auto &e = iptv_catalog_.entries[i];
     Title t;
-    t.id = iptv::identity(iptv_source_, kind, e.id);
+    const auto *hit = iptv_searching_saved_ && i < iptv_hits_.size()
+                          ? &iptv_hits_[i]
+                          : nullptr;
+    t.id = iptv::identity(hit ? hit->source : iptv_source_,
+                          hit ? hit->kind : kind, e.id);
     t.type = iptv_kind_ == iptv::Kind::movies ? "iptv-movie" : "iptv-series";
+    if (hit)
+      t.type = hit->kind == iptv::Kind::movies ? "iptv-movie" : "iptv-series";
     t.name = e.name;
     t.year = e.year;
     t.badge =
         kind == iptv::Kind::episodes
             ? "S" + std::to_string(e.season) + " E" + std::to_string(e.episode)
             : "Provider stream";
+    if (hit)
+      t.badge = std::string(hit->kind == iptv::Kind::movies ? "Movie · " : "Series · ") + hit->provider;
     if (progress.is_object() && progress.contains(t.id)) {
       const auto &p = progress[t.id];
       double duration = jnum(p, "duration"), time = jnum(p, "time");
@@ -272,6 +308,9 @@ void Session::iptv_build(bool reset) {
 void Session::iptv_reload(bool refresh) {
   if (!iptv_visible || !profile_ready_)
     return;
+  iptv_searching_saved_ = false;
+  iptv_hits_.clear();
+  iptv_letter_.clear();
   auto it = std::find_if(iptv_accounts_.begin(), iptv_accounts_.end(),
                          [&](const auto &a) { return a.id == iptv_source_; });
   if (it == iptv_accounts_.end())
@@ -335,6 +374,17 @@ void Session::iptv_reload(bool refresh) {
       });
 }
 void Session::iptv_filter(int index) {
+  if (iptv_searching_saved_) {
+    if (index == 0)
+      iptv_search();
+    else
+      iptv_letters();
+    return;
+  }
+  if (index == 3) {
+    iptv_letters();
+    return;
+  }
   const auto profile = profile_generation_;
   const auto generation = iptv_generation_;
   if (index == 0) {
@@ -436,35 +486,121 @@ void Session::iptv_filter(int index) {
                   });
   }
 }
+void Session::iptv_letters() {
+  if (!iptv_series_.empty()) {
+    say("Browse A–Z from a movie or series catalog; episodes keep their season order.", 6);
+    return;
+  }
+  const auto profile = profile_generation_, generation = iptv_generation_;
+  std::set<std::string> available;
+  for (const auto &e : iptv_catalog_.entries) {
+    if (!iptv_searching_saved_ && !iptv_query_.empty() &&
+        iptv::search_key(e.name).find(iptv::search_key(iptv_query_)) ==
+            std::string::npos)
+      continue;
+    available.insert(iptv::initial(e.name));
+  }
+  std::vector<std::string> labels{"All"};
+  labels.insert(labels.end(), available.begin(), available.end());
+  int selected = 0;
+  for (size_t i = 1; i < labels.size(); ++i)
+    if (labels[i] == iptv_letter_)
+      selected = int(i);
+  open_dropdown("Browse A–Z", labels, selected,
+                [this, profile, generation, labels](int i) {
+                  if (profile != profile_generation_ ||
+                      generation != iptv_generation_ || i < 0 ||
+                      size_t(i) >= labels.size())
+                    return;
+                  iptv_letter_ = i ? labels[size_t(i)] : "";
+                  iptv_build(true);
+                });
+}
+void Session::iptv_saved_search(const std::string &query) {
+  if (iptv_cancel_)
+    *iptv_cancel_ = true;
+  const auto generation = ++iptv_generation_, profile = profile_generation_;
+  iptv_cancel_ = std::make_shared<std::atomic<bool>>(false);
+  auto cancel = iptv_cancel_;
+  iptv_query_ = query;
+  iptv_letter_.clear();
+  iptv_series_.clear();
+  iptv_series_name_.clear();
+  iptv_series_poster_.clear();
+  iptv_season_ = -1;
+  iptv_searching_saved_ = true;
+  iptv_catalog_ = {};
+  iptv_hits_.clear();
+  iptv_loading_ = true;
+  iptv_status_.clear();
+  iptv_build(true);
+  g_tasks.run<iptv::SearchResults>(
+      [dir = profile_dir_ + "/iptv-cache", accounts = iptv_accounts_, query,
+       cancel] {
+        return iptv::search_saved(dir, accounts, query, cancel.get());
+      },
+      [this, generation, profile, cancel](iptv::SearchResults &r) {
+        if (profile != profile_generation_ || generation != iptv_generation_ ||
+            cancel->load() || !iptv_searching_saved_)
+          return;
+        iptv_hits_ = std::move(r.hits);
+        for (const auto &hit : iptv_hits_)
+          iptv_catalog_.entries.push_back(hit.entry);
+        iptv_loading_ = false;
+        iptv_status_ = r.limited ? "Search limit reached; narrow your search."
+                                 : "Search covers saved catalogs only. Open "
+                                   "other categories to save more titles.";
+        iptv_build(true);
+      });
+}
 void Session::iptv_search() {
-  const auto profile = profile_generation_;
-  const auto generation = iptv_generation_;
+  const auto profile = profile_generation_, generation = iptv_generation_;
   ask_text(
       [this, profile, generation](const std::string &text) {
         if (profile != profile_generation_ || generation != iptv_generation_)
           return;
-        iptv_query_ = trim(text).substr(0, 128);
-        iptv_build(true);
+        const auto query = trim(text).substr(0, 128);
+        if (query.empty()) {
+          iptv_query_.clear();
+          iptv_catalog_ = {};
+          iptv_reload();
+        } else
+          iptv_saved_search(query);
       },
-      "Search this IPTV category (empty clears search)");
+      "Search saved IPTV catalogs (empty returns to browsing)");
 }
 void Session::iptv_menu() {
   const auto profile = profile_generation_;
   open_dropdown("IPTV Library",
                 {"Choose server", "Movies / Series", "Category / Season",
-                 "Search current category", "Refresh catalog",
+                 "Search saved catalogs", "Refresh catalog",
                  "Check library availability", "Previous page", "Next page",
-                 "Cancel loading"},
+                 "Cancel loading", "Browse A–Z", "Return to browsing"},
                 0, [this, profile](int i) {
                   if (profile != profile_generation_)
                     return;
-                  if (i <= 2 && i >= 0)
+                  if (i <= 2 && i >= 0) {
+                    if (iptv_searching_saved_) {
+                      if (iptv_cancel_)
+                        *iptv_cancel_ = true;
+                      ++iptv_generation_;
+                      iptv_loading_ = false;
+                      iptv_searching_saved_ = false;
+                      iptv_hits_.clear();
+                      iptv_catalog_ = {};
+                      iptv_query_.clear();
+                      iptv_letter_.clear();
+                      iptv_build(true);
+                    }
                     iptv_filter(i);
-                  else if (i == 3)
+                  } else if (i == 3)
                     iptv_search();
-                  else if (i == 4)
-                    iptv_reload(true);
-                  else if (i == 5)
+                  else if (i == 4) {
+                    if (iptv_searching_saved_)
+                      iptv_saved_search(iptv_query_);
+                    else
+                      iptv_reload(true);
+                  } else if (i == 5)
                     iptv_probe();
                   else if (i == 6 || i == 7) {
                     if (i == 7)
@@ -472,6 +608,12 @@ void Session::iptv_menu() {
                     else if (iptv_page_)
                       --iptv_page_;
                     iptv_build();
+                  } else if (i == 9) {
+                    iptv_letters();
+                  } else if (i == 10) {
+                    iptv_query_.clear();
+                    iptv_catalog_ = {};
+                    iptv_reload();
                   } else if (i == 8) {
                     if (iptv_cancel_)
                       *iptv_cancel_ = true;
@@ -486,10 +628,16 @@ void Session::iptv_menu() {
                 });
   dropdown.message =
       "Movies and episodes play directly from your IPTV subscription. Addon "
-      "catalogs, Nuvio history and trackers are separate. Only the current "
-      "category is loaded; choose All categories to search across it.";
+      "catalogs, Nuvio history and trackers are separate. Search covers saved "
+      "movie and series catalogs across this profile’s providers.";
 }
 bool Session::iptv_back() {
+  if (iptv_searching_saved_) {
+    iptv_query_.clear();
+    iptv_catalog_ = {};
+    iptv_reload();
+    return true;
+  }
   if (iptv_series_.empty())
     return false;
   if (iptv_cancel_)
@@ -505,10 +653,30 @@ bool Session::iptv_back() {
   return true;
 }
 void Session::iptv_activate(int index) {
-  if (watching || resuming_ || index < 0 ||
+  if (!iptv_visible || watching || resuming_ || index < 0 ||
       size_t(index) >= iptv_indices_.size())
     return;
-  const auto entry = iptv_catalog_.entries[iptv_indices_[size_t(index)]];
+  const auto at = iptv_indices_[size_t(index)];
+  if (at >= iptv_catalog_.entries.size())
+    return;
+  const auto entry = iptv_catalog_.entries[at];
+  if (iptv_searching_saved_) {
+    if (at >= iptv_hits_.size())
+      return;
+    const auto hit = iptv_hits_[at];
+    if (std::none_of(iptv_accounts_.begin(), iptv_accounts_.end(),
+                     [&](const auto &a) { return a.id == hit.source; }))
+      return;
+    iptv_source_ = hit.source;
+    iptv_kind_ = hit.kind;
+    iptv_category_ = entry.category;
+    iptv_series_.clear();
+    iptv_save();
+    if (hit.kind == iptv::Kind::series) {
+      iptv_searching_saved_ = false;
+      iptv_hits_.clear();
+    }
+  }
   if (iptv_kind_ == iptv::Kind::series && iptv_series_.empty()) {
     iptv_series_ = entry.id;
     iptv_series_name_ = entry.name;

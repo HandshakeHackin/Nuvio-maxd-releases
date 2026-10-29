@@ -7,9 +7,9 @@ inline bool should_show_release_notes(std::string_view seen, std::string_view cu
     return !current.empty() && seen != current;
 }
 inline constexpr std::array<const char*,4> release_note_items = {
-    "IPTV Library: a separate movie/show tab appears when your imported provider offers VOD. Includes categories, search and private resume.",
-    "EVO 0.13.0, Native 10-bit VP9 support and optimized GPU video uploads. Console testing is needed.",
-    "IPTV provider error guidance, retained saved catalogs and channels listed in every provider category.",
-    "Updated build tools, text layout and best-effort addon manifest refresh. Four-screen TV and audio/sync controls remain available."
+    "IPTV Library: browse A-Z and search saved movie/show catalogs across your profile's providers, with provider-labelled results.",
+    "Embedded chapters: use Options/Up, select Chapters, and press Cross to jump. Available with supported Native, EVO and VLC files.",
+    "Better playback recovery preserves audio/subtitle choices, sync and volume. Missing HEVC colour tags can be recovered from codec metadata.",
+    "Bounded artwork queues, updated subtitle/network libraries and a startup compatibility adjustment. Physical PS5 testing is still needed."
 };
 }

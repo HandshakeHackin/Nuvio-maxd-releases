@@ -20,7 +20,7 @@ This native adaptation incorporates [Sp9nky/unofficial-stremio-ps5-port](https:/
 | `third_party/hui/` | [ps5-homebrew-ui](https://github.com/blackbearreloaded/ps5-homebrew-ui) (BlackBearReloaded), the OpenGL interface toolkit: renderer, controller input, text and shape drawing, glyphs, PS5 display and pad code; vendored at commit `4bd9425` (see `third_party/hui/VERSION.txt`) with local texture updates, display-mode selection and optional refresh requests/readback. Its own notices are `third_party/hui/THIRD_PARTY_NOTICES.md`; the shape shader follows Inigo Quilez's published 2D distance functions (MIT); `stb_truetype` and `stb_image_write` (Sean Barrett, public domain / MIT) are in it and are used only by host tools, not linked into the app | GPL-3.0-or-later |
 | `native/hui_runtime_shims.c` | process-level runtime shims for the OpenGL runtime, from ps5-homebrew-ui's `src/runtime/runtime_shims.c` (itself adapted from ps5-opengl's `native-app/runtime_shims.c`) | GPL-3.0-or-later |
 | `third_party/qrcodegen.c`, `third_party/qrcodegen.h` | [Nayuki QR Code generator](https://github.com/nayuki/QR-Code-generator), C library; license embedded in both files | MIT |
-| `third_party/json.hpp` | [nlohmann/json](https://github.com/nlohmann/json) 3.11.3 (Niels Lohmann) | MIT |
+| `third_party/json.hpp` | [nlohmann/json](https://github.com/nlohmann/json) 3.12.0 (Niels Lohmann) | MIT |
 | `third_party/stb_image.h` | [stb_image](https://github.com/nothings/stb) 2.30 (Sean Barrett): loads the artwork and icons | MIT / public domain |
 | `src/hwdec_ps5.cpp` (hardware video decoding), `native/stubs/videodec2.c` | ported from [Nuvio PS5](https://github.com/theghostonline/Nuvio-PS5) (`app/engine/media/src/evo_vdec_native.c`, Husam Osman, itself built on an open-source GPL-3.0 PS5 media player); the libSceVideodec2 structures and call sequence come from there and from [ProsperoLight](https://github.com/blackbearreloaded/ProsperoLight) (BlackBearReloaded) and [SharpProspero](https://github.com/SvenGDK/SharpProspero) (SvenGDK) | GPL-3.0-or-later |
 | HEVC Main10 smaller-pipeline retry in `src/hwdec_ps5.cpp` | adapted from [EVO Player's native decoder](https://github.com/sainsaji/EVO-PLAYER-PS5/blob/21524a4a6effa65312be2026042e44a96efca4c6/projects/evoplayer/media/src/evo_vdec_native.c), commit `21524a4a6effa65312be2026042e44a96efca4c6` | GPL-3.0-or-later |
@@ -48,8 +48,8 @@ license:
 | [dht](https://github.com/jech/dht) (Juliusz Chroboczek): the built-in torrent engine's DHT | MIT |
 | [FFmpeg](https://ffmpeg.org/) (libavformat, libavcodec, libavutil, libswresample, libswscale), built with `--enable-gpl --enable-version3` | GPL-3.0-or-later |
 | [x264](https://www.videolan.org/developers/x264.html) (pulled in by that FFmpeg build) | GPL-2.0-or-later |
-| [libcurl](https://curl.se/) | curl license (MIT/X derivative) |
-| [OpenSSL](https://www.openssl.org/) | Apache-2.0 |
+| [libcurl](https://curl.se/) 8.23.0 | curl license (MIT/X derivative) |
+| [OpenSSL](https://www.openssl.org/) 3.5.9 | Apache-2.0 |
 | [libpsl](https://github.com/rockdaboot/libpsl) | MIT; Public Suffix List data MPL-2.0 |
 | [libwebp](https://chromium.googlesource.com/webm/libwebp) and libsharpyuv (the posters' format) | BSD-3-Clause |
 | [zlib](https://zlib.net/) | zlib |
@@ -129,7 +129,7 @@ The preference choices and user-facing features were informed by [Stremio-Plus 0
 
 ### Subtitle rendering additions (0.5.18)
 
-The native subtitle adapter uses libass 0.17.3 (ISC), HarfBuzz 9.0.0 (MIT-style),
+The native subtitle adapter uses libass 0.17.5 (ISC), HarfBuzz 9.0.0 (MIT-style),
 FreeType (FTL), fontconfig (MIT-style), Expat (MIT) and libpng (PNG Reference
 Library License), supplied by the pinned homebrew SDK. Exact license texts are
 in `app/licenses/`. Noto Sans CJK SC and Noto Sans Thai are bundled under SIL OFL

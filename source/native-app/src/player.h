@@ -2,6 +2,7 @@
 #include "../third_party/json.hpp"
 
 #include "pcm_out.h"
+#include "chapters.hpp"
 #include "vlc_backend.h"
 #include "packet_storage.h"
 #include "subtitle_renderer.h"
@@ -84,6 +85,8 @@ public:
 	double position();  // seconds; the seek target while a seek is pending
 	double duration() const { return vlc_ ? vlc_->duration() : duration_; }
 	void seek(double t);
+    std::vector<playback::Chapter> chapters() const;
+    uint64_t revision() const {return (revision_<<32) | (vlc_?vlc_->revision():0);}
 
 	std::vector<Track> audio_tracks() const;
 	int audio_stream() const { return vlc_ ? vlc_->audio_stream() : audio_stream_.load(); }
@@ -177,6 +180,10 @@ private:
 
 	std::unique_ptr<VlcBackend> vlc_;
 	Options opts_;
+    uint64_t revision_=0; // UI-thread reopen generation; never persisted across titles
+    mutable std::mutex chapters_m_;
+    std::vector<playback::Chapter> chapters_;
+    void read_chapters();
 	std::atomic<State> state_{State::Idle};
 	mutable std::mutex err_m_;
 	std::string error_;

@@ -42,9 +42,10 @@ void draw_poster_card(hui::gfx::DrawList &list, const Env &env, const Title &t, 
     }
     if (!t.badge.empty())
     {
-        const float bw = env.fonts.semibold.measure(t.badge, 20.0f) + 22.0f;
+        const auto badge = env.fonts.semibold.font->fit(t.badge, 20.0f, std::max(0.0f, r.w - 46.0f));
+        const float bw = env.fonts.semibold.measure(badge, 20.0f) + 22.0f;
         list.rounded_rect({r.x + 12.0f, r.y + 12.0f, bw, 34.0f}, 10.0f, Color::rgb(0x0c0b11, 0.78f));
-        text(list, env.fonts.semibold, t.badge, r.x + 12.0f + bw * 0.5f, r.y + 36.0f, 20.0f, theme::ink, Align::center);
+        text(list, env.fonts.semibold, badge, r.x + 12.0f + bw * 0.5f, r.y + 36.0f, 20.0f, theme::ink, Align::center);
     }
     if (t.watched)
     {

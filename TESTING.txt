@@ -1,25 +1,13 @@
-# Max’d 1.0.0.2 test candidate
+# Testing Max’d 1.0.0.3
 
-Title ID: PPSA99288. Content version: 06.000.002. This build is unpublished.
+Close Nuvio Max’d before updating. Install PPSA99288.zip through Homebrew Store/your usual folder installer, or replace the app image with NuvioMaxd-1.0.0.3-native.ffpfsc using the same image installation method. Preserve saved user data. Title ID: PPSA99288. Package contentVersion: 06.000.003.
 
-Close the app before replacing its existing installer. Use PPSA99288.ffpfsc for
-a ShadowMount+ image installation, or PPSA99288.zip for an existing folder-title
-installation. Keep existing profile/settings data. Do not install both layouts
-at once. ShadowMount+ itself is a separate console update, not in this package.
+- In IPTV Library, try A–Z/All/# and search across saved movie/show catalogs from two providers. Check provider labels, movie playback, series episodes, offline cached results, clearing search and profile switching. Load more categories to populate more searchable saved titles.
+- Play a file with embedded chapters in Native, EVO and VLC. Open Options/Up → Chapters, jump while playing and paused, then try a file without chapters and Live TV. Chapter controls should appear only when supported.
+- Select alternate audio and embedded/external subtitles or Off; adjust sync/PCM gain, then seek/reopen and check that choices and pause state survive.
+- Compare correctly tagged HEVC SDR/HDR and a source with missing container colour tags. Explicit tags must remain authoritative. HDR output acceptance still depends on the console/display.
+- Browse a large artwork-heavy catalog, switch profiles and start/stop playback. Check startup on your firmware. Source-level host and PS5 build checks do not establish physical-console behavior.
 
-- Confirm Settings lists EVO Player 0.13.0; Native remains the default.
-- Compare ordinary 1080p and 4K sources with the prior build. Check pans, colour,
-  subtitles, pause/resume and seeking. Try Native, EVO and VLC separately.
-- Try a known VP9 Profile 2 source. Hardware acceptance depends on the console;
-  software fallback is expected if rejected. HDR output still needs console testing.
-- Import a VOD-capable Xtream service in Live TV. IPTV Library should appear as
-  a separate sidebar tab. Live-only accounts should keep it hidden.
-- Try movie playback and a show's seasons/episodes. Resume stays profile-local;
-  ordinary addon catalogs, history and tracker sources should not be mixed in.
-- An offline provider should retain its saved catalog. HTTP 5xx should explain a
-  possible provider outage; rejected login, unavailable title and connection
-  failures should have their own messages.
-- Check channels belonging to several provider categories in each group.
-- Check the TV remote with HDMI Device Link enabled. Not every TV sends every key.
-- If anything fails, use Settings playback diagnostics and provide the version,
-  selected player, source codec/resolution and logs without URLs, passwords or tokens.
+If a problem occurs, use Settings → Playback log / diagnostics after reproducing it. Include app version, PS5 firmware, player, steps and the diagnostic files or exported log. Remove stream URLs, server logins, passwords and tokens before posting publicly. Existing tracking, updater and provider configurations remain in place.
+
+Host/PS5 build and package verification results are recorded in native-validation.json and TEST_RESULTS.txt. The upgraded PS5 networking libraries still require physical-console execution testing; host network tests use host libraries. Optional VLC/EVO, HDR and multiview features remain experimental.

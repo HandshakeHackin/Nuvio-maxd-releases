@@ -46,7 +46,7 @@ int main(int argc, char** argv) {
     for (int y = 0; y < state.qr_size; ++y) for (int x = 0; x < state.qr_size; ++x)
         state.qr_modules[y * state.qr_size + x] = qrcodegen_getModule(qr, x, y);
     hui::gfx::DrawList list;
-    bool iptv_visible=argc==4 && std::string(argv[3])=="iptv";
+    bool iptv_visible=argc==4 && (std::string(argv[3])=="iptv"||std::string(argv[3])=="iptv-search");
     const sx::Env env{fonts,icons,"21:45",&iptv_visible};
     const std::string mode = argc == 4 ? argv[3] : "login";
     const auto artwork = [&](int w, int h, float tint) {
@@ -65,14 +65,19 @@ int main(int argc, char** argv) {
     };
     const auto backdrop_texture=artwork(1920,1080,0);
     const auto poster_texture=artwork(480,720,3);
-    if(mode=="iptv") {
+    if(mode=="iptv"||mode=="iptv-search") {
         sx::LibraryContent catalog;catalog.heading="IPTV Library";
         catalog.notice="Movies and series from your IPTV service · Options: library controls";
-        catalog.filters={{"Server","My Xtream Server"},{"Type","Movies"},{"Category","Recently added"}};
+        catalog.filters={{"Server","My Xtream Server"},{"Type","Movies"},{"Category","Recently added"},{"A–Z","All"}};
+        if(mode=="iptv-search") {
+            catalog.heading="IPTV Library · Saved search";
+            catalog.notice="Saved movies and series across this profile’s providers";
+            catalog.filters={{"Search","horizon"},{"A–Z","All"}};
+        }
         catalog.count="8 titles · 1/1";
         for(int i=0;i<8;++i){sx::Title t;t.id="iptv:example:movies:"+std::to_string(i);
             t.name=std::vector<std::string>{"The Last Horizon","City After Dark","Wild Coast","The Long Way Home","Northbound","Another World","Deep Water","The Explorer"}[i];
-            t.poster=poster_texture;t.year="2025";t.badge="Provider stream";if(i==0)t.progress=.35f;catalog.items.push_back(t);}
+            t.poster=poster_texture;t.year="2025";t.badge=mode=="iptv-search"?(i%2?"Series · Second provider":"Movie · My IPTV"):"Provider stream";if(i==0)t.progress=.35f;catalog.items.push_back(t);}
         sx::Library page(env,sx::Page::iptv);page.set_content(&catalog);page.enter();hui::InputFrame idle;
         for(int i=0;i<120;++i)page.update(idle,1.f/60);
         hui::gfx::BackdropSpec bg;page.draw(list,bg);
@@ -143,7 +148,7 @@ int main(int argc, char** argv) {
         for(int i=0;i<120;++i) settings.update(input,1.0f/60);
         hui::gfx::BackdropSpec backdrop;settings.draw(list,backdrop);
     }
-    else if (mode == "player" || mode == "tracks" || mode == "skip" || mode == "skip-focused" ||
+    else if (mode == "player" || mode == "tracks" || mode == "chapters" || mode == "chapters-menu" || mode == "skip" || mode == "skip-focused" ||
         mode == "recap-focused" || mode == "credits-focused" || mode == "next-focused")
     {
         list.image(backdrop_texture,{0,0,1920,1080},hui::gfx::kFullUv,hui::gfx::Color::rgb(0xffffff));
@@ -168,11 +173,17 @@ int main(int argc, char** argv) {
                 player.state.episode_action = 1;
             }
         }
-        if (mode == "tracks") {
+        if(mode=="chapters" || mode=="chapters-menu") {
+            player.state.chapters={{0,"A familiar place"},{1200,"The quiet hours"},{2400,"An unexpected visitor"},{4200,"A new beginning"},{6500,"Credits"}};
+            player.state.chapter_active=1;
+            player.state.chapter_labels={"0:00:00  A familiar place","0:20:00  The quiet hours","0:40:00  An unexpected visitor","1:10:00  A new beginning","1:48:20  Credits"};
+        }
+        if (mode == "tracks" || mode == "chapters-menu") {
             player.state.menu=true;
             player.state.audio_tracks={"English · EAC3 5.1", "Spanish · AC3 5.1", "Commentary · AAC stereo"};
             player.state.subtitle_tracks={"Off", "English", "Spanish", "French"};
             player.state.menu_row=0; player.state.subtitle_active=1;
+            if(mode=="chapters-menu"){player.state.menu_column=2;player.state.menu_row=1;}
         }
         player.snap(); player.draw(list);
     }
@@ -243,6 +254,8 @@ int main(int argc, char** argv) {
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, color);
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) return 8;
+    glClearColor(0.f, 0.f, 0.f, 1.f);
+    glClear(GL_COLOR_BUFFER_BIT);
     renderer.begin(); renderer.draw(list); renderer.present(framebuffer, 1920, 1080);
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
     std::vector<unsigned char> pixels(1920 * 1080 * 4);

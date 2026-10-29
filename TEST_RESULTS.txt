@@ -1,5 +1,1 @@
-1.0.0.2: 16 local host verification groups passed. Current GitHub native/account/transport/UI/GPU and VLC playback CI passed.
-https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/40552321812
-PS5 build/import checks passed (413 functions). Deep image/ZIP verification passed (151 files), with 780 matching source hashes.
-Static archive scan: zero errors, four disclosed warnings for the bundled updater/helper approval, loopback loader address and ICC indicator device. No helper approval changed.
-Hardware/HDMI validation remains pending; this is a public test release. See native-validation.json and TESTING.txt.
+1.0.0.3: 18 local validation groups passed, including 80 account/profile tests, updated libass subtitle rendering and IPTV saved-search/session tests. Full PS5 compile/link/socket/VLC hook and 414-import checks passed. Package verification and current public native/VLC CI are being recorded before publication. Physical-console testing pending.

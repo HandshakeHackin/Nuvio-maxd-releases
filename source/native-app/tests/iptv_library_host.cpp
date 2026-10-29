@@ -250,7 +250,52 @@ int main(int argc, char **argv) {
   assert(load_cache(dir + "/concurrent", a.id, Kind::movies, "4", saved));
   assert(saved.entries.size() == 1 && (saved.entries[0].name == "First" ||
                                        saved.entries[0].name == "Second"));
+  // Search spans saved providers/types, deduplicates overlapping categories,
+  // ignores another profile/account, episodes, broken caches and symlinks.
+  const auto searchdir = dir + "/search";
+  Account b = a;
+  b.id = "provider-b";
+  b.name = "Second provider";
+  iptv::Catalog alpha;
+  alpha.entries = {{"101", "Éclair Movie", "4", "", "mkv", "2025", 0, 0},
+                   {"102", "123 Movie", "4", "", "mp4", "2025", 0, 0}};
+  assert(save_cache(searchdir, a.id, Kind::movies, "4", alpha));
+  assert(save_cache(searchdir, a.id, Kind::movies, "", alpha));
+  assert(save_cache(searchdir, b.id, Kind::series, "8", alpha));
+  assert(save_cache(searchdir, "removed", Kind::movies, "4", alpha));
+  assert(save_cache(searchdir, a.id, Kind::episodes, "101", alpha));
+  assert(search_saved(searchdir, {a, b}, "eclair", nullptr).hits.size() == 2);
+  auto hits = search_saved(searchdir, {a, b}, "movie", nullptr);
+  assert(hits.hits.size() == 4 && !hits.limited);
+  assert(search_saved(searchdir, {a}, "movie", nullptr).hits.size() == 2);
+  assert(search_saved(dir + "/empty-profile", {a, b}, "movie", nullptr)
+             .hits.empty());
+  stop = true;
+  assert(search_saved(searchdir, {a, b}, "movie", &stop).hits.empty());
+  stop = false;
+  assert(initial(" Éclair") == "E" && initial("Österreich") == "O");
+  assert(initial("123 Film") == "#" && initial("日本語") == "#");
+  assert(search_key("Straße") == "strasse" && search_key("Éclair") == "eclair");
+  assert(search_key("日本語").find("本") != std::string::npos);
+  assert(initial(std::string("\xff")) == "#");
+  iptv::Catalog huge;
+  for (int i = 0; i < 2100; ++i)
+    huge.entries.push_back(
+        {std::to_string(i), "Match", "9", "", "mp4", "", 0, 0});
+  assert(save_cache(searchdir, b.id, Kind::movies, "9", huge));
+  auto limited = search_saved(searchdir, {b}, "match", nullptr);
+  assert(limited.limited && limited.hits.size() == 2000);
+  std::vector<std::filesystem::path> paths;
+  for (const auto &f : std::filesystem::directory_iterator(searchdir))
+    paths.push_back(f.path());
+  for (const auto &path : paths) {
+    std::filesystem::rename(path, path.string() + ".original");
+    std::filesystem::create_symlink(path.string() + ".original", path);
+  }
+  iptv::Catalog ignored;
+  assert(!load_cache(searchdir, a.id, Kind::movies, "4", ignored));
+  assert(search_saved(searchdir, {a, b}, "movie", nullptr).hits.empty());
   std::cout << "IPTV model: discovery, live-only hiding, outage retention, "
                "namespaced playback, lazy episodes, isolated private caches, "
-               "cancellation and 60k catalog passed\n";
+               "cancellation, 60k catalog and bounded saved search passed\n";
 }

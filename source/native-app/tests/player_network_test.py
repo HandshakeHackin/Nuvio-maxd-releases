@@ -5,7 +5,8 @@ root=Path(__file__).resolve().parent.parent
 fixtures=root/'test-output/player-network'
 (fixtures/'captions.srt').write_text('1\n00:00:01,000 --> 00:00:11,000\nEmbedded captions\n')
 subprocess.run(['ffmpeg','-hide_banner','-loglevel','error','-y','-f','lavfi','-i','testsrc2=size=192x108:rate=24','-f','lavfi','-i','sine=frequency=440:sample_rate=48000','-f','lavfi','-i','sine=frequency=880:sample_rate=48000','-i',str(fixtures/'captions.srt'),'-t','12','-map','0:v','-map','1:a','-map','2:a','-map','3:s','-c:s','mov_text','-metadata:s:s:0','language=eng','-disposition:s:0','default','-c:v','libx264','-preset','ultrafast','-bf','0','-g','48','-c:a','aac',str(fixtures/'fixture.mp4')],check=True)
-subprocess.run(['ffmpeg','-hide_banner','-loglevel','error','-y','-i',str(fixtures/'fixture.mp4'),'-map','0','-c','copy','-c:s','srt',str(fixtures/'fixture.mkv')],check=True)
+(fixtures/'chapters.ffmeta').write_text(';FFMETADATA1\n[CHAPTER]\nTIMEBASE=1/1000\nSTART=0\nEND=4000\ntitle=Opening\n[CHAPTER]\nTIMEBASE=1/1000\nSTART=4000\nEND=8000\ntitle=Middle\n[CHAPTER]\nTIMEBASE=1/1000\nSTART=8000\nEND=12000\ntitle=Ending\n')
+subprocess.run(['ffmpeg','-hide_banner','-loglevel','error','-y','-i',str(fixtures/'fixture.mp4'),'-i',str(fixtures/'chapters.ffmeta'),'-map','0','-map_chapters','1','-c','copy','-c:s','srt',str(fixtures/'fixture.mkv')],check=True)
 subprocess.run(['ffmpeg','-hide_banner','-loglevel','error','-y','-i',str(fixtures/'fixture.mp4'),'-map','0:v','-map','0:a:0','-c','copy','-f','hls','-hls_time','2','-hls_playlist_type','vod',str(fixtures/'fixture.m3u8')],check=True)
 (fixtures/'live.m3u8').write_text((fixtures/'fixture.m3u8').read_text().replace('#EXT-X-PLAYLIST-TYPE:VOD\n','').replace('#EXT-X-ENDLIST\n',''))
 nested=fixtures/'nested';nested.mkdir(exist_ok=True)

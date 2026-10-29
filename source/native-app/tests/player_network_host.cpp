@@ -109,11 +109,23 @@ int main(int argc,char** argv) try {
         // A runtime audio change already loads Matroska cues. Start on the alternate
         // track so this fixture still exercises a genuinely quick-open seek fallback.
         require(p.audio_stream()==tracks.back().stream,"alternate initial audio track was not selected");
-        p.set_paused(true);refused_seeks=2;p.seek(6);
+        p.set_paused(true);
+        p.set_audio_gain(175);p.set_audio_delay(.35);
+        const auto revision=p.revision();
+        const auto chapters=p.chapters();
+        require(chapters.size()==3 && chapters[1].title=="Middle" && chapters[1].start==4,"Matroska chapters missing");
+        refused_seeks=2;p.seek(6);
         run_until(p,[&]{return !p.buffering() && p.position()>=6;});
         require(refused_seeks==0,"seek failure injection did not exercise both inline seek APIs");
         require(p.paused() && p.audio_stream()==tracks.back().stream,"index-reopen fallback lost pause/audio selection");
         require(p.subtitle_tracks().size()==1,"index-reopen fallback lost embedded subtitle metadata");
+        require(p.revision()!=revision,"reopen did not invalidate UI track metadata");
+        require(p.video_sync_offset()==.35,"index-reopen lost runtime audio delay");
+        require(p.diagnostic_snapshot()["audioGainPercent"]==175,"index-reopen lost runtime audio boost");
+        require(p.chapters().size()==3,"reopen lost chapter metadata");
+        p.seek(p.chapters()[1].start);
+        run_until(p,[&]{return !p.buffering() && p.position()>=4 && p.position()<4.1;});
+        require(p.paused(),"chapter navigation resumed paused video");
         p.close();
         std::cout<<"Matroska seek: refused inline seek safely reopens with pause/audio preserved\n";
     }

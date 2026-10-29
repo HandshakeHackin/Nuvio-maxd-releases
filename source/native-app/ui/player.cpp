@@ -137,7 +137,16 @@ void PlayerUi::draw_controls(hui::gfx::DrawList &list, float amount) const
     list.rounded_rect({x, y, w * std::max(ready, played), 8.0f}, 4.0f, Color::rgb(0xffffff, 0.28f));
     list.glow({x, y, w * played, 8.0f}, 4.0f, 12.0f, theme::accent.with_alpha(0.55f));
     list.rounded_rect({x, y, w * played, 8.0f}, 4.0f, theme::accent_soft);
+    float last_marker=-100;
+    if(state.duration>0)for(const auto& chapter:state.chapters) {
+        const float marker=x+w*float(chapter.start/state.duration);
+        if(marker<=x || marker>=x+w || marker-last_marker<8)continue;
+        list.rounded_rect({marker-1,y-3,2,14},1,theme::ink.with_alpha(0.8f));last_marker=marker;
+    }
     list.circle(x + w * played, y + 4.0f, 14.0f, Color::rgb(0xffffff));
+    if(state.chapter_active>=0 && state.chapter_active<int(state.chapters.size()))
+        text(list,env_.fonts.regular,env_.fonts.regular.font->fit(state.chapters[size_t(state.chapter_active)].title,24,1500),
+             x,956,24,theme::ink_2);
     text(list, env_.fonts.semibold, clock_text(state.position), x, y + 56.0f, 26.0f, theme::ink);
     text(list, env_.fonts.regular, "-" + clock_text(state.duration - state.position), x + w, y + 56.0f, 26.0f, theme::ink_2,
          Align::right);
@@ -162,7 +171,7 @@ void PlayerUi::draw_controls(hui::gfx::DrawList &list, float amount) const
     float cx = x;
     cx += draw_chip(list, env_, hui::ui::Button::triangle, audio.c_str(), cx, 1010.0f, false, ma) + 14.0f;
     cx += draw_chip(list, env_, hui::ui::Button::square, subs.c_str(), cx, 1010.0f, false, ms) + 14.0f;
-    draw_chip(list, env_, hui::ui::Button::options, "Tracks", cx, 1010.0f);
+    draw_chip(list, env_, hui::ui::Button::options, state.chapters.empty()?"Tracks":"Tracks / Chapters", cx, 1010.0f);
     hui::ui::HintLayout layout;
     layout.size = 36.0f;
     layout.text_size = 24.0f;
@@ -207,12 +216,15 @@ void PlayerUi::draw_menu(hui::gfx::DrawList &list, float amount) const
         const std::vector<std::string> *tracks;
         int active;
     };
-    const Column columns[2] = {{"Audio", &state.audio_tracks, state.audio_active},
-                               {"Subtitles", &state.subtitle_tracks, state.subtitle_active}};
-    for (int c = 0; c < 2; ++c)
+    const Column columns[3] = {{"Audio", &state.audio_tracks, state.audio_active},
+                               {"Subtitles", &state.subtitle_tracks, state.subtitle_active},
+                               {"Chapters", &state.chapter_labels, state.chapter_active}};
+    const int count=state.chapters.empty()?2:3;
+    const float stride=count==2?660.0f:440.0f;
+    for (int c = 0; c < count; ++c)
     {
         const bool focused = state.menu_column == c;
-        const float x = panel.x + 50.0f + static_cast<float>(c) * 660.0f;
+        const float x = panel.x + 50.0f + static_cast<float>(c) * stride;
         list.push_opacity(focused || theme::high_contrast ? 1.0f : 0.55f);
         text(list, env_.fonts.semibold, columns[c].title, x, panel.y + 88.0f, 34.0f, theme::ink);
         // Long lists scroll: the window follows the cursor, or the ticked track.
@@ -222,7 +234,7 @@ void PlayerUi::draw_menu(hui::gfx::DrawList &list, float amount) const
         for (int k = 0; k < 7 && first + k < total; ++k)
         {
             const int i = first + k;
-            const Rect r{x, panel.y + 124.0f + static_cast<float>(k) * 76.0f, 600.0f, 66.0f};
+            const Rect r{x, panel.y + 124.0f + static_cast<float>(k) * 76.0f, stride-40.0f, 66.0f};
             const bool selected = focused && state.menu_row == i;
             if (selected)
             {
@@ -240,15 +252,25 @@ void PlayerUi::draw_menu(hui::gfx::DrawList &list, float amount) const
                 list.line(r.x + 34.0f, r.cy() + 10.0f, r.x + 50.0f, r.cy() - 9.0f, 3.6f, theme::accent_soft);
             }
             const hui::ui::FontRef &face = active ? env_.fonts.semibold : env_.fonts.regular;
-            text(list, face, face.font->fit((*columns[c].tracks)[i], 27.0f, r.w - 110.0f), r.x + 70.0f, r.cy() + 9.0f, 27.0f,
+            if(c==2 && i<int(state.chapters.size())) {
+                text(list,env_.fonts.regular,clock_text(state.chapters[size_t(i)].start),r.x+70,r.cy()-9,19,theme::ink_3);
+                text(list,face,face.font->fit(state.chapters[size_t(i)].title,24,r.w-100),r.x+70,r.cy()+20,24,
+                     active || selected?theme::ink:theme::ink_2);
+            } else text(list, face, face.font->fit((*columns[c].tracks)[i], 27.0f, r.w - 110.0f), r.x + 70.0f, r.cy() + 9.0f, 27.0f,
                  active || selected ? theme::ink : theme::ink_2);
         }
         list.pop_opacity();
     }
+    if(state.menu_column==2) {
+        text(list,env_.fonts.regular,"Choose a chapter. Jumping keeps your current pause state.",panel.x+50,panel.y+panel.h-90,22,theme::ink_2);
+        draw_chip(list,env_,hui::ui::Button::cross,"Jump to chapter",panel.x+50,panel.y+panel.h-44);
+        text(list,env_.fonts.regular,"Left / Right: Audio, Subtitles, Chapters",panel.x+400,panel.y+panel.h-44,22,theme::ink_3);
+    } else {
     text(list, env_.fonts.regular, "Audio  " + state.audio_adjustments, panel.x+50.0f,panel.y+panel.h-90.0f,22.0f,theme::ink_2);
     text(list, env_.fonts.regular, "L2/R2 sync · L1/R1 volume · Triangle reset",panel.x+50.0f,panel.y+panel.h-44.0f,20.0f,theme::ink_3);
     text(list, env_.fonts.regular, "Subtitle delay  " + (state.subtitle_delay.empty() ? std::string("0.00 s") : state.subtitle_delay) + "   (L2 / R2 · Triangle reset)",
          panel.x + 710.0f, panel.y + panel.h - 44.0f, 24.0f, theme::ink_3);
+    }
     draw_chip(list, env_, hui::ui::Button::circle, "Close", panel.x + panel.w - 200.0f, panel.y + 30.0f);
     list.pop_transform();
     list.pop_opacity();

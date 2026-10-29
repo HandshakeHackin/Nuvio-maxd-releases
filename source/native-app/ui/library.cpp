@@ -98,7 +98,7 @@ void Library::draw(hui::gfx::DrawList &list, hui::gfx::BackdropSpec &backdrop) c
 
     fade_down(list, theme::kRailWidth, 0.0f, theme::kScreenW, 118.0f, 0.62f);
     fade_up(list, theme::kRailWidth, 990.0f, theme::kScreenW, 90.0f, 0.94f);
-    draw_topbar(list, env_, false, age_,nullptr,0,page_==Page::iptv?"Search this IPTV category":nullptr);
+    draw_topbar(list, env_, false, age_,nullptr,0,page_==Page::iptv?"Search saved IPTV catalogs":nullptr);
     rail_.draw(list, env_, age_);
 }
 

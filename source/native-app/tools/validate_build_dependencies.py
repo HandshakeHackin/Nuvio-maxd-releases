@@ -18,7 +18,10 @@ for line in (gl / 'manifest.sha256').read_text().splitlines():
     assert not path.is_absolute() and '..' not in path.parts
     assert sha(gl / path) == digest, 'OpenGL SDK file differs: ' + name
 for name, digest in pins['sdk']['coreFileSha256'].items():
-    assert sha(sdk / name) == digest, 'Payload SDK core differs: ' + name
+    if name not in pins.get('maintenanceLibraries',{}).get('targetFileSha256',{}):
+        assert sha(sdk / name) == digest, 'Payload SDK core differs: ' + name
+import subprocess
+subprocess.run([sys.executable,str(root/'tools/validate_maintenance_libraries.py'),str(sdk)],check=True)
 provider = pins['providerRuntime']
 assert sha(root / 'third_party/provider-runtime/runtime.js') == provider['bundleSha256'], 'Provider runtime bundle differs'
 assert sha(root / 'third_party/provider-runtime/package-lock.json') == provider['packageLockSha256'], 'Provider dependency lock differs'

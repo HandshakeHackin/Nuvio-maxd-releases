@@ -1,5 +1,6 @@
 #include "player.h"
 #include "player_streams.hpp"
+#include "stream_colour.hpp"
 #include "bitstream.h"
 #include "evo_backend.h"
 #include "frame_selection.h"
@@ -148,6 +149,7 @@ Player::~Player() { close(); }
 
 void Player::open(const Options& opts) {
 	close();
+    ++revision_;
 	if(opts.vlc) {
         subtitle_renderer_.clear();
         {std::lock_guard<std::mutex> lock(sub_m_);embedded_.clear();}
@@ -167,6 +169,7 @@ void Player::open(const Options& opts) {
 	quick_ = false;
 	eof_ = false;
 	paused_ = opts.start_paused;
+    audio_switch_ = -1; // never carry a pending choice into a different title
 	buffering_ = true;
 	buffer_percent_ = 0;
 	dropped_ = decoded_ = shown_ = 0;
@@ -224,6 +227,7 @@ void Player::close() {
 	current_ = Frame();
 	pool_.clear();
 	state_ = State::Idle;
+    {std::lock_guard<std::mutex> lock(chapters_m_);chapters_.clear();}
 }
 
 void Player::fail(const std::string& msg) {
@@ -403,6 +407,7 @@ void Player::demux_run() {
 	if (fmt_->start_time != AV_NOPTS_VALUE) start_offset_ = double(fmt_->start_time) / AV_TIME_BASE;
 	if (fmt_->duration != AV_NOPTS_VALUE && fmt_->duration > 0) duration_ = double(fmt_->duration) / AV_TIME_BASE;
 
+    read_chapters();
 	int vs = av_find_best_stream(fmt_, AVMEDIA_TYPE_VIDEO, -1, -1, nullptr, 0);
 	int as = -1;
 	// Preferred audio language first, else FFmpeg's pick.
@@ -435,7 +440,8 @@ void Player::demux_run() {
 	// Keep source colour tags. The UI thread chooses native HDR10 or explicit
 	// SDR conversion; a 10-bit codec alone is not evidence of an HDR source.
 	if (vs >= 0) {
-		const AVCodecParameters* p = fmt_->streams[vs]->codecpar;
+        AVCodecParameters* p = fmt_->streams[vs]->codecpar;
+        if(recover_hevc_colour(p))dlog("player: recovered missing HEVC colour tags from SPS/VUI (transfer %d, matrix %d, primaries %d)",int(p->color_trc),int(p->color_space),int(p->color_primaries));
 		bool sd_space = p->color_space == AVCOL_SPC_BT470BG || p->color_space == AVCOL_SPC_SMPTE170M;
 		colors_ = p->color_trc == AVCOL_TRC_SMPTE2084 ? YuvColors::Hdr10
 		          : (sd_space || (p->color_space == AVCOL_SPC_UNSPECIFIED && p->height < 720)) ? YuvColors::Bt601
@@ -733,6 +739,7 @@ void Player::do_seek(double target, bool switching_audio) {
         if (switching_audio) { fail("Could not resynchronize the selected audio track. Restart playback or choose another stream."); return; }
 		vdrop_ = adrop_ = -1; seek_refill_ = false; buffering_ = false; apply_run_state(); return;
 	}
+    read_chapters(); // quick Matroska seeks can load a deferred chapter table
 	subtitle_renderer_.seek();
 	{ std::lock_guard<std::mutex> lock(sub_m_); embedded_.clear(); }
 	{
@@ -1484,7 +1491,9 @@ const Player::Picture* Player::present() {
 	const double reopen = reopen_target_.exchange(-1);
 	if (reopen >= 0 && !seek_pending_ && !abort_) {
 		Options o = opts_; o.start = reopen; o.start_paused = paused_;
-		o.initial_audio_stream = audio_stream_;
+        const int requested=audio_switch_.load();
+        o.initial_audio_stream = requested>=0?requested:audio_stream_.load();
+        o.audio_delay=audio_delay_.load();o.gain_percent=gain_percent_.load();
 		dlog("player: seek reopen target=%.3f (index unavailable in place)", reopen);
 		open(o);
 		return nullptr;
@@ -1577,6 +1586,24 @@ const Player::Picture* Player::present() {
 // ---------------------------------------------------------------------------
 // Tracks and stats
 
+void Player::read_chapters() {
+    std::vector<playback::Chapter> rows;
+    if(fmt_ && !opts_.live_tv && !opts_.preview) {
+        for(unsigned i=0;i<std::min<unsigned>(fmt_->nb_chapters,playback::kMaxChapters);++i) {
+            const auto* c=fmt_->chapters[i];
+            if(!c || c->start==AV_NOPTS_VALUE || c->time_base.num<=0 || c->time_base.den<=0)continue;
+            const auto* title=av_dict_get(c->metadata,"title",nullptr,0);
+            rows.push_back({double(c->start)*av_q2d(c->time_base)-start_offset_,title?title->value:""});
+        }
+    }
+    std::lock_guard<std::mutex> lock(chapters_m_);
+    chapters_=playback::clean_chapters(std::move(rows),duration_);
+}
+std::vector<playback::Chapter> Player::chapters() const {
+    if(opts_.live_tv || opts_.preview)return {};
+    if(vlc_)return vlc_->chapters();
+    std::lock_guard<std::mutex> lock(chapters_m_);return chapters_;
+}
 std::string Player::track_label(int stream) const {
 	if (!fmt_ || stream < 0 || stream >= int(fmt_->nb_streams)) return "";
 	AVStream* st = fmt_->streams[stream];
@@ -1683,7 +1710,7 @@ nlohmann::json Player::diagnostic_snapshot() {
     const double now=now_seconds(); const int shown=shown_.load();
     nlohmann::json context={{"sourceFps",fps_},{"shownFrames",shown},{"decodedFrames",decoded_.load()},
             {"droppedFrames",dropped_.load()},{"bufferedSeconds",std::max(vq_.duration(),aq_.duration())},
-            {"paused",paused_.load()},{"buffering",buffering_.load()},
+            {"paused",paused_.load()},{"buffering",buffering_.load()},{"audioGainPercent",gain_percent_.load()},{"audioDelaySeconds",audio_delay_.load()},
             {"state",int(state_.load())},{"positionSeconds",position()},{"videoPacketSeconds",vq_.duration()},{"audioPacketSeconds",aq_.duration()},
             {"queuedAudioSeconds",queued_audio_seconds()},{"videoSerial",vq_.serial()},{"displayedVideoSerial",displayed_serial_.load()},
             {"videoDropUntil",vdrop_.load()},{"audioDropUntil",adrop_.load()},

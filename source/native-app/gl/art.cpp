@@ -43,10 +43,12 @@ constexpr int kQrMin = 400;
 // PNG and JPEG through stb_image; WebP (some addons serve posters as it) through libwebp.
 bool decode(const std::string &data, std::vector<unsigned char> &px, int &w, int &h)
 {
+    if(data.empty() || data.size()>artwork::kFileBytes) return false;
     const unsigned char *bytes = reinterpret_cast<const unsigned char *>(data.data());
 #ifdef HAVE_WEBP
     if (data.size() >= 12 && std::memcmp(bytes, "RIFF", 4) == 0 && std::memcmp(bytes + 8, "WEBP", 4) == 0)
     {
+        if(!WebPGetInfo(bytes,data.size(),&w,&h) || !artwork::image_allowed(w,h)) return false;
         uint8_t *out = WebPDecodeRGBA(bytes, data.size(), &w, &h);
         if (!out)
             return false;
@@ -56,6 +58,7 @@ bool decode(const std::string &data, std::vector<unsigned char> &px, int &w, int
     }
 #endif
     int comp = 0;
+    if(!stbi_info_from_memory(bytes,static_cast<int>(data.size()),&w,&h,&comp) || !artwork::image_allowed(w,h)) return false;
     unsigned char *out = stbi_load_from_memory(bytes, static_cast<int>(data.size()), &w, &h, &comp, 4);
     if (!out)
         return false;
@@ -343,7 +346,7 @@ bool TexCache::init(const std::string &dir, hui::gfx::Renderer *renderer, int wo
     renderer_ = renderer;
     make_dirs(dir_);
     stopping_ = false;
-    for (int i = 0; i < workers; ++i)
+    for (int i = 0; i < std::clamp(workers,1,4); ++i)
         threads_.emplace_back([this] { worker(); });
     return true;
 }
@@ -359,6 +362,9 @@ void TexCache::shutdown()
     for (std::thread &t : threads_)
         t.join();
     threads_.clear();
+    ready_.clear(); ready_bytes_=0;
+    for(const auto& [key,e]:entries_) if(e.id) {const GLuint id=e.id;glDeleteTextures(1,&id);}
+    entries_.clear(); bytes_=0;
 }
 
 std::string TexCache::key_for(const std::string &url, ArtKind kind) const
@@ -374,6 +380,7 @@ std::uint32_t TexCache::get(const std::string &url, ArtKind kind)
     if (url.empty() || (!starts_with(url, "http://") && !starts_with(url, "https://")))
         return 0;
     const std::string key = key_for(url, kind);
+    if(entries_.find(key)==entries_.end() && entries_.size()>=artwork::kEntries)return 0;
     Entry &e = entries_[key];
     e.used = clock_;
     if (e.id != 0)
@@ -383,6 +390,12 @@ std::uint32_t TexCache::get(const std::string &url, ArtKind kind)
     e.pending = true;
     {
         std::lock_guard<std::mutex> lock(mutex_);
+        if(queue_.size()>=artwork::kJobs) {
+            // A stale queued request owns no pixels. Let a later visible request retry it.
+            const auto old=entries_.find(queue_.front().key);
+            if(old!=entries_.end())old->second.pending=false;
+            queue_.erase(queue_.begin());
+        }
         queue_.push_back(Job{url, key, kind});
     }
     cv_.notify_one();
@@ -403,8 +416,10 @@ bool TexCache::pump(int max_uploads)
         std::lock_guard<std::mutex> lock(mutex_);
         const std::size_t take = std::min<std::size_t>(ready_.size(), static_cast<std::size_t>(max_uploads));
         batch.assign(std::make_move_iterator(ready_.begin()), std::make_move_iterator(ready_.begin() + static_cast<long>(take)));
+        for(const auto& r:batch)ready_bytes_-=r.pixels.size();
         ready_.erase(ready_.begin(), ready_.begin() + static_cast<long>(take));
     }
+    cv_.notify_all(); // release workers waiting for decoded-image capacity
     for (Ready &r : batch)
     {
         Entry &e = entries_[r.key];
@@ -424,9 +439,14 @@ bool TexCache::pump(int max_uploads)
 
 bool TexCache::trim(std::size_t budget)
 {
-    if (bytes_ <= budget)
+    const bool crowded=entries_.size()>=artwork::kEntries;
+    if (bytes_ <= budget && !crowded)
         return false;
     bool deleted = false;
+    if(crowded)for(auto it=entries_.begin();it!=entries_.end();) {
+        if(!it->second.id && !it->second.pending && it->second.used+60<clock_)it=entries_.erase(it);
+        else ++it;
+    }
     std::vector<std::map<std::string, Entry>::iterator> loaded;
     for (auto it = entries_.begin(); it != entries_.end(); ++it)
         if (it->second.id != 0 && it->second.used + 60 < clock_)
@@ -434,7 +454,7 @@ bool TexCache::trim(std::size_t budget)
     std::sort(loaded.begin(), loaded.end(), [](const auto &a, const auto &b) { return a->second.used < b->second.used; });
     for (auto &it : loaded)
     {
-        if (bytes_ <= budget)
+        if (bytes_ <= budget && (!crowded || entries_.size()<artwork::kEntries-64))
             break;
         const GLuint id = it->second.id;
         glDeleteTextures(1, &id);
@@ -462,7 +482,11 @@ void TexCache::worker()
         r.key = job.key;
         if (!make(job, &r))
             r.pixels.clear();
-        std::lock_guard<std::mutex> lock(mutex_);
+        if(r.pixels.size()>artwork::kReadyBytes)r.pixels.clear();
+        std::unique_lock<std::mutex> lock(mutex_);
+        cv_.wait(lock,[&]{return stopping_ || artwork::can_publish(ready_.size(),ready_bytes_,r.pixels.size());});
+        if(stopping_)return;
+        ready_bytes_+=r.pixels.size();
         ready_.push_back(std::move(r));
     }
 }
@@ -473,7 +497,7 @@ bool TexCache::make(const Job &job, Ready *out)
     if (read_file(job.key, data) && decode(data, out->pixels, out->w, out->h))
         return true; // already cut: use as it is
 
-    const HttpResponse r = http_get(job.url, 30);
+    const HttpResponse r = http_get(job.url, 30, &stopping_);
     if (!r.ok())
     {
         dlog("art: %s: %s", job.url.c_str(), r.describe().c_str());

@@ -420,6 +420,7 @@ void VlcBackend::prepare() {
 #endif
 }
 bool VlcBackend::open(const Options &o) {
+    ++revision_;
     close();
     d_ = std::make_unique<Impl>();
     auto &s = *d_;
@@ -587,6 +588,18 @@ double VlcBackend::position() const {
 double VlcBackend::duration() const {
     return d_->player ? std::max(0.0, double(libvlc_media_player_get_length(d_->player)) / 1000) : 0;
 }
+std::vector<playback::Chapter> VlcBackend::chapters() const {
+    std::vector<playback::Chapter> rows;
+    if(!d_->player)return rows;
+    libvlc_chapter_description_t** list=nullptr;
+    const int count=libvlc_media_player_get_full_chapter_descriptions(d_->player,-1,&list);
+    if(count>0 && list) {
+        for(int i=0;i<std::min<int>(count,playback::kMaxChapters);++i)
+            if(list[i]) rows.push_back({double(list[i]->i_time_offset)/1000,list[i]->psz_name?list[i]->psz_name:""});
+        libvlc_chapter_descriptions_release(list,count);
+    }
+    return playback::clean_chapters(std::move(rows),duration());
+}
 void VlcBackend::seek(double t) {
     if (!d_->player || !std::isfinite(t))
         return;
@@ -654,9 +667,13 @@ const VideoPicture *VlcBackend::present() {
                 return nullptr;
             }
         } else d_->video_wait_since = 0;
-        if (d_->restore_audio >= 0 && libvlc_audio_set_track(d_->player, d_->restore_audio) == 0)
+        // A redundant track assignment can restart an adaptive input. Restore
+        // explicit choices only when the new input has not already selected them.
+        if (d_->restore_audio >= 0 && (libvlc_audio_get_track(d_->player)==d_->restore_audio ||
+            libvlc_audio_set_track(d_->player, d_->restore_audio) == 0))
             d_->restore_audio = -1;
-        if (d_->restore_sub >= -1 && libvlc_video_set_spu(d_->player, d_->restore_sub) == 0) {
+        if (d_->restore_sub >= -1 && (libvlc_video_get_spu(d_->player)==d_->restore_sub ||
+            libvlc_video_set_spu(d_->player, d_->restore_sub) == 0)) {
             d_->selected_sub = d_->restore_sub;
             d_->restore_sub = -2;
             libvlc_video_set_spu_delay(d_->player, int64_t(d_->options.subtitle_delay * 1000000));
@@ -724,24 +741,27 @@ int VlcBackend::audio_stream() const {
 }
 void VlcBackend::select_audio(int s) {
     d_->options.audio = s;
-    if (!d_->player || s == audio_stream())
-        return;
+    d_->restore_audio=s;
+    if (!d_->player)return;
+    if(s==audio_stream()){d_->restore_audio=-1;return;}
     const double at = position();
-    if (libvlc_audio_set_track(d_->player, s) == 0 && libvlc_media_player_is_seekable(d_->player))
-        seek(at);
+    if (libvlc_audio_set_track(d_->player, s) == 0) {
+        d_->restore_audio=-1;
+        if(libvlc_media_player_is_seekable(d_->player))seek(at);
+    }
 }
 void VlcBackend::select_subtitle(int s, double delay) {
     d_->options.subtitle = s;
     d_->options.subtitle_delay = std::isfinite(delay) ? delay : 0;
-    if (!d_->player)
-        return;
-    if (s != d_->selected_sub) {
+    d_->restore_sub=-2; // a newer manual choice (including Off) supersedes startup restore
+    if (!d_->player)return;
+    if (s != d_->selected_sub || s!=libvlc_video_get_spu(d_->player)) {
         const double at = position();
         if (libvlc_video_set_spu(d_->player, s) == 0) {
             d_->selected_sub = s;
             if (s >= 0 && libvlc_media_player_is_seekable(d_->player))
                 seek(at);
-        }
+        } else d_->restore_sub=s;
     }
     const int64_t us = std::isfinite(delay) ? int64_t(delay * 1000000) : 0;
     if (us != d_->sub_delay) {
@@ -822,6 +842,7 @@ double VlcBackend::duration() const {
     return 0;
 }
 void VlcBackend::seek(double) {}
+std::vector<playback::Chapter> VlcBackend::chapters() const {return {};}
 const VideoPicture *VlcBackend::present() { return nullptr; }
 int VlcBackend::serial() const {
     return 0;

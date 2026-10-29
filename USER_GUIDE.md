@@ -10,13 +10,35 @@ Sign in with a QR code to load your addons and saved library from your selected
 Nuvio profile. **Watch Progress now uses Nuvio Sync**, so you can pause on the
 PS5 and pick up where you left off on another Nuvio device.
 
-**Current test release: [1.0.0.2](https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/tag/v1.0.0.2-native-experimental).**
-Download `PPSA99288.zip` or `NuvioMaxd-1.0.0.2-native.ffpfsc`. Matching source,
+**Current release: [1.0.0.3](https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/tag/v1.0.0.3-native-experimental).**
+Download `PPSA99288.zip` or `NuvioMaxd-1.0.0.3-native.ffpfsc`. Matching source,
 checksums and validation are included. Physical-console testing remains pending.
 
 Nuvio Max'd is also available in the
 [ProsperoStore homebrew shop](https://prosperostore.net/app/PPSA99288/).
 Find **Nuvio Max'd** in the store to install it, or use the GitHub downloads.
+
+## New in 1.0.0.3: saved IPTV search and chapters
+
+In **IPTV Library**, choose **A–Z** to filter the loaded movie/show catalog by
+initial. Only populated initials appear; **#** groups numbers and other scripts.
+Choose **All** to clear the filter. Episodes keep their season order.
+
+Press **Triangle** or choose **Options → Search saved catalogs** to search movie
+and series catalogs already cached for the active profile’s IPTV accounts.
+Results identify the provider and content type. Search works offline; it does
+not fetch every provider’s catalog. Open categories or All categories first to
+save more titles. **Circle**, an empty search or **Return to browsing** returns
+to category browsing. No IPTV titles are merged into addon catalogs or trackers.
+
+For files with embedded chapters, open the playback menu with **Options/Up**,
+select **Chapters** with Left/Right, choose with Up/Down and press **Cross** to
+jump. At least two valid chapters are required. Live TV and four-screen previews
+do not show chapter controls.
+
+Audio/subtitle reopen recovery, missing HEVC colour metadata, artwork memory
+limits and subtitle/network libraries have also been updated. See
+[release notes](RELEASE_NOTES.md) and [testing instructions](native-app/TESTING-1.0.0.3.md).
 
 ## New in 1.0.0.2: IPTV Library
 

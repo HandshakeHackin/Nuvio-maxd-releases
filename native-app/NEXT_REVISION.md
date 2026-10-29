@@ -1,3 +1,27 @@
+# Max’d 1.0.0.3 release candidate
+
+The staged maintenance, playback and IPTV navigation changes below are included
+in this candidate. See [release notes](RELEASE_NOTES_1.0.0.3.md). Earlier validation
+receipts retain the hashes of their original staged snapshots.
+
+---
+
+# Unreleased next maintenance build
+
+Artwork memory limits, missing HEVC colour metadata recovery, audio/subtitle
+selection recovery and embedded chapter navigation are staged. See
+[UPSTREAM_PLAYBACK_NEXT.md](UPSTREAM_PLAYBACK_NEXT.md) for scope and testing.
+
+Also staged: libass 0.17.5, curl 8.23.0, OpenSSL 3.5.9, JSON 3.12.0,
+VideoDec2 module preload before graphics initialization, A–Z IPTV navigation
+and provider-labelled search across the active profile’s saved IPTV catalogs.
+See [MAINTENANCE_IPTV_NEXT.md](MAINTENANCE_IPTV_NEXT.md) for behavior and build steps.
+
+The notes below retain their original build-time status; 1.0.0.2 was subsequently
+published. This batch is not a replacement for that released installer.
+
+---
+
 # Max’d 1.0.0.2 — combined upstream/IPTV test candidate
 
 See UPSTREAM_REFRESH_1.0.0.2.md for changes, adapted components, exclusions and console checks. Unpublished; no store submission in this build-only task.

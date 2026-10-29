@@ -93,6 +93,10 @@ int main()
         nuvio_diagnostics::record({{"phase","fatal"}});
         sys::park();
     }
+    // Load VideoDec2 while the system loader still has its original context.
+    // Compute/codec queries stay deferred until the EGL/AGC renderer is ready.
+    HwDecoder::load_module();
+    startup_stage("video-module-preload");
     ps5::Display display;
     bool opened = display.open(selected.width, selected.height, refresh);
     bool display_fallback = selected.fallback;
@@ -168,8 +172,6 @@ int main()
     boot_frame();
     startup_stage("first-picture");
     ps5_load_modules(); // the keyboard dialog
-    boot_frame();
-    HwDecoder::load_module(); // the hardware video decoder
     boot_frame();
     startup_stage("modules");
     if (!sx::load_ui_fonts(renderer, root + "/fonts", root + "/hui-fonts", &ui_fonts, &fonts))

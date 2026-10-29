@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 #include "video_frame.h"
+#include "chapters.hpp"
 #include <memory>
 #include <string>
 #include <vector>
@@ -36,6 +37,8 @@ class VlcBackend {
     double position() const;
     double duration() const;
     void seek(double);
+    std::vector<playback::Chapter> chapters() const;
+    uint32_t revision() const {return revision_;}
     const VideoPicture *present();
     int serial() const;
     int picture_serial() const;
@@ -51,6 +54,7 @@ class VlcBackend {
     void log_stats();
 
   private:
+    uint32_t revision_=0;
     struct Impl;
     std::unique_ptr<Impl> d_;
 };
