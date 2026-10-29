@@ -75,6 +75,19 @@ int main(int argc, char **argv) try {
         std::cerr << "VLC audio open failure reports and closes without deadlock\n";
     }
     for (int i = 1; i < argc; ++i) {
+        if (std::string(argv[i]).find("reject-open") != std::string::npos) {
+            VlcBackend denied;
+            VlcBackend::Options options;
+            options.url=argv[i];options.headers={"X-Nuvio-VLC-Test: required"};
+            require(denied.open(options), "denied HTTP request did not initialize");
+            const double until=now_seconds()+5;
+            while(now_seconds()<until && denied.state()!=4)
+                std::this_thread::sleep_for(std::chrono::milliseconds(3));
+            require(denied.state()==4,"denied HTTP request did not report failure");
+            denied.close();
+            std::cout << "VLC authenticated rejection closes without access fallback\n";
+            continue;
+        }
         if (std::string(argv[i]).find("stall-") != std::string::npos) {
             VlcBackend blocked;
             VlcBackend::Options pending;

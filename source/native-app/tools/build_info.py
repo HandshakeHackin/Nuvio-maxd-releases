@@ -39,7 +39,7 @@ info = {
     'mediaRemote': {'hdmiCec': True, 'hardwareVerified': False},
     'iptvLibrary': {'conditionalSidebar': True, 'xtreamVod': True, 'profileLocalResume': True, 'cachedCatalogs': True, 'providerErrorGuidance': True, 'alphabetNavigation': True, 'savedCatalogSearch': 'active-profile movies/series; provider-labelled; bounded and cancellable', 'hardwareVerified': False},
     'upstreamRefresh': {'date': '2026-10-27', 'rectangleYuvUploads': True, 'nativeVp9Profile2': True, 'xtreamMultiCategory': True, 'addonManifestRevalidation': 'best effort, bounded worker budget', 'hardwareVerified': False},
-    'maintenanceUpdates': {'libass': '0.17.5', 'curl': '8.23.0', 'openssl': '3.5.9', 'json': '3.12.0', 'videoModulePreloadBeforeGraphics': True, 'boundedArtworkQueues': True, 'hevcSpsColourFallback': True, 'playbackTrackReopenRecovery': True, 'embeddedChapters': ['native', 'evo', 'vlc'], 'hardwareVerified': False},
+    'maintenanceUpdates': {'libass': '0.17.5', 'curl': '8.23.0', 'openssl': '3.5.9', 'json': '3.12.0', 'videoModulePreloadBeforeGraphics': True, 'boundedArtworkQueues': True, 'hevcSpsColourFallback': True, 'playbackTrackReopenRecovery': True, 'vlcOwnedHttpFailureStopsAccessFallback': True, 'embeddedChapters': ['native', 'evo', 'vlc'], 'hardwareVerified': False},
     'readAheadSeconds': [30, 60, 120, 300],
     'architecture': 'single native OpenGL app with integrated playback',
     'sourceCommit': source_commit,

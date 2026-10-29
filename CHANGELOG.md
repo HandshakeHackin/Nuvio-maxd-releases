@@ -14,6 +14,8 @@
 - Added a bounded HEVC SPS/VUI fallback for missing colour metadata, while preserving explicit container tags. This does not add Dolby Vision output or change whether the console accepts HDR10 output.
 - Limited artwork queues, decoded-image staging and cache metadata to reduce memory pressure during browsing and release resources on shutdown.
 
+- Prevented VLC from retrying failed or canceled Nuvio-owned requests through an unauthenticated HTTP handler. Private stream headers and cancellation remain authoritative.
+
 ## Maintenance
 
 - Updated libass to 0.17.5, curl to 8.23.0, OpenSSL to 3.5.9 and nlohmann/json to 3.12.0.

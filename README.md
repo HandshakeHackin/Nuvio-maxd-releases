@@ -79,7 +79,7 @@ configuration or browser challenges, so installing a repository does not guarant
 | **Preferred languages** | Set audio and subtitle language preferences. Automatic subtitles prefer suitable in-file tracks before addon subtitles; manual choices, including Off, are retained. |
 | **Subtitle rendering** | Styled ASS/SSA and bitmap/PGS subtitles, Unicode fallback fonts and text shaping. Adjust size, font, colour, outline/shadow, background and timing; style controls include previews. |
 | **Embedded chapters** | On supported files, open Options/Up, choose Chapters and press Cross to jump. Includes timeline markers and the current chapter name; requires at least two valid chapters. |
-| **Playback recovery** | Retain audio/subtitle choices, pause, audio sync and PCM gain after supported reopen operations. Recover missing HEVC colour tags without overriding explicit container metadata. |
+| **Playback recovery** | Retain audio/subtitle choices, pause, audio sync and PCM gain after supported reopen operations. Recover missing HEVC colour tags without overriding explicit container metadata. VLC-owned HTTP failures retain authentication/cancellation instead of falling back to another access handler. |
 | **Seeking and buffering** | Set D-pad and shoulder-button seek intervals separately. Native/EVO read-ahead choices are 30, 60, 120 or 300 seconds. Seeking and network-recovery changes include HLS handling, with remaining engine-specific limits. |
 
 **EVO is an integrated video engine here, not the entire standalone EVO app.**

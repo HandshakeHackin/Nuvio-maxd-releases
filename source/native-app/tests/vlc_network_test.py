@@ -13,6 +13,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
  def do_GET(self):
   seen.append((self.path,self.headers.get('X-Nuvio-VLC-Test')))
   if self.headers.get('X-Nuvio-VLC-Test')!='required':self.send_error(403);return
+  if self.path=='/reject-open':self.send_error(403);return
   if self.path=='/stall-read':
    self.send_response(200);self.send_header('Content-Length','4096');self.end_headers();self.wfile.write(b'x'*32);self.wfile.flush();time.sleep(3);return
   if self.path=='/stall-headers':time.sleep(3);self.send_response(200);self.send_header('Content-Length','0');self.end_headers();return
@@ -31,7 +32,7 @@ e=os.environ.copy()
 base=f'http://127.0.0.1:{s.server_port}'
 try:
  # Stream diagnostics so a timeout retains the last completed playback stage.
- r=subprocess.Popen([str(root/'test-output/vlc-host'),str(fixtures/'fixture.mp4'),str(fixtures/'fixture.mkv'),base+'/fixture.mp4',base+'/fixture.mkv',base+'/fixture.m3u8',base+'/redirect.m3u8',base+'/stall-headers',base+'/stall-read'],env=e,text=True)
+ r=subprocess.Popen([str(root/'test-output/vlc-host'),str(fixtures/'fixture.mp4'),str(fixtures/'fixture.mkv'),base+'/fixture.mp4',base+'/fixture.mkv',base+'/fixture.m3u8',base+'/redirect.m3u8',base+'/reject-open',base+'/stall-headers',base+'/stall-read'],env=e,text=True)
  try:
   r.wait(timeout=100)
  except subprocess.TimeoutExpired:
@@ -39,7 +40,8 @@ try:
   r.kill();r.wait();raise
  print('requests',len(seen),'segments',len({p for p,h in seen if p.endswith('.ts')}),flush=True)
  assert r.returncode==0,'VLC HTTP playback failed'
- assert all(h=='required' for p,h in seen),'private headers were not preserved'
+ assert all(h=='required' for p,h in seen),'private headers were not preserved: '+repr([p for p,h in seen if h!='required'])
+ assert any(p=='/reject-open' for p,h in seen),'rejected request regression was not exercised'
  assert len({p for p,h in seen if p.endswith('.ts')})>=3,'HLS did not cross segments'
  assert any(p.startswith('/nested/') and p.endswith('.ts') for p,h in seen),'redirect lost the relative playlist base'
  print('VLC authenticated HTTP/HLS, seeking, and cancellation passed')

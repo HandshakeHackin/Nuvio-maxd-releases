@@ -135,11 +135,16 @@ static void Close(vlc_object_t *object) {
 }
 static int Open(vlc_object_t *object) {
     auto *access = reinterpret_cast<stream_t *>(object);
+    const long serial = long(var_InheritInteger(access, "nuvio-stream-serial"));
+    // VLC_ETIMEOUT aborts access-module probing. EGENERIC permits another HTTP
+    // module to retry without our headers, cancellation or address checks.
+    // Keep ordinary fallback only for callers outside the Nuvio player.
+    const int refusal = serial > 0 ? VLC_ETIMEOUT : VLC_EGENERIC;
     auto *s = new (std::nothrow) NuvioHttp;
     if (!s)
-        return VLC_ENOMEM;
-    s->serial = long(var_InheritInteger(access, "nuvio-stream-serial"));
-    if (nuvio_vlc_stream_cancelled(s->serial)) { delete s; return VLC_EGENERIC; }
+        return serial > 0 ? VLC_ETIMEOUT : VLC_ENOMEM;
+    s->serial = serial;
+    if (nuvio_vlc_stream_cancelled(serial)) { delete s; return refusal; }
     std::vector<std::string> headers;
     char *encoded = var_InheritString(access, "nuvio-http-headers");
     if (encoded) {
@@ -150,7 +155,7 @@ static int Open(vlc_object_t *object) {
         } catch (...) {
             free(encoded);
             delete s;
-            return VLC_EGENERIC;
+            return refusal;
         }
         free(encoded);
     }
@@ -166,7 +171,7 @@ static int Open(vlc_object_t *object) {
     vlc_interrupt_unregister();
     if (!s->input) {
         delete s;
-        return VLC_EGENERIC;
+        return refusal;
     }
     std::string resolved = access->psz_url;
 #ifdef NUVIO_VLC_STATIC
@@ -179,7 +184,7 @@ static int Open(vlc_object_t *object) {
         if (!url) {
             s->close_stream();
             delete s;
-            return VLC_ENOMEM;
+            return serial > 0 ? VLC_ETIMEOUT : VLC_ENOMEM;
         }
         free(access->psz_url);
         access->psz_url = url;

@@ -36,6 +36,7 @@ select **Chapters** with Left/Right, choose with Up/Down and press **Cross** to
 jump. At least two valid chapters are required. Live TV and four-screen previews
 do not show chapter controls.
 
+VLC-owned HTTP failures/cancellations stay within the authenticated Nuvio access path.
 Audio/subtitle reopen recovery, missing HEVC colour metadata, artwork memory
 limits and subtitle/network libraries have also been updated. See
 [release notes](RELEASE_NOTES.md) and [testing instructions](native-app/TESTING-1.0.0.3.md).
