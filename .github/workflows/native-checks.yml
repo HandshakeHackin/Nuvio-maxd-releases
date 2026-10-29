@@ -63,4 +63,23 @@ jobs:
           apt-get install -y git ca-certificates python3 g++ gdb pkg-config ffmpeg libcurl4-openssl-dev libavformat-dev libavcodec-dev libavutil-dev libswresample-dev libvlc-dev libvlccore-dev vlc-plugin-base
       - uses: actions/checkout@v4
       - name: Test VLC file playback, authenticated HTTP/HLS, seeking and cancellation
-        run: bash native-app/tests/vlc_host.sh
+        run: |
+          mkdir -p "$RUNNER_TEMP/vlc-diagnostics"
+          cat > "$RUNNER_TEMP/vlc-diagnostics/sitecustomize.py" <<'PYDIAG'
+          import sys
+          original = sys.excepthook
+          def explain(kind, value, tb):
+              current = tb
+              while current:
+                  frame = current.tb_frame
+                  if frame.f_code.co_filename.endswith('/vlc_network_test.py'):
+                      # Synthetic localhost fixture paths only; never print real credentials.
+                      seen = frame.f_globals.get('seen', [])
+                      missing = [path for path, header in seen if header != 'required']
+                      print('VLC fixture requests without the required test header:', missing, file=sys.stderr)
+                      break
+                  current = current.tb_next
+              original(kind, value, tb)
+          sys.excepthook = explain
+          PYDIAG
+          PYTHONPATH="$RUNNER_TEMP/vlc-diagnostics${PYTHONPATH:+:$PYTHONPATH}" bash native-app/tests/vlc_host.sh
