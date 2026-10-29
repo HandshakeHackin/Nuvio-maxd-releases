@@ -1,0 +1,13 @@
+Nuvio Max’d 1.0.0.3 release validation
+
+PASS: final public-source native/account/transport/GPU tests and UI renders.
+PASS: final public-source real VLC 3.0.24 file, authenticated HTTP/HLS, seeking, rejection and cancellation checks.
+CI: https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/40948943860
+
+PASS: PS5 compile/link, socket shim, VLC picture hooks and 414 system imports.
+PASS: deep image extraction, all 151 packaged file hashes, ZIP integrity and matching source archive (800 file hashes).
+PASS: 18 staged local validation groups, including 80 account/profile tests, updated libass rendering and saved IPTV search/session checks. Historical staged evidence is retained with its original scope.
+PASS: isolated local VLC 3.0.23 regression; an initial concurrent run timed out near HLS EOF before the isolated rerun passed.
+PASS: static catalog archive scan: zero errors, four review warnings and one notice. Warnings concern existing updater and optional console-light capabilities; helper approval remains with catalog maintainers.
+
+Physical-console playback, old-firmware startup, HDMI/HDR and receiver behavior remain unverified for this build.
