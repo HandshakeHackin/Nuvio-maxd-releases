@@ -1,20 +1,20 @@
 {
-  "version": "1.0.0.2-native",
-  "sourceCommit": "fc4d98bf6d19c45956fe09426184e4504a88fa33",
+  "version": "1.0.0.3-native",
+  "sourceCommit": "a016227d2618db61b87d64d3773c9575a5c60a36",
   "sourceDirty": false,
-  "imageBytes": 46268416,
-  "imageSha256": "1b7700b15d94ac0c5236a4830b051fcd54778da709d16a8268c5180a9e4f064f",
-  "zipSha256": "ceed5b8ba24309782da184e91dd660b6dda781eaeacf25fa12e26f2f23cad0a6",
+  "imageBytes": 46333952,
+  "imageSha256": "270e0f980a7b779a87c486bb21d2e91a091ae75af25d95d71e126997aa8864f9",
+  "zipSha256": "03618aed0b53c48695db23ffeff1dea5ee99f8c8c215f1c9265ef887a83700b2",
   "files": 151,
   "fileSha256": {
-    "nuvio-updater.elf": "1f89d03e8b3dec5f19525df1424f2406d67762b7a2010b92951681338f6d46df",
-    "THIRD_PARTY.md": "ef06d8c8ae790f0e07b23820ffa58deebb127ee982784cf9802ff5ebfbaf61d6",
-    "eboot.bin": "2633936f423ce70f610975d97d46f8995c504fc309691d456cb1a9f6935f6475",
+    "nuvio-updater.elf": "202477186f82b0831c470c9c6ae4b107fe6464ac26d7489d6a82bb526b4b8206",
+    "THIRD_PARTY.md": "eb6cf4eebf8623f42cf876368dc7a6cdee5793d5a01987d59397de3b483740cf",
+    "eboot.bin": "9656404ed840d9f89382fdb082731aa8bf1e9637ec7cc7d219708d49dcdc1228",
     "tracker-applications.json": "44527d59f8228d61a62c36c6226c815dc5cdf6c83b86b81d960f55aedeb4f8f1",
     "LICENSE": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
     "ca-bundle.crt": "11163db462ffae3918afdf46c70a8db70cfcbaa8077352290b62a9c03c36fe6c",
     "account-config.json": "1014f3c748bee58a832ea5d1be191ebaa2e577ef8a08e8168f01cb6d78f1921f",
-    "build-info.json": "4f85e13197c77578a0addaf3a6f8fe3b41ec9fdb65fbce393a8f3aee944bb678",
+    "build-info.json": "917aac99754d169ce2acd9e46b3af94b6ec3d346d3f4ba6ec5c3b992e1616cd5",
     "sce_module/libc.prx": "e6ff45d16adf687855cc3b33b0c8a4132b6504360b221e0a34c7e99fb3ba0036",
     "fonts/NotoSansCJK-LICENSE.txt": "6a73f9541c2de74158c0e7cf6b0a58ef774f5a780bf191f2d7ec9cc53efe2bf2",
     "fonts/Inter-Regular.ttf": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
@@ -81,7 +81,7 @@
     "icons/pause.png": "53bf621371ae732a31bdbab134d068226d442b6c32976e0895dc31d0c51f1c24",
     "icons/l1.png": "74a2a11849f8b48612677acdf3c7c8badde1b761e85791f2fb59b34e59969ab4",
     "sce_sys/icon0.png": "3c655e095db72d3a3d4cef6876c6ffe825e742d13af0afda3c84b141d1eb6226",
-    "sce_sys/param.json": "081cd2eea29ae290e15dc8e9f7048523b5eb6efc6a46381f079d83b3efd02c4b",
+    "sce_sys/param.json": "c458638ed070f85813324c4f2b1b156d32cf41783678e84dadb8f94011e42179",
     "licenses/native-app-boilerplate-GPL-3.0.txt": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
     "licenses/libass.txt": "f7e30699d02798351e7f839e3d3bfeb29ce65e44efa7735c225464c4fd7dfe9c",
     "licenses/Stremio-MIT.txt": "40f7f4a6bc790d341e490c56f6fd5af2f50cdce89393b9fa4c81f4510ca97976",
@@ -163,13 +163,19 @@
   "allExtractedFileHashesMatch": true,
   "containerErrors": 0,
   "containerWarnings": 0,
-  "contentVersion": "06.000.002",
-  "sourceArchiveFiles": 780,
+  "contentVersion": "06.000.003",
+  "sourceArchiveFiles": 800,
   "sourceArchiveHashesMatch": true,
   "hardwareVerified": false,
   "developmentValidation": {
     "scope": "Combined upstream/IPTV test build; see VALIDATION.json",
     "hardwareVerified": false
+  },
+  "zipBytes": 44024078,
+  "applicationDisplayProfile": {
+    "attribute": 1644167168,
+    "attribute2": 0,
+    "attribute3": 262208
   },
   "hostToolsEvidence": {
     "status": "completed",
@@ -188,158 +194,344 @@
     "scope": "Unchanged legacy host bridge and package wrapper; current native target/package checks recorded separately"
   },
   "featureValidation": {
-    "version": "1.0.0.2",
-    "sourceCommit": "fc4d98bf6d19c45956fe09426184e4504a88fa33",
-    "branch": "builds/v1.0.0.2",
-    "status": "PS5 build, host tests, source archive and installer/ZIP integrity verification passed; console testing pending",
-    "hardwareVerified": false,
-    "published": false,
-    "checks": {
-      "evo": {
-        "result": "passed",
-        "log": "evo.log",
-        "sha256": "d3444a18e1b14c1c2260c92cfc424bbc42a8ebd21294ad3c673efacec97f45b5"
+    "UPSTREAM_PLAYBACK_NEXT_VALIDATION.json": {
+      "schema": 1,
+      "date": "2026-10-29",
+      "status": "staged, unreleased",
+      "baselineCommit": "fc4d98bf6d19c45956fe09426184e4504a88fa33",
+      "branch": "builds/next-playback",
+      "checks": [
+        {
+          "name": "HEVC colour metadata and bounds",
+          "script": "tests/playback_metadata.sh",
+          "result": "passed",
+          "logFile": "/workspace/next-playback-metadata.log",
+          "logSha256": "eddd3773776a009d823eb340dc90032cc89ddf08576e0ea7713253c2ada052ca"
+        },
+        {
+          "name": "Artwork producer/queue/cache cleanup",
+          "script": "tests/artwork_queue.sh",
+          "result": "passed",
+          "logFile": "/workspace/next-playback-artwork.log",
+          "logSha256": "d7693342378c286a433e0036945bca759f3ec4c9a4caae1b223cdef623b683eb"
+        },
+        {
+          "name": "Production Session track recovery and chapter controls",
+          "script": "tests/track_recovery.sh",
+          "result": "passed",
+          "logFile": "/workspace/next-playback-track-recovery.log",
+          "logSha256": "41c1db2c017d3b26967ea5c7f32ed70a7112cc531dc617320576400b8114054a"
+        },
+        {
+          "name": "Playback UI rendering",
+          "script": "tests/playback_badges_ui.sh",
+          "result": "passed",
+          "logFile": "/workspace/next-playback-ui-check.log",
+          "logSha256": "49e27f8609a4f5c03d0e7f9482d0cbb579f91df8ae5ca2d8f1180cbe484b4835"
+        },
+        {
+          "name": "Native production network playback, chapter seek and recovery",
+          "script": "tests/player_network.sh",
+          "result": "passed",
+          "logFile": "/workspace/next-playback-network.log",
+          "logSha256": "95959f7c611c75998a7c09e78fb00af44bce1ebf514fd09319fa3c2ac372a6fe"
+        },
+        {
+          "name": "Native playback lifecycle and PCM/multiview regressions",
+          "script": "tests/player_lifecycle.sh",
+          "result": "passed",
+          "logFile": "/workspace/next-playback-lifecycle.log",
+          "logSha256": "b579c9f26d2685915f74d11a67c5c1a8663768418b3b1de8076604fd6afac4d2"
+        },
+        {
+          "name": "Real libVLC playback, chapters, selected audio and replay",
+          "script": "tests/vlc_host.sh",
+          "result": "passed",
+          "logFile": "/workspace/next-playback-vlc.log",
+          "logSha256": "3678982160bdde7e0cd882d6bd61048318e7520cd83599c5cbd3ef82820ad85a"
+        },
+        {
+          "name": "Chapter UI preview",
+          "script": "tests/preview.sh",
+          "result": "passed",
+          "logFile": "/workspace/next-playback-preview.log",
+          "logSha256": "f9cbcd09818b17db6728d137a8f8ce0bf04cc1a93c6fe7a849001cdd6479501c"
+        },
+        {
+          "name": "PS5 compile/link/imports",
+          "script": "gl/build.sh (compile/link/import stages, stop before packaging)",
+          "result": "passed",
+          "logFile": "/workspace/next-playback-target-link.log",
+          "logSha256": "88f76056d65e5fe7be481c85b85c418938bb78a673b64445763a16c1340f6aa3"
+        }
+      ],
+      "host": {
+        "ffmpeg": "7 ABI (libavcodec 61 / libavformat 61)",
+        "libVLC": "3.0.23 packaged host runtime; PS5 links retained 3.0.24",
+        "gpu": "Mesa software GL",
+        "consoleAudio": "mocked output boundary",
+        "asan": "AddressSanitizer and UndefinedBehaviorSanitizer for HEVC/metadata malformed-input checks; LeakSanitizer disabled because managed ptrace environment does not support it",
+        "hlsSeek": "Adaptive libVLC checks allow two-second segment landing granularity. Strict seek expectations retained for file/chapter fixtures. HLS seeking was intermittent under concurrent compiler load; final isolated full run passed.",
+        "baselineVlcComparison": "Unchanged 1.0.0.2 libVLC host regression passed against the same host runtime and HTTP plugin."
       },
-      "evo-vp9-profile2": {
-        "result": "passed",
-        "log": "evo-vp9-profile2.log",
-        "sha256": "ccfc6625c98cfb7f84c114447ab3979a329882d0188ee291f01695e8420b399c"
+      "ps5": {
+        "sdk": "0.45",
+        "compile": true,
+        "link": true,
+        "importFunctionsVerified": 413,
+        "binary": "/workspace/nuvio-vlc-build/app-build-0.5.30/app/eboot.elf",
+        "binarySha256": "cd0d9c55a2bccac63bccd85840a20ff2cda909ee8d1a3147c725259dbe0db852",
+        "installerCreated": false,
+        "published": false,
+        "physicalConsoleTested": false,
+        "warnings": "Five existing unused-function warnings in the pinned experimental HDR runtime."
       },
-      "hwdec": {
-        "result": "passed",
-        "log": "hwdec.log",
-        "sha256": "95f1d4445eb99a782a23c7b8b9db97611d451cf79ef016b2f374a1403d778939"
-      },
-      "video": {
-        "result": "passed",
-        "log": "video.log",
-        "sha256": "afeddcb3e23135b7b15a9baf32a841e85482ca0b1db63f0afeb750b86445f96f"
-      },
-      "video-safety": {
-        "result": "passed",
-        "log": "video-safety.log",
-        "sha256": "f30a5157ed06086a7580964d185e6b2daaa7beaad632cc225a8c9c960f55924d"
-      },
-      "upstream": {
-        "result": "passed",
-        "log": "upstream.log",
-        "sha256": "b4306da34546db85e1f6e7e493a9a10b9af5be98737c139b874a7e9179713130"
-      },
-      "remote": {
-        "result": "passed",
-        "log": "remote.log",
-        "sha256": "ab6575ccb54eb87340cd0086b8158e0b76c510aec364bd416b6c6424132ffcb8"
-      },
-      "live-tv": {
-        "result": "passed",
-        "log": "live-tv.log",
-        "sha256": "55e155f2842a90d272947b1bf91de7d951afb83ae62fafcc30551d0c204295e8"
-      },
-      "iptv-library": {
-        "result": "passed",
-        "log": "iptv-library.log",
-        "sha256": "daf08dc2d421af929b81505b38ccc28f50bdf28a55ad54efa667abeae5674bfb"
-      },
-      "iptv-session": {
-        "result": "passed",
-        "log": "iptv-session.log",
-        "sha256": "2d187bbb70f2f7099f3afd9c0c837abdb070c8abbcd64f5285685e1dbe4a49c5"
-      },
-      "settings": {
-        "result": "passed",
-        "log": "settings.log",
-        "sha256": "0cf6b53139cd08aba5c244373c2916ca4e3b16ea96dbc102d363921068dc1409"
-      },
-      "tracking": {
-        "result": "passed",
-        "log": "tracking.log",
-        "sha256": "492d5e5ee5a40e177cdd90e452a0af2fba530d369b54bb2489e40c3eb80eb4d5"
-      },
-      "updater": {
-        "result": "passed",
-        "log": "updater.log",
-        "sha256": "129442780cf5d438a7e1f6d343be0292059922ab035c010e67b630958b717b70"
-      },
-      "navigation": {
-        "result": "passed",
-        "log": "navigation.log",
-        "sha256": "ef3dc8e671b4a798fb98ae350b97d05dec795657f57fbe0df62824e5e17d9406"
-      },
-      "vlc-workspace": {
-        "result": "passed",
-        "log": "vlc-workspace.log",
-        "sha256": "0c5613f67aefa2419a5d7d086542e966b4bfc243bdf48eb5b0277e219afbb573"
-      },
-      "player-lifecycle": {
-        "result": "passed",
-        "log": "player-lifecycle.log",
-        "sha256": "a65177adbb23f300bda424ae61a2e89137ba76e2af058592b43cdbb5323dbbe5"
-      },
-      "ps5Build": {
-        "result": "passed",
-        "importsVerified": 413,
-        "log": "ps5-build.log",
-        "sha256": "dd89ca75bbce3cbd180601c913112026c54fe07b67179ca8d7c7cdde67be243e",
-        "driverWarnings": "five unused-function warnings in pinned upstream driver; no build errors"
-      },
-      "packageVerification": {
-        "result": "passed",
-        "files": 151,
-        "sourceFiles": 780,
-        "deepImageAndZipRoundTrips": true,
-        "privateRuntimeJsonFilesAbsent": true,
-        "receipt": "BUILD-VERIFICATION.json",
-        "sha256": "408eeee4ef0cc69c4cdf3c8784c8576ca8bafb769ff6d66e1f13ccaf5cd20281"
+      "sourceSha256": {
+        "native-app/NEXT_REVISION.md": "3e96c243f9f620d5f9d02fa94a40693decd8c550fc686a1cc034b6824273b110",
+        "native-app/UPSTREAM_PLAYBACK_NEXT.md": "f420c060567ced86313f299a94d19af63d389777f58030dd9c9ad7c37b89dfe8",
+        "native-app/dependencies.json": "90fb273296cfcc996b5139b72c30751e4c90bf1735b219a36fb4aabbcb1fa12f",
+        "native-app/gl/art.cpp": "79129fcf61718cfe27601b7300fa65159dde5adcc4e07abafdd716f19ea6ea59",
+        "native-app/gl/art.hpp": "48343db5b0cd87089146058bcdabc8d0e7c0042dada50a0ca456191441778eed",
+        "native-app/gl/artwork_limits.hpp": "6832b46dc9e6e3a7a51c34c8c127adb4b8c4349a5d881f722675b2475fea15d2",
+        "native-app/gl/session.hpp": "71f80416db510b90e8ed1e4cc7a113da9b0cc920002ea31890fb4ea98e84091c",
+        "native-app/gl/session_watch.cpp": "3e71f62be40001213d6971d59da0403de5d6af125ed03984b5e28fcc57dda78b",
+        "native-app/gl/track_restore.hpp": "111aa27ba508c3c57beb1a94b5695750042a70c5fe7642def7728a209479620c",
+        "native-app/src/chapters.hpp": "41984a7cd4f011d3ebc69a8e03f15de05c028d559536737b7be5d7b4dc1e333d",
+        "native-app/src/hevc_colour.hpp": "78c26c87ca3f6bd365a322d1c1ce239a03ca3a1d7ad0184cc836b4aadaace85f",
+        "native-app/src/player.cpp": "b9727bde349457d394f7a4baa079f2f586e602bed0efaf54e2e75609abe77164",
+        "native-app/src/player.h": "8b4a355c54375f2c69497ea543321f8e76fc9e5f50958d7e1cb37c34ff9cc250",
+        "native-app/src/stream_colour.hpp": "e52050fd809c442c842850f045eab2a55175c3d24627fb509d07a70dedf05a77",
+        "native-app/src/vlc_backend.cpp": "11e20ae1f94fe657b14dd14139150cbf2e77cd6dcf076c25bbb32587803b5376",
+        "native-app/src/vlc_backend.h": "01df41516facd9a4c9939def7a92ad72b3819d01a34b65d80a3738b9a0125225",
+        "native-app/tests/artwork_queue.sh": "6eaaa85dece1d8540975bfc9fc4a6ba455bfaf09cc27cb27b419556683894e69",
+        "native-app/tests/artwork_queue_host.cpp": "3f9ac8bea47f07490864098aa24d9e98d7e469306796d2782ecac48662e74657",
+        "native-app/tests/playback_metadata.sh": "4db4294970a8ef6a2a43970d842672bfa9e451104f2d6c615fa70c1d632e7137",
+        "native-app/tests/playback_metadata_host.cpp": "5130e03aa1cac4a3969aad03aad2447d6ffe4ff33007cce80237022aa9234c49",
+        "native-app/tests/player_network_host.cpp": "cf725c3c9c0457cda7d025876cd57a4e3b1eed3fdbbfb2a7d91f82af0f18e693",
+        "native-app/tests/player_network_test.py": "e46476febf82d4f9aa194d5856fc16e903dc34a1453eccaf7d4fd57d614630bb",
+        "native-app/tests/preview.sh": "f2ec202d4b33779c0aa9d3be98dd4fb35aeeac3be7b1cc8bfb7f1f32f2007acb",
+        "native-app/tests/run.sh": "eeb0804f788901faa6392048d59310708b4ebfdd25f36a10d29f358163b59cfd",
+        "native-app/tests/track_recovery.sh": "3b945a1b2991a3ba4e91789bf6ebb75e6e9ee65f84d473363996f5d5a31aedac",
+        "native-app/tests/track_recovery_host.cpp": "fa256e2eb0991e1e559802ca7acdc22200e457cbdf0ebd0552fdf0e646e491ae",
+        "native-app/tests/ui_preview.cpp": "fc2ba2be9d802401930dd0f2c4765142fb92022ce55f4abddd08060cd4fa5fbc",
+        "native-app/tests/vlc_fixtures.sh": "24af7b934d4b1f8bdb366077a3c384c0dcf703e9fbccf71ab588d415be6c3d61",
+        "native-app/tests/vlc_host.cpp": "8e08b91835d6c7b7f0d3d0fef18353b384f05f0134df6cb87609af5d2768d283",
+        "native-app/ui/content.hpp": "a4372294db45c3a00c6e81e02e554dcc00154ffe9aeeb89a04eda6af848da8fd",
+        "native-app/ui/player.cpp": "db68644453744211a7d497701de677d9c424d54112b0849a0933d20bcbc8e7c2"
       }
     },
-    "limitations": [
-      "Physical PS5 GPU/decoder/HDR behaviour needs console testing.",
-      "VLC standalone UI/upscalers/equalizer UI are not embedded.",
-      "ShadowMount+ remains a separate console installation.",
-      "MDBList personal API key connection remains; another app registration is not copied."
-    ],
-    "upstreamAudit": {
-      "vlcPort": "0.6.0",
-      "libvlc": "3.0.24",
-      "decoderMatchesUpstreamExceptRetainedGuards": true,
-      "guards": [
-        "unknown dimensions",
-        "direct-memory CPU workspace fallback"
+    "MAINTENANCE_IPTV_NEXT_VALIDATION.json": {
+      "schema": 1,
+      "date": "2026-10-29",
+      "status": "staged, unreleased",
+      "parentCommit": "a3b2cccf5e9716cfa5e9fa4bdacc0ad69d89efdb",
+      "branch": "builds/next-playback",
+      "publicVersionUnchanged": "1.0.0.2",
+      "dependencySources": {
+        "OpenSSL": {
+          "version": "3.5.9",
+          "archive": "openssl-3.5.9.tar.gz",
+          "url": "https://github.com/openssl/openssl/releases/download/openssl-3.5.9/openssl-3.5.9.tar.gz",
+          "sha256": "603f5602e2eef00d77fbd429d34dcd5822bb301757a1bc9cdb24c670f1eb859a"
+        },
+        "libass": {
+          "version": "0.17.5",
+          "archive": "libass-0.17.5.tar.xz",
+          "url": "https://github.com/libass/libass/releases/download/0.17.5/libass-0.17.5.tar.xz",
+          "sha256": "2dca25c0e0c837ddf00b52011b3f82cac1e4ddd3ad018227806b0c2288864acc"
+        },
+        "curl": {
+          "version": "8.23.0",
+          "archive": "curl-8.23.0.tar.xz",
+          "url": "https://curl.se/download/curl-8.23.0.tar.xz",
+          "sha256": "8dadd7d2536a314f982ad05a651b713f426bf7d02cc2c76cffb9796f2218e6c5"
+        }
+      },
+      "json": {
+        "version": "3.12.0",
+        "url": "https://raw.githubusercontent.com/nlohmann/json/v3.12.0/single_include/nlohmann/json.hpp",
+        "sha256": "aaf127c04cb31c406e5b04a63f1ae89369fccde6d8fa7cdda1ed4f32dfc5de63"
+      },
+      "sdk": "/workspace/nuvio-maintenance-libs/sdk",
+      "baseSdkCoreUnchanged": true,
+      "recipeSha256": "8ab15d9c9d8495c7871a8ed5a7dd006d87e5ddda9f6cfe81511019d47d44bccf",
+      "checks": [
+        {
+          "name": "Pinned upgraded archives, headers and JSON",
+          "script": "tools/validate_build_dependencies.py",
+          "result": "passed",
+          "logFile": "/workspace/maintenance-dependencies.log",
+          "logSha256": "f4dffe93c95ec8ea9c3b27d6104df04587fde35a0ac5098daeba9ae00d7c5009"
+        },
+        {
+          "name": "Reject older SDK libraries",
+          "script": "tools/validate_maintenance_libraries.py",
+          "result": "passed",
+          "logFile": "/workspace/maintenance-base-rejection.log",
+          "logSha256": "57dd2d1bfd9aa545d4fd176e632e308639e868465ae70511354dac1c14c432ab"
+        },
+        {
+          "name": "Reject SDK overlap and symlink aliasing before writes",
+          "script": "tests/maintenance_build.sh",
+          "result": "passed",
+          "logFile": "/workspace/maintenance-build-guards.log",
+          "logSha256": "1fcc19b6978648ed6dad5c57cf07b5cf5cbaea72c02d23a88611f4ff58abe3d6"
+        },
+        {
+          "name": "Startup compilation and deferred compute ordering",
+          "script": "tests/startup.sh + tests/startup_order.py",
+          "result": "passed",
+          "logFile": "/workspace/maintenance-startup.log",
+          "logSha256": "a17d947c2d52757a227eb50ca658e1c37a6484c081622a0c8ca10c12da91c576"
+        },
+        {
+          "name": "Updated libass rendering, styled/external/bitmap subtitles and shaping",
+          "script": "tests/playback_quality.sh",
+          "result": "passed",
+          "logFile": "/workspace/maintenance-subtitles.log",
+          "logSha256": "00516d2555fb190a51acda1f4ae5fc9d4bd6592ed7b4f0791db051b53d3b2c3f"
+        },
+        {
+          "name": "Saved catalog scan, limits, duplicates, Unicode, account boundaries and cancellation",
+          "script": "tests/iptv_library.sh",
+          "result": "passed",
+          "logFile": "/workspace/maintenance-iptv-model.log",
+          "logSha256": "35121263d1c729354209b29b9485202977fc14740f75e89570d13d20aa7b2350"
+        },
+        {
+          "name": "Production controller/session navigation, provider movie/series playback and stale results",
+          "script": "tests/iptv_session.sh",
+          "result": "passed",
+          "logFile": "/workspace/maintenance-iptv-session.log",
+          "logSha256": "08c4dbb8351a29ce012a2a5b048a04f1326a8e983877527cab7ca59a954d868a"
+        },
+        {
+          "name": "Tracking contract regressions",
+          "script": "tests/tracking.sh",
+          "result": "passed",
+          "logFile": "/workspace/maintenance-tracking.log",
+          "logSha256": "457412fcf56767810aa9f6a92940d3a18eeb0f036b7c9b2bea2fb22502bc5f92"
+        },
+        {
+          "name": "Connected service regressions",
+          "script": "tests/connected_services.sh",
+          "result": "passed",
+          "logFile": "/workspace/maintenance-connected_services.log",
+          "logSha256": "b4f02a275d2c9fe8058eb3d15d7480985bb264442a299f5d121aafddb184470b"
+        },
+        {
+          "name": "Live TV import regressions",
+          "script": "tests/live_tv.sh",
+          "result": "passed",
+          "logFile": "/workspace/maintenance-live_tv.log",
+          "logSha256": "0a54f136ad35b3c160ddee370f40ad57e98317059090788175b00a47ae8fbe4e"
+        },
+        {
+          "name": "Stream-list regressions",
+          "script": "tests/streams.sh",
+          "result": "passed",
+          "logFile": "/workspace/maintenance-streams.log",
+          "logSha256": "312bc8883e399f50fb6a19c1e7ab5b81fc7dea45475b57d439b91dfc5e126c3c"
+        },
+        {
+          "name": "Navigation regressions",
+          "script": "tests/navigation.sh",
+          "result": "passed",
+          "logFile": "/workspace/maintenance-navigation.log",
+          "logSha256": "ef3dc8e671b4a798fb98ae350b97d05dec795657f57fbe0df62824e5e17d9406"
+        },
+        {
+          "name": "Trailer regressions",
+          "script": "tests/trailers.sh",
+          "result": "passed",
+          "logFile": "/workspace/maintenance-trailers.log",
+          "logSha256": "4dc08624d750c1e264cbbe0da480e90ac0426f31c2c70750070bfda3b40a9a31"
+        },
+        {
+          "name": "Episode timing regressions",
+          "script": "tests/episode.sh",
+          "result": "passed",
+          "logFile": "/workspace/maintenance-episode.log",
+          "logSha256": "1af574907ae883c8d7feb689c3edbf6a8640a2edd15f5705ed72974b76281daf"
+        },
+        {
+          "name": "Instant playback regressions",
+          "script": "tests/instant_playback.sh",
+          "result": "passed",
+          "logFile": "/workspace/maintenance-instant_playback.log",
+          "logSha256": "81205a3f412429673035a25148ac067c67049673f2f76d699587836f5c9102e4"
+        },
+        {
+          "name": "Account/profile/import/sync HTTPS regressions: 80 tests",
+          "script": "tests/account_test.py",
+          "result": "passed",
+          "logFile": "/workspace/maintenance-account.log",
+          "logSha256": "7d5e00ddc63c0863c5390e8df967dee1619cac94f0d0f87799feab418355744b"
+        },
+        {
+          "name": "IPTV library/search GL previews with ASan/UBSan",
+          "script": "tests/preview.sh: iptv iptv-search",
+          "result": "passed",
+          "logFile": "/workspace/maintenance-preview.log",
+          "logSha256": "9a855419f7cb8e2628c56c293865c17f57172c4ae617b2d6b66f8ab25edfeb65"
+        },
+        {
+          "name": "Full PS5 Native/EVO/VLC compile/link, socket hooks, picture allocator hooks, 414 imports",
+          "script": "gl/build.sh (stopped before packaging)",
+          "result": "passed",
+          "logFile": "/workspace/maintenance-target.log",
+          "logSha256": "dc6ad8d3122170f31cd86c4fb8f4850ca122ef2eebf936573717ba518a6fcd69"
+        }
       ],
-      "upstreamDecoderSha256": "3abebee9291042bd439e5c2a6e2d44f1cedaebabedecdb3cde8e426cd2c65111",
-      "localDecoderSha256": "c3fe8d52fb8ec633c722397888a0c4ea1a75f1c340230ad8941e1f87600464f7",
-      "huiParagraphSourceExact": true,
-      "sdkArchiveEntriesVerified": 2926,
-      "sdkVersion": "0.45",
-      "pacbrewLibrariesRetained": "0.40.2",
-      "hardwareVerified": false
-    },
-    "objectCache": {
-      "receipt": "object-reuse.json",
-      "reusedIdenticalInputObjects": 30
+      "sourceFilesSha256": {
+        "native-app/MAINTENANCE_IPTV_NEXT.md": "a0bdf691b6ce37dad5684aa214abd736fa2668c63637ef9060f37dc3d731e25d",
+        "native-app/NEXT_REVISION.md": "5a13f9deb7d970050d5c9671c456c7fdac2da384c2067b179422f319078e5006",
+        "native-app/THIRD_PARTY.md": "eb6cf4eebf8623f42cf876368dc7a6cdee5793d5a01987d59397de3b483740cf",
+        "native-app/dependencies.json": "e5f0d13501d23fbf89a98377a3636dd10117ab0719bf1af23c75a58273a889bb",
+        "native-app/gl/main.cpp": "13ff8bca443566ab772b06f2db037b7a4d3578c56d9a467ed0c2679f76469693",
+        "native-app/gl/session.hpp": "feaf781fa26bb74183ecebbdd6b573099a5fa23501b1a66773bed36d5826cd92",
+        "native-app/gl/session_browse.cpp": "5d01700f08dfd4342f6db4e8065ba7c44b923ac0c8213a4386f2e68bde5dbe36",
+        "native-app/gl/session_iptv.cpp": "6fa60fb56c06548c851e5797bdc234db4dca6ea0b7252d0d1b431844e3534777",
+        "native-app/src/iptv_library.cpp": "35b7e2e4e55ab033e785f57c839ee64df37329c2eaa866d42801053521f9ed0e",
+        "native-app/src/iptv_library.h": "db2ecc1b2a273e5048c0a53bb1eb8d7c2878429a2ed18beaa56a27fb9de6884f",
+        "native-app/tests/iptv_library_host.cpp": "20d36695204a2eea43902dbd2e2b850c12fd3310caaa4dcabdfba71e3f075be3",
+        "native-app/tests/iptv_session_host.cpp": "8ebe4b6d6d526090f8679d4a7201329b0e9301747f82d300c868f720424b72e8",
+        "native-app/tests/maintenance_build.sh": "a3b18585d30c6116f5d24e14016227fc55200a93411e10e5873ab940c813a869",
+        "native-app/tests/run.sh": "56bc8cb5122330f6b57fd9051cfdb3f7a3657f8b7b257c15c8f650ab07ef9450",
+        "native-app/tests/startup_order.py": "acbff6440f51dea6da309fff536060da3fa0645327241862950b3a3a039a0bf4",
+        "native-app/tests/ui_preview.cpp": "a15256b3229872bc50cf24292668dbb43837cab1fb96ff7fc2387dba9ff9ad0d",
+        "native-app/third_party/json.hpp": "aaf127c04cb31c406e5b04a63f1ae89369fccde6d8fa7cdda1ed4f32dfc5de63",
+        "native-app/tools/build_maintenance_libraries.sh": "8ab15d9c9d8495c7871a8ed5a7dd006d87e5ddda9f6cfe81511019d47d44bccf",
+        "native-app/tools/build_vlc.sh": "95117ce8f257c433c314c150f8300b609ba27b159fff3e6a2b0302a4ead6e1a1",
+        "native-app/tools/validate_build_dependencies.py": "8d2ff67f93088b08f18a3a45ebbb22338db0a65134d3283d2e3595d5a042d5b9",
+        "native-app/tools/validate_maintenance_libraries.py": "09d3e9bd4d0212b8c0aff7512fbdfc636e47818378c38d8b300f92e9df501416",
+        "native-app/ui/cards.cpp": "a25144b2d97a845ca1df8e1912e621c19d9d5a7dea6bd6f7701001b732a5bdcd",
+        "native-app/ui/library.cpp": "11f80bbbeb9c98553093e03dbc9c347d231ccc7602a96dc337a754d6aa3e027a"
+      },
+      "artifacts": {
+        "/workspace/nuvio-vlc-build/app-build-0.5.30/app/eboot.elf": {
+          "bytes": 71684340,
+          "sha256": "e849a2b665f9892e9b8e4c89e4dd0446e300a825f46e83f3a1f329eca9160411"
+        },
+        "/workspace/maintenance-iptv-review.png": {
+          "bytes": 119222,
+          "sha256": "24d230dff72ddb6ca8ce62842bb4f204378bed77c298e25d72b5a57e15798fdf"
+        },
+        "/workspace/maintenance-iptv-search-review.png": {
+          "bytes": 116415,
+          "sha256": "247f75b9bb457cde2e154ec64f1fe4f216c32ea5bf8d33c8decc94510a3bf891"
+        }
+      },
+      "limits": [
+        "No public installer, release, issue reply or store submission in this staging task.",
+        "Physical PS5 execution, HDMI/audio behavior and old-firmware startup testing remain pending.",
+        "Updated PS5 curl/OpenSSL archives have compile/link/socket-hook validation; host account/network tests use host libraries.",
+        "Subtitle regressions explicitly load host libass 0.17.5.",
+        "Host UI sanitizer preview uses ASan/UBSan with leak detection disabled under managed ptrace; rendered RGB copies inspected.",
+        "Saved search covers active-profile movie/series caches only; it does not crawl every provider catalog or Live TV guide.",
+        "Inherited earlier playback work is recorded separately in UPSTREAM_PLAYBACK_NEXT_VALIDATION.json."
+      ]
     }
-  },
-  "hostTestEvidence": {
-    "status": "completed",
-    "conclusion": "success",
-    "publicSourceCommit": "ba2b3abf18c5a22560ba557e2f3a7c0e9bd7ab5c",
-    "url": "https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/40552321812/job/122359074580",
-    "runUrl": "https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/40552321812",
-    "jobId": 122359074580
-  },
-  "vlcHostTestEvidence": {
-    "status": "completed",
-    "conclusion": "success",
-    "publicSourceCommit": "ba2b3abf18c5a22560ba557e2f3a7c0e9bd7ab5c",
-    "url": "https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/40552321812/job/122359075115",
-    "runUrl": "https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/40552321812",
-    "jobId": 122359075115
-  },
-  "publicSourceArchiveCorrespondence": {
-    "filesVerified": 780,
-    "developmentSourceCommit": "fc4d98bf6d19c45956fe09426184e4504a88fa33",
-    "publicHostCiCommit": "ba2b3abf18c5a22560ba557e2f3a7c0e9bd7ab5c",
-    "allHashesMatch": true
   },
   "catalogScan": {
     "errors": 0,
@@ -348,9 +540,36 @@
     "pyelftools": true,
     "capstone": true,
     "yara": true,
-    "helperSha256": "1f89d03e8b3dec5f19525df1424f2406d67762b7a2010b92951681338f6d46df",
+    "helperSha256": "202477186f82b0831c470c9c6ae4b107fe6464ac26d7489d6a82bb526b4b8206",
     "helperApprovalModified": false,
     "log": "catalog-scan.log"
   },
-  "publicTestRelease": true
+  "localVlcRegression": {
+    "passed": true,
+    "version": "3.0.23",
+    "isolatedRunLogSha256": "2b9895c1fc9c08e59e014ef52524e5300d4835127a8f2d04d1186ef9d45da254",
+    "note": "Initial older-host HLS/EOS run timed out during concurrent compilation; isolated rerun passed. Matched 3.0.24 public CI is recorded separately."
+  },
+  "hostTestEvidence": {
+    "status": "completed",
+    "conclusion": "success",
+    "publicSourceCommit": "d8d971cd0a8c7ce3aa77ca623de3b7ad1322ec71",
+    "url": "https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/40948943860/job/123711580718",
+    "runUrl": "https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/40948943860",
+    "jobId": 123711580718
+  },
+  "vlcHostTestEvidence": {
+    "status": "completed",
+    "conclusion": "success",
+    "publicSourceCommit": "d8d971cd0a8c7ce3aa77ca623de3b7ad1322ec71",
+    "url": "https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/40948943860/job/123711581363",
+    "runUrl": "https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/40948943860",
+    "jobId": 123711581363
+  },
+  "publicSourceArchiveCorrespondence": {
+    "filesVerified": 800,
+    "developmentSourceCommit": "a016227d2618db61b87d64d3773c9575a5c60a36",
+    "publicHostCiCommit": "d8d971cd0a8c7ce3aa77ca623de3b7ad1322ec71",
+    "allHashesMatch": true
+  }
 }
