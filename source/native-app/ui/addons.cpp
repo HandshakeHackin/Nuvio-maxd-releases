@@ -149,8 +149,12 @@ void Addons::draw_tile(hui::gfx::DrawList &list, const Addon &a, const Rect &r, 
         }
         tx += draw_tag(list, env_, kinds[i], tx, r.y + 146.0f, Color::rgb(0xffffff, 0.09f), theme::ink_2) + 10.0f;
     }
-    hui::ui::paragraph(list, env_.fonts.regular, a.description, r.x + 30.0f, r.y + 196.0f, 22.0f, r.w - 60.0f, 29.0f,
-                       theme::ink_2, 2);
+    if(page_==Page::livetv && !a.programme_now.empty()) {
+        text(list,env_.fonts.regular,env_.fonts.regular.font->fit(a.programme_now,21,r.w-60),r.x+30,r.y+196,21,theme::ink);
+        text(list,env_.fonts.regular,env_.fonts.regular.font->fit(a.programme_next,21,r.w-60),r.x+30,r.y+225,21,theme::ink_2);
+    } else
+        hui::ui::paragraph(list, env_.fonts.regular, a.description, r.x + 30.0f, r.y + 196.0f, 22.0f, r.w - 60.0f, 29.0f,
+                           theme::ink_2, 2);
     list.pop_transform();
     list.pop_opacity();
 }

@@ -3,6 +3,7 @@
 #include "session.hpp"
 #include "continue_watching.hpp"
 #include "stream_json.hpp"
+#include "library_search.hpp"
 
 #include <algorithm>
 #include <cstdlib>
@@ -74,6 +75,14 @@ Title Session::make_title(const Item &it, bool with_progress) const
         if (it.duration > 0 && it.offset > 0)
             t.progress = static_cast<float>(std::max(0.02, std::min(1.0, it.offset / it.duration)));
         t.watched = it.times_watched > 0 && it.offset <= 0;
+    }
+    if (it.type=="series") {
+        const auto member=library_.find(it.id);
+        if(member!=library_.end()&&!jbool(member->second,"removed")&&!jbool(member->second,"temp")) {
+            const auto& state=jobj(member->second,"state");
+            const auto in_progress=it.offset>0?it.video_id:jnum(state,"timeOffset")>0?jstr(state,"video_id"):std::string();
+            t.new_episode=series_updates_.badge(it.id,watched_,now_epoch_ms()/1000,series_history_ready_,in_progress);
+        }
     }
     return t;
 }
@@ -749,7 +758,7 @@ void Session::filter_activate(Page page, int filter)
                 changed_ |= kLibraryNew;
             });
         }
-        else
+        else if (filter == 1)
         {
             open_dropdown("Sort by", {"Last watched", "A-Z", "Most watched"}, lib_sort_, [this](int i) {
                 lib_sort_ = i;
@@ -757,11 +766,37 @@ void Session::filter_activate(Page page, int filter)
                 changed_ |= kLibraryNew;
             });
         }
+        else if (filter == 2) library_search();
+        else if (filter == 3 && !lib_query_.empty()) library_clear_search();
     }
 }
 
 // ---------------------------------------------------------------------------
 // Library
+
+void Session::reset_library_search()
+{
+    ++lib_search_generation_;
+    lib_query_.clear();
+}
+
+void Session::library_clear_search()
+{
+    reset_library_search();
+    refresh_library();
+    changed_ |= kLibraryNew;
+}
+
+void Session::library_search()
+{
+    const auto profile = profile_generation_, generation = ++lib_search_generation_;
+    ask_text([this, profile, generation](const std::string& text) {
+        if (profile != profile_generation_ || generation != lib_search_generation_) return;
+        lib_query_ = sx::library_search::query(text);
+        refresh_library();
+        changed_ |= kLibraryNew;
+    }, "Search your Library (empty clears search)");
+}
 
 void Session::refresh_library()
 {
@@ -820,10 +855,13 @@ void Session::refresh_library()
     library.filters.clear();
     library.filters.push_back({"Show", lib_type_.empty() ? "All types" : capitalize(lib_type_)});
     library.filters.push_back({"Sort", sorts[lib_sort_]});
+    library.filters.push_back({"Search", lib_query_.empty() ? "Titles" : lib_query_});
+    if (!lib_query_.empty()) library.filters.push_back({"Clear", "Search"});
+    const auto words = sx::library_search::terms(lib_query_);
 
     lib_items_.clear();
     for (const Item &it : all)
-        if (lib_type_.empty() || it.type == lib_type_)
+        if ((lib_type_.empty() || it.type == lib_type_) && sx::library_search::matches(it.name, words))
             lib_items_.push_back(it);
     if (lib_sort_ == 0)
         std::sort(lib_items_.begin(), lib_items_.end(), [](const Item &a, const Item &b) { return a.last_watched > b.last_watched; });
@@ -836,7 +874,8 @@ void Session::refresh_library()
     for (const Item &it : lib_items_)
         library.items.push_back(make_title(it, true));
     const std::size_t n = library.items.size();
-    library.count = std::to_string(n) + (n == 1 ? " title" : " titles");
+    library.count = lib_query_.empty() ? std::to_string(n) + (n == 1 ? " title" : " titles")
+        : std::to_string(n) + " of " + std::to_string(all.size()) + " titles";
 
     if (n > 0)
         library.status.clear();
@@ -844,6 +883,8 @@ void Session::refresh_library()
         library.status = "Loading your library...";
     else if (!signed_in() && all.empty())
         library.status = "Sign in to your Nuvio account in Settings to see your library here.";
+    else if (!lib_query_.empty())
+        library.status = "No Library titles match. Edit Search or choose Clear Search.";
     else
         library.status = "Nothing in your library matches this filter.";
     changed_ |= kLibrary;

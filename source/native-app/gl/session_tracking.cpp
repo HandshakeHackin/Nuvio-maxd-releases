@@ -26,6 +26,8 @@ void Session::tracking_action(const std::string& action, const json& args, bool 
         if (reload) {
             // A source switch must not keep resume times or next episodes from
             // the previous service in the shared presentation model.
+            reset_library_search();
+            series_updates_reset();
             progress_.clear(); library_.clear(); library_loaded_ = false; library_loading_ = false; ++library_generation_;
             ++watched_revision_; watched_.clear(); load_progress();
             if (d_open_) close_detail();

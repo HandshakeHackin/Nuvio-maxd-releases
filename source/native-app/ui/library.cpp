@@ -41,6 +41,7 @@ void Library::update(const hui::InputFrame &input, float dt)
     if (!rail_input(input))
     {
         const int filters = static_cast<int>(content_->filters.size());
+        filter_ = std::clamp(filter_, 0, std::max(0, filters - 1));
         if (in_filters_)
         {
             if (input.nav == Direction::left)
@@ -86,7 +87,8 @@ void Library::draw(hui::gfx::DrawList &list, hui::gfx::BackdropSpec &backdrop) c
     }
     for (std::size_t i = 0; i < content_->filters.size(); ++i)
         x += draw_filter_chip(list, env_, content_->filters[i], x, 148.0f+shift,
-                              in_filters_ && static_cast<int>(i) == filter_ && !rail_.focused()) +
+                              in_filters_ && static_cast<int>(i) == filter_ && !rail_.focused(),
+                              page_==Page::library ? 180.0f : 0.0f) +
              16.0f;
     text(list, env_.fonts.regular, content_->count, theme::kRight - 6.0f, 157.0f+shift, theme::kBody, theme::ink_3,
          Align::right);
@@ -98,7 +100,7 @@ void Library::draw(hui::gfx::DrawList &list, hui::gfx::BackdropSpec &backdrop) c
 
     fade_down(list, theme::kRailWidth, 0.0f, theme::kScreenW, 118.0f, 0.62f);
     fade_up(list, theme::kRailWidth, 990.0f, theme::kScreenW, 90.0f, 0.94f);
-    draw_topbar(list, env_, false, age_,nullptr,0,page_==Page::iptv?"Search saved IPTV catalogs":nullptr);
+    draw_topbar(list, env_, false, age_,nullptr,0,page_==Page::iptv?"Search saved IPTV catalogs":"Search your Library");
     rail_.draw(list, env_, age_);
 }
 

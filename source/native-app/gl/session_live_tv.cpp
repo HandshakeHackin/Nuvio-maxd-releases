@@ -28,6 +28,8 @@ bool contains(const json &a, const std::string &s) {
 } // namespace
 void Session::live_reset() {
   iptv_reset();
+  live_guide_reset();
+  live_guide_auto_url_.clear();
   if(multiview_active)multi_stop();
   if (live_cancel_)
     *live_cancel_ = true;
@@ -164,6 +166,7 @@ void Session::live_build() {
     row.initial = std::to_string(live_indices_.size() + 1);
     row.colour = 0x0ea5a4;
     row.description = "X: watch channel · Square: toggle favorite";
+    auto guide=live_guide_labels(c);row.programme_now=std::move(guide.first);row.programme_next=std::move(guide.second);
     live_content.items.push_back(std::move(row));
     live_indices_.push_back(i);
   }
@@ -181,6 +184,7 @@ void Session::live_build() {
   changed_ |= kLive;
 }
 void Session::live_reload() {
+  live_guide_reset();live_guide_auto_url_.clear();
   iptv_probe();
   if (!profile_ready_) {
     say("Choose a profile first", 5);
@@ -218,6 +222,7 @@ void Session::live_reload() {
           live_build();
           return;
         }
+        live_guide_auto_url_ = r.guide_url;
         live_channels_ = std::move(r.channels);
         live_build();
         say("Live TV channels loaded");
@@ -374,10 +379,13 @@ void Session::live_menu() {
       "Channel groups",    "Search channels",
       "All channels",      "Favorites",
       "Recent channels",   "Remove current source",
-      "Next channel page", "Previous channel page", "Four-screen TV (experimental)", "Check IPTV Library availability"};
+      "Next channel page", "Previous channel page", "Four-screen TV (experimental)", "Check IPTV Library availability", "Set XMLTV guide URL", "Refresh programme guide", jbool(live_state_,"guide_enabled",true)?"Programme guide: On":"Programme guide: Off"};
   open_dropdown("Live TV", options, 0, [this, generation](int i) {
     if (generation != profile_generation_)
       return;
+    if (i == 14) {live_guide_configure();return;}
+    if (i == 15) {live_guide_reset();live_build();say("Programme guide will refresh in the background",5);return;}
+    if (i == 16) {live_state_["guide_enabled"]=!jbool(live_state_,"guide_enabled",true);live_guide_reset();live_save();live_build();return;}
     if (i == 12) {multi_choose();return;}
     if (i == 13) {iptv_probe();say("Checking IPTV movie and series availability in the background",6);return;}
     if (i == 0 || i == 1) {

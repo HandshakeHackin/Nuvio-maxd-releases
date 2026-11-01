@@ -1,0 +1,68 @@
+{
+  "features": [
+    "Live TV now/next (Xtream short EPG and XMLTV)",
+    "Library-series new-episode indicators"
+  ],
+  "baseSourceCommit": "dcd51fa02223876d3c1664ef37586ca3491574ed",
+  "published": false,
+  "physicalConsoleVerified": false,
+  "checks": {
+    "live-guide-tests.log": {
+      "status": "passed",
+      "path": "/workspace/live-guide-tests.log",
+      "sha256": "2465c3ac1bca973516dc1591b3a2e1f99d65e9f891219fc402084378c630563a"
+    },
+    "live-guide-session-tests.log": {
+      "status": "passed",
+      "path": "/workspace/live-guide-session-tests.log",
+      "sha256": "07e628fd5cb15d95f6897cd345c1b93f6d7a555cab46622386c2bb3abe83cbb9"
+    },
+    "series-updates-tests.log": {
+      "status": "passed",
+      "path": "/workspace/series-updates-tests.log",
+      "sha256": "122ff6bb231abd08c484df6de9806d7d141864660df0d5f56275d044a4870add"
+    },
+    "features5-8-library-regression.log": {
+      "status": "passed",
+      "path": "/workspace/features5-8-library-regression.log",
+      "sha256": "304003295de89b0c7ff3c992fc09cf47053a1a660351a877911bad36f929fd5e"
+    },
+    "features5-8-live-tv-regression.log": {
+      "status": "passed",
+      "path": "/workspace/features5-8-live-tv-regression.log",
+      "sha256": "aef6a34b43361b1b18ccded5381d557ab28f411b4fb6bced4e0a5decb0861743"
+    },
+    "features5-8-navigation.log": {
+      "status": "passed",
+      "path": "/workspace/features5-8-navigation.log",
+      "sha256": "50e8b1371ee058b44e438cd27d14f97fa9388a9ace3f8dcd5866f25d074b3c7d"
+    },
+    "features5-8-preview.log": {
+      "status": "passed",
+      "path": "/workspace/features5-8-preview.log",
+      "sha256": "e7f911b75b78038cda4ffec44486270e67562324ac3288dddab5f165365c1c1b"
+    },
+    "features5-8-ps5-compile.log": {
+      "status": "passed",
+      "path": "/workspace/features5-8-ps5-compile.log",
+      "sha256": "2542c88ec6ac221175c8e4e751084837cfe37bc96917334bf28b05e06f55d948"
+    }
+  },
+  "limits": {
+    "xmltvDocumentBytes": 33554432,
+    "xmltvSnapshotProgrammesPerChannel": 8,
+    "guideCacheMinutes": 15,
+    "xtreamRequestsInFlight": 2,
+    "seriesMetadataRequestsInFlight": 2,
+    "seriesMetadataCacheEntries": 128,
+    "episodesPerCachedSeries": 2000,
+    "seriesSuccessTtlSeconds": 3600,
+    "seriesFailureTtlSeconds": 300
+  },
+  "notes": [
+    "Guide failures do not stop channel playback. Cached XMLTV documents are reused across channel groups/pages, with stale source/profile completions discarded.",
+    "New badges require synchronized watched history, matching episode identities and passed release dates; unknown/future/special/in-progress episodes are excluded.",
+    "Rendered previews were inspected for card-label clipping and badge/progress overlap.",
+    "PS5 driver compilation retains existing unused-function warnings; compile, link, socket/media hooks and loaded-module import verification passed."
+  ]
+}

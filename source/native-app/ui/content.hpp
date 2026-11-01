@@ -23,6 +23,7 @@ struct Title
     std::string imdb;      // "7.8", empty when unknown
     std::string synopsis;
     std::string badge;     // "S2 E5" on a series being watched
+    std::string new_episode{}; // Confirmed aired update for a Library series
     float progress = -1.0f; // 0..1 when it can be resumed, negative when not
     bool watched = false;   // finished: a green check on its poster
     std::uint32_t poster = 0;   // GL texture, 0 until the artwork has arrived
@@ -71,6 +72,7 @@ struct Addon
     std::string version;     // "v2.4.1"
     std::string types;       // "movie  series  tv"
     std::string description;
+    std::string programme_now, programme_next; // Live TV guide only
     std::string initial;     // shown when the addon has no logo
     std::uint32_t logo = 0;  // GL texture, 0 until it has arrived
     std::uint32_t colour = 0x7b5bf5; // the tile's colour while there is no logo

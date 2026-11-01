@@ -47,6 +47,13 @@ void draw_poster_card(hui::gfx::DrawList &list, const Env &env, const Title &t, 
         list.rounded_rect({r.x + 12.0f, r.y + 12.0f, bw, 34.0f}, 10.0f, Color::rgb(0x0c0b11, 0.78f));
         text(list, env.fonts.semibold, badge, r.x + 12.0f + bw * 0.5f, r.y + 36.0f, 20.0f, theme::ink, Align::center);
     }
+    if (!t.new_episode.empty()) {
+        const auto value=env.fonts.semibold.font->fit(t.new_episode,19,std::max(0.0f,r.w-44));
+        const float w=env.fonts.semibold.measure(value,19)+20;
+        const float y=r.y+r.h-(show_progress&&t.progress>=0?96.0f:52.0f);
+        list.rounded_rect({r.x+12,y,w,34},10,Color::rgb(0x087f8c,0.95f));
+        text(list,env.fonts.semibold,value,r.x+22,y+24,19,Color::rgb(0xffffff));
+    }
     if (t.watched)
     {
         // A green disc with a check, top right.

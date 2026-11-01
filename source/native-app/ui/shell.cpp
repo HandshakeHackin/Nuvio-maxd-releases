@@ -38,6 +38,7 @@ Session::Cursor Shell::cursor() const
     c.discover = discover_.cursor_index();
     c.library = library_.cursor_index();
     c.iptv=iptv_library_.cursor_index();
+    c.live=live_tv_.cursor_index();
     c.episode = detail_.episode_index();
     c.stream = detail_.stream_index();
     c.stream_addon = detail_.stream_addon();
@@ -253,6 +254,11 @@ void Shell::route_page(const hui::InputFrame &input, float dt)
         on_rail = library_.rail_focused();
         cursor = library_.rail_cursor();
         under = library_.focused_title();
+        if (!on_rail && input.is_pressed(Action::back) && s_.library_search_active())
+        {
+            s_.library_clear_search();
+            return;
+        }
         if (confirm && library_.filter_cursor() >= 0)
         {
             s_.filter_activate(Page::library, library_.filter_cursor());
@@ -309,7 +315,7 @@ void Shell::route_page(const hui::InputFrame &input, float dt)
         go_page(0);
         return;
     }
-    // Triangle or Options: search, from every page.
+    // Triangle or Options: search the current Library, or global catalogs on other pages.
     if (!on_rail && (input.is_pressed(Action::north) || input.is_pressed(Action::menu)))
     {
         s_.begin_search();

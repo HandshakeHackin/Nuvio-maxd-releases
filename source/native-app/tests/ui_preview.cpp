@@ -8,6 +8,7 @@
 #include "settings.hpp"
 #include "board.hpp"
 #include "library.hpp"
+#include "addons.hpp"
 #include <cmath>
 #include "dynamic_font.hpp"
 #include "gfx/renderer.hpp"
@@ -65,7 +66,33 @@ int main(int argc, char** argv) {
     };
     const auto backdrop_texture=artwork(1920,1080,0);
     const auto poster_texture=artwork(480,720,3);
-    if(mode=="iptv"||mode=="iptv-search") {
+    if(mode=="live-guide") {
+        sx::AddonsContent content;
+        sx::Addon manage;manage.name="Live TV sources & filters";manage.version="Programme guide enabled";manage.description="Options: guide settings and XMLTV URL";manage.types="Live TV";content.items.push_back(manage);
+        for(int i=0;i<3;++i){sx::Addon c;c.name=i==0?"News HD":i==1?"Sports":"Documentaries";c.version="Live TV";c.types="Live";c.initial="TV";c.programme_now=i==2?"Programme guide unavailable":"Now: 20:00 · Evening news and weather";c.programme_next=i==2?"X: watch channel":"Next: 20:30 · World headlines and a long programme title";content.items.push_back(c);}
+        sx::Addons page(env,sx::Page::livetv);page.set_content(&content);page.enter();hui::InputFrame input;
+        for(int i=0;i<120;++i)page.update(input,1.f/60);hui::gfx::BackdropSpec bg;page.draw(list,bg);
+    }
+    else if(mode=="series-updates") {
+        sx::LibraryContent content;content.filters={{"Show","Series"},{"Sort","A-Z"},{"Search","Titles"}};content.count="3 titles";
+        for(int i=0;i<3;++i){sx::Title t;t.name=i==0?"New episode available":i==1?"Still catching up":"Up to date";t.poster=poster_texture;t.new_episode=i<2?"New: S2 E3":"";if(i==1){t.progress=.4;t.badge="S2 E2";}content.items.push_back(t);}
+        sx::Library page(env);page.set_content(&content);page.enter();hui::InputFrame input;
+        for(int i=0;i<120;++i)page.update(input,1.f/60);hui::gfx::BackdropSpec bg;page.draw(list,bg);
+    }
+    else     if(mode=="library-search" || mode=="library-search-empty" || mode=="library-search-long") {
+        sx::LibraryContent content;
+        const std::string query=mode=="library-search-long" ? "A very long Library title query that should fit inside its search control" : "Horizon";
+        content.filters={{"Show","All types"},{"Sort","A-Z"},{"Search",query},{"Clear","Search"}};
+        content.count=mode=="library-search-empty" ? "0 of 128 titles" : "2 of 128 titles";
+        content.status="No Library titles match. Edit Search or choose Clear Search.";
+        if(mode!="library-search-empty")for(int i=0;i<2;++i){sx::Title t;t.id=std::to_string(i);t.name=i?"Beyond the Horizon":"The Last Horizon";t.poster=poster_texture;t.year="2025";content.items.push_back(t);}
+        sx::Library page(env);page.set_content(&content);page.enter();hui::InputFrame input;
+        input.nav=hui::Direction::up;page.update(input,1.f/60);input.nav=hui::Direction::right;
+        page.update(input,1.f/60);page.update(input,1.f/60);input.nav=hui::Direction::none;
+        for(int i=0;i<120;++i)page.update(input,1.f/60);
+        hui::gfx::BackdropSpec bg;page.draw(list,bg);
+    }
+    else if(mode=="iptv"||mode=="iptv-search") {
         sx::LibraryContent catalog;catalog.heading="IPTV Library";
         catalog.notice="Movies and series from your IPTV service · Options: library controls";
         catalog.filters={{"Server","My Xtream Server"},{"Type","Movies"},{"Category","Recently added"},{"A–Z","All"}};

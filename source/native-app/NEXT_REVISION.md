@@ -1,3 +1,21 @@
+# Max’d 1.0.0.5 release candidate
+
+Includes Library title search, Live TV now/next and series update badges, plus the two reporter-confirmed fixes. See [release notes](RELEASE_NOTES_1.0.0.5.md) and [testing](TESTING-1.0.0.5.md). Historical validation receipts retain their original snapshot hashes.
+
+---
+
+# Unreleased: programme guide and series updates
+
+Adds provider-supplied Live TV now/next listings and conservative new-episode badges for Library series. See [feature and testing notes](LIVE_GUIDE_AND_SERIES_UPDATES.md). This staging branch also includes Library title search and the two confirmed issue fixes.
+
+---
+
+# Unreleased: Library title search
+
+Adds local title search within the active profile and selected Library source, alongside type/sort controls. See [feature and testing notes](LIBRARY_SEARCH.md). Stage this with the two reporter-confirmed fixes; use a new version for delivery rather than replacing published 1.0.0.4 artifacts.
+
+---
+
 # Max’d 1.0.0.4 issue-test prerelease
 
 Targeted fixes for [#12](https://github.com/HandshakeHackin/Nuvio-maxd-releases/issues/12) and [#13](https://github.com/HandshakeHackin/Nuvio-maxd-releases/issues/13). See [test notes](TESTING-1.0.0.4.md) and [changelog](RELEASE_NOTES_1.0.0.4.md). Reporter confirmation is pending; 1.0.0.3 remains stable.

@@ -19,9 +19,9 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install host dependencies
         run: |
-          if ! pkg-config --exists libcurl openssl libavcodec libavutil libavformat libswscale libswresample libass egl gl || ! command -v ffmpeg >/dev/null; then
+          if ! pkg-config --exists libcurl openssl libavcodec libavutil libavformat libswscale libswresample libass expat zlib egl gl || ! command -v ffmpeg >/dev/null; then
             sudo apt-get update -qq -o Acquire::Retries=0 -o Acquire::http::Timeout=20 -o Acquire::https::Timeout=20
-            sudo apt-get install -y libcurl4-openssl-dev libssl-dev libavcodec-dev libavutil-dev libavformat-dev libswscale-dev libswresample-dev libass-dev libegl1-mesa-dev libgl1-mesa-dev libgl1-mesa-dri pkg-config openssl ffmpeg
+            sudo apt-get install -y libcurl4-openssl-dev libssl-dev libavcodec-dev libavutil-dev libavformat-dev libswscale-dev libswresample-dev libass-dev libexpat1-dev zlib1g-dev libegl1-mesa-dev libgl1-mesa-dev libgl1-mesa-dri pkg-config openssl ffmpeg
           fi
       - name: Build pinned QuickJS provider test engine
         run: |

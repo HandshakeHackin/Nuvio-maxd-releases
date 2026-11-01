@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "board.hpp"
 #include "addons.hpp"
+#include "library.hpp"
 #include <cstdio>
 #include <stdexcept>
 
@@ -108,9 +109,27 @@ void iptv_visibility_changes() {
     move(b,hui::Direction::down);expect(b.rail_cursor()==1,"existing rail changed after hiding IPTV tab");
 }
 
+
+void library_search_controls() {
+    Fixture f; sx::Library page(f.env);sx::LibraryContent content;
+    content.filters={{"Show","All types"},{"Sort","A-Z"},{"Search","dark"},{"Clear","Search"}};
+    content.items.resize(2);page.set_content(&content);page.enter();
+    move(page,hui::Direction::up);move(page,hui::Direction::right);move(page,hui::Direction::right);
+    expect(page.filter_cursor()==2,"Library Search chip is unreachable");
+    move(page,hui::Direction::right);expect(page.filter_cursor()==3,"Clear Search is unreachable");
+    content.filters.pop_back();page.refresh();move(page,hui::Direction::none);
+    expect(page.filter_cursor()==2,"removing Clear Search leaves an invalid filter selected");
+    content.items.clear();page.set_content(&content);move(page,hui::Direction::up);
+    move(page,hui::Direction::right);move(page,hui::Direction::right);
+    expect(page.filter_cursor()==2,"empty search results trap access to Search");
+    move(page,hui::Direction::left);move(page,hui::Direction::left);move(page,hui::Direction::left);
+    expect(page.rail_focused(),"empty Library search traps the navigation rail");
+}
+
 }
 int main() {
     const struct { const char* name; void (*run)(); } tests[] = {
+        {"library_search_controls",library_search_controls},
         {"iptv_visibility_changes",iptv_visibility_changes},
         {"live_tv_rail_and_channel_arrival",live_tv_rail_and_channel_arrival},
         {"home_without_catalogs", home_without_catalogs},
@@ -125,6 +144,6 @@ int main() {
         try { test.run(); std::printf("%s: PASS\n", test.name); }
         catch (const std::exception& e) { ++failed; std::printf("%s: FAIL (%s)\n", test.name, e.what()); }
     }
-    std::printf("UI navigation: 8 tests, %d failures\n", failed);
+    std::printf("UI navigation: 9 tests, %d failures\n", failed);
     return failed ? 1 : 0;
 }

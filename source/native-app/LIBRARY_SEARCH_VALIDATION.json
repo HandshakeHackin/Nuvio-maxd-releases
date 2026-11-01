@@ -1,0 +1,28 @@
+{
+  "baseSourceCommit": "2b3463a444b25b7f58725d75417fef488139c5ef",
+  "feature": "Local Library title search",
+  "published": false,
+  "physicalConsoleVerified": false,
+  "validation": {
+    "library-search-session.log": {
+      "status": "passed",
+      "path": "/workspace/library-search-session.log",
+      "sha256": "f6055b4e3e52f1a17b97af299322d6331ec7848017f1966ca7d1ba98d83c70c3"
+    },
+    "library-search-navigation.log": {
+      "status": "passed",
+      "path": "/workspace/library-search-navigation.log",
+      "sha256": "50e8b1371ee058b44e438cd27d14f97fa9388a9ace3f8dcd5866f25d074b3c7d"
+    },
+    "library-search-preview.log": {
+      "status": "passed",
+      "path": "/workspace/library-search-preview.log",
+      "sha256": "08a9358c6b44bbd8debbd3867713a411687288510d309bedd1ea03bad31b7fe1"
+    },
+    "library-search-ps5-compile.log": {
+      "status": "passed",
+      "path": "/workspace/library-search-ps5-compile.log",
+      "sha256": "2542c88ec6ac221175c8e4e751084837cfe37bc96917334bf28b05e06f55d948"
+    }
+  }
+}

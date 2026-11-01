@@ -212,6 +212,8 @@ void Session::shutdown()
     *d_stream_cancel_ = true;
     if (w_episode_cancel_) *w_episode_cancel_ = true;
     if(live_cancel_)*live_cancel_=true;
+    if(live_guide_cancel_)*live_guide_cancel_=true;
+    if(series_updates_cancel_)*series_updates_cancel_=true;
     if(iptv_cancel_)*iptv_cancel_=true;
     if(iptv_probe_cancel_)*iptv_probe_cancel_=true;
     provider_tasks_.stop();
@@ -1348,6 +1350,8 @@ void Session::update(float dt, const Cursor &cursor)
         else service_login_poll();
     }
     poll_typing();
+    live_guide_update(cursor.live);
+    if(page_==Page::library && now>=series_updates_tick_){series_updates_tick_=now+60;refresh_library();}
     if (watching)
     {
         watch_update();
@@ -1472,6 +1476,7 @@ void Session::refresh_art(const Cursor &cursor)
         // cards independently of Board/Continue Watching, with bounded work.
         if (page_ == Page::library && near && lib_items_[i].poster.empty())
             want_meta(lib_items_[i]);
+        if (page_ == Page::library && d>=-4 && d<8) want_series_updates(lib_items_[i]);
         library.items[i].poster = fetch(lib_items_[i].poster, ArtKind::poster, near);
     }
 

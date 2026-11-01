@@ -81,6 +81,7 @@ void Session::detail_toggle_watched(int index)
     save_progress();
     sync_watched_mark(id, d_item_.name, mark, d_item_.id, video.season, video.episode);
     detail.episodes[static_cast<std::size_t>(index)].watched = watched(id);
+    refresh_board();refresh_library();
     changed_ |= kDetail;
 }
 
@@ -203,7 +204,9 @@ void Session::open_title(const Title &t, const std::string &streams_video)
             if (d_meta_.type.empty())
                 d_meta_.type = d_item_.type;
             d_meta_loaded_ = true;
+            if(d_item_.type=="series")series_updates_.put(d_item_.id,d_meta_.videos,now_seconds());
             detail_apply_meta();
+            refresh_board();refresh_library();
             if (resume_play_)
                 start_remembered_stream();
         },

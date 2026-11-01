@@ -7,9 +7,9 @@ inline bool should_show_release_notes(std::string_view seen, std::string_view cu
     return !current.empty() && seen != current;
 }
 inline constexpr std::array<const char*,4> release_note_items = {
-    "Test build 1.0.0.4: fixes for external subtitle sizing (#12) and missing Library cover images (#13). Reporter confirmation is pending.",
-    "Subtitle playback and preview share Small/Medium/Large sizes. Added Extra large (150%) and Largest (200%) options in Settings > Subtitles.",
-    "Library titles now request missing covers independently of the Board, using metadata addons with bounded requests and profile isolation.",
-    "Authored ASS and bitmap subtitles keep their existing behavior. This test build includes both fixes; the current stable release remains 1.0.0.3."
+    "Library search: Triangle/Options or the Search filter finds titles in your current profile and Library source. Type and sort filters still apply.",
+    "Live TV now/next: provider programme listings on channel cards. Xtream and XMLTV guides are supported; Options has guide URL, refresh and on/off controls.",
+    "New-episode badges: Library series show aired updates when synchronized watched history and matching episode metadata are available.",
+    "Reporter-confirmed fixes: larger external subtitles with 150%/200% choices and independent Trakt Library covers. New features still need console testing."
 };
 }

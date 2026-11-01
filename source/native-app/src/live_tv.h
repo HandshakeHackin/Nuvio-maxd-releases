@@ -12,11 +12,13 @@ struct Channel {
   std::string id, name, group, logo, url;
   std::vector<std::string> headers;
   std::vector<std::string> groups; // all Xtream memberships; group is the display label
+  std::string epg_id{}; // XMLTV identity; Xtream stream ID remains id.
   bool in_group(const std::string& name) const;
 };
 struct Result {
   std::vector<Channel> channels;
   std::string error;
+  std::string guide_url{};
 };
 // Bounded requests shared with the separate IPTV VOD library.
 HttpResponse download(const std::string&,const std::atomic<bool>*,bool redirects,size_t limit=max_bytes);

@@ -10,13 +10,33 @@ Sign in with a QR code to load your addons and saved library from your selected
 Nuvio profile. **Watch Progress now uses Nuvio Sync**, so you can pause on the
 PS5 and pick up where you left off on another Nuvio device.
 
-**Current release: [1.0.0.3](https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/tag/v1.0.0.3-native-experimental).**
-Download `PPSA99288.zip` or `NuvioMaxd-1.0.0.3-native.ffpfsc`. Matching source,
+**Current release: [1.0.0.5](https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/tag/v1.0.0.5-native-experimental).**
+Download `PPSA99288.zip` or `NuvioMaxd-1.0.0.5-native.ffpfsc`. Matching source,
 checksums and validation are included. Physical-console testing remains pending.
 
 Nuvio Max'd is also available in the
 [ProsperoStore homebrew shop](https://prosperostore.net/app/PPSA99288/).
 Find **Nuvio Max'd** in the store to install it, or use the GitHub downloads.
+
+## New in 1.0.0.5
+
+**Library:** Press Triangle/Options or choose Search to search loaded titles from
+this profile’s selected Library source. Existing type and sort choices apply.
+Clear Search or Circle restores the list; profile/source changes clear it.
+
+**Programme guide:** Live TV cards show Now/Next when supplied by Xtream or XMLTV.
+Use Live TV → Options for a manual XMLTV URL, refresh or on/off. M3U guide links
+are recognized automatically. Channel IDs must match; guide failure leaves
+playback available. Guide data loads in the background and is cached in memory.
+
+**Series updates:** Library series can show “New: S2 E3” when synchronized watched
+history and matching episode metadata identify an aired, unwatched update after
+a completed episode. Future/unknown/special/in-progress episodes do not trigger
+badges. New features still require console/provider acceptance.
+
+External subtitle sizing and missing Library covers are reporter-confirmed fixes.
+Subtitles now include Extra large (150%) and Largest (200%) relative to Medium.
+Authored ASS styles and bitmap captions retain their existing behavior.
 
 ## New in 1.0.0.3: saved IPTV search and chapters
 

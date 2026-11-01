@@ -1,5 +1,3 @@
-> **Issue-test prerelease:** [1.0.0.4](https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/tag/v1.0.0.4-native-experimental) contains subtitle sizing (#12) and Library cover (#13) fixes. Reporter testing is pending. [Testing instructions](native-app/TESTING-1.0.0.4.md). **1.0.0.3 remains stable.**
-
 <p align="center">
   <img src="sce_sys/icon0.png" alt="MAX'D Nuvio edition app icon" width="176" height="176">
 </p>
@@ -9,15 +7,15 @@
 <p align="center"><strong>Your Nuvio library, profiles, addons and watch progress. On PS5.</strong></p>
 
 <p align="center">
-  <a href="https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/download/v1.0.0.3-native-experimental/PPSA99288.zip"><img src="https://img.shields.io/badge/Download-ZIP_folder-00B8E8?style=for-the-badge" alt="Download the PS5 app as a ZIP folder"></a>
-  <a href="https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/download/v1.0.0.3-native-experimental/NuvioMaxd-1.0.0.3-native.ffpfsc"><img src="https://img.shields.io/badge/Download-FFPFSC_image-8B5CF6?style=for-the-badge" alt="Download the PS5 app as an FFPFSC image"></a>
+  <a href="https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/download/v1.0.0.5-native-experimental/PPSA99288.zip"><img src="https://img.shields.io/badge/Download-ZIP_folder-00B8E8?style=for-the-badge" alt="Download the PS5 app as a ZIP folder"></a>
+  <a href="https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/download/v1.0.0.5-native-experimental/NuvioMaxd-1.0.0.5-native.ffpfsc"><img src="https://img.shields.io/badge/Download-FFPFSC_image-8B5CF6?style=for-the-badge" alt="Download the PS5 app as an FFPFSC image"></a>
   <a href="https://prosperostore.net/app/PPSA99288/"><img src="https://img.shields.io/badge/ProsperoStore-Listing-22C55E?style=for-the-badge" alt="View the ProsperoStore listing; check its version before installing"></a>
   <a href="https://ko-fi.com/handshakehackin"><img src="https://img.shields.io/badge/Ko--fi-Support-FF5E5B?style=for-the-badge&logo=kofi&logoColor=white" alt="Optional support on Ko-fi"></a>
 </p>
 
 <p align="center">
-  <strong>Current release: 1.0.0.3</strong><br>
-  <a href="https://github.com/HandshakeHackin/Nuvio-maxd-releases/blob/builds/v1.0.0.3/USER_GUIDE.md">User guide</a> · <a href="https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/tag/v1.0.0.3-native-experimental">Downloads and release notes</a> · <a href="https://github.com/HandshakeHackin/Nuvio-maxd-releases/issues">Report a problem</a>
+  <strong>Current release: 1.0.0.5</strong><br>
+  <a href="https://github.com/HandshakeHackin/Nuvio-maxd-releases/blob/builds/v1.0.0.5/USER_GUIDE.md">User guide</a> · <a href="https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/tag/v1.0.0.5-native-experimental">Downloads and release notes</a> · <a href="https://github.com/HandshakeHackin/Nuvio-maxd-releases/issues">Report a problem</a>
 </p>
 
 Bring your Nuvio setup to the big screen. Sign in with your phone, choose a
@@ -25,17 +23,17 @@ profile, browse addon catalogs and your saved library, and keep movie and episod
 progress in sync with your other Nuvio devices. The interface and integrated
 players run directly on the console; you do not need a PC running a companion server.
 
-**1.0.0.3 adds saved IPTV search, A–Z browsing and embedded chapters.**
-Search cached movie/show catalogs across your active profile’s IPTV providers,
-see provider-labelled results, and browse by initial. Supported files gain a
-Chapters playback-menu column and timeline markers. Playback reopen recovery,
-HEVC colour metadata fallback, artwork memory limits and subtitle/network library
-updates are included. Physical PS5 validation remains pending.
-See the [changelog](CHANGELOG.md) and [testing instructions](native-app/TESTING-1.0.0.3.md).
+**1.0.0.5 adds Library title search, Live TV Now/Next and new-episode badges.**
+Search the active profile’s loaded Library alongside its type/sort filters. See
+provider-supplied programme listings on Live TV cards, and aired series updates
+when synchronized history and matching metadata are available. Larger external
+subtitles and missing Library covers are fixed and reporter-confirmed. New
+features have automated checks; physical-console/provider acceptance is pending.
+See the [changelog](CHANGELOG.md) and [testing instructions](native-app/TESTING-1.0.0.5.md).
 
 | Feature | What you can do |
 | --- | --- |
-| **Live TV** | Add your own M3U playlist or Xtream Codes server; browse groups, search channels, and save favorites/recent selections separately for each profile. Lists support up to 100,000 channels / 128 MiB. EPG, recording and catch-up are not included; Xtream movies/shows use the separate IPTV Library tab. |
+| **Live TV** | Add your own M3U playlist or Xtream Codes server; browse groups, search channels, and save favorites/recent selections separately for each profile. Lists support up to 100,000 channels / 128 MiB. Now/Next uses Xtream short EPG or XMLTV (including playlist links or a manual URL). Guide refresh and on/off are in Live TV → Options. Recording and catch-up are not included; Xtream movies/shows use the separate IPTV Library tab. |
 | **IPTV Library** | A separate sidebar tab appears for VOD-capable Xtream accounts. Browse movie/show categories with A–Z navigation, search saved catalogs across the active profile’s providers, choose seasons/episodes and resume locally per profile. Saved catalogs survive provider outages. |
 | **Provider availability** | Guidance for server errors, missing titles, rejected access and request limits. Possible outages are distinguished from decoding failures. |
 | **Four-screen TV (experimental)** | Choose four SDR channels from Live TV’s sources/filters menu. D-pad focuses; Cross selects sound. Requires four provider connections; software previews are limited to 640×360. SD recommended. |
@@ -46,6 +44,8 @@ See the [changelog](CHANGELOG.md) and [testing instructions](native-app/TESTING-
 | **Recent sources** | See eligible cached sources while refreshing; Reload bypasses the bounded profile-specific session cache. |
 
 ## Library, profiles and sources
+
+**Library search:** Triangle/Options or Search filters loaded titles from the active Library source. Combine with type/sort, then Clear Search or Circle to restore the list. **Series updates:** badges such as “New: S2 E3” use synchronized watched history and passed release dates; future, unknown and in-progress episodes are excluded.
 
 | Feature | What you can do |
 | --- | --- |
@@ -79,7 +79,7 @@ configuration or browser challenges, so installing a repository does not guarant
 | **Audio output** | Decoded PCM by default, with stereo or optional surround PCM. Auto/bitstream output for compatible AC-3, E-AC-3 and DTS core is experimental. TrueHD/DTS-HD remain decoded PCM. Keep surround off for optical stereo or TV speakers. |
 | **Volume and sync** | PCM volume/boost 50–300%, audio delay ±2 s and subtitle delay ±10 s. Set defaults in Settings or adjust from the playback Audio/Subtitles menu. Boost may clip loud peaks. |
 | **Preferred languages** | Set audio and subtitle language preferences. Automatic subtitles prefer suitable in-file tracks before addon subtitles; manual choices, including Off, are retained. |
-| **Subtitle rendering** | Styled ASS/SSA and bitmap/PGS subtitles, Unicode fallback fonts and text shaping. Adjust size, font, colour, outline/shadow, background and timing; style controls include previews. |
+| **Subtitle rendering** | Styled ASS/SSA and bitmap/PGS subtitles, Unicode fallback fonts and text shaping. Adjust size (including 150%/200%), font, colour, outline/shadow, background and timing; text playback and previews share their size scale. |
 | **Embedded chapters** | On supported files, open Options/Up, choose Chapters and press Cross to jump. Includes timeline markers and the current chapter name; requires at least two valid chapters. |
 | **Playback recovery** | Retain audio/subtitle choices, pause, audio sync and PCM gain after supported reopen operations. Recover missing HEVC colour tags without overriding explicit container metadata. VLC-owned HTTP failures retain authentication/cancellation instead of falling back to another access handler. |
 | **Seeking and buffering** | Set D-pad and shoulder-button seek intervals separately. Native/EVO read-ahead choices are 30, 60, 120 or 300 seconds. Seeking and network-recovery changes include HLS handling, with remaining engine-specific limits. |
@@ -125,17 +125,15 @@ not add motion interpolation or guarantee smooth playback.
   authorization headers and stream URLs before sharing logs.
 - **Optional support:** a Ko-fi link and QR code in Settings. Donations are optional.
 
-## What changed in 1.0.0.3
+## What changed in 1.0.0.5
 
-- A–Z IPTV browsing and provider-labelled search across saved movie/series catalogs.
-- Embedded chapter controls and timeline markers in Native, EVO and VLC.
-- Audio/subtitle reopen recovery and a conservative fallback for missing HEVC colour tags.
-- Bounded artwork queues, staging and cache metadata to reduce browsing memory pressure.
-- libass 0.17.5, curl 8.23.0, OpenSSL 3.5.9, JSON 3.12.0 and startup ordering maintenance.
+- Local Library title search with existing type/sort controls and profile/source isolation.
+- Live TV Now/Next from Xtream or XMLTV, with document reuse and guide controls.
+- New-episode badges backed by synchronized history and confirmed release dates.
+- Reporter-confirmed external subtitle sizing and Library cover fixes (#12 / #13).
 
 See [release notes](RELEASE_NOTES.md), [source](SOURCE.md) and
-[testing instructions](native-app/TESTING-1.0.0.3.md).
-
+[testing instructions](native-app/TESTING-1.0.0.5.md).
 
 ## Download and install
 
@@ -146,10 +144,10 @@ Follow the loader's instructions for your firmware. The project targets firmware
 9.00 needs further testing. Homebrew loader compatibility does not establish
 HDR/audio compatibility.
 
-| 1.0.0.3 download | Installation |
+| 1.0.0.5 download | Installation |
 | --- | --- |
-| [**PPSA99288.zip**](https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/download/v1.0.0.3-native-experimental/PPSA99288.zip) | Extract and copy the complete `PPSA99288/` folder into a location scanned by ShadowMount+, such as `/data/homebrew/`. The executable should be `/data/homebrew/PPSA99288/eboot.bin`, with no extra folder level. |
-| [**NuvioMaxd-1.0.0.3-native.ffpfsc**](https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/download/v1.0.0.3-native-experimental/NuvioMaxd-1.0.0.3-native.ffpfsc) | Place the image in a homebrew folder on storage scanned by ShadowMount+. |
+| [**PPSA99288.zip**](https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/download/v1.0.0.5-native-experimental/PPSA99288.zip) | Extract and copy the complete `PPSA99288/` folder into a location scanned by ShadowMount+, such as `/data/homebrew/`. The executable should be `/data/homebrew/PPSA99288/eboot.bin`, with no extra folder level. |
+| [**NuvioMaxd-1.0.0.5-native.ffpfsc**](https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/download/v1.0.0.5-native-experimental/NuvioMaxd-1.0.0.5-native.ffpfsc) | Place the image in a homebrew folder on storage scanned by ShadowMount+. |
 
 Use one installation format at a time. Close the app before replacing an image
 or folder, preserve your app data, and let ShadowMount+ finish scanning before
@@ -161,7 +159,7 @@ resume, use the same Nuvio account/profile on each device and select Nuvio Sync
 as the progress source on the other device. Configure addons normally; connect
 TorBox/Premiumize separately if you want their cached-file resolution.
 
-The [published-build user guide](https://github.com/HandshakeHackin/Nuvio-maxd-releases/blob/builds/v1.0.0.3/USER_GUIDE.md)
+The [published-build user guide](https://github.com/HandshakeHackin/Nuvio-maxd-releases/blob/builds/v1.0.0.5/USER_GUIDE.md)
 covers controls, setup and troubleshooting. Check the version on the
 [ProsperoStore listing](https://prosperostore.net/app/PPSA99288/): catalog submission,
 maintainer approval and live deployment happen separately from a GitHub release.
@@ -176,8 +174,8 @@ include the complete `provider: script download failed` log line. Shared logs
 must exclude credentials and stream URLs. Please reply to an existing matching
 issue rather than opening a duplicate.
 
-See the published [playback limits](https://github.com/HandshakeHackin/Nuvio-maxd-releases/blob/builds/v1.0.0.3/source/native-app/PLAYBACK_QUALITY.md)
-and [update guide](https://github.com/HandshakeHackin/Nuvio-maxd-releases/blob/builds/v1.0.0.3/source/native-app/UPDATING.md).
+See the published [playback limits](https://github.com/HandshakeHackin/Nuvio-maxd-releases/blob/builds/v1.0.0.5/source/native-app/PLAYBACK_QUALITY.md)
+and [update guide](https://github.com/HandshakeHackin/Nuvio-maxd-releases/blob/builds/v1.0.0.5/source/native-app/UPDATING.md).
 
 ## Source and credits
 
@@ -186,9 +184,9 @@ affiliated with Nuvio, Stremio or Sony. The project is distributed under the
 [GPL-3.0 license](LICENSE); included components retain their own notices.
 
 Every published release includes its matching source archive. Browse the
-[1.0.0.3 source](https://github.com/HandshakeHackin/Nuvio-maxd-releases/tree/builds/v1.0.0.3/source/native-app),
-[build guide](https://github.com/HandshakeHackin/Nuvio-maxd-releases/blob/builds/v1.0.0.3/source/native-app/README.md)
-and [third-party notices](https://github.com/HandshakeHackin/Nuvio-maxd-releases/blob/builds/v1.0.0.3/source/native-app/THIRD_PARTY.md).
+[1.0.0.5 source](https://github.com/HandshakeHackin/Nuvio-maxd-releases/tree/builds/v1.0.0.5/source/native-app),
+[build guide](https://github.com/HandshakeHackin/Nuvio-maxd-releases/blob/builds/v1.0.0.5/source/native-app/README.md)
+and [third-party notices](https://github.com/HandshakeHackin/Nuvio-maxd-releases/blob/builds/v1.0.0.5/source/native-app/THIRD_PARTY.md).
 Versioned delivery branches use `builds/v<VERSION>`. The homepage may describe
 newer local work; the release tag and matching source identify each public build.
 

@@ -51,6 +51,7 @@ void Session::poll_typing()
 
 void Session::begin_search()
 {
+    if (page_ == Page::library && !search_open) { library_search(); return; }
     ask_text([this](const std::string &q) { start_search(q); });
 }
 

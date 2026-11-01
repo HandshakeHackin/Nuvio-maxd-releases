@@ -147,6 +147,8 @@ Result parse(const std::string &body, const std::string &base,
       continue;
     if (line.rfind("#EXTM3U", 0) == 0) {
       header = true;
+      auto guide=attr(line,"x-tvg-url");if(guide.empty())guide=attr(line,"url-tvg");if(guide.empty())guide=attr(line,"tvg-url");
+      if(!guide.empty())r.guide_url=resolve(base,guide.substr(0,guide.find(',')));
       continue;
     }
     // Xtream/XUI channel lists may include session metadata. That header
@@ -179,6 +181,7 @@ Result parse(const std::string &body, const std::string &base,
       if (c.name.empty())
         c.name = clean(attr(line, "tvg-name"));
       c.id = clean(attr(line, "tvg-id"));
+      c.epg_id = c.id;
       c.group = clean(attr(line, "group-title"));
       const auto logo = attr(line, "tvg-logo");
       if (!logo.empty())
@@ -432,6 +435,7 @@ Result parse_xtream(const std::string &body, const std::string &groups,
       for (const auto& id : item["category_ids"])
         if (id.is_string()) add_group(id.get<std::string>());
     c.group = c.groups.empty() ? "Other" : c.groups.front();
+    c.epg_id = clean(value(item,"epg_channel_id"),512);
     auto icon = value(item, "stream_icon");
     if (!icon.empty())
       c.logo = resolve(server, icon);

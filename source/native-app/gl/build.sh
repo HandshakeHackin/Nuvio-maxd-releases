@@ -59,7 +59,7 @@ FLAGS+=(-DNUVIO_HAVE_VLC -DNUVIO_VLC_STATIC -I"$VLC_SRC/include")
 
 echo ">> compiling"
 sources=("$ROOT"/ui/*.cpp "$ROOT"/gl/*.cpp "$ROOT/update/core.cpp"
-	"$ROOT/src/trailers.cpp" "$ROOT/src/live_tv.cpp" "$ROOT/src/iptv_library.cpp" "$ROOT/src/nuvio_account.cpp" "$ROOT/src/watch_sync.cpp" "$ROOT/src/tracking.cpp" "$ROOT/src/connected_services.cpp" "$ROOT/src/connected_preparer.cpp" "$ROOT/src/bidi.cpp" "$ROOT/src/stremio.cpp" "$ROOT/src/providers.cpp" "$ROOT/src/http.cpp" "$ROOT/src/util.cpp" "$ROOT/src/tasks.cpp"
+	"$ROOT/src/trailers.cpp" "$ROOT/src/live_tv.cpp" "$ROOT/src/live_guide.cpp" "$ROOT/src/iptv_library.cpp" "$ROOT/src/nuvio_account.cpp" "$ROOT/src/watch_sync.cpp" "$ROOT/src/tracking.cpp" "$ROOT/src/connected_services.cpp" "$ROOT/src/connected_preparer.cpp" "$ROOT/src/bidi.cpp" "$ROOT/src/stremio.cpp" "$ROOT/src/providers.cpp" "$ROOT/src/http.cpp" "$ROOT/src/util.cpp" "$ROOT/src/tasks.cpp"
 	"$ROOT/src/packet_storage.cpp" "$ROOT/src/diagnostics.cpp" "$ROOT/src/player.cpp" "$ROOT/src/vlc_backend.cpp" "$ROOT/src/vlc_cancel.cpp" "$ROOT/src/netstream.cpp" "$ROOT/src/hwdec_ps5.cpp" "$ROOT/src/yuv_convert.cpp" "$ROOT/src/video_frame.cpp" "$ROOT/src/display_output.cpp"
 	"$ROOT/src/evo_backend.cpp" "$ROOT/src/evo_runtime.cpp"
 	"$ROOT/src/subtitle_renderer.cpp" "$ROOT/src/subtitles.cpp" "$ROOT/src/pcm_out.cpp" "$ROOT/src/bitstream.cpp" "$ROOT"/src/torrent/*.cpp
@@ -128,7 +128,7 @@ python3 "$ROOT/tools/build_hdr_driver.py" "$GL" "$SDK" "$B"
 objs+=("$B/hdr_driver.o")
 echo ">> linking"
 read -r -a DEPS <<< "$("$SDK/bin/prospero-pkg-config" --static --libs libcurl libwebp \
-	libavformat libavcodec libavutil libswresample libswscale libass |
+	libavformat libavcodec libavutil libswresample libswscale libass expat |
 	tr ' ' '\n' | grep -E '^-[lL]' | grep -v -E '^(-lm|-lc)$' | tr '\n' ' ')"
 "$SDK/bin/prospero-lld" -T "$NATIVE/ps5-app.ld" --eh-frame-hdr \
 	--version-script "$BP/tooling/native/app-symbols.map" -e _start -o "$B/pie.elf" \

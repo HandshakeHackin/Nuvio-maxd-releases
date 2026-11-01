@@ -1,5 +1,5 @@
-# Source for test build 1.0.0.4
+# Source for 1.0.0.5
 
-Matching development source commit: `2b3463a444b25b7f58725d75417fef488139c5ef`. The `source/` tree matches all 808 manifest file hashes in the release source archive. Public packaging/documentation commits have separate Git hashes.
+Matching development source commit: `745959396a7cd9f19a0be9e2e4664f60965e527d`. The `source/` tree matches all 831 hashes in the release source archive. Public packaging/documentation commits have separate Git hashes.
 
-This version is an issue-test prerelease for #12 and #13. Stable 1.0.0.3 remains available on the main branch and the latest stable release endpoint.
+This release includes Library search, Live TV now/next, new-episode badges and the two reporter-confirmed fixes. New features still require physical-console acceptance.

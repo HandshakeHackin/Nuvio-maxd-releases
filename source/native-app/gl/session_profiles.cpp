@@ -40,6 +40,8 @@ void Session::save_profile_settings() {
     if (!save_json(profile_dir_ + "/profile-settings.json", j)) say("Could not save profile preferences", 8.0, true);
 }
 void Session::clear_profile_views() {
+    reset_library_search();
+    series_updates_reset();
     live_reset();
     watch_reset_anime();
     stream_result_cache_.clear();
@@ -186,7 +188,8 @@ void Session::load_watched() {
     const auto revision = watched_revision_;
     bg<ApiResult>([key] { return api_watched_get(key); }, [this, revision](ApiResult& r) {
         if (revision != watched_revision_) return;
-        if (!r.ok) { say(r.error, 8.0, true); return; }
+        if (!r.ok) { series_history_ready_=false;refresh_board();refresh_library();say(r.error, 8.0, true); return; }
+        series_history_ready_=jbool(r.result,"synced");
         std::set<std::string> remote;
         for (const auto& entry : jobj(r.result, "entries")) {
             auto id = jstr(entry, "content_id");
@@ -196,6 +199,7 @@ void Session::load_watched() {
             remote.insert(id);
         }
         watched_ = std::move(remote); save_progress();
+        refresh_board();refresh_library();
         if (d_open_) detail_set_season(d_season_idx_);
     });
 }

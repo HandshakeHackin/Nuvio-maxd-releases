@@ -26,6 +26,8 @@
 #include "tasks.h"
 #include "stream_result_cache.hpp"
 #include "live_tv.h"
+#include "live_guide.h"
+#include "series_updates.hpp"
 #include "iptv_library.h"
 #include "audio/cues.hpp"
 #include "core/input.hpp"
@@ -56,6 +58,7 @@ class Session
         int discover = 0;
         int library = 0;
         int iptv = 0;
+        int live = 0;
         int episode = 0;
         int search_row = 0, search_col = 0;
         int stream = -1;
@@ -147,6 +150,9 @@ class Session
     BoardContent board;
     DiscoverContent discover;
     LibraryContent library;
+    void library_search();
+    void library_clear_search();
+    bool library_search_active() const { return !lib_query_.empty(); }
     AddonsContent addons;
     AddonsContent live_content;
     LibraryContent iptv_content;
@@ -307,6 +313,16 @@ class Session
     void discover_load(bool more);
     // library
     void refresh_library();
+    void reset_library_search();
+    void series_updates_reset();
+    void want_series_updates(const Item&);
+    SeriesUpdates series_updates_;
+    std::shared_ptr<std::atomic<bool>> series_updates_cancel_;
+    std::set<std::string> series_updates_pending_;
+    unsigned series_updates_generation_=0;
+    int series_updates_inflight_=0;
+    bool series_history_ready_=false;
+    double series_updates_tick_=0;
     // addons, settings
     void refresh_addons();
     void refresh_settings();
@@ -354,6 +370,22 @@ class Session
     void live_load();
     void live_save();
     void live_build();
+    void live_guide_reset();
+    void live_guide_update(int focus);
+    void live_guide_configure();
+    std::pair<std::string,std::string> live_guide_labels(const live_tv::Channel&) const;
+    live_guide::Result live_guide_xml_;
+    struct GuideEntry {live_guide::Listings programmes;double expires=0,touched=0;};
+    std::map<std::string,GuideEntry> live_guide_channels_;
+    std::set<std::string> live_guide_pending_;
+    std::shared_ptr<std::atomic<bool>> live_guide_cancel_;
+    std::string live_guide_auto_url_,live_guide_window_;
+    std::shared_ptr<const std::string> live_guide_document_;
+    double live_guide_document_expires_=0;
+    unsigned live_guide_generation_=0;
+    int live_guide_inflight_=0;
+    bool live_guide_loading_=false;
+    double live_guide_refresh_=0,live_guide_tick_=0,live_guide_redraw_=0;
     void live_add(json source, int step);
     json live_state_ = json::object();
     std::vector<live_tv::Channel> live_channels_;
@@ -529,7 +561,8 @@ class Session
 
     // library
     std::vector<Item> lib_items_;
-    std::string lib_type_;
+    std::string lib_type_, lib_query_;
+    unsigned lib_search_generation_ = 0;
     int lib_sort_ = 0; // 0 recent, 1 A-Z, 2 most watched
 
     // dropdown
