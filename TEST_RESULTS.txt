@@ -1,13 +1,16 @@
-Nuvio Max’d 1.0.0.3 release validation
+Max’d 1.0.0.4 issue-test prerelease (#12 / #13)
 
-PASS: final public-source native/account/transport/GPU tests and UI renders.
-PASS: final public-source real VLC 3.0.24 file, authenticated HTTP/HLS, seeking, rejection and cancellation checks.
-CI: https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/40948943860
+PASS: full GitHub native/account/transport/GPU regressions and UI renders.
+PASS: real VLC file, authenticated HTTP/HLS, seeking, rejection and cancellation regressions.
+CI: https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/41316959927
 
-PASS: PS5 compile/link, socket shim, VLC picture hooks and 414 system imports.
-PASS: deep image extraction, all 151 packaged file hashes, ZIP integrity and matching source archive (800 file hashes).
-PASS: 18 staged local validation groups, including 80 account/profile tests, updated libass rendering and saved IPTV search/session checks. Historical staged evidence is retained with its original scope.
-PASS: isolated local VLC 3.0.23 regression; an initial concurrent run timed out near HLS EOF before the isolated rerun passed.
-PASS: static catalog archive scan: zero errors, four review warnings and one notice. Warnings concern existing updater and optional console-light capabilities; helper approval remains with catalog maintainers.
+PASS: PS5 compile/link, direct socket shim, VLC picture allocator hooks and 414 loaded-module imports.
+PASS: deep image extraction and all 151 packaged file hashes; ZIP integrity; matching clean source archive (808 file hashes).
+PASS: local real libass 0.17.5 sizing/rendering, ASS positioning, multilingual and bitmap regressions. All five plain-text sizes increase; 200% approximately doubles Medium’s rendered width; 4K sources retain screen size.
+PASS: production Library metadata/artwork methods with cold-cache, addon fallback, scrolling, request bounds, offline and stale-profile checks.
+PASS: new regressions fail against unpatched 1.0.0.3 code and pass with fixes.
+PASS: settings navigation, Continue Watching and artwork backpressure/shutdown regressions. The artwork fixture allows one already-admitted job per worker when its ready queue fills, avoiding an assertion race.
+PASS: three settings previews render with no OpenGL errors; largest-size sample visually checked for help-panel overlap.
+PASS: static catalog scan: zero errors, four maintainer-review warnings and one notice for existing updater/console-light capabilities. Helper approval unchanged.
 
-Physical-console playback, old-firmware startup, HDMI/HDR and receiver behavior remain unverified for this build.
+This is a test prerelease. Physical-console acceptance is pending from both reporters; neither issue is declared resolved. GitHub stable release remains 1.0.0.3.
