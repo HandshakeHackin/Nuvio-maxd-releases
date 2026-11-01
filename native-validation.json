@@ -1,20 +1,20 @@
 {
-  "version": "1.0.0.4-native",
-  "sourceCommit": "2b3463a444b25b7f58725d75417fef488139c5ef",
+  "version": "1.0.0.5-native",
+  "sourceCommit": "00ae5a1774af53d2635ca3647b795491488cb3c5",
   "sourceDirty": false,
-  "imageBytes": 46333952,
-  "imageSha256": "8aa7d5eeb6c92bc0cb5256b0aa557ba0d52485083d65b47857814b11c33a86d5",
-  "zipSha256": "2383acc24839fc66b87b655f602b13277b372e9dbacdec18affbfcdebff20510",
+  "imageBytes": 46399488,
+  "imageSha256": "0d7500397a5ccff3c879145dc16bc46ca301574d5918b087b5f933eea3a19ca6",
+  "zipSha256": "f97a8e722e71a6ac257b58674d7f78893ab7a218cbc359892c0fa2edcb2eea7d",
   "files": 151,
   "fileSha256": {
-    "nuvio-updater.elf": "fe9c10d45b412b172999177551c589add81699e2c09f9b7d9ce260c7e54b81c9",
+    "nuvio-updater.elf": "352525d18e65cf22a18bbd8dd2c4016814e53ea5ebe6a8ed40662603664c7c37",
     "THIRD_PARTY.md": "eb6cf4eebf8623f42cf876368dc7a6cdee5793d5a01987d59397de3b483740cf",
-    "eboot.bin": "947474d5fdb82d8ce3610962f7c7d02dfd2f153c0fc4bae539ff984c71bfd2f4",
+    "eboot.bin": "9972d4332a0ee14e8a4c933d1409a5d9c3729cd32b25ee84ee24f70ede64de4d",
     "tracker-applications.json": "44527d59f8228d61a62c36c6226c815dc5cdf6c83b86b81d960f55aedeb4f8f1",
     "LICENSE": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
     "ca-bundle.crt": "11163db462ffae3918afdf46c70a8db70cfcbaa8077352290b62a9c03c36fe6c",
     "account-config.json": "1014f3c748bee58a832ea5d1be191ebaa2e577ef8a08e8168f01cb6d78f1921f",
-    "build-info.json": "46e441d082d3139c534f0eadfd93ae818ec8c5cbb753ddb468a5b6665bdf6413",
+    "build-info.json": "bbb4b98fd0439764b27cf7f1f093b42ca20062df1dcfe6e042553284bd51fba0",
     "sce_module/libc.prx": "e6ff45d16adf687855cc3b33b0c8a4132b6504360b221e0a34c7e99fb3ba0036",
     "fonts/NotoSansCJK-LICENSE.txt": "6a73f9541c2de74158c0e7cf6b0a58ef774f5a780bf191f2d7ec9cc53efe2bf2",
     "fonts/Inter-Regular.ttf": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
@@ -81,7 +81,7 @@
     "icons/pause.png": "53bf621371ae732a31bdbab134d068226d442b6c32976e0895dc31d0c51f1c24",
     "icons/l1.png": "74a2a11849f8b48612677acdf3c7c8badde1b761e85791f2fb59b34e59969ab4",
     "sce_sys/icon0.png": "3c655e095db72d3a3d4cef6876c6ffe825e742d13af0afda3c84b141d1eb6226",
-    "sce_sys/param.json": "dee5f8ba37d563372388f69213cbc6de18b121230b7a0563b5cf9d09e026d54a",
+    "sce_sys/param.json": "e981e172151d1f1321efcc4d23513c6c48b1eb60109be4e26fa936dc261a1231",
     "licenses/native-app-boilerplate-GPL-3.0.txt": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
     "licenses/libass.txt": "f7e30699d02798351e7f839e3d3bfeb29ce65e44efa7735c225464c4fd7dfe9c",
     "licenses/Stremio-MIT.txt": "40f7f4a6bc790d341e490c56f6fd5af2f50cdce89393b9fa4c81f4510ca97976",
@@ -163,15 +163,15 @@
   "allExtractedFileHashesMatch": true,
   "containerErrors": 0,
   "containerWarnings": 0,
-  "contentVersion": "06.000.004",
-  "sourceArchiveFiles": 808,
+  "contentVersion": "06.000.005",
+  "sourceArchiveFiles": 831,
   "sourceArchiveHashesMatch": true,
   "hardwareVerified": false,
   "developmentValidation": {
-    "scope": "Issue-test prerelease for #12/#13; see ISSUES_12_13_VALIDATION.json",
+    "scope": "Library search, Live TV guide and series updates; see feature validation receipts",
     "hardwareVerified": false
   },
-  "zipBytes": 44025471,
+  "zipBytes": 44067420,
   "applicationDisplayProfile": {
     "attribute": 1644167168,
     "attribute2": 0,
@@ -191,7 +191,7 @@
       }
     ],
     "retained": true,
-    "scope": "Retained evidence for unchanged host converter/signer bridge; not re-run for this issue-only test release."
+    "scope": "Retained evidence for unchanged host converter/signer bridge; not re-run for this release."
   },
   "issueFixValidation": {
     "issues": [
@@ -250,30 +250,34 @@
     "warnings": 4,
     "notices": 1,
     "helperApprovalModified": false,
-    "updaterHelperSha256": "fe9c10d45b412b172999177551c589add81699e2c09f9b7d9ce260c7e54b81c9"
+    "updaterHelperSha256": "352525d18e65cf22a18bbd8dd2c4016814e53ea5ebe6a8ed40662603664c7c37"
   },
   "hostTestEvidence": {
     "status": "completed",
     "conclusion": "success",
-    "publicSourceCommit": "b8b14dc1a161bc1249f193a0d6d28a0725143ff1",
-    "url": "https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/41316959927/job/124878926626",
-    "runUrl": "https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/41316959927",
-    "jobId": 124878926626
+    "publicSourceCommit": "6c0edbf28b3225332ebdee95ccc494d27973f4bf",
+    "url": "https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/41359837020/job/125007679006",
+    "runUrl": "https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/41359837020",
+    "jobId": 125007679006
   },
   "vlcHostTestEvidence": {
     "status": "completed",
     "conclusion": "success",
-    "publicSourceCommit": "b8b14dc1a161bc1249f193a0d6d28a0725143ff1",
-    "url": "https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/41316959927/job/124878926691",
-    "runUrl": "https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/41316959927",
-    "jobId": 124878926691
+    "publicSourceCommit": "6c0edbf28b3225332ebdee95ccc494d27973f4bf",
+    "url": "https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/41359837020/job/125007678751",
+    "runUrl": "https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/41359837020",
+    "jobId": 125007678751
   },
   "publicSourceArchiveCorrespondence": {
-    "filesVerified": 808,
-    "developmentSourceCommit": "2b3463a444b25b7f58725d75417fef488139c5ef",
-    "publicHostCiCommit": "b8b14dc1a161bc1249f193a0d6d28a0725143ff1",
+    "filesVerified": 831,
+    "developmentSourceCommit": "00ae5a1774af53d2635ca3647b795491488cb3c5",
+    "publicHostCiCommit": "6c0edbf28b3225332ebdee95ccc494d27973f4bf",
     "allHashesMatch": true
   },
-  "prerelease": true,
-  "reporterConfirmationPending": true
+  "prerelease": false,
+  "reporterConfirmationPending": false,
+  "reporterConfirmedFixes": [
+    12,
+    13
+  ]
 }

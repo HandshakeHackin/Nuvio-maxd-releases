@@ -1,16 +1,17 @@
-Max’d 1.0.0.4 issue-test prerelease (#12 / #13)
+Max’d 1.0.0.5 public release
 
 PASS: full GitHub native/account/transport/GPU regressions and UI renders.
 PASS: real VLC file, authenticated HTTP/HLS, seeking, rejection and cancellation regressions.
-CI: https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/41316959927
+CI: https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/41359837020
 
-PASS: PS5 compile/link, direct socket shim, VLC picture allocator hooks and 414 loaded-module imports.
-PASS: deep image extraction and all 151 packaged file hashes; ZIP integrity; matching clean source archive (808 file hashes).
-PASS: local real libass 0.17.5 sizing/rendering, ASS positioning, multilingual and bitmap regressions. All five plain-text sizes increase; 200% approximately doubles Medium’s rendered width; 4K sources retain screen size.
-PASS: production Library metadata/artwork methods with cold-cache, addon fallback, scrolling, request bounds, offline and stale-profile checks.
-PASS: new regressions fail against unpatched 1.0.0.3 code and pass with fixes.
-PASS: settings navigation, Continue Watching and artwork backpressure/shutdown regressions. The artwork fixture allows one already-admitted job per worker when its ready queue fills, avoiding an assertion race.
-PASS: three settings previews render with no OpenGL errors; largest-size sample visually checked for help-panel overlap.
+PASS: PS5 compile/link and 414 loaded-module imports.
+PASS: deep image extraction, all 151 packaged file hashes, ZIP integrity and matching clean source archive (831 hashes).
+PASS: production Library search, profile/source isolation, type/sort filters and clearing.
+PASS: Xtream/XMLTV guide parsing, bounded document reuse, background loading, cancellation and stale-profile handling.
+PASS: series updates with synchronized history, aired dates, in-progress exclusions, metadata request bounds and profile isolation.
+PASS: shutdown regression covers guide and episode task cancellation, cleanup ordering and updater exit handoff.
+PASS: zero OpenGL errors in feature previews; navigation and large Live TV catalog regressions.
 PASS: static catalog scan: zero errors, four maintainer-review warnings and one notice for existing updater/console-light capabilities. Helper approval unchanged.
 
-This is a test prerelease. Physical-console acceptance is pending from both reporters; neither issue is declared resolved. GitHub stable release remains 1.0.0.3.
+Reporters confirmed subtitle sizing (#12) and Library covers (#13) on the earlier 1.0.0.4 test build. Those fixes are included. New features passed automated checks; physical-console/provider acceptance remains pending.
+The final source adjustment updated only the shutdown test fixture; compiled application code is unchanged from the verified PS5 build. Packaging metadata and source archive were regenerated and both packages reverified against the final clean source.
