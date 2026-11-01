@@ -1,5 +1,5 @@
 {
-  "sourceCommit": "745959396a7cd9f19a0be9e2e4664f60965e527d",
+  "sourceCommit": "00ae5a1774af53d2635ca3647b795491488cb3c5",
   "version": "1.0.0.5",
   "fileSha256": {
     ".github/workflows/native-checks.yml": "64b21fd9b26e40429a5758d3af667fdb022374a7ca935c20eaf5989d61842563",
@@ -428,8 +428,8 @@
     "native-app/tests/series_updates_session_host.cpp": "5a34dc4b4de5c3a8f0edc19cf99cada38349e153df4313a5b0546ec3547e5bd0",
     "native-app/tests/settings_categories.sh": "369198ef9fc2ef2b9aecdbb4f354beb48cc6a5e9753c7209f482127e20872235",
     "native-app/tests/settings_categories_host.cpp": "0ce993732ad4074c189dfecf3ac7ab107c1d8b788b0fd67d01d5727d1c646d8d",
-    "native-app/tests/shutdown.sh": "2acf187e271d7be23c22f5b6386f96bba71e1af48d862cffc825582d3b5617a0",
-    "native-app/tests/shutdown_host.cpp": "d8d85f62d9b9404181a53c5fc893762e5a92a5789047b8f56b2edf1dfb9edfa4",
+    "native-app/tests/shutdown.sh": "0f348cf31cdfb9cb6fbeda648b1d7c34e34cdde29b8a47ade68248fac02fa71a",
+    "native-app/tests/shutdown_host.cpp": "bb1f0581a107366394bae64541a280fe3bb003c6761c0a19b08149cb0e4b03b4",
     "native-app/tests/startup.sh": "3d31180c107015bbd23cdb9c4bc2c145e3193b84b9d52220f5749731c27db24d",
     "native-app/tests/startup_order.py": "acbff6440f51dea6da309fff536060da3fa0645327241862950b3a3a039a0bf4",
     "native-app/tests/stream_result_cache_host.cpp": "922a75c320f1cd22d8d80672651f39a31b4aaa05645227ebc3670c73fbd15bba",
