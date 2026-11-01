@@ -110,6 +110,26 @@ int main(int argc,char** argv) try {
         o=renderer.render(-2,2,3840,2160,1,0); require(o.w>0 && o.y<250,"external reopen lost styling/position");
         o=renderer.render(-2,4,3840,2160,1,0); require(o.changed && o.rgba.empty(),"expired ASS remained visible");
     });
+    test("external subtitle sizing matches preview and supports 150/200 percent",[&]{
+        SubtitleRenderer renderer; renderer.configure(argv[1]);
+        require(renderer.external(-2,"1\n00:00:01,000 --> 00:00:09,000\nSubtitle size check\n","eng"),"SRT load failed");
+        int widths[5]{};
+        for(int size=0;size<5;++size) {
+            auto o=renderer.render(-2,2,1920,1080,1,0,0,0,0,0,size);
+            require(o.w>0 && o.h>0 && o.x>=0 && o.x+o.w<=1920 && o.y+o.h<=1080,"subtitle clipped or missing");
+            widths[size]=o.w;
+            if(size) require(widths[size]>widths[size-1],"larger setting did not increase rendered text");
+        }
+        require(widths[4]>widths[1]*1.9 && widths[4]<widths[1]*2.1,"200 percent did not double rendered size");
+        auto large=renderer.render(-2,3,3840,2160,1,0,0,0,0,0,2);
+        require(std::abs(large.w-widths[2])<=2,"4K source changed subtitle screen size");
+        require(renderer.external(-3,"1\n00:00:01,000 --> 00:00:09,000\nSubtitle size check\n","eng"),"comparison SRT failed");
+        auto reference=renderer.render(-3,2,1920,1080,1,0,0,0,0,0,1);
+        require(reference.w==widths[1],"switching tracks changed selected size");
+        renderer.seek();
+        auto restored=renderer.render(-3,2,1920,1080,1,0,0,0,0,0,4);
+        require(restored.w==widths[4],"seek lost largest subtitle size");
+    });
     test("Arabic, CJK and Thai subtitles render with bundled font shaping",[&]{
         SubtitleRenderer renderer; renderer.configure(argv[1]);
         const char* texts[]={"مرحبا بالعالم","日本語 中文 한국어","ภาษาไทย"}; const char* langs[]={"ara","jpn","tha"};

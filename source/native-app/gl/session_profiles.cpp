@@ -54,7 +54,7 @@ void Session::clear_profile_views() {
     library_loaded_ = false; library_loading_ = false; addons_loading_ = false;
     board_loading_ = false; disc_loading_ = false; disc_end_ = false;
     disc_items_.clear(); disc_types_.clear(); discover.items.clear();
-    board.rows.clear(); board_map_.clear(); meta_cache_.clear(); meta_asked_.clear();
+    board.rows.clear(); board_map_.clear(); meta_cache_.clear(); meta_asked_.clear(); meta_inflight_ = 0;
     disc_catalogs_.clear(); disc_type_.clear(); disc_genre_.clear();
     ++services_generation_; services_importing_ = false;
     if (device_cancel_) *device_cancel_ = true;

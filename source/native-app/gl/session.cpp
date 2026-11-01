@@ -1,3 +1,4 @@
+#include "../src/subtitle_size.hpp"
 // The session's core: setup, the account, addons, the library, settings, the
 // pop-ups and the artwork. The Board, Discover and Library are session_browse.cpp,
 // a title's page is session_detail.cpp.
@@ -79,11 +80,7 @@ enum SettingIndex
 
 std::string size_label(const std::string &s)
 {
-    if (s == "sub-s")
-        return "Small";
-    if (s == "sub-l")
-        return "Large";
-    return "Medium";
+    return subtitle_size::labels[subtitle_size::index(s)];
 }
 
 // The first letter of a name (one UTF-8 character): an addon's mark when it has no logo.
@@ -673,7 +670,7 @@ void Session::set_display_configuration(unsigned width, unsigned height, bool fa
 void Session::refresh_settings()
 {
     settings.subtitle_style = prefs_.subtitle_style;
-    settings.subtitle_size = prefs_.sub_size == "sub-s" ? 0 : prefs_.sub_size == "sub-l" ? 2 : 1;
+    settings.subtitle_size = subtitle_size::index(prefs_.sub_size);
     settings.account = prefs_.user_email;
     settings.rows.assign(kSettingCount, SettingRow());
     const auto set = [&](int i, SettingRow::Kind kind, const char *label, const std::string &value, const std::string &help,
@@ -1054,10 +1051,10 @@ void Session::settings_activate(int row)
         break;
     case kSubSize:
     {
-        static const char *sizes[] = {"sub-s", "sub-m", "sub-l"};
-        const int cur = prefs_.sub_size == "sub-s" ? 0 : prefs_.sub_size == "sub-l" ? 2 : 1;
-        open_dropdown("Subtitle size", {"Small", "Medium", "Large"}, cur, [this](int i) {
-            prefs_.sub_size = sizes[i];
+        const int cur = subtitle_size::index(prefs_.sub_size);
+        open_dropdown("Subtitle size", std::vector<std::string>(subtitle_size::labels.begin(), subtitle_size::labels.end()), cur, [this](int i) {
+            if (i<0 || i>=int(subtitle_size::ids.size())) return;
+            prefs_.sub_size = subtitle_size::ids[i];
             save_prefs();
             cue(hui::audio::Cue::saved);
             refresh_settings();
@@ -1470,7 +1467,12 @@ void Session::refresh_art(const Cursor &cursor)
     for (std::size_t i = 0; i < library.items.size() && i < lib_items_.size(); ++i)
     {
         const int d = static_cast<int>(i) - cursor.library;
-        library.items[i].poster = fetch(lib_items_[i].poster, ArtKind::poster, d > -14 && d < 28);
+        const bool near = d > -14 && d < 28;
+        // Tracker watchlists often carry IDs but no poster. Resolve visible
+        // cards independently of Board/Continue Watching, with bounded work.
+        if (page_ == Page::library && near && lib_items_[i].poster.empty())
+            want_meta(lib_items_[i]);
+        library.items[i].poster = fetch(lib_items_[i].poster, ArtKind::poster, near);
     }
 
     // IPTV artwork stays on its own page; these IDs never ask addon metadata.

@@ -195,7 +195,7 @@ struct PlayerState
     std::string quality;         // source versus render/output conversion
     std::vector<std::string> badges; // source picture/audio/release facts, not HDMI output claims
     SubtitleStyle subtitle_style;
-    int sub_size = 1;            // 0 small, 1 medium, 2 large
+    int sub_size = 1;            // small, medium, large, extra large, largest
     std::string audio_adjustments;
     std::string subtitle_delay;  // "+0.25 s"
     std::string skip_label, next_label, next_status;

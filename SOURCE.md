@@ -1,28 +1,5 @@
-# Released source
+# Source for test build 1.0.0.4
 
-Each release includes `NuvioMaxd-<version>-source.tar.gz`. This contains the
-native app source, build scripts, vendored UI code, dependency pins, license
-notices and the public account-service configuration needed to build it.
-Extract the archive and read `native-app/README.md` for the toolchain setup.
+Matching development source commit: `2b3463a444b25b7f58725d75417fef488139c5ef`. The `source/` tree matches all 808 manifest file hashes in the release source archive. Public packaging/documentation commits have separate Git hashes.
 
-`source-archive.json` records the development commit and a SHA-256 hash for
-every archived source file. The same commit is recorded in the packaged
-`build-info.json` and the release validation report. The public tag marks this
-download repository's publication commit, so it has a different commit ID.
-The development repository stays private; code for released builds is available
-without an account through the matching archives here.
-
-A browsable copy of this branch's released source is in [`source/`](source/README.md).
-This branch contains 1.0.0.3; `source/source-archive.json` identifies its exact
-development commit and original file hashes. The main and build branches
-retain their respective release versions. GitHub's language statistics count this
-app source, excluding vendored libraries and release-only verification scripts.
-
-The project is GPL-3.0-or-later. Components retain their own notices and license
-texts in the source and packaged app. The native UI and player build on
-[Sp9nky's unofficial Stremio port](https://github.com/Sp9nky/unofficial-stremio-ps5-port),
-[BlackBearReloaded's Prospero UI](https://github.com/LedyBacer/ps5-homebrew-ui)
-and the other components listed in [THIRD_PARTY.md](source/native-app/THIRD_PARTY.md).
-This is an unofficial Nuvio client, not an official Nuvio or Sony release.
-
-For 1.0.0.3, networking/subtitle maintenance libraries use a separate, checksum-verified SDK overlay. See [build details](source/native-app/MAINTENANCE_IPTV_NEXT.md).
+This version is an issue-test prerelease for #12 and #13. Stable 1.0.0.3 remains available on the main branch and the latest stable release endpoint.

@@ -1,3 +1,9 @@
+# Max’d 1.0.0.4 issue-test prerelease
+
+Targeted fixes for [#12](https://github.com/HandshakeHackin/Nuvio-maxd-releases/issues/12) and [#13](https://github.com/HandshakeHackin/Nuvio-maxd-releases/issues/13). See [test notes](TESTING-1.0.0.4.md) and [changelog](RELEASE_NOTES_1.0.0.4.md). Reporter confirmation is pending; 1.0.0.3 remains stable.
+
+---
+
 # Max’d 1.0.0.3 release candidate
 
 The staged maintenance, playback and IPTV navigation changes below are included

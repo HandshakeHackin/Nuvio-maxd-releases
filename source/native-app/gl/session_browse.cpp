@@ -109,7 +109,7 @@ void Session::apply_meta(Item &it) const
 void Session::want_meta(const Item &it)
 {
     const std::string key = it.type + ":" + it.id;
-    if (meta_cache_.count(key) || meta_asked_.count(key))
+    if (meta_cache_.count(key) || meta_asked_.count(key) || meta_inflight_ >= 4)
         return;
     std::vector<std::string> urls;
     for (const auto &a : addons_)
@@ -118,6 +118,7 @@ void Session::want_meta(const Item &it)
     if (urls.empty())
         return;
     meta_asked_.insert(key);
+    ++meta_inflight_;
     struct Res
     {
         bool ok = false;
@@ -137,11 +138,13 @@ void Session::want_meta(const Item &it)
                     continue;
                 r.meta = parse_meta(m);
                 r.ok = true;
-                break;
+                // A metadata-only addon must not hide a later addon’s poster.
+                if (!r.meta.poster.empty()) break;
             }
             return r;
         },
         [this, key](Res &r) {
+            --meta_inflight_;
             if (!r.ok)
                 return;
             Item c;

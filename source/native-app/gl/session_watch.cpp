@@ -1,3 +1,4 @@
+#include "../src/subtitle_size.hpp"
 // Playing: starting a stream (the app's own torrent engine, a streaming server or a
 // direct link), the player's state for the screens, tracks, subtitles, and what
 // was watched.
@@ -482,7 +483,7 @@ void Session::watch_start(const std::string &url, const std::vector<std::string>
     playing.paused = false;
     playing.buffering = -1;
     playing.subtitle_style = prefs_.subtitle_style;
-    playing.sub_size = prefs_.sub_size == "sub-s" ? 0 : prefs_.sub_size == "sub-l" ? 2 : 1;
+    playing.sub_size = subtitle_size::index(prefs_.sub_size);
     w_started_ = false;
     w_heavy_warned_ = false;
     w_menu_built_ = false;
@@ -704,13 +705,13 @@ void Session::watch_update()
     const auto& style=prefs_.subtitle_style;
     auto overlay=player_.subtitle_renderer().render(rich_id,pos+player_.video_sync_offset()-w_sub_delay_,video_w,video_h,video_sar,
         playing.controls?125.0f:0.0f,style.font,style.colour,style.effect,style.background,
-        prefs_.sub_size=="sub-s"?0:prefs_.sub_size=="sub-l"?2:1);
+        subtitle_size::index(prefs_.sub_size));
     if(!overlay.supported && rich_id < -1 && w_sub_active_>=0 && w_sub_active_<int(w_subs_.size())) {
         auto& selected=w_subs_[size_t(w_sub_active_)];
         if(!selected.rich_text.empty() && player_.subtitle_renderer().external(rich_id,selected.rich_text,selected.lang))
             overlay=player_.subtitle_renderer().render(rich_id,pos+player_.video_sync_offset()-w_sub_delay_,video_w,video_h,video_sar,
                 playing.controls?125.0f:0.0f,style.font,style.colour,style.effect,style.background,
-                prefs_.sub_size=="sub-s"?0:prefs_.sub_size=="sub-l"?2:1);
+                subtitle_size::index(prefs_.sub_size));
     }
     if(overlay.supported) sub.clear();
     if(overlay.changed) {
@@ -733,7 +734,7 @@ void Session::watch_update()
     }
 
     playing.subtitle_style = prefs_.subtitle_style;
-    playing.sub_size = prefs_.sub_size == "sub-s" ? 0 : prefs_.sub_size == "sub-l" ? 2 : 1;
+    playing.sub_size = subtitle_size::index(prefs_.sub_size);
     playing.position = pos;
     playing.duration = dur;
     playing.paused = player_.paused();

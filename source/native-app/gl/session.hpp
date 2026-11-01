@@ -505,6 +505,7 @@ class Session
     // details of titles the library listed without them, by "type:id"
     std::map<std::string, Item> meta_cache_;
     std::set<std::string> meta_asked_;
+    std::size_t meta_inflight_ = 0;
 
     // board
     std::vector<BoardRow> board_;

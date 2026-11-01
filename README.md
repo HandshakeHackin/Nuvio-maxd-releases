@@ -1,3 +1,5 @@
+> **Issue-test prerelease:** [1.0.0.4](https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/tag/v1.0.0.4-native-experimental) contains subtitle sizing (#12) and Library cover (#13) fixes. Reporter testing is pending. [Testing instructions](native-app/TESTING-1.0.0.4.md). **1.0.0.3 remains stable.**
+
 <p align="center">
   <img src="sce_sys/icon0.png" alt="MAX'D Nuvio edition app icon" width="176" height="176">
 </p>

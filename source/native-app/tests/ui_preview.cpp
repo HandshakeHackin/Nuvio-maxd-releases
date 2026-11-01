@@ -123,10 +123,10 @@ int main(int argc, char** argv) {
             "Update from github.com/HandshakeHackin/Nuvio-maxd-releases/releases, or download the verified image here.";
         sx::draw_dropdown(list,env,d,1);
     }
-    else if(mode=="subtitle-preview" || mode=="subtitle-preview-high-contrast" || mode=="settings-categories" || mode=="settings-lighting") {
+    else if(mode=="subtitle-preview" || mode=="subtitle-preview-largest" || mode=="subtitle-preview-high-contrast" || mode=="settings-categories" || mode=="settings-lighting") {
         sx::SettingsContent content;
-        content.subtitle_style=mode=="subtitle-preview" ? sx::SubtitleStyle{} : sx::SubtitleStyle{2,1,2,75};
-        content.subtitle_size=1;
+        content.subtitle_style=mode=="subtitle-preview-high-contrast" ? sx::SubtitleStyle{2,1,2,75} : sx::SubtitleStyle{};
+        content.subtitle_size=mode=="subtitle-preview-largest" ? 4 : 1;
         sx::theme::set_high_contrast(mode=="subtitle-preview-high-contrast");
         hui::tween::reduced_motion=mode=="subtitle-preview-high-contrast";
         const char* labels[]={"Subtitle font","Subtitle colour","Subtitle effect","Subtitle background","D-pad seek interval","L1 / R1 seek interval","Next-episode countdown"};
@@ -142,8 +142,13 @@ int main(int argc, char** argv) {
         }
         sx::Settings settings(env);settings.set_content(&content);settings.enter();hui::InputFrame input;
         if(mode!="settings-categories") {
-            if(mode=="settings-lighting") { input.nav=hui::Direction::down;for(int i=0;i<4;++i)settings.update(input,1.0f/60);input.nav=hui::Direction::none; }
+            // Search is the first root row; open the actual category rather
+            // than rendering a root page that never exercises subtitle sizing.
+            input.nav=hui::Direction::down;
+            for(int i=0;i<(mode=="settings-lighting" ? 5 : 1);++i)settings.update(input,1.0f/60);
+            input.nav=hui::Direction::none;
             input.pressed=hui::action_bit(hui::Action::confirm);settings.update(input,1.0f/60);input.pressed=0;
+            if(mode!="settings-lighting" && settings.cursor_row()!=0) return 2;
         }
         for(int i=0;i<120;++i) settings.update(input,1.0f/60);
         hui::gfx::BackdropSpec backdrop;settings.draw(list,backdrop);

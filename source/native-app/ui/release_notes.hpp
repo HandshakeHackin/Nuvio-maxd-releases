@@ -7,9 +7,9 @@ inline bool should_show_release_notes(std::string_view seen, std::string_view cu
     return !current.empty() && seen != current;
 }
 inline constexpr std::array<const char*,4> release_note_items = {
-    "IPTV Library: browse A-Z and search saved movie/show catalogs across your profile's providers, with provider-labelled results.",
-    "Embedded chapters: use Options/Up, select Chapters, and press Cross to jump. Available with supported Native, EVO and VLC files.",
-    "Better playback recovery preserves audio/subtitle choices, sync and volume. Missing HEVC colour tags can be recovered from codec metadata.",
-    "Bounded artwork queues, updated subtitle/network libraries and a startup compatibility adjustment. Physical PS5 testing is still needed."
+    "Test build 1.0.0.4: fixes for external subtitle sizing (#12) and missing Library cover images (#13). Reporter confirmation is pending.",
+    "Subtitle playback and preview share Small/Medium/Large sizes. Added Extra large (150%) and Largest (200%) options in Settings > Subtitles.",
+    "Library titles now request missing covers independently of the Board, using metadata addons with bounded requests and profile isolation.",
+    "Authored ASS and bitmap subtitles keep their existing behavior. This test build includes both fixes; the current stable release remains 1.0.0.3."
 };
 }

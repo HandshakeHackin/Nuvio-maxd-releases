@@ -33,7 +33,10 @@ struct TexCacheProbe {
         assert(full);
         const int before=reads;
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        assert(reads==before); // workers backpressure instead of decoding the rest
+        // Each worker may already own one job when the ready queue fills.
+        // Those admitted reads are valid; an unbounded drain of the remaining
+        // queue is not. The previous equality assertion raced those workers.
+        assert(reads<=before+2 && reads<=int(artwork::kReadyCount)+2);
         cache.entries_["uploaded-test"].id=77;
         cache.entries_["uploaded-test"].bytes=4;cache.bytes_=4;
         const auto start=std::chrono::steady_clock::now();

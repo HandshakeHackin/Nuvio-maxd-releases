@@ -1,3 +1,4 @@
+#include "../src/subtitle_size.hpp"
 #include "settings.hpp"
 #include "player.hpp"
 
@@ -134,8 +135,10 @@ void Settings::draw_help(hui::gfx::DrawList &list, const SettingRow &row) const
     hui::ui::paragraph(list, env_.fonts.regular, row.help, x, baseline + 64.0f, 24.0f, w, 36.0f, theme::ink_2, row.subtitle_preview ? 3 : 9);
     if(row.subtitle_preview) {
         text(list,env_.fonts.regular,"Live subtitle preview",kHelp.cx(),kHelp.y+330,22,theme::ink_2,Align::center);
-        const float size=content_->subtitle_size==0 ? 42.0f : content_->subtitle_size==2 ? 60.0f : 50.0f;
-        draw_subtitle_block(list,env_.fonts,"Your subtitles look like this.",content_->subtitle_style,size,kHelp.cx(),kHelp.y+510,kHelp.w-90);
+        const float size=subtitle_size::height(content_->subtitle_size);
+        // Keep the larger preview at its real size without covering the help text.
+        const char* sample=size>60 ? "Subtitles" : "Your subtitles look like this.";
+        draw_subtitle_block(list,env_.fonts,sample,content_->subtitle_style,size,kHelp.cx(),kHelp.y+510,kHelp.w-90);
     }
     const char *verb = row.kind == SettingRow::Kind::toggle ? "Switch" : row.kind == SettingRow::Kind::action ? "Open" : "Change";
     const float hint_y=kHelp.y+kHelp.h-62.0f;

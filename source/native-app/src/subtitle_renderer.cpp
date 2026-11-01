@@ -1,3 +1,4 @@
+#include "../src/subtitle_size.hpp"
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "subtitle_renderer.h"
 #include "util.h"
@@ -43,7 +44,7 @@ const char* family(const std::string& lang) {
 ASS_Track* text_track(ASS_Library* library,const std::string& lang) {
     const std::string script="[Script Info]\nScriptType: v4.00+\nPlayResX: 1920\nPlayResY: 1080\n"
       "[V4+ Styles]\nFormat: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding\n"
-      "Style: Default,"+std::string(family(lang))+",38,&H00FFFFFF,&H00FFFFFF,&H00000000,&H80000000,0,0,0,0,100,100,0,0,1,2,0,2,120,120,110,1\n"
+      "Style: Default,"+std::string(family(lang))+","+std::to_string(subtitle_size::height(1))+",&H00FFFFFF,&H00FFFFFF,&H00000000,&H80000000,0,0,0,0,100,100,0,0,1,2,0,2,120,120,110,1\n"
       "[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n";
     return ass_read_memory(library,const_cast<char*>(script.data()),script.size(),nullptr);
 }
@@ -200,12 +201,14 @@ SubtitleOverlay SubtitleRenderer::render(int id,double seconds,int vw,int vh,dou
     std::vector<Tile> tiles;
     int changed=0;
     if(t.ass) {
+        // Preserve authored ASS typography and bitmap subtitles; plain text
+        // follows the same screen-size choices as the settings preview.
         if(!t.authored && (style!=d_->last_style || id!=d_->last_id)) for(int i=0;i<t.ass->n_styles;++i) {
             auto& st=t.ass->styles[i];
             const char* chosen=family(t.language);
             if(std::strcmp(chosen,"Inter")==0) chosen=font==2 ? "Montserrat" : "Inter";
             free(st.FontName); st.FontName=strdup(chosen);
-            st.FontSize=size==0?30:size==2?48:38; st.Bold=font==1?1:0;
+            st.FontSize=subtitle_size::height(size); st.Bold=font==1?1:0;
             st.PrimaryColour=colour==1?0xFFFF0000u:colour==2?0x00FFFF00u:0xFFFFFF00u;
             st.Outline=effect==1?2:0; st.Shadow=effect==2?2:0; st.BorderStyle=background?3:1;
             st.OutlineColour=background?unsigned(255-background*255/100):0; st.BackColour=0; st.MarginV=110;

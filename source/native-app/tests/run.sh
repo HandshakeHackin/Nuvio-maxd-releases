@@ -33,6 +33,7 @@ ${HOST_CXX:-g++} -std=c++20 -O1 -g -Wall -Wextra -Werror -pthread \
 python3 "$ROOT/tests/account_test.py"
 bash "$ROOT/tests/navigation.sh"
 bash "$ROOT/tests/continue_watching.sh"
+bash "$ROOT/tests/library_artwork.sh"
 bash "$ROOT/tests/streams.sh"
 bash "$ROOT/tests/connected_services.sh"
 bash "$ROOT/tests/trailers.sh"

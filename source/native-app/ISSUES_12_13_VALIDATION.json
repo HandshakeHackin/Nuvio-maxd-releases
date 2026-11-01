@@ -1,0 +1,52 @@
+{
+  "issues": [
+    12,
+    13
+  ],
+  "baseSourceCommit": "a016227d2618db61b87d64d3773c9575a5c60a36",
+  "checks": {
+    "libassRenderedPixelsAndSubtitleRegressions": {
+      "status": "passed",
+      "log": "/workspace/issue12-playback-quality.log",
+      "sha256": "106a546779b8594c33128d3c14745f6a88d4f149c791a6825268eb8db2bc04ab"
+    },
+    "coldLibraryAndProfileIsolation": {
+      "status": "passed",
+      "log": "/workspace/issue13-library-artwork.log",
+      "sha256": "9f3c40040dc1f494126dab0f202ab35fcb2b127b94c22b7c4f8d9c25f4f20c69"
+    },
+    "settingsNavigation": {
+      "status": "passed",
+      "log": "/workspace/issues12-13-settings.log",
+      "sha256": "0cf6b53139cd08aba5c244373c2916ca4e3b16ea96dbc102d363921068dc1409"
+    },
+    "continueWatching": {
+      "status": "passed",
+      "log": "/workspace/issues12-13-continue-watching.log",
+      "sha256": "3990633ca6616b5c6cf915a8e8c13fbdf866ee1cb46a53e39fdc3f6e92fd018e"
+    },
+    "artworkQueue": {
+      "status": "passed",
+      "log": "/workspace/issues12-13-artwork-queue.log",
+      "sha256": "d7693342378c286a433e0036945bca759f3ec4c9a4caae1b223cdef623b683eb"
+    },
+    "uiPreviews": {
+      "status": "passed",
+      "log": "/workspace/issues12-13-ui-preview.log",
+      "sha256": "fe2b129b1117a69e099192b558674efda2d91949dd1ec596f55661f4f48286dc"
+    },
+    "ps5CompileLinkImports": {
+      "status": "passed",
+      "log": "/workspace/issues12-13-ps5-compile.log",
+      "sha256": "2542c88ec6ac221175c8e4e751084837cfe37bc96917334bf28b05e06f55d948"
+    }
+  },
+  "regressionsFailOnUnpatchedSource": true,
+  "physicalConsoleVerified": false,
+  "published": false,
+  "notes": [
+    "Artwork test accounts for up to one already-admitted job per worker when the decoded queue fills; the prior equality assertion raced those jobs.",
+    "Subtitle preview fixture now opens its category after the root Search row, so it exercises the actual preview.",
+    "Real libass 0.17.5 pixel tests cover all five sizes, 4K source scaling, track switching and seek; existing authored ASS, multilingual and bitmap tests pass."
+  ]
+}

@@ -1,0 +1,6 @@
+# Staged fixes: subtitle sizes and Library artwork
+
+- [Issue #12](https://github.com/HandshakeHackin/Nuvio-maxd-releases/issues/12): Plain text subtitles rendered through libass now use the preview’s Small/Medium/Large scale (42/50/60 on a 1080-line screen). Added Extra large (150%) and Largest (200%) choices, corresponding to 75/100 against Medium’s 50. Existing saved size preferences are preserved. Preview, plain text overlay and libass use one shared size definition; authored ASS positioning/styles and bitmap captions retain their existing behavior.
+- [Issue #13](https://github.com/HandshakeHackin/Nuvio-maxd-releases/issues/13): The Library requests missing posters through compatible metadata addons independently of the Board. Requests cover cards near the cursor, are deduplicated and limited to four in flight. A metadata response without a poster no longer prevents trying the next compatible addon. Existing posters are retained and old-profile completions are discarded.
+
+These fixes are included in the 1.0.0.4 issue-test prerelease. They have not been added to the already published 1.0.0.3 package. Artwork still requires a reachable metadata addon that supports the title’s identifier.

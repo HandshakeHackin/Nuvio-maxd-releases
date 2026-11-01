@@ -1,3 +1,4 @@
+#include "../src/subtitle_size.hpp"
 #include "player.hpp"
 
 #include "cards.hpp"
@@ -88,7 +89,7 @@ void draw_subtitle_block(hui::gfx::DrawList& list, const hui::ui::Fonts& fonts, 
 void PlayerUi::draw_subtitle(hui::gfx::DrawList &list) const
 {
     if(state.subtitle_texture) { list.image(state.subtitle_texture,{state.subtitle_rect.x,state.subtitle_rect.y,state.subtitle_rect.w,state.subtitle_rect.h},{0,0,1,1},Color::rgb(0xffffff)); return; }
-    const float size=state.sub_size==0 ? 42.0f : state.sub_size==2 ? 60.0f : 50.0f;
+    const float size=subtitle_size::height(state.sub_size);
     const float raise=150.0f*tween::smoothstep(controls_.value);
     draw_subtitle_block(list,env_.fonts,state.line,state.subtitle_style,size,theme::kScreenW*0.5f,960.0f-raise,1640.0f);
 }
