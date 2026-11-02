@@ -16,6 +16,7 @@ class VlcBackend {
         int audio = -1, subtitle = -2;
         double subtitle_delay = 0;
         int gain_percent=100;
+        int night_mode=0;
         double audio_delay=0;
     };
     struct Track {

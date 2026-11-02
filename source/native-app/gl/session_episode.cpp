@@ -11,7 +11,11 @@ void Session::watch_reset_anime() {
     w_introdb_segments_.clear();w_aniskip_segments_.clear();w_animeskip_segments_.clear();
 }
 void Session::watch_merge_segments() {
-    w_episode_.segments=episode_playback::merge_segments({w_animeskip_segments_,w_aniskip_segments_,w_introdb_segments_},w_timing_duration_);
+    const auto api=episode_playback::merge_segments({w_animeskip_segments_,w_aniskip_segments_,w_introdb_segments_},w_timing_duration_);
+    const auto chapters=prefs_.skip_segments && prefs_.chapter_skip_segments ? episode_playback::chapter_segments(playing.chapters,w_timing_duration_) : std::vector<episode_playback::Segment>{};
+    if(!prefs_.skip_segments)w_episode_.replace_segments({});
+    else if(w_item_.type=="movie" && !api.empty())w_episode_.replace_segments(api);
+    else w_episode_.replace_segments(episode_playback::merge_segments({chapters,api},w_timing_duration_));
 }
 void Session::watch_load_segments(int season,int episode) {
     if(w_trailer_ || !prefs_.skip_segments || w_item_.type=="tv")return;

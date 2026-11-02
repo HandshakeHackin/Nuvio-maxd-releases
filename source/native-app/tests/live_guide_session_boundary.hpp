@@ -47,6 +47,9 @@ struct Session {
   std::vector<size_t> live_indices_;
   std::function<void(const std::string &)> typed;
   int builds = 0, saves = 0;
+  std::vector<std::string> choices;
+  std::function<void(int)> picked;
+  void open_dropdown(const std::string&, const std::vector<std::string>& rows, int, std::function<void(int)> fn) {choices=rows;picked=std::move(fn);}
   void ask_text(const std::function<void(const std::string &)> &fn,
                 const std::string &) {
     typed = fn;

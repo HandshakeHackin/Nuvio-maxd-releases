@@ -7,12 +7,16 @@
 #include <string>
 namespace sx {
 struct ExperiencePreferences {
+    std::string trailer_language; // empty follows audio, then subtitle language
     std::string seen_release;
     std::string install_source; // user-selected, local only; empty means not asked yet
     SubtitleStyle subtitle_style;
     int seek_seconds = 10, shoulder_seek_seconds = 60, next_episode_seconds = 10;
     int audio_gain_percent=100, audio_delay_ms=0, subtitle_delay_ms=0;
     bool surround_audio = false;
+    bool chapter_skip_segments=true;
+    bool subtitle_auto_sync=false;
+    int night_mode=0, lfe_mix_percent=50;
     bool console_light_sync = true;
     std::string audio_output_mode="pcm";
     bool reduced_motion = false, high_contrast = false;
@@ -24,6 +28,10 @@ inline int preference_int(const nlohmann::json& j, const char* key, int fallback
     return std::isfinite(v) ? int(std::clamp(v,double(lo),double(hi))) : fallback;
 }
 inline void load_experience(const nlohmann::json& j, ExperiencePreferences& p) {
+    if(j.contains("trailer_language") && j["trailer_language"].is_string()) {
+        const auto value=j["trailer_language"].get<std::string>();
+        if(value.empty() || (value.size()==2 && value.find_first_not_of("abcdefghijklmnopqrstuvwxyz")==std::string::npos))p.trailer_language=value;
+    }
     if(j.contains("install_source") && j["install_source"].is_string()) {
         const auto source=j["install_source"].get<std::string>();
         if(valid_install_source(source)) p.install_source=source;
@@ -37,6 +45,10 @@ inline void load_experience(const nlohmann::json& j, ExperiencePreferences& p) {
     }
     if(j.contains("surround_audio") && j["surround_audio"].is_boolean()) p.surround_audio=j["surround_audio"];
     if(j.contains("console_light_sync") && j["console_light_sync"].is_boolean()) p.console_light_sync=j["console_light_sync"];
+    if(j.contains("chapter_skip_segments") && j["chapter_skip_segments"].is_boolean())p.chapter_skip_segments=j["chapter_skip_segments"];
+    if(j.contains("subtitle_auto_sync") && j["subtitle_auto_sync"].is_boolean())p.subtitle_auto_sync=j["subtitle_auto_sync"];
+    p.night_mode=preference_int(j,"night_mode",0,0,3);
+    p.lfe_mix_percent=preference_int(j,"lfe_mix_percent",50,0,100);
     p.audio_gain_percent=preference_int(j,"audio_gain_percent",100,50,300);
     p.audio_delay_ms=preference_int(j,"audio_delay_ms",0,-2000,2000);
     p.subtitle_delay_ms=preference_int(j,"subtitle_delay_ms",0,-10000,10000);
@@ -51,6 +63,10 @@ inline void load_experience(const nlohmann::json& j, ExperiencePreferences& p) {
     if(j.contains("high_contrast") && j["high_contrast"].is_boolean()) p.high_contrast=j["high_contrast"];
 }
 inline void save_experience(nlohmann::json& j, const ExperiencePreferences& p) {
+    j["subtitle_auto_sync"]=p.subtitle_auto_sync;
+    j["trailer_language"]=p.trailer_language;
+    j["chapter_skip_segments"]=p.chapter_skip_segments;
+    j["night_mode"]=p.night_mode; j["lfe_mix_percent"]=p.lfe_mix_percent;
     j["audio_gain_percent"]=p.audio_gain_percent;
     j["audio_delay_ms"]=p.audio_delay_ms;
     j["subtitle_delay_ms"]=p.subtitle_delay_ms;

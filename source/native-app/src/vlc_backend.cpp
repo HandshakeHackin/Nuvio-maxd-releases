@@ -426,6 +426,7 @@ bool VlcBackend::open(const Options &o) {
     auto &s = *d_;
     s.options = o;
     s.pcm.set_gain(o.gain_percent);
+    s.pcm.set_night_mode(o.night_mode);
     s.stream_serial = nuvio_vlc_stream_begin();
     if(o.start>0)s.seek_target=o.start;
     s.user_paused = o.paused;

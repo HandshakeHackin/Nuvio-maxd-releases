@@ -1,0 +1,176 @@
+{
+  "checkedAt": "2026-11-02T01:55:07.757249+00:00",
+  "status": "staged, unreleased",
+  "baseRelease": "1.0.0.5",
+  "baseSourceCommit": "00ae5a1774af53d2635ca3647b795491488cb3c5",
+  "implementationCommit": "d4e81ee9b947fcf24f0a1c91e77d4861e0b0f905",
+  "hardwareVerified": false,
+  "checks": [
+    {
+      "name": "Native/EVO/VLC PCM downmix and levels",
+      "conclusion": "success",
+      "log": "/workspace/nuvio-next-playback-fixes/native-app/test-output/next-audio.log",
+      "sha256": "6cd14e844aa3bd9c3987d7b985eac3118141ec9922a84d4056dcdb95e1f288b1"
+    },
+    {
+      "name": "Night Mode, settings, chapters and timing matcher",
+      "conclusion": "success",
+      "log": "/workspace/nuvio-next-playback-fixes/native-app/test-output/next-adaptations.log",
+      "sha256": "243d6fdc4b6a1c0bab156ad8d3b5e8ee31c3d5ffa2f41edb4eb7f339df30b196"
+    },
+    {
+      "name": "Production subtitle sync session",
+      "conclusion": "success",
+      "log": "/workspace/nuvio-next-playback-fixes/native-app/test-output/next-subtitle-sync-session.log",
+      "sha256": "811e43b2343911df41eab5b4327c7feecfbc2d885040b170ec70ea3d8a9403ec"
+    },
+    {
+      "name": "Subtitle render contention and existing rendering",
+      "conclusion": "success",
+      "log": "/workspace/nuvio-next-playback-fixes/native-app/test-output/next-subtitle-renderer.log",
+      "sha256": "a7242d5e1f21307c9b600f16ca7a499ac556402783073ffbe82b025bd3de47d4"
+    },
+    {
+      "name": "XMLTV/Xtream guide",
+      "conclusion": "success",
+      "log": "/workspace/nuvio-next-playback-fixes/native-app/test-output/next-guide.log",
+      "sha256": "2465c3ac1bca973516dc1591b3a2e1f99d65e9f891219fc402084378c630563a"
+    },
+    {
+      "name": "Production guide state and correction isolation",
+      "conclusion": "success",
+      "log": "/workspace/nuvio-next-playback-fixes/native-app/test-output/next-guide-session.log",
+      "sha256": "07e628fd5cb15d95f6897cd345c1b93f6d7a555cab46622386c2bb3abe83cbb9"
+    },
+    {
+      "name": "Preferred-language trailer routing and cancellation",
+      "conclusion": "success",
+      "log": "/workspace/nuvio-next-playback-fixes/native-app/test-output/next-trailers.log",
+      "sha256": "4dc08624d750c1e264cbbe0da480e90ac0426f31c2c70750070bfda3b40a9a31"
+    },
+    {
+      "name": "Episode regressions",
+      "conclusion": "success",
+      "log": "/workspace/nuvio-next-playback-fixes/native-app/test-output/next-episode.log",
+      "sha256": "1af574907ae883c8d7feb689c3edbf6a8640a2edd15f5705ed72974b76281daf"
+    },
+    {
+      "name": "Preference/accessibility regressions",
+      "conclusion": "success",
+      "log": "/workspace/nuvio-next-playback-fixes/native-app/test-output/next-experience.log",
+      "sha256": "8330606db39daf4812ecd30f3ebf19835847cf1e7d223c5e9c3fcad08edf054a"
+    },
+    {
+      "name": "Settings categories",
+      "conclusion": "success",
+      "log": "/workspace/nuvio-next-playback-fixes/native-app/test-output/next-settings.log",
+      "sha256": "0cf6b53139cd08aba5c244373c2916ca4e3b16ea96dbc102d363921068dc1409"
+    },
+    {
+      "name": "Tracker contracts (existing safeguards)",
+      "conclusion": "success",
+      "log": "/workspace/nuvio-next-playback-fixes/native-app/test-output/next-tracking-audit.log",
+      "sha256": "c5c23ed22f232d39cebb7f35e45b6b162f9a58baf6caa6ccb4ebf34ad1dae2b9"
+    },
+    {
+      "name": "Shutdown regressions",
+      "conclusion": "success",
+      "log": "/workspace/nuvio-next-playback-fixes/native-app/test-output/next-shutdown.log",
+      "sha256": "77b6433b79cbf1d66c58e924e03ff74df8f6c89e75eecbc456519d6719c75a69"
+    },
+    {
+      "name": "Maintenance overlay isolation",
+      "conclusion": "success",
+      "log": "/workspace/nuvio-next-playback-fixes/native-app/test-output/next-maintenance.log",
+      "sha256": "1fcc19b6978648ed6dad5c57cf07b5cf5cbaea72c02d23a88611f4ff58abe3d6"
+    },
+    {
+      "name": "Pinned real libass AddressSanitizer",
+      "conclusion": "success",
+      "log": "/workspace/nuvio-next-playback-fixes/native-app/test-output/next-libass-asan.log",
+      "sha256": "f508409bd149ccef56aedf1f2fddc2a190666fbbd44f6f3e42c6ea020a1f85a2"
+    },
+    {
+      "name": "Unpatched/patched sanitizer comparison",
+      "conclusion": "success",
+      "log": "/workspace/next-libass-before-after.log",
+      "sha256": "68e542e963340ec49ac83637b1478caa55748e0b6ea7b3edf7f194d7ccd8becf"
+    },
+    {
+      "name": "PS5 compile, link and imports",
+      "conclusion": "success",
+      "log": "/workspace/upstream-next-target.log",
+      "sha256": "966bb180270832b1e3e602d78cd69a4f4d93c3f99af7188f7ba132b0359709b0"
+    }
+  ],
+  "limits": [
+    "No new package/release/store upload",
+    "No physical PS5/provider playback acceptance",
+    "Target compile reused the unchanged previously verified HDR driver object",
+    "AddressSanitizer address checks enabled; leak detection disabled on restricted host",
+    "Subtitle auto-sync requires enough already-decoded embedded text; VLC and unsupported inputs retain manual timing"
+  ],
+  "alreadyCovered": [
+    "Asynchronous progress failure does not stop playback",
+    "Live TV/trailers do not create normal resume entries",
+    "SIMKL activity caching and profile-scoped worker I/O",
+    "Independent bounded Library artwork",
+    "Chapter navigation, HEVC colour fallback, seek recovery and sticky completion"
+  ],
+  "sourceFileSha256": {
+    "native-app/RELEASE_NOTES_NEXT.md": "118911753b975823c7873a8af8bc4538ac92e4b155bea305a9197e609a6426c9",
+    "native-app/THIRD_PARTY.md": "7503c24b0856d384bc71739f7e8f05098e9fe82cd3c8cb3ce5b2e94a440c031e",
+    "native-app/UPSTREAM_ADAPTATIONS_NEXT.md": "fc587315c4f19b42482f9a221c8f50b49446f6f0c3f8570e6218da2a337f1006",
+    "native-app/dependencies.json": "4ec9507df1417b51918a042f210262d953952ee5db1d636afd67bb35c99a5ca6",
+    "native-app/gl/build.sh": "3d16fa680e422cd606b251f1a293c50459597c9fff051dc17221e694a0dc5537",
+    "native-app/gl/episode_playback.cpp": "e1539500f4df3d33c059b9496c1b05cbd189fb593d0f30a2e2013d441a0834d4",
+    "native-app/gl/episode_playback.hpp": "79c9cf1ecd361081b93a36f5942f9619c7f62305eac7e5038496660b0022cb22",
+    "native-app/gl/experience_preferences.hpp": "686158bb1da4e1d0d85857b02896571299d44a7c4c9f683bd4e6996e52913220",
+    "native-app/gl/session.cpp": "0322bd80574a52a399a02490741112c0661743f5486afb68707643e5811f7f2a",
+    "native-app/gl/session.hpp": "6367964a8d2e3e2c896cfec7526f4e28091573cdb317e96e5f389f0e970f791b",
+    "native-app/gl/session_detail.cpp": "93a581c812e963fab1d518218dce35611ff7467e4a6cb165fdfc91a133df7692",
+    "native-app/gl/session_episode.cpp": "3cb98645d62386785bd01b72f9b137f1693e26f8e038dd651424a3c60ec223a0",
+    "native-app/gl/session_live_guide.cpp": "0f91fe6a83206a50860d9297adb8897100f2e0bf5f29505bf7e997cb4443560f",
+    "native-app/gl/session_live_tv.cpp": "0ab0b53f32769c6417a8dc7135a0ab8e3dae9af3a06460bbade0d2cbc77e9ed5",
+    "native-app/gl/session_multiview.cpp": "2aa64b5e37f8810a1688b640edddef67c3470672065b3abd127ae4359b330150",
+    "native-app/gl/session_watch.cpp": "04d3745ef919fab632c52dbbf4ecc525ad225e497fcc2564dd6df31ba85006a3",
+    "native-app/src/audio_pcm.h": "d6fa596b115eea2c009e3dc0cd8e274be24c4e1fc13a9fb04ea35ff05c39b5f1",
+    "native-app/src/live_guide.cpp": "7d1a7e393f9686d239be9134edf03aba8f2ba4999f01c4e7d9f4a132bb864d6f",
+    "native-app/src/live_guide.h": "23928e6b4c16ad58b2cbb668c3389172fbd34c857145e64ccd2abbe872c5c9ef",
+    "native-app/src/pcm_night_mode.h": "35844a8be0d5fafe4065f144d6dead4c11d96bf4a07848b1fa0d4ca422e59b90",
+    "native-app/src/pcm_out.cpp": "1411c5896da5f50a393efc1f62d69746b2362e148c053944e6d9fc116395ebb9",
+    "native-app/src/pcm_out.h": "88d132dc60e2841eb957512a44ab3de6bd667e9d5c0fd4ab1c6c656e6d0c1731",
+    "native-app/src/player.cpp": "df6c52f0f88d4b9796b466b5d92df913c5493dcc02b30ad5c2855196af3e6f89",
+    "native-app/src/player.h": "3fe16cd5aa972ce88a5f94b78955d7a273cd2410dfe3aa31012b7b25a30c62b4",
+    "native-app/src/providers.cpp": "9cee360faefc3e9b386046cdc89bd43febe728c7ed432bc52af206f22e5312c7",
+    "native-app/src/providers.h": "c174497759af4fe1c085657ab949f1e81142248bff2c01e79174318559903a9b",
+    "native-app/src/subtitle_renderer.cpp": "bda3ca97cf74fa2c985f2aeed5b86a5572ef99a259af685b3ec320d650bca99c",
+    "native-app/src/subtitle_sync.hpp": "06b2fa1173ffe290295ada8386fae9c9eafc37d12307d0ef81889b502fa6308a",
+    "native-app/src/trailers.cpp": "1722d736f1a238b6a7e344c5f8854044882452fe3b0d8189d7da39cdf7280f42",
+    "native-app/src/trailers.h": "0699991658d22e648882ef2c7ca48adb2dd5b827ec3c5601205deb605b40d2e1",
+    "native-app/src/vlc_backend.cpp": "10c9423c260ca1c3c565942e5ac41b1f92b3ff4a943df60b137dfaed755e579c",
+    "native-app/src/vlc_backend.h": "a70de852681fb62ba60d5fea6b3fa789e99877b6ca9d232b3cb66c74c11cc2e3",
+    "native-app/tests/audio_pcm_host.cpp": "1dba35f6e0f19e9e9d8c5c61d8c328b2bf509f823e0f75235b3ac4787e5f81d0",
+    "native-app/tests/libass_hardening.sh": "1f4b634e7eb4a44d9af616a56c70bd38a18e1ee72f38f3a912b8f059337f50e6",
+    "native-app/tests/live_guide_session_boundary.hpp": "28894c12c7e66e0e003952aa10fb14dd79ead7f23ef40b3c6bf59968510450d4",
+    "native-app/tests/live_guide_session_host.cpp": "273bc71f45aeaed33a705c2b49863730aa20c3d161bd31e1d6ea7ae6d8f637f3",
+    "native-app/tests/playback_quality.sh": "863c2ba500e05aa7734e8403d3a03e960fb6cc077d77bb1f0a6c1b0e1f02a168",
+    "native-app/tests/playback_quality_host.cpp": "65bc7d2db3d4d572520c23d27bf786d60369629776613a2c10b88a3be4cb3fea",
+    "native-app/tests/run.sh": "6de92882fccb7318c299a6e2af4cf579b9a1e7e8166679ac23237c33f814f133",
+    "native-app/tests/subtitle_input_host.c": "5ad1a9a1f2593c6899523a7ab13788dfa387e1371d06ec5194938de21c6eb4a8",
+    "native-app/tests/subtitle_sync_session.sh": "76976dbe929a949e3735f552e240df7206562d0ab88f768189f61d37af9ad5f8",
+    "native-app/tests/subtitle_sync_session_boundary.hpp": "ae7becc868b3972fab7327a916b504e296cf2dc137a2fe0592b9835a94b533bb",
+    "native-app/tests/subtitle_sync_session_host.cpp": "b1b89147ab093cb0a31d20ef8c02b948f7a07454f8977ffd6b00eca2a6a8105c",
+    "native-app/tests/trailers_host.cpp": "5c09f5a1dbbe18ebc801547c612e790fed525b2d5899eddaa53d1e310d5f968e",
+    "native-app/tests/upstream_next.sh": "d6a3c8a51ea37302324f55398cb5f39d1cf048a4694b65338ad085927a958379",
+    "native-app/tests/upstream_next_host.cpp": "01beefdff35e69240448677f8fc7c04d889b1baa70f86aef1fe952a4fc772280",
+    "native-app/third_party/libass/0001-subtitle-input-hardening.patch": "0173e246351e08157b203e0b7d8b197399155586fd3f3b94ba3937b722970918",
+    "native-app/third_party/libass/0002-subtitle-input-hardening.patch": "9b902280bd81c9ab460ccd3f76c896d8b9d7f603e564c8527b191d87da9a645e",
+    "native-app/third_party/libass/0003-subtitle-input-hardening.patch": "169741adba65e230be7ee183a8f62a38aa237a8ecaa6bf069ccbea653b24aa7d",
+    "native-app/third_party/libass/LICENSE": "f7e30699d02798351e7f839e3d3bfeb29ce65e44efa7735c225464c4fd7dfe9c",
+    "native-app/third_party/libass/README.md": "0b0294307cd9498a5b1aa44eff9189ed536cd63230d9af09a60ea4b738ae6b37",
+    "native-app/tools/build_info.py": "8d827fd914ecbef68df62198e878faf9de4be88659fe6298d1533c58f3370d8d",
+    "native-app/tools/build_maintenance_libraries.sh": "d41471ab07241f26a7489e47a0e084514730db74d32c14afabf95523367f3a6d",
+    "native-app/tools/validate_maintenance_libraries.py": "738189b9ff9477dd51e30637828ba0ca04c2c8976a6aaecd2e4fda376f0dcfc9"
+  }
+}

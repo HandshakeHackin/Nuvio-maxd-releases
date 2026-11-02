@@ -40,6 +40,11 @@ jobs:
           echo "QUICKJS_DIR=$RUNNER_TEMP/quickjs/quickjs-2026-06-04" >> "$GITHUB_ENV"
       - name: Test account, catalogs, stream cards, navigation, decoder setup and GPU video
         run: bash native-app/tests/run.sh
+      - name: Test Jellyfin and Emby API, profile callbacks and secret input
+        run: |
+          bash native-app/tests/media_servers.sh
+          bash native-app/tests/media_session.sh
+          bash native-app/tests/ime_secret.sh
       - name: Render controller dialogs and update guidance
         run: bash native-app/tests/preview.sh
       - name: Check whitespace

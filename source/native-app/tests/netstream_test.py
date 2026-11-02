@@ -19,6 +19,13 @@ class Server(http.server.BaseHTTPRequestHandler):
         pass
 
     def do_GET(self):
+        if self.path.startswith('/media-'):
+            assert self.headers.get('X-Maxd-Credential-Origin') is None
+            if self.path=='/media-foreign': assert self.headers.get('X-Emby-Authorization') is None
+            else: assert self.headers.get('X-Emby-Authorization')=='MediaBrowser Token="fixture-only"'
+            if self.path=='/media-redirect':
+                self.send_response(302);self.send_header('Location','/must-not-follow');self.end_headers();return
+        if self.path=='/must-not-follow': raise AssertionError('private redirect followed')
         value = self.headers.get('Range', '')
         match = re.fullmatch(r'bytes=(\d+)-(\d*)', value)
         if not match:
@@ -65,6 +72,14 @@ class NetworkTests(unittest.TestCase):
             capture_output=True, text=True, timeout=45)
         self.assertEqual(run.returncode, 0, run.stderr + run.stdout)
         return json.loads(next(line for line in reversed(run.stdout.splitlines()) if line.startswith('{')))
+
+    def test_media_server_credentials_and_blocked_redirects(self):
+        private=self.run_stream('/media-private','media-auth')
+        self.assertTrue(private['started'] and private['correct'])
+        foreign=self.run_stream('/media-foreign','media-foreign')
+        self.assertTrue(foreign['started'] and foreign['correct'])
+        redirect=self.run_stream('/media-redirect','media-auth')
+        self.assertFalse(redirect['started']);self.assertEqual(redirect['error'],'HTTP 302')
 
     def test_parallel_reads_and_seeks_outside_window(self):
         result = self.run_stream('/video', 'seek')

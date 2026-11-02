@@ -11,10 +11,10 @@ extern "C" {
 
 // Explicit stereo fold-down: preserve dialogue and surround content, include
 // some LFE, and normalize the matrix to leave headroom. Stereo stays identity.
-inline bool configure_pcm_mix(SwrContext* swr) {
+inline bool configure_pcm_mix(SwrContext* swr, int lfe_percent = 50) {
     return av_opt_set_double(swr, "center_mix_level", std::sqrt(0.5), 0) >= 0 &&
            av_opt_set_double(swr, "surround_mix_level", std::sqrt(0.5), 0) >= 0 &&
-           av_opt_set_double(swr, "lfe_mix_level", 0.5, 0) >= 0 &&
+           av_opt_set_double(swr, "lfe_mix_level", std::clamp(lfe_percent, 0, 100) / 100.0, 0) >= 0 &&
            av_opt_set_double(swr, "rematrix_maxval", 1.0, 0) >= 0;
 }
 

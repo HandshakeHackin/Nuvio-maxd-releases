@@ -6,6 +6,8 @@ pins=json.loads((root/'dependencies.json').read_text())
 sdk=Path(sys.argv[1])
 maintenance=pins['maintenanceLibraries']
 assert hashlib.sha256((root/maintenance['recipe']).read_bytes()).hexdigest()==maintenance['recipeSha256'], 'Maintenance build recipe differs'
+for patch in maintenance.get('libassPatches',[]):
+    assert hashlib.sha256((root/patch['path']).read_bytes()).hexdigest()==patch['sha256'], 'libass hardening patch differs'
 for name,digest in maintenance['targetFileSha256'].items():
     assert hashlib.sha256((sdk/name).read_bytes()).hexdigest()==digest, (
         'Maintenance dependency differs: '+name+

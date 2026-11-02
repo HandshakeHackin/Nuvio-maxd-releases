@@ -68,6 +68,7 @@ class Shell
     Discover discover_;
     Library library_;
     Library iptv_library_;
+    Library media_library_;
     Addons addons_;
     Addons live_tv_;
     Settings settings_;

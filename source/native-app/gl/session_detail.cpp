@@ -637,9 +637,10 @@ void Session::detail_trailers() {
     const int gen=d_meta_gen_;const auto cancel=d_cancel_;
     auto meta=d_meta_;if(meta.id.empty())meta.id=d_item_.id;
     if(meta.type.empty())meta.type=d_item_.type;
+    const auto language=trailers::preferred_language(prefs_.trailer_language.empty() ? (prefs_.audio_langs.empty()?prefs_.subtitle_langs:prefs_.audio_langs):prefs_.trailer_language);
     d_trailer_loading_=true;say("Finding trailers...",4.0);
-    bg<std::vector<trailers::Candidate>>([meta,cancel]{
-        return trailers::candidates(meta,providers::trailer_videos(meta,cancel.get()));
+    bg<std::vector<trailers::Candidate>>([meta,cancel,language]{
+        return trailers::candidates(meta,providers::trailer_videos(meta,cancel.get(),language),language);
     },[this,gen,cancel](auto& found){
         if(!d_open_ || gen!=d_meta_gen_ || *cancel)return;
         d_trailer_loading_=false;

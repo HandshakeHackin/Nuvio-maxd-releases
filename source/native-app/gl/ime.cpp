@@ -103,7 +103,7 @@ std::string utf8_of(const std::uint16_t *u)
 
 } // namespace
 
-bool Ime::open(const std::string& title)
+bool Ime::open(const std::string& title, bool secret)
 {
     if (active_)
         return true;
@@ -118,6 +118,9 @@ bool Ime::open(const std::string& title)
     std::memset(g_text, 0, sizeof(g_text));
     std::memset(&g_param, 0, sizeof(g_param));
     g_param.user_id = static_cast<std::uint32_t>(user);
+    // Public OrbisImeOption ABI: PASSWORD=4, NO_LEARNING=32,
+    // NO_AUTO_CAPITALIZATION=2, DISABLE_RESUME=256, DISABLE_AUTO_SPACE=512.
+    if(secret)g_param.option=4u|32u|2u|256u|512u;
     g_param.max_text_length = kMaxChars;
     g_param.buffer = g_text;
     std::memset(g_title,0,sizeof(g_title));
@@ -157,10 +160,12 @@ Ime::State Ime::poll(std::string *text)
         if (!seen_running_ && now_seconds() - opened_ > 3.0)
         {
             sceImeDialogTerm();
+            std::memset(g_text,0,sizeof(g_text));
             active_ = false;
             return State::cancelled;
         }
-        return seen_running_ ? State::cancelled : State::open;
+        if(seen_running_){sceImeDialogTerm();std::memset(g_text,0,sizeof(g_text));active_=false;return State::cancelled;}
+        return State::open;
     }
     ImeResult result;
     std::memset(&result, 0, sizeof(result));
@@ -183,7 +188,7 @@ Ime::State Ime::poll(std::string *text)
 
 namespace sx
 {
-bool Ime::open(const std::string& title)
+bool Ime::open(const std::string& title, bool secret)
 {
     return false;
 }

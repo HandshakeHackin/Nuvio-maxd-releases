@@ -34,8 +34,32 @@ static void wait_for(const std::function<bool()>& f) {
     for(int i=0;i<200 && !f();++i) std::this_thread::sleep_for(std::chrono::milliseconds(2));
     require(f(),"audio worker did not advance");
 }
+#ifdef NUVIO_SUBTITLE_TEST_HOOK
+static std::atomic<bool> hold_subtitle_render{false},subtitle_render_entered{false},release_subtitle_render{false};
+void subtitle_render_test_boundary() {
+    if(!hold_subtitle_render)return;
+    subtitle_render_entered=true;
+    while(!release_subtitle_render)std::this_thread::sleep_for(std::chrono::milliseconds(1));
+}
+#endif
 int main(int argc,char** argv) try {
     require(argc==2,"font dir missing");
+#ifdef NUVIO_SUBTITLE_TEST_HOOK
+    test("subtitle packets do not block behind libass rendering",[&]{
+        SubtitleRenderer renderer;renderer.configure(argv[1]);
+        auto* par=avcodec_parameters_alloc();par->codec_id=AV_CODEC_ID_ASS;renderer.add_track(0,par,"eng");avcodec_parameters_free(&par);
+        hold_subtitle_render=true;release_subtitle_render=false;subtitle_render_entered=false;
+        std::thread render([&]{renderer.render(0,1,1920,1080,1,0);});
+        wait_for([]{return subtitle_render_entered.load();});
+        std::atomic<bool> ingested{false};
+        std::thread ingest([&]{AVPacket p{};std::string text="0,0,Default,,0,0,0,,Reader remains responsive";p.data=reinterpret_cast<uint8_t*>(text.data());p.size=int(text.size());renderer.packet(0,&p,0,5,nullptr);ingested=true;});
+        for(int i=0;i<1000 && !ingested;++i)std::this_thread::sleep_for(std::chrono::milliseconds(2));
+        const bool independent=ingested;
+        release_subtitle_render=true;render.join();ingest.join();hold_subtitle_render=false;
+        require(independent,"subtitle render mutex blocked the media reader");
+        renderer.seek();renderer.render(0,1,1920,1080,1,0);
+    });
+#endif
     test("surround negotiates S16 PCM, consumes media samples, and holds during pause",[]{
         PcmOut out; require(out.open(true),"audio open failed");
         require(out.channels()==8 && !out.floating_point() && format_seen==2,"S16 surround not selected");

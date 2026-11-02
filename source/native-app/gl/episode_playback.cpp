@@ -1,4 +1,5 @@
 #include "episode_playback.hpp"
+#include <regex>
 #include "stream_display.hpp"
 #include <algorithm>
 #include <cctype>
@@ -218,6 +219,36 @@ std::vector<Segment> parse_animeskip(const json& data, int episode, double durat
         if (!has_kind(result, kind) && valid(s, duration)) result.push_back(s);
     }
     return finish(std::move(result));
+}
+
+std::vector<Segment> chapter_segments(const std::vector<playback::Chapter>& input, double duration) {
+    if(!std::isfinite(duration) || duration<=0)return {};
+    const auto chapters=playback::clean_chapters(input,duration);
+    if(chapters.size()<2)return {};
+    const std::regex opening(R"(^op(ening)?( (credits|theme))? *[0-9]*$)");
+    const std::regex ending(R"(^(ed|ending)( (credits|theme))? *[0-9]*$)");
+    const std::regex credits(R"(^((end|closing) )?credits$)");
+    const std::regex recap(R"(^(recap|previously( on.*)?)$)");
+    const std::regex scene(R"((post|mid|after)[ -]credits)");
+    const auto named_opening=[&](const auto& c){return std::regex_match(lower(trim(c.title)),opening);};
+    const bool explicit_opening=std::any_of(chapters.begin(),chapters.end(),named_opening);
+    std::vector<Segment> result;
+    for(size_t i=0;i<chapters.size();++i) {
+        auto title=lower(trim(chapters[i].title));
+        const double start=chapters[i].start,end=i+1<chapters.size()?chapters[i+1].start:duration;
+        if(std::regex_search(title,scene)){result.push_back({Kind::post_credits,start,end});continue;}
+        if(end-start<5 || end-start>240)continue;
+        if(std::regex_match(title,opening) || (title=="intro" && !explicit_opening))result.push_back({Kind::intro,start,end});
+        else if(std::regex_match(title,ending) || std::regex_match(title,credits))result.push_back({Kind::credits,start,end});
+        else if(std::regex_match(title,recap))result.push_back({Kind::recap,start,end});
+    }
+    return merge_segments({result},duration);
+}
+void Flow::replace_segments(std::vector<Segment> replacement) {
+    std::optional<Kind> suppressed;
+    if(suppressed_>=0 && suppressed_<int(segments.size()))suppressed=segments[suppressed_].kind;
+    segments=std::move(replacement);suppressed_=-1;active=-1;
+    if(suppressed)for(size_t i=0;i<segments.size();++i)if(segments[i].kind==*suppressed){suppressed_=int(i);break;}
 }
 
 std::vector<Segment> merge_segments(const std::vector<std::vector<Segment>>& by_priority, double duration) {

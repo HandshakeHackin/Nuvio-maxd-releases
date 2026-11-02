@@ -1,6 +1,7 @@
 // Bounded provider EPG snapshots; guide failures never stop channel playback.
 #pragma once
 #include "live_tv.h"
+#include "util.h"
 #include <cstdint>
 #include <map>
 #include <memory>
@@ -24,7 +25,8 @@ struct NowNext {
   const Programme *next = nullptr;
 };
 NowNext current(const Listings &, int64_t now);
-std::string label(const Programme &);
+std::string label(const Programme &, int offset_minutes = 0);
+int offset_minutes(const json& source);
 Result parse_xmltv(const std::string &, const std::set<std::string> &wanted,
                    int64_t now, const std::atomic<bool> *cancel = nullptr);
 Result parse_xtream(const std::string &, const std::string &channel,

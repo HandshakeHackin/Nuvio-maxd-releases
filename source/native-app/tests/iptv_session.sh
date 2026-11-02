@@ -16,7 +16,7 @@ assert '? iptv::failure_message(err)' in watch
 assert 'if(iptv::library_type(w_item_.type)){iptv_progress(force_finished);return;}' in watch
 assert '!iptv::library_type(w_item_.type)) watch_load_addon_subtitles()' in watch
 assert '!iptv::library_type(w_item_.type)) watch_load_segments' in watch
-assert 'const bool par = !w_trailer_ && w_item_.type != "tv" && !iptv::library_type(w_item_.type)' in watch
+assert 'const bool par = !w_trailer_ && w_item_.type != "tv" && w_item_.type != "media-video" && !iptv::library_type(w_item_.type)' in watch
 PY
 ${HOST_CXX:-g++} -std=c++20 -O1 -pthread -Wall -Wextra -Werror \
  -I"$B" -I"$ROOT/tests" -I"$ROOT/src" -I"$ROOT/third_party" -I"$ROOT/ui" -I"$ROOT/third_party/hui/src" \

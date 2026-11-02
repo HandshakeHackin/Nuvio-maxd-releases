@@ -16,6 +16,25 @@ void Session::live_guide_reset() {
   live_guide_loading_ = false;
   live_guide_refresh_ = live_guide_tick_ = live_guide_redraw_ = 0;
 }
+int Session::live_guide_offset() const {
+  for(const auto& row:live_state_["sources"])
+    if(jstr(row,"id")==live_source_)return live_guide::offset_minutes(row);
+  return 0;
+}
+void Session::live_guide_clock() {
+  if(live_source_.empty()){say("Choose a Live TV source first",5);return;}
+  const auto source=live_source_;const auto profile=profile_generation_;
+  std::vector<std::string> rows;
+  for(int n=-720;n<=720;n+=30)rows.push_back(n==0?"No correction (default)":std::string(n>0?"+":"")+std::to_string(n)+" minutes");
+  open_dropdown("Provider guide clock correction",rows,(live_guide_offset()+720)/30,[this,source,profile](int pick){
+    if(profile!=profile_generation_ || source!=live_source_ || pick<0 || pick>48)return;
+    for(auto& row:live_state_["sources"])if(jstr(row,"id")==source)row["guide_offset_minutes"]=-720+pick*30;
+    // Keep raw timestamps in the cached XML; a correction never accumulates.
+    auto document=live_guide_document_;auto expires=live_guide_document_expires_;
+    live_guide_reset();live_guide_document_=std::move(document);live_guide_document_expires_=expires;
+    live_save();live_build();
+  });
+}
 std::pair<std::string, std::string>
 Session::live_guide_labels(const live_tv::Channel &channel) const {
   if (!jbool(live_state_, "guide_enabled", true))
@@ -33,10 +52,11 @@ Session::live_guide_labels(const live_tv::Channel &channel) const {
                 ? "Loading programme guide..."
                 : "Programme guide unavailable",
             "X: watch channel · Square: favorite"};
-  auto pair = live_guide::current(*list, now_epoch_ms() / 1000);
-  return {pair.now ? "Now: " + live_guide::label(*pair.now)
+  const int offset=live_guide_offset();
+  auto pair = live_guide::current(*list, now_epoch_ms() / 1000-int64_t(offset)*60);
+  return {pair.now ? "Now: " + live_guide::label(*pair.now,offset)
                    : "Now: No listing supplied",
-          pair.next ? "Next: " + live_guide::label(*pair.next)
+          pair.next ? "Next: " + live_guide::label(*pair.next,offset)
                     : "Next: No listing supplied"};
 }
 void Session::live_guide_configure() {
@@ -82,6 +102,7 @@ void Session::live_guide_update(int focus) {
       source = row;
   if (!source.is_object())
     return;
+  const auto offset=int64_t(live_guide::offset_minutes(source))*60;
   const auto url = jstr(source, "epg_url", "").empty()
                        ? live_guide_auto_url_
                        : jstr(source, "epg_url");
@@ -114,11 +135,11 @@ void Session::live_guide_update(int focus) {
       live_guide_refresh_ =
           document ? live_guide_document_expires_ : time + 900;
       bg<live_guide::Result>(
-          [url, ids, cancel, document] {
+          [url, ids, cancel, document, offset] {
             if (document)
               return live_guide::parse_xmltv(
-                  *document, ids, now_epoch_ms() / 1000, cancel.get());
-            return live_guide::fetch_xmltv(url, ids, now_epoch_ms() / 1000,
+                  *document, ids, now_epoch_ms() / 1000-offset, cancel.get());
+            return live_guide::fetch_xmltv(url, ids, now_epoch_ms() / 1000-offset,
                                            cancel.get());
           },
           [this, generation, profile](auto &r) {
@@ -154,10 +175,10 @@ void Session::live_guide_update(int focus) {
       live_guide_pending_.insert(channel);
       ++live_guide_inflight_;
       bg<live_guide::Result>(
-          [source, channel, cancel] {
+          [source, channel, cancel, offset] {
             return live_guide::fetch_xtream(
                 jstr(source, "url"), jstr(source, "username"),
-                jstr(source, "password"), channel, now_epoch_ms() / 1000,
+                jstr(source, "password"), channel, now_epoch_ms() / 1000-offset,
                 cancel.get());
           },
           [this, generation, profile, channel](auto &r) {

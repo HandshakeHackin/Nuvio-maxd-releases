@@ -59,7 +59,7 @@ FLAGS+=(-DNUVIO_HAVE_VLC -DNUVIO_VLC_STATIC -I"$VLC_SRC/include")
 
 echo ">> compiling"
 sources=("$ROOT"/ui/*.cpp "$ROOT"/gl/*.cpp "$ROOT/update/core.cpp"
-	"$ROOT/src/trailers.cpp" "$ROOT/src/live_tv.cpp" "$ROOT/src/live_guide.cpp" "$ROOT/src/iptv_library.cpp" "$ROOT/src/nuvio_account.cpp" "$ROOT/src/watch_sync.cpp" "$ROOT/src/tracking.cpp" "$ROOT/src/connected_services.cpp" "$ROOT/src/connected_preparer.cpp" "$ROOT/src/bidi.cpp" "$ROOT/src/stremio.cpp" "$ROOT/src/providers.cpp" "$ROOT/src/http.cpp" "$ROOT/src/util.cpp" "$ROOT/src/tasks.cpp"
+	"$ROOT/src/trailers.cpp" "$ROOT/src/live_tv.cpp" "$ROOT/src/live_guide.cpp" "$ROOT/src/iptv_library.cpp" "$ROOT/src/media_server.cpp" "$ROOT/src/nuvio_account.cpp" "$ROOT/src/watch_sync.cpp" "$ROOT/src/tracking.cpp" "$ROOT/src/connected_services.cpp" "$ROOT/src/connected_preparer.cpp" "$ROOT/src/bidi.cpp" "$ROOT/src/stremio.cpp" "$ROOT/src/providers.cpp" "$ROOT/src/http.cpp" "$ROOT/src/util.cpp" "$ROOT/src/tasks.cpp"
 	"$ROOT/src/packet_storage.cpp" "$ROOT/src/diagnostics.cpp" "$ROOT/src/player.cpp" "$ROOT/src/vlc_backend.cpp" "$ROOT/src/vlc_cancel.cpp" "$ROOT/src/netstream.cpp" "$ROOT/src/hwdec_ps5.cpp" "$ROOT/src/yuv_convert.cpp" "$ROOT/src/video_frame.cpp" "$ROOT/src/display_output.cpp"
 	"$ROOT/src/evo_backend.cpp" "$ROOT/src/evo_runtime.cpp"
 	"$ROOT/src/subtitle_renderer.cpp" "$ROOT/src/subtitles.cpp" "$ROOT/src/pcm_out.cpp" "$ROOT/src/bitstream.cpp" "$ROOT"/src/torrent/*.cpp
@@ -218,6 +218,8 @@ python3 "$ROOT/tools/validate_tracker_applications.py" \
 # contains (app/licenses/README.txt), and the notices of the toolkit and the OpenGL SDK.
 cp -r "$ROOT/app/licenses" "$APP/"
 cp "$ROOT/LICENSE" "$ROOT/THIRD_PARTY.md" "$APP/"
+mkdir -p "$APP/licenses/libass"
+cp "$ROOT/third_party/libass/"{LICENSE,README.md} "$APP/licenses/libass/"
 mkdir -p "$APP/licenses/vlc"
 cp "$ROOT/third_party/vlc/"{COPYING,COPYING.LIB,COPYING.dvbpsi,COPYING.ebml,COPYING.matroska,COPYING.utf8cpp,UPSTREAM.json,README.md} "$APP/licenses/vlc/"
 mkdir -p "$APP/licenses/evo-player"

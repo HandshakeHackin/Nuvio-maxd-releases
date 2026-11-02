@@ -1,4 +1,5 @@
 #include "live_guide.h"
+#include <cmath>
 #include "airtime.hpp"
 #include "util.h"
 #include <algorithm>
@@ -209,8 +210,14 @@ NowNext current(const Listings &list, int64_t now) {
       r.next = &p;
   return r;
 }
-std::string label(const Programme &p) {
-  time_t t = p.start;
+int offset_minutes(const json& source) {
+  const auto& value=jobj(source,"guide_offset_minutes");
+  if(!value.is_number())return 0;
+  const double n=value.get<double>();
+  return std::isfinite(n)?int(std::clamp(n,-720.0,720.0)):0;
+}
+std::string label(const Programme &p, int offset_minutes) {
+  time_t t = p.start + int64_t(std::clamp(offset_minutes,-720,720))*60;
   tm local{};
   localtime_r(&t, &local);
   char time[8];

@@ -17,7 +17,7 @@ using hui::ui::text;
 namespace
 {
 
-constexpr const char *kPageNames[7] = {"Board", "Discover", "Library", "Addons", "Settings", "Live TV", "IPTV Library"};
+constexpr const char *kPageNames[8] = {"Board", "Discover", "Library", "Addons", "Settings", "Live TV", "IPTV Library", "Media Servers"};
 constexpr float kItemW = 100.0f;
 constexpr float kItemH = 108.0f;
 constexpr float kItemGap = 12.0f;
@@ -31,11 +31,13 @@ Rail::Rail()
 
 Rect Rail::item_rect(int index) const
 {
-    const float count=iptv_visible_?7.0f:6.0f;
-    const float total = count * kItemH + (count-1) * kItemGap;
+    const float count=6.0f+float(iptv_visible_)+float(servers_visible_);
+    const float height=count==8?94.0f:kItemH;
+    if(index==7&&!iptv_visible_)index=6;
+    const float total = count * height + (count-1) * kItemGap;
     const float top = (theme::kScreenH - total) * 0.5f;
-    return {(theme::kRailWidth - kItemW) * 0.5f, top + static_cast<float>(index) * (kItemH + kItemGap),
-            kItemW, kItemH};
+    return {(theme::kRailWidth - kItemW) * 0.5f, top + static_cast<float>(index) * (height + kItemGap),
+            kItemW, height};
 }
 
 void Rail::set_page(Page page)
@@ -54,7 +56,9 @@ void Rail::focus(bool on)
 
 void Rail::move(int delta)
 {
-    cursor_ = std::clamp(cursor_ + delta, 0, iptv_visible_?6:5);
+    int next=cursor_+delta;
+    if(next==6&&!iptv_visible_)next+=delta>0?1:-1;
+    cursor_=std::clamp(next,0,servers_visible_?7:iptv_visible_?6:5);
 }
 
 void Rail::reset(Page page)
@@ -71,8 +75,11 @@ void Rail::set_iptv_visible(bool visible) {
     if(!iptv_visible_&&cursor_==6)cursor_=0;
     if(!iptv_visible_&&page_==6)page_=0;
 }
-void Rail::update(float dt, bool iptv_visible)
+void Rail::update(float dt, bool iptv_visible, bool servers_visible)
 {
+    servers_visible_=servers_visible;
+    if(!servers_visible_&&cursor_==7)cursor_=0;
+    if(!servers_visible_&&page_==7)page_=0;
     set_iptv_visible(iptv_visible);
     pill_.target(item_rect(cursor_));
     pill_.update(dt, 22.0f);
@@ -91,9 +98,11 @@ void Rail::draw(hui::gfx::DrawList &list, const Env &env, float age) const
         list.bordered_rect(p, 26, theme::accent, 3.0f, Color::rgb(0xffffff));
         list.pop_opacity();
     }
-    for (int i = 0; i < (iptv_visible_?7:6); ++i)
+    for (int i = 0; i < 8; ++i)
     {
+        if((i==6&&!iptv_visible_)||(i==7&&!servers_visible_))continue;
         const Rect r = item_rect(i);
+        const bool compact=iptv_visible_&&servers_visible_;
         const bool active = i == page_;
         const bool under_cursor = focused_ && i == cursor_;
         // Items arrive one after the other when a page opens.
@@ -102,18 +111,21 @@ void Rail::draw(hui::gfx::DrawList &list, const Env &env, float age) const
         if (active && !under_cursor)
             list.rounded_rect(r, 26, theme::surface);
         const Color tint = (active || under_cursor) ? Color::rgb(0xffffff) : theme::ink_3;
-        const std::uint32_t icon = (active || under_cursor) ? env.icons.nav_solid[i==6?2:i] : env.icons.nav_line[i==6?2:i];
+        const std::uint32_t icon = (active || under_cursor) ? env.icons.nav_solid[i>=6?2:i] : env.icons.nav_line[i>=6?2:i];
         if(i==5){
-            const Rect tv{r.cx()-24.0f,r.y+19.0f,48.0f,34.0f};
+            const Rect tv{r.cx()-(compact?17.0f:24.0f),r.y+(compact?12.0f:19.0f),compact?34.0f:48.0f,compact?24.0f:34.0f};
             list.bordered_rect(tv,6,Color::rgb(0xffffff,0),3,tint);
-            list.rounded_rect({r.cx()-10,r.y+57,20,3},1,tint);
+            list.rounded_rect({r.cx()-10,r.y+(compact?40:57),20,3},1,tint);
         }
         else if (icon != 0)
-            list.image(icon, {r.cx() - 24.0f, r.y + 14.0f + 6.0f * (1.0f - in), 48.0f, 48.0f}, kFullUv, tint);
-        if(i==6){
-            text(list,env.fonts.regular,"IPTV",r.cx(),r.y+81,theme::kLabel,tint,Align::center);
-            text(list,env.fonts.regular,"Library",r.cx(),r.y+101,theme::kLabel,tint,Align::center);
-        } else text(list, env.fonts.regular, kPageNames[i], r.cx(), r.y + 90.0f, theme::kLabel, tint, Align::center);
+        {
+            const float size=compact?32.0f:48.0f;
+            list.image(icon, {r.cx() - size/2, r.y + (compact?8.0f:14.0f) + 6.0f * (1.0f - in), size, size}, kFullUv, tint);
+        }
+        if(i>=6){
+            text(list,env.fonts.regular,(i==6?"IPTV":"Media"),r.cx(),r.y+r.h-27,theme::kLabel,tint,Align::center);
+            text(list,env.fonts.regular,(i==6?"Library":"Servers"),r.cx(),r.y+r.h-7,theme::kLabel,tint,Align::center);
+        } else text(list, env.fonts.regular, kPageNames[i], r.cx(), r.y + r.h-18.0f, theme::kLabel, tint, Align::center);
         list.pop_opacity();
     }
 }

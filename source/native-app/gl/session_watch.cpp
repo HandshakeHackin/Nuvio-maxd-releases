@@ -226,6 +226,7 @@ void Session::play_stream(const ::Stream &st, bool transcode, bool trailer)
             start = cw.offset;
     }
 
+    if(w_item_.type=="media-video")start=media_resume_;
     if(iptv::library_type(w_item_.type))start=iptv_resume(w_item_.id);
     if(w_trailer_)subtitle="Trailer";
     const int gen = ++w_gen_;
@@ -270,7 +271,7 @@ void Session::play_stream(const ::Stream &st, bool transcode, bool trailer)
     w_episode_tick_ = now_seconds();
     if (w_episode_cancel_) *w_episode_cancel_ = true;
     w_episode_cancel_ = std::make_shared<std::atomic<bool>>(false);
-    if(!w_trailer_ && w_item_.type != "tv" && !iptv::library_type(w_item_.type)) watch_load_segments(season, episode);
+    if(!w_trailer_ && w_item_.type != "tv" && w_item_.type != "media-video" && !iptv::library_type(w_item_.type)) watch_load_segments(season, episode);
     if (detail.series && !w_trailer_)
         if (const auto* next = episode_playback::next_video(d_meta_.videos, w_video_id_, now_epoch_ms())) w_next_ = *next;
     art_dirty_ = true;
@@ -452,7 +453,7 @@ void Session::play_stream(const ::Stream &st, bool transcode, bool trailer)
             // Several connections and the long read-ahead for big files: direct links
             // and the streaming server's torrent streams. Not for transcoding, which is
             // a playlist of pieces.
-            const bool par = !w_trailer_ && w_item_.type != "tv" && !iptv::library_type(w_item_.type) && r.url.find("/hlsv2/") == std::string::npos;
+            const bool par = !w_trailer_ && w_item_.type != "tv" && w_item_.type != "media-video" && !iptv::library_type(w_item_.type) && r.url.find("/hlsv2/") == std::string::npos;
             watch_start(r.url, r.headers, start, title, subtitle, par);
         });
 }
@@ -468,7 +469,8 @@ void Session::watch_start(const std::string &url, const std::vector<std::string>
     o.evo = prefs_.evo_player;
     o.vlc = prefs_.vlc_player;
     o.surround = prefs_.surround_audio;
-    o.audio_mode=prefs_.audio_gain_percent==100?prefs_.audio_output_mode:"pcm";
+    o.audio_mode=prefs_.audio_gain_percent==100 && prefs_.night_mode==0?prefs_.audio_output_mode:"pcm";
+    o.night_mode=prefs_.night_mode;o.lfe_mix_percent=prefs_.lfe_mix_percent;
     o.gain_percent=prefs_.audio_gain_percent;o.audio_delay=prefs_.audio_delay_ms/1000.0;
     o.headers = headers;
     o.start = start;
@@ -491,6 +493,7 @@ void Session::watch_start(const std::string &url, const std::vector<std::string>
     playing.chapters.clear();playing.chapter_labels.clear();playing.chapter_active=-1;
     w_auto_sub_done_ = false;
     w_subs_.clear();
+    w_sub_sync_busy_=false;
     w_sub_active_ = -1;
     w_sub_delay_ = prefs_.subtitle_delay_ms/1000.0;
     subtitle_shown_.clear();
@@ -498,7 +501,7 @@ void Session::watch_start(const std::string &url, const std::vector<std::string>
     w_last_saved_pos_ = start;
     w_info_until_ = now_seconds() + kInfoSeconds;
     launch.stage = 1;
-    if(!w_trailer_ && w_item_.type != "tv" && !iptv::library_type(w_item_.type)) watch_load_addon_subtitles();
+    if(!w_trailer_ && w_item_.type != "tv" && w_item_.type != "media-video" && !iptv::library_type(w_item_.type)) watch_load_addon_subtitles();
 }
 
 // ---------------------------------------------------------------------------
@@ -588,6 +591,7 @@ void Session::watch_update()
     const double now = now_seconds();
     const Player::State st = player_.state();
     player_.log_stats();
+    media_tick();
     // The PlayStation's menu is over the app (the PS button), or the app is in the background: pause.
     // It stays paused until Cross.
     {
@@ -608,6 +612,7 @@ void Session::watch_update()
         nuvio_diagnostics::record({{"playerFailed",true}});
         say(iptv::library_type(w_item_.type)
                 ? iptv::failure_message(err)
+                : w_item_.type=="media-video" ? "Media server playback failed: "+err+". Select the title again and try Compatible playback (server HLS), or reconnect in Settings if access was denied."
                 : "Playback failed: " + err +
                       (w_stream_.torrent() ? ". The torrent may have no seeders; try another stream." : ""),
             iptv::library_type(w_item_.type) ? 14.0 : 8.0, true);
@@ -678,6 +683,7 @@ void Session::watch_update()
         if(chapters.size()!=playing.chapters.size() || !std::equal(chapters.begin(),chapters.end(),playing.chapters.begin(),
             [](const auto& a,const auto& b){return a.start==b.start && a.title==b.title;})) {
             playing.chapters=std::move(chapters);
+            watch_merge_segments();
             w_menu_dirty_=true;
         }
     }
@@ -686,6 +692,8 @@ void Session::watch_update()
     if (watch_episode_update(now, pos, dur, w_started_ && !buffering && !player_.paused() && !playing.menu))
         return;
 
+    watch_sync_subtitles();
+
     // The subtitle on screen.
     std::string sub;
     int rich_id=-1;
@@ -693,7 +701,7 @@ void Session::watch_update()
     {
         WatchSub &ws = w_subs_[static_cast<std::size_t>(w_sub_active_)];
         rich_id=ws.embedded>=0?ws.embedded:ws.rich_id;
-        const double t = pos + player_.video_sync_offset() - w_sub_delay_;
+        const double t = (pos + player_.video_sync_offset() - w_sub_delay_ - ws.sync_offset)/ws.sync_scale;
         if (ws.embedded >= 0)
             sub = player_.embedded_subtitle(ws.embedded, t);
         else if (!ws.cues.empty())
@@ -702,14 +710,19 @@ void Session::watch_update()
     int embedded_stream=-1;
     if(w_sub_active_>=0 && w_sub_active_<int(w_subs_.size())) embedded_stream=w_subs_[size_t(w_sub_active_)].embedded;
     if(st==Player::State::Playing)player_.select_embedded_subtitle(embedded_stream,w_sub_delay_);
+    double subtitle_time=pos+player_.video_sync_offset()-w_sub_delay_;
+    if(w_sub_active_>=0 && w_sub_active_<int(w_subs_.size())) {
+        const auto& selected=w_subs_[size_t(w_sub_active_)];
+        subtitle_time=(subtitle_time-selected.sync_offset)/selected.sync_scale;
+    }
     const auto& style=prefs_.subtitle_style;
-    auto overlay=player_.subtitle_renderer().render(rich_id,pos+player_.video_sync_offset()-w_sub_delay_,video_w,video_h,video_sar,
+    auto overlay=player_.subtitle_renderer().render(rich_id,subtitle_time,video_w,video_h,video_sar,
         playing.controls?125.0f:0.0f,style.font,style.colour,style.effect,style.background,
         subtitle_size::index(prefs_.sub_size));
     if(!overlay.supported && rich_id < -1 && w_sub_active_>=0 && w_sub_active_<int(w_subs_.size())) {
         auto& selected=w_subs_[size_t(w_sub_active_)];
         if(!selected.rich_text.empty() && player_.subtitle_renderer().external(rich_id,selected.rich_text,selected.lang))
-            overlay=player_.subtitle_renderer().render(rich_id,pos+player_.video_sync_offset()-w_sub_delay_,video_w,video_h,video_sar,
+            overlay=player_.subtitle_renderer().render(rich_id,subtitle_time,video_w,video_h,video_sar,
                 playing.controls?125.0f:0.0f,style.font,style.colour,style.effect,style.background,
                 subtitle_size::index(prefs_.sub_size));
     }
@@ -871,6 +884,7 @@ void Session::upload_video()
 void Session::watch_stop(bool ended)
 {
     if(multiview_active){multi_stop();return;}
+    media_tick(true);
     resume_play_ = false;
     resuming_ = false;
     if (w_started_ && !ended)
@@ -924,6 +938,7 @@ void Session::fail_video_output(const std::string& error) {
 
 void Session::watch_save_progress(bool final, bool force_finished)
 {
+    if(w_item_.type=="media-video")return;
     if(iptv::library_type(w_item_.type)){iptv_progress(force_finished);return;}
     const double pos = player_.position(), dur = player_.duration();
     if (!trailers::records_history(w_trailer_,w_item_.type) || dur <= 0 || w_item_.id.empty())
@@ -1105,7 +1120,7 @@ void Session::watch_input(const hui::InputFrame &in)
                 player_.set_audio_delay(prefs_.audio_delay_ms/1000.0);
             } else {
                 prefs_.subtitle_delay_ms=std::clamp(int(std::lround(w_sub_delay_*1000))+sync_step,-10000,10000);
-                w_sub_delay_=prefs_.subtitle_delay_ms/1000.0;
+                w_sub_delay_=prefs_.subtitle_delay_ms/1000.0;watch_manual_subtitle_timing();
             }
             adjusted=true;
         }
@@ -1120,7 +1135,7 @@ void Session::watch_input(const hui::InputFrame &in)
         if(in.is_pressed(Action::north) && playing.menu_column<2) {
             if(playing.menu_column==0) {prefs_.audio_delay_ms=0;player_.set_audio_delay(0);
                 if(player_.set_audio_gain(100))prefs_.audio_gain_percent=100;
-            } else {prefs_.subtitle_delay_ms=0;w_sub_delay_=0;}
+            } else {prefs_.subtitle_delay_ms=0;w_sub_delay_=0;watch_manual_subtitle_timing();}
             adjusted=true;
         }
         if(adjusted)save_prefs();
@@ -1134,7 +1149,7 @@ void Session::watch_input(const hui::InputFrame &in)
         return;
     }
 
-    if (!w_trailer_ && w_item_.type != "tv" && !iptv::library_type(w_item_.type) && watch_episode_input(in)) return;
+    if (!w_trailer_ && w_item_.type != "tv" && w_item_.type != "media-video" && !iptv::library_type(w_item_.type) && watch_episode_input(in)) return;
 
     if (in.is_pressed(Action::confirm) || in.is_pressed(Action::touch))
     {
@@ -1210,12 +1225,12 @@ void Session::watch_input(const hui::InputFrame &in)
     }
     else if (in.is_pressed(Action::jump_prev))
     {
-        w_sub_delay_ -= 0.25;
+        w_sub_delay_ -= 0.25;watch_manual_subtitle_timing();
         say("Subtitle delay " + std::to_string(static_cast<int>(std::lround(w_sub_delay_ * 1000))) + " ms");
     }
     else if (in.is_pressed(Action::jump_next))
     {
-        w_sub_delay_ += 0.25;
+        w_sub_delay_ += 0.25;watch_manual_subtitle_timing();
         say("Subtitle delay " + std::to_string(static_cast<int>(std::lround(w_sub_delay_ * 1000))) + " ms");
     }
     else if (in.is_pressed(Action::back))
@@ -1281,6 +1296,7 @@ void Session::watch_build_menu()
             label += "  (loading)";
         if (s.failed)
             label += "  (failed)";
+        if (s.synced)label += "  (auto-synced)";
         playing.subtitle_tracks.push_back(label);
     }
     playing.subtitle_active = w_sub_active_ + 1;
@@ -1301,6 +1317,40 @@ void Session::watch_build_menu()
 
 // ---------------------------------------------------------------------------
 // Subtitles
+
+void Session::watch_manual_subtitle_timing() {
+    if(w_sub_active_>=0 && w_sub_active_<int(w_subs_.size()))w_subs_[size_t(w_sub_active_)].sync_manual=true;
+}
+void Session::watch_sync_subtitles() {
+    if(!prefs_.subtitle_auto_sync || prefs_.vlc_player || w_trailer_ || w_item_.type=="tv" ||
+       !watching || w_sub_sync_busy_ || w_sub_active_<0 || w_sub_active_>=int(w_subs_.size()))return;
+    auto& selected=w_subs_[size_t(w_sub_active_)];
+    const auto now=now_seconds();
+    if(selected.embedded>=0 || selected.cues.empty() || selected.failed || selected.synced || selected.sync_manual || selected.sync_busy || now<selected.sync_after)return;
+    selected.sync_after=now+15;
+    int track=-1;
+    for(const auto& row:w_subs_)if(row.embedded>=0 && !row.forced && !row.hearing_impaired) {
+        if(track<0)track=row.embedded;
+        if(!selected.lang.empty() && language_to_iso639_2(row.lang)==language_to_iso639_2(selected.lang)){track=row.embedded;break;}
+    }
+    if(track<0)return;
+    auto reference=player_.embedded_timeline(track);
+    if(reference.size()<20 || reference.size()<selected.sync_reference_count+8)return;
+    selected.sync_reference_count=reference.size();selected.sync_busy=true;w_sub_sync_busy_=true;
+    std::vector<subtitle_sync::Timing> target;target.reserve(std::min<size_t>(selected.cues.size(),4096));
+    for(const auto& c:selected.cues){target.push_back({c.start,c.end});if(target.size()==4096)break;}
+    const auto url=selected.url;const int gen=w_gen_;const auto cancel=w_episode_cancel_;
+    bg<subtitle_sync::Match>([reference=std::move(reference),target=std::move(target),cancel]()mutable {
+        return subtitle_sync::estimate(std::move(reference),std::move(target),cancel.get());
+    },[this,gen,url,cancel](const auto& result){
+        if(gen!=w_gen_ || !watching || *cancel)return;
+        w_sub_sync_busy_=false;
+        for(auto& row:w_subs_)if(row.embedded<0 && row.url==url) {
+            row.sync_busy=false;
+            if(result.confident && prefs_.subtitle_auto_sync && !row.sync_manual){row.sync_scale=result.scale;row.sync_offset=result.offset;row.synced=true;w_menu_dirty_=true;say("External subtitles synchronized to the file",5);}
+        }
+    });
+}
 
 void Session::watch_select_sub(int index)
 {

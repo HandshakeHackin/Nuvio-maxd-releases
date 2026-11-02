@@ -110,6 +110,21 @@ void iptv_visibility_changes() {
 }
 
 
+void media_server_visibility_changes() {
+    Fixture f;bool iptv=false,servers=true;f.env.iptv_visible=&iptv;f.env.media_servers_visible=&servers;
+    sx::Board b(f.env);sx::BoardContent empty;b.set_content(&empty);b.enter();move(b,hui::Direction::left);
+    for(int i=0;i<7;++i)move(b,hui::Direction::down);
+    expect(b.rail_cursor()==7,"Media Servers cannot be reached with IPTV hidden");
+    move(b,hui::Direction::up);expect(b.rail_cursor()==5,"hidden IPTV receives focus moving upward");
+    iptv=true;move(b,hui::Direction::down);expect(b.rail_cursor()==6,"IPTV disappears when servers connect");
+    move(b,hui::Direction::down);expect(b.rail_cursor()==7,"both optional tabs cannot be reached");
+    servers=false;move(b,hui::Direction::none);expect(b.rail_cursor()==0,"disconnected server retains focus");
+    sx::Library page(f.env,sx::Page::servers);sx::LibraryContent content;content.filters={{"Server","Choose"},{"Browse","Libraries"},{"Continue watching","Resume"}};
+    servers=true;content.items.resize(3);page.set_content(&content);page.enter();move(page,hui::Direction::right);
+    expect(page.cursor_index()==1,"media server poster navigation changed");
+    move(page,hui::Direction::up);expect(page.filter_cursor()>=0,"media server filters unavailable");
+}
+
 void library_search_controls() {
     Fixture f; sx::Library page(f.env);sx::LibraryContent content;
     content.filters={{"Show","All types"},{"Sort","A-Z"},{"Search","dark"},{"Clear","Search"}};
@@ -132,6 +147,7 @@ int main() {
         {"library_search_controls",library_search_controls},
         {"iptv_visibility_changes",iptv_visibility_changes},
         {"live_tv_rail_and_channel_arrival",live_tv_rail_and_channel_arrival},
+        {"media_server_visibility_changes",media_server_visibility_changes},
         {"home_without_catalogs", home_without_catalogs},
         {"home_reload_and_arrival", home_reload_and_arrival},
         {"home_empty_frames_keep_menu_selection", home_empty_frames_keep_menu_selection},
@@ -144,6 +160,6 @@ int main() {
         try { test.run(); std::printf("%s: PASS\n", test.name); }
         catch (const std::exception& e) { ++failed; std::printf("%s: FAIL (%s)\n", test.name, e.what()); }
     }
-    std::printf("UI navigation: 9 tests, %d failures\n", failed);
+    std::printf("UI navigation: %zu tests, %d failures\n", sizeof(tests)/sizeof(tests[0]), failed);
     return failed ? 1 : 0;
 }

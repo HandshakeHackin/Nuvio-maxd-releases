@@ -4,10 +4,12 @@
 #include "player_lifecycle_host.cpp"
 #undef main
 #include "player_streams.hpp"
+#include "http_credentials.hpp"
 extern "C" int console_curl_nonblocking(int){return 0;}
 int main(int argc,char** argv) try {
  require(argc==2 || argc==3,"master URL missing");
- const bool live=argc==3;
+ const bool live=argc==3 && std::string(argv[2])=="--live";
+ const bool media=argc==3 && std::string(argv[2])=="--media";
  if(live){
   auto* f=avformat_alloc_context();NetStream::IoHooks hooks;hooks.http_only=true;NetStream::install(f,&hooks);
   AVIOContext* input=nullptr;AVDictionary* opts=nullptr;
@@ -29,7 +31,7 @@ int main(int argc,char** argv) try {
   avformat_free_context(f);
  }
  http_init("");
- Player p;Player::Options o;o.url=argv[1];o.live_tv=live;o.audio_langs={"heb"};p.open(o);
+ Player p;Player::Options o;o.url=argv[1];o.live_tv=live;if(media)o.headers={"X-Emby-Authorization: MediaBrowser Token=\"hls-fixture\"", "X-Maxd-Credential-Origin: "+http_credentials::origin(o.url)};o.audio_langs={"heb"};p.open(o);
  run_until(p,[&]{return p.state()==Player::State::Playing;});
  // The selected low rendition belongs to English group 0. Hebrew audio 1
  // belongs to the other video variant and must not override that pairing.

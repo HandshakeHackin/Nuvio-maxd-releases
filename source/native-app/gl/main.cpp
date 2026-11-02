@@ -208,6 +208,7 @@ int main()
                                       display_fallback);
     static sx::Env env{fonts, icons};
     env.iptv_visible=&session.iptv_visible;
+    env.media_servers_visible=&session.media_visible;
     static sx::Shell shell(env, session);
     shell.start_sound(root + "/sounds"); // the interface's sounds
     shell.start_boot_at(boot_seconds()); // the animation goes on from where the frames above left it

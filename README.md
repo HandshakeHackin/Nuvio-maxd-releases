@@ -1,3 +1,5 @@
+> **Temporary test build 1.0.0.6:** Jellyfin/Emby media servers for [issue #14](https://github.com/HandshakeHackin/Nuvio-maxd-releases/issues/14). [Install and test](test-builds/1.0.0.6/TESTING.md). Reporter testing is pending.
+
 <p align="center">
   <img src="sce_sys/icon0.png" alt="MAX'D Nuvio edition app icon" width="176" height="176">
 </p>

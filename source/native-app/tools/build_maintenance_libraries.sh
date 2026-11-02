@@ -67,14 +67,27 @@ if [ ! -f openssl.done ]; then
   install_overlay "$W/stage-openssl"
   cd "$W"; touch openssl.done
 fi
-if [ ! -f libass.done ]; then
+LIBASS_PATCHSET=$(python3 - "$ROOT" <<'PATCHES'
+from pathlib import Path
+import hashlib,json,sys
+r=Path(sys.argv[1]);patches=json.loads((r/'dependencies.json').read_text())['maintenanceLibraries'].get('libassPatches',[])
+for patch in patches:
+    assert hashlib.sha256((r/patch['path']).read_bytes()).hexdigest()==patch['sha256'], 'libass patch checksum mismatch'
+print(hashlib.sha256(json.dumps(patches,sort_keys=True).encode()).hexdigest())
+PATCHES
+)
+if [ ! -f libass.done ] || [ "$(cat libass.done)" != "$LIBASS_PATCHSET" ]; then
+  rm -rf "$W/libass-0.17.5"
   tar xf downloads/libass-0.17.5.tar.xz
+  for patch_file in "$ROOT"/third_party/libass/*.patch; do
+    patch --batch --fuzz=0 -p1 -d "$W/libass-0.17.5" < "$patch_file"
+  done
   cd libass-0.17.5
   ./configure --prefix=/user/homebrew --host=x86_64-pc-freebsd --enable-static --disable-shared --disable-asm --enable-large-tiles
   make -j"${JOBS:-2}"
   make install DESTDIR="$W/stage-libass"
   install_overlay "$W/stage-libass"
-  cd "$W"; touch libass.done
+  cd "$W"; printf '%s\n' "$LIBASS_PATCHSET" > libass.done
 fi
 if [ ! -f curl.done ]; then
   tar xf downloads/curl-8.23.0.tar.xz

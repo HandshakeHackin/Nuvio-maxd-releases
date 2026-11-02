@@ -1,11 +1,13 @@
 // Episode timings are metadata, never inferred from the picture or audio.
 #pragma once
 #include "stremio.h"
+#include "chapters.hpp"
 #include <optional>
 
 namespace sx::episode_playback {
 enum class Kind { recap, intro, credits, post_credits };
 struct Segment { Kind kind; double start, end; };
+std::vector<Segment> chapter_segments(const std::vector<playback::Chapter>&, double duration);
 std::vector<Segment> parse_segments(const json& data);
 std::string timing_url(const std::vector<std::string>& ids, int season, int episode, bool movie = false);
 
@@ -44,6 +46,7 @@ int select_stream(const std::vector<::Stream>& streams, const ::Stream& previous
 class Flow {
 public:
     std::vector<Segment> segments;
+    void replace_segments(std::vector<Segment> replacement);
     int active = -1;
     bool next_visible = false, cancelled = false;
     double remaining = 10;

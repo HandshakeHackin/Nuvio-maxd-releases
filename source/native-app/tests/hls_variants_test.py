@@ -24,8 +24,11 @@ class Handler(http.server.SimpleHTTPRequestHandler):
   if self.path=='/opaque-master':
    data=(p/'master.m3u8').read_bytes();self.send_response(200);self.send_header('Content-Type','application/octet-stream');self.send_header('Content-Length',str(len(data)));self.end_headers();self.wfile.write(data);return
   path=urlsplit(self.path).path
-  if path.startswith('/live/'):
-   name=path.removeprefix('/live/')
+  if path.startswith('/live/') or path.startswith('/private/'):
+   if path.startswith('/private/'):
+    assert self.headers.get('X-Emby-Authorization')=='MediaBrowser Token="hls-fixture"'
+    assert self.headers.get('X-Maxd-Credential-Origin') is None
+   name=path.removeprefix('/live/').removeprefix('/private/')
    if name=='master':data=(p/'master.m3u8').read_bytes()
    elif name.endswith('.m3u8') and '/' not in name:
     text=(p/name).read_text()
@@ -34,6 +37,9 @@ class Handler(http.server.SimpleHTTPRequestHandler):
     if name.endswith('low-video-2'):time.sleep(4)
     data=(p/(name.split('/')[-1]+'.ts')).read_bytes()
    else:self.send_error(404);return
+   if path.startswith('/private/') and (name=='master' or name.endswith('.m3u8')):
+    text=data.decode();text=re.sub(r'([A-Za-z-]+\.m3u8)',r'\1?api_key=PRIVATE_FIXTURE_TOKEN',text)
+    text=text.replace('?token=fixture','?token=fixture&api_key=PRIVATE_FIXTURE_TOKEN');data=text.encode()
    self.send_response(200);self.send_header('Content-Type','application/octet-stream');self.send_header('Content-Length',str(len(data)));self.end_headers();self.wfile.write(data);return
   super().do_GET()
 s=http.server.ThreadingHTTPServer(('127.0.0.1',0),functools.partial(Handler,directory=str(p)))
@@ -50,4 +56,11 @@ try:
  assert any(x.startswith('/live/segments/') for x in seen),'no extensionless live segments fetched'
  assert 'stream fell behind' in result.stdout,'live fixture did not exercise buffer recovery'
  print('Live HTTP-only extensionless HLS segments, stall recovery, audio/video playback and local-file/write rejection passed')
+ seen.clear()
+ result=subprocess.run([str(r/'test-output/hls-variants-host'),f'http://127.0.0.1:{s.server_port}/private/master','--media'],text=True,capture_output=True,timeout=50)
+ print(result.stdout);print(result.stderr)
+ assert result.returncode==0,'Authenticated media-server HLS playback failed'
+ assert 'PRIVATE_FIXTURE_TOKEN' not in result.stdout+result.stderr,'server credential leaked into player logs'
+ assert any(x.startswith('/private/segments/') for x in seen),'no authenticated media segments fetched'
+ print('Authenticated media-server HLS: opaque playlists, extensionless audio/video segments and first-picture playback passed')
 finally:s.shutdown();s.server_close()

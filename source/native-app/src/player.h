@@ -6,6 +6,7 @@
 #include "vlc_backend.h"
 #include "packet_storage.h"
 #include "subtitle_renderer.h"
+#include "subtitle_sync.hpp"
 
 #include <atomic>
 #include <condition_variable>
@@ -58,6 +59,7 @@ public:
         bool preview = false; // bounded software SDR preview, no hardware decoder ownership
         bool video_only = false;
         int gain_percent = 100;
+        int night_mode = 0, lfe_mix_percent = 50;
         double audio_delay = 0; // positive: sound later relative to picture
 		bool live_tv = false; // HTTP-only live HLS; permits extensionless segments
 		bool surround = false;
@@ -100,6 +102,7 @@ public:
 	std::vector<Track> subtitle_tracks() const;
 	SubtitleRenderer& subtitle_renderer() { return subtitle_renderer_; }
 	std::string embedded_subtitle(int stream, double t);
+    std::vector<subtitle_sync::Timing> embedded_timeline(int stream);
 
 	// Owned native-resolution planes (or RGBA for uncommon software formats),
 	// valid until the next present(). Color conversion belongs to the GPU.

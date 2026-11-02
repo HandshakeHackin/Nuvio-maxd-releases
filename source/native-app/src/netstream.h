@@ -91,6 +91,7 @@ private:
 	void drop_disk_cache(const char* why);
 	void log_speed(int64_t bytes);
 	bool parallel_wanted_ = false, parallel_ = false;
+    bool credential_scope_ = false;
 	int window_ = 32;           // chunks held ahead of the reader
 	FILE* cache_ = nullptr;     // the read-ahead on storage (slot i at i x 4 MB)
 	std::string cache_path_;

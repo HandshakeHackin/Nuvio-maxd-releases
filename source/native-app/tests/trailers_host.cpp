@@ -60,5 +60,21 @@ int main(int argc,char** argv) {
  calls=0;assert(tmdb_videos(meta,"",nullptr,lookup).empty()&&calls==0);
  assert(tmdb_videos(meta,"dummy",&cancel,lookup).empty()&&calls==0);
  meta.id="tt1&injected=true";meta.imdb_id="";assert(tmdb_videos(meta,"dummy",nullptr,lookup).empty()&&calls==0);
+ assert(preferred_language("  spa,eng")=="es");
+ assert(preferred_language("spa,eng")=="es" && preferred_language("pt-BR")=="pt" && preferred_language("deu")=="de" && preferred_language("en&x=1")=="en");
+ Meta localized_meta;localized_meta.type="movie";localized_meta.tmdb_id="157336";
+ auto localized=videos;localized["results"].push_back(json{{"key","bbbbbbbbbbb"},{"site","YouTube"},{"type","Trailer"},{"iso_639_1","es"},{"name","Spanish trailer"}});
+ assert(candidates(localized_meta,localized,"spa").front().name=="Spanish trailer");
+ assert(candidates(localized_meta,localized,"de").front().name=="Official");
+ int localized_calls=0;
+ Request localized_lookup=[&](const std::string& url,const std::string*) {
+  ++localized_calls;assert(url.find(localized_calls==1?"language=es&":"language=en&")!=std::string::npos);
+  return answer(localized_calls==1?json{{"results",json::array({localized["results"].back()})}}:videos);
+ };
+ auto translated=tmdb_videos(localized_meta,"dummy",nullptr,localized_lookup,"es");
+ assert(localized_calls==2 && candidates(localized_meta,translated,"es").front().name=="Spanish trailer");
+ std::atomic<bool> localized_cancel{false};int cancelled_calls=0;
+ Request cancel_language=[&](const std::string&,const std::string*){++cancelled_calls;localized_cancel=true;return answer(videos);};
+ tmdb_videos(localized_meta,"dummy",&localized_cancel,cancel_language,"es");assert(cancelled_calls==1);
  puts("Trailer checks passed: identities, metadata, ranking, deduplication, safe URLs, public player responses, TMDB routing, fallback, cancellation and history isolation");
 }

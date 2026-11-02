@@ -23,6 +23,13 @@ constexpr int W=1920, H=1080;
 constexpr size_t kBitmapBudget=32u<<20;
 struct Tile { int x=0,y=0,w=0,h=0; std::vector<uint8_t> rgba; };
 struct Event { double start=0,end=0; std::vector<Tile> tiles; size_t bytes=0; };
+struct SubtitlePacket {
+    int id=0;double pts=0,duration=0;bool decoded=false;
+    std::string authored;
+    std::vector<std::pair<std::string,std::pair<long long,long long>>> chunks;
+    Event bitmap;
+    size_t bytes=0;
+};
 void ass_message(int level,const char* fmt,va_list args,void*) {
     if(level>2) return;
     char b[384]; vsnprintf(b,sizeof(b),fmt,args); dlog("subtitles: %s",b);
@@ -58,7 +65,31 @@ std::string cue_ass(std::string s) {
 }
 struct SubtitleRenderer::Impl {
     struct Track { ASS_Track* ass=nullptr; bool authored=false, bitmap=false; std::string language; int w=0,h=0; size_t bytes=0; std::deque<Event> events; };
-    std::mutex mutex;
+    std::mutex mutex, pending_mutex;
+    std::deque<SubtitlePacket> pending;
+    size_t pending_bytes=0;
+    void discard_pending() {std::lock_guard<std::mutex> lock(pending_mutex);pending.clear();pending_bytes=0;}
+    void drain_pending() {
+        std::deque<SubtitlePacket> jobs;
+        {std::lock_guard<std::mutex> lock(pending_mutex);jobs.swap(pending);pending_bytes=0;}
+        for(auto& job:jobs) {
+            auto found=tracks.find(job.id);if(found==tracks.end())continue;
+            auto& t=found->second;
+            if(t.ass) {
+                if(t.ass->n_events>10000)ass_flush_events(t.ass);
+                if(t.authored)ass_process_chunk(t.ass,job.authored.data(),int(job.authored.size()),llround(job.pts*1000),llround(std::max(.001,job.duration)*1000));
+                else for(auto& chunk:job.chunks)ass_process_chunk(t.ass,chunk.first.data(),int(chunk.first.size()),chunk.second.first,chunk.second.second);
+            } else if(t.bitmap && job.decoded) {
+                auto& e=job.bitmap;
+                if(!t.events.empty() && t.events.back().end>e.start)t.events.back().end=e.start;
+                if(!e.tiles.empty()) {
+                    while(!t.events.empty() && (t.events.size()>=120 || t.bytes+e.bytes>kBitmapBudget)){t.bytes-=t.events.front().bytes;t.events.pop_front();}
+                    t.bytes+=e.bytes;t.events.push_back(std::move(e));
+                }
+            }
+            ++generation;
+        }
+    }
     ASS_Library* library=nullptr;
     ASS_Renderer* renderer=nullptr;
     std::map<int,Track> tracks;
@@ -69,7 +100,7 @@ struct SubtitleRenderer::Impl {
     int last_style=-1;
     uint64_t generation=0,last_generation=0;
     bool last_had_pixels=false;
-    void clear() { for(auto& [id,t]:tracks) { (void)id; if(t.ass) ass_free_track(t.ass); } tracks.clear(); last_id=-1; ++generation; }
+    void clear() { discard_pending();for(auto& [id,t]:tracks) { (void)id; if(t.ass) ass_free_track(t.ass); } tracks.clear(); last_id=-1; ++generation; }
     ~Impl() { clear(); if(renderer) ass_renderer_done(renderer); if(library) ass_library_done(library); }
 };
 SubtitleRenderer::SubtitleRenderer():d_(new Impl) {}
@@ -114,27 +145,28 @@ void SubtitleRenderer::add_track(int id,const AVCodecParameters* par,const std::
     ++d_->generation;
 }
 void SubtitleRenderer::packet(int id,const AVPacket* p,double pts,double duration,const AVSubtitle* sub) {
-    std::lock_guard<std::mutex> lock(d_->mutex);
-    auto it=d_->tracks.find(id); if(it==d_->tracks.end() || pts<0) return;
-    auto& t=it->second;
-    if(t.ass) {
-        if(t.ass->n_events>10000) ass_flush_events(t.ass);
-        if(t.authored) ass_process_chunk(t.ass,reinterpret_cast<char*>(p->data),p->size,llround(pts*1000),llround(std::max(0.001,duration)*1000));
-        else if(sub) for(unsigned i=0;i<sub->num_rects;++i) {
-            auto* rect=sub->rects[i];
-            std::string chunk=rect->ass ? rect->ass : "0,0,Default,,0,0,0,,"+std::string(rect->text?rect->text:"");
-            const auto start=llround((pts+sub->start_display_time/1000.0)*1000);
-            const auto dur=sub->end_display_time>sub->start_display_time ? sub->end_display_time-sub->start_display_time : llround(std::max(0.001,duration)*1000);
-            ass_process_chunk(t.ass,chunk.data(),int(chunk.size()),start,dur);
-        }
-        ++d_->generation; return;
+    // The demux/audio reader never takes the libass render mutex. Snapshot only
+    // bounded packet data; the rendering side owns and updates all ASS tracks.
+    if(!p || !std::isfinite(pts) || pts<0 || p->size<0 || p->size>int(1u<<20))return;
+    SubtitlePacket job;job.decoded=sub!=nullptr;job.id=id;job.pts=pts;job.duration=duration;
+    if(p->data && p->size)job.authored.assign(reinterpret_cast<const char*>(p->data),size_t(p->size));
+    job.bytes=job.authored.size();
+    if(sub)for(unsigned i=0;i<std::min<unsigned>(sub->num_rects,256);++i) {
+        const auto* rect=sub->rects[i];if(!rect)continue;
+        const char* text=rect->ass?rect->ass:rect->text;
+        if(!text)continue;
+        const size_t length=strnlen(text,1u<<20);if(length==(1u<<20) || job.bytes+length>(2u<<20))break;
+        std::string chunk=rect->ass?std::string(text,length):"0,0,Default,,0,0,0,,"+std::string(text,length);
+        const auto start=llround((pts+sub->start_display_time/1000.0)*1000);
+        const auto dur=sub->end_display_time>sub->start_display_time ? sub->end_display_time-sub->start_display_time : llround(std::max(.001,duration)*1000);
+        job.bytes+=chunk.size();job.chunks.push_back({std::move(chunk),{start,dur}});
     }
-    if(!sub) return;
+    if(sub) {
     Event e; e.start=pts+sub->start_display_time/1000.0;
     e.end=sub->end_display_time>sub->start_display_time ? pts+sub->end_display_time/1000.0 : INFINITY;
-    for(unsigned i=0;i<sub->num_rects;++i) {
+    for(unsigned i=0;i<std::min<unsigned>(sub->num_rects,256);++i) {
         const auto* r=sub->rects[i];
-        if(r->type!=SUBTITLE_BITMAP || !r->data[0] || !r->data[1] || r->w<=0 || r->h<=0 ||
+        if(!r || r->type!=SUBTITLE_BITMAP || !r->data[0] || !r->data[1] || r->w<=0 || r->h<=0 ||
            r->w>4096 || r->h>4096 || r->linesize[0]<r->w) continue;
         const size_t bytes=size_t(r->w)*r->h*4;
         if(bytes>kBitmapBudget-e.bytes) continue;
@@ -148,15 +180,15 @@ void SubtitleRenderer::packet(int id,const AVPacket* p,double pts,double duratio
         }
         e.bytes+=bytes; e.tiles.push_back(std::move(tile));
     }
-    // PGS clear packets close the previous display even when there are no rectangles.
-    if(!t.events.empty() && t.events.back().end>e.start) t.events.back().end=e.start;
-    if(!e.tiles.empty()) {
-        while(!t.events.empty() && (t.events.size()>=120 || t.bytes+e.bytes>kBitmapBudget)) {
-            t.bytes-=t.events.front().bytes; t.events.pop_front();
-        }
-        t.bytes+=e.bytes; t.events.push_back(std::move(e));
+
+        job.bytes+=e.bytes;job.bitmap=std::move(e);
     }
-    ++d_->generation;
+    if(job.bytes>kBitmapBudget)return;
+    std::lock_guard<std::mutex> lock(d_->pending_mutex);
+    while(!d_->pending.empty() && (d_->pending.size()>=256 || d_->pending_bytes+job.bytes>kBitmapBudget)) {
+        d_->pending_bytes-=d_->pending.front().bytes;d_->pending.pop_front();
+    }
+    d_->pending_bytes+=job.bytes;d_->pending.push_back(std::move(job));
 }
 bool SubtitleRenderer::external(int id,const std::string& utf8,const std::string& lang) {
     if(utf8.size()>8u<<20) return false;
@@ -183,6 +215,7 @@ bool SubtitleRenderer::external(int id,const std::string& utf8,const std::string
 
 void SubtitleRenderer::seek() {
     std::lock_guard<std::mutex> lock(d_->mutex);
+    d_->discard_pending();
     for(auto& [id,t]:d_->tracks) {
         if(id>=0 && t.ass) ass_flush_events(t.ass);
         t.events.clear(); t.bytes=0;
@@ -191,6 +224,11 @@ void SubtitleRenderer::seek() {
 }
 SubtitleOverlay SubtitleRenderer::render(int id,double seconds,int vw,int vh,double sar,float lift,int font,int colour,int effect,int background,int size) {
     std::lock_guard<std::mutex> lock(d_->mutex);
+#ifdef NUVIO_SUBTITLE_TEST_HOOK
+    extern void subtitle_render_test_boundary();
+    subtitle_render_test_boundary();
+#endif
+    d_->drain_pending();
     SubtitleOverlay out;
     auto it=d_->tracks.find(id);
     if(it==d_->tracks.end() || !d_->renderer) { out.changed=d_->last_id!=id || d_->last_had_pixels; d_->last_id=id; d_->last_had_pixels=false; return out; }

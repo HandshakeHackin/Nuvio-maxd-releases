@@ -240,6 +240,7 @@ enum class Page
     settings,
     livetv,
     iptv,
+    servers,
 };
 
 } // namespace sx

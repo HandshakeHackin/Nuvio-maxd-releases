@@ -210,3 +210,9 @@ VLC late-clock rebuffering and post-preroll discard policy patches are adapted f
 ## Staged trailer discovery
 
 [TMDB](https://www.themoviedb.org/) video metadata and addon-provided trailer identities support manual trailer selection. This product uses the TMDB API but is not endorsed or certified by TMDB. YouTube is used only for user-selected public trailers; no login cookies, private resolver service or credentials from another app are used. The design was compared with [NuvioTV Enhanced](https://github.com/yesnt10/NuvioTV-Enhanced) at `33097a775120559caa191e3098268c99e4d0b297`; the C++ discovery, response parsing and PS5 session integration are independent implementations.
+
+## Staged upstream adaptations (2026-11-02)
+
+The next revision compares [NuvioTV beta.9](https://github.com/NuvioMedia/NuvioTV/releases/tag/1.1.0-beta.9), its [Night Mode](https://github.com/NuvioMedia/NuvioTV/pull/4366) and [LFE downmix](https://github.com/NuvioMedia/NuvioTV/pull/4367) changes, [NuvioTVSmart 1.3.1](https://github.com/NuvioMedia/NuvioTVSmart/releases/tag/1.3.1) chapter/title, subtitle timing and trailer-language behavior, and [ProsperoTV guide correction](https://github.com/ThatGuyKalvin/ProsperoTV/commit/d8410e5b4bd6). The linked-channel C++ PCM processor, conservative cue-timing matcher, session integration and guide offset handling are Max’d-specific implementations. Chapter label classification adapts the GPL-3.0 Smart TV rules; ordinary chapters and post-credit scenes retain their protection. Existing upstream copyright notices remain.
+
+Three ISC-licensed libass hardening patches retain their original source notice in [third_party/libass/LICENSE](third_party/libass/LICENSE). Patch commits and checksums are recorded in dependencies.json and [the patch notes](third_party/libass/README.md). The next package includes the ISC notice.

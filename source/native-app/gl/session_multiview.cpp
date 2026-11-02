@@ -37,7 +37,8 @@ void Session::multi_open(int tile,bool audio) {
     multi_players_[tile]=std::make_unique<Player>();
     Player::Options o;o.url=channel.url;o.headers=channel.headers;
     o.live_tv=true;o.preview=true;o.video_only=!audio;o.read_ahead_seconds=2;
-    o.audio_mode="pcm";o.gain_percent=prefs_.audio_gain_percent;o.audio_delay=prefs_.audio_delay_ms/1000.0;
+    o.audio_mode="pcm";o.night_mode=prefs_.night_mode;o.lfe_mix_percent=prefs_.lfe_mix_percent;
+    o.gain_percent=prefs_.audio_gain_percent;o.audio_delay=prefs_.audio_delay_ms/1000.0;
     multi_players_[tile]->open(o);
 }
 void Session::multi_start(const std::vector<live_tv::Channel>& channels) {

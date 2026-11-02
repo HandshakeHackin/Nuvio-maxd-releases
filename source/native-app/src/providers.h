@@ -38,7 +38,7 @@ struct Identity {
 Identity identify(const std::string &video_id, const Meta &meta);
 bool initialize(const std::string &runtime_path);
 bool configure(const std::string &applications_path);
-json trailer_videos(const Meta&,const std::atomic<bool>* cancel=nullptr);
+json trailer_videos(const Meta&,const std::atomic<bool>* cancel=nullptr,const std::string& language="en");
 void clear_script_cache();
 json settings_layout(const Addon &, const ProviderScript &, std::string &error,
                      const std::atomic<bool> *cancel = nullptr);
@@ -54,7 +54,7 @@ json execute(const std::string &source, const json &arguments,
 inline bool initialize(const std::string &) { return false; }
 inline bool configure(const std::string &) { return false; }
 inline void clear_script_cache() {}
-inline json trailer_videos(const Meta&,const std::atomic<bool>* =nullptr) {return json::object();}
+inline json trailer_videos(const Meta&,const std::atomic<bool>* =nullptr,const std::string& ="en") {return json::object();}
 inline json settings_layout(const Addon &, const ProviderScript &, std::string &error,
                             const std::atomic<bool> * = nullptr) {
   error="This build does not include JavaScript providers."; return json::array();

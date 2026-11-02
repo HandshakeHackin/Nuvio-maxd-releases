@@ -29,7 +29,7 @@ void Library::set_content(const LibraryContent *content)
     content_ = content;
     in_filters_ = false;
     filter_ = 0;
-    auto l=layout();if(page_==Page::iptv){l.y+=90;l.view_top+=90;}
+    auto l=layout();if((page_==Page::iptv||page_==Page::servers)){l.y+=90;l.view_top+=90;}
     grid_.set_items(content ? &content->items : nullptr, l);
 }
 
@@ -80,8 +80,8 @@ void Library::draw(hui::gfx::DrawList &list, hui::gfx::BackdropSpec &backdrop) c
     const float in = tween::stagger(age_, 0, 0.0f, 0.45f);
     list.push_opacity(in);
     float x = theme::kLeft;
-    const float shift=page_==Page::iptv?90.0f:0.0f;
-    if(page_==Page::iptv){
+    const float shift=(page_==Page::iptv||page_==Page::servers)?90.0f:0.0f;
+    if((page_==Page::iptv||page_==Page::servers)){
         text(list,env_.fonts.semibold,env_.fonts.semibold.font->fit(content_->heading,32,1500),x,144,32,theme::ink);
         text(list,env_.fonts.regular,env_.fonts.regular.font->fit(content_->notice,20,1500),x,178,20,theme::ink_2);
     }
@@ -100,7 +100,7 @@ void Library::draw(hui::gfx::DrawList &list, hui::gfx::BackdropSpec &backdrop) c
 
     fade_down(list, theme::kRailWidth, 0.0f, theme::kScreenW, 118.0f, 0.62f);
     fade_up(list, theme::kRailWidth, 990.0f, theme::kScreenW, 90.0f, 0.94f);
-    draw_topbar(list, env_, false, age_,nullptr,0,page_==Page::iptv?"Search saved IPTV catalogs":"Search your Library");
+    draw_topbar(list, env_, false, age_,nullptr,0,(page_==Page::iptv||page_==Page::servers)?(page_==Page::servers?"Search media server":"Search saved IPTV catalogs"):"Search your Library");
     rail_.draw(list, env_, age_);
 }
 

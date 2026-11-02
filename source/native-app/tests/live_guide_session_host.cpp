@@ -83,6 +83,23 @@ int main(int argc, char **argv) {
   s.live_source_ = "other";
   stale(base + "/guide.xml.gz");
   assert(s.saves == 0);
+  sx::Session clock;
+  clock.live_state_={{"sources",json::array({{{"id","source"},{"type","m3u"}}})}};
+  assert(clock.live_guide_offset()==0);
+  auto raw=std::make_shared<const std::string>("raw provider XML");
+  clock.live_guide_document_=raw;clock.live_guide_document_expires_=now_seconds()+100;
+  clock.live_guide_clock();assert(clock.choices.size()==49);clock.picked(26);
+  assert(clock.live_guide_offset()==60 && clock.saves==1 && clock.live_guide_document_==raw);
+  clock.live_guide_clock();clock.picked(26);assert(clock.live_guide_offset()==60 && *raw=="raw provider XML");
+  clock.live_guide_clock();auto old_pick=clock.picked;++clock.profile_generation_;old_pick(0);assert(clock.live_guide_offset()==60);
+  clock.live_guide_clock();clock.picked(24);assert(clock.live_guide_offset()==0);
+  assert(live_guide::offset_minutes({{"guide_offset_minutes",99999}})==720);
+  assert(live_guide::offset_minutes({{"guide_offset_minutes","bad"}})==0);
+  const auto stamp=now_epoch_ms()/1000;
+  clock.live_state_["sources"][0]["guide_offset_minutes"]=60;
+  clock.live_guide_channels_["test"].programmes={{stamp-3600-10,stamp-3600+100,"shifted now"},{stamp-3600+100,stamp-3600+200,"shifted next"}};
+  live_tv::Channel corrected;corrected.id="test";
+  auto corrected_labels=clock.live_guide_labels(corrected);assert(corrected_labels.first.find("shifted now")!=std::string::npos && corrected_labels.second.find("shifted next")!=std::string::npos);
   std::cout
       << "PASS: guide background bounds, profile/source cancellation, "
          "disabled/playback states, XMLTV override and failure cooldown\n";

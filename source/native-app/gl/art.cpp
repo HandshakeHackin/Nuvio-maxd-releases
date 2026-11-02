@@ -497,7 +497,7 @@ bool TexCache::make(const Job &job, Ready *out)
     if (read_file(job.key, data) && decode(data, out->pixels, out->w, out->h))
         return true; // already cut: use as it is
 
-    const HttpResponse r = http_get(job.url, 30, &stopping_);
+    const HttpResponse r = job.url.starts_with("media-art:") && private_image ? private_image(job.url,&stopping_) : http_get(job.url, 30, &stopping_);
     if (!r.ok())
     {
         dlog("art: %s: %s", job.url.c_str(), r.describe().c_str());
@@ -510,7 +510,7 @@ bool TexCache::make(const Job &job, Ready *out)
         dlog("art: cannot decode %s", job.url.c_str());
         return false;
     }
-    if (job.kind == ArtKind::backdrop)
+    if (job.kind == ArtKind::backdrop && !job.url.starts_with("media-art:"))
         use_bigger_copy(job.url, src, w, h);
 
     std::vector<unsigned char> px;

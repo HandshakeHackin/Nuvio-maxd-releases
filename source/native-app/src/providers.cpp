@@ -405,8 +405,8 @@ bool configure(const std::string &path) {
   tmdb_key=valid ? key : "";
   return loaded && valid;
 }
-json trailer_videos(const Meta& meta,const std::atomic<bool>* cancel) {
-  return trailers::tmdb_videos(meta,configured_tmdb_key(),cancel);
+json trailer_videos(const Meta& meta,const std::atomic<bool>* cancel,const std::string& language) {
+  return trailers::tmdb_videos(meta,configured_tmdb_key(),cancel,{},language);
 }
 void clear_script_cache() { std::lock_guard<std::mutex> lock(scripts_mutex);scripts.clear(); }
 json execute(const std::string &source, const json &arguments,

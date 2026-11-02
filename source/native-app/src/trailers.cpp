@@ -34,7 +34,23 @@ std::string youtube_id(const std::string& value) {
  }
  return id_valid(id)?id:"";
 }
-json tmdb_videos(const Meta& meta,const std::string& key,const std::atomic<bool>* cancel,const Request& injected) {
+std::string preferred_language(const std::string& preferences) {
+ const auto list=trim(preferences);
+ const auto input=lower(list.substr(0,list.find_first_of(",; ")));
+ const auto short_code=input.substr(0,input.find_first_of("-_"));
+ if(short_code.size()==2 && short_code.find_first_not_of("abcdefghijklmnopqrstuvwxyz")==std::string::npos)return short_code=="iw"?"he":short_code;
+ const std::pair<const char*,const char*> map[]={
+  {"eng","en"},{"spa","es"},{"fra","fr"},{"fre","fr"},{"deu","de"},{"ger","de"},{"ita","it"},
+  {"por","pt"},{"nld","nl"},{"dut","nl"},{"pol","pl"},{"tur","tr"},{"ara","ar"},{"heb","he"},
+  {"jpn","ja"},{"kor","ko"},{"zho","zh"},{"chi","zh"},{"hin","hi"},{"rus","ru"},{"ukr","uk"},
+  {"ell","el"},{"gre","el"},{"ces","cs"},{"cze","cs"},{"slk","sk"},{"slo","sk"},{"swe","sv"},
+  {"dan","da"},{"nor","no"},{"fin","fi"},{"ron","ro"},{"rum","ro"},{"hun","hu"},{"bul","bg"},
+  {"hrv","hr"},{"srp","sr"},{"slv","sl"},{"vie","vi"},{"tha","th"},{"ind","id"},{"msa","ms"},
+  {"fas","fa"},{"per","fa"},{"urd","ur"},{"ben","bn"},{"tam","ta"},{"tel","te"},{"cat","ca"}};
+ for(auto [code,language]:map)if(short_code==code)return language;
+ return "en";
+}
+json tmdb_videos(const Meta& meta,const std::string& key,const std::atomic<bool>* cancel,const Request& injected,const std::string& language) {
   if(key.empty() || (meta.type!="movie" && meta.type!="series"))return json::object();
   const auto get=[&](const std::string& path) {
     if(cancel && *cancel)return json::object();
@@ -53,9 +69,18 @@ json tmdb_videos(const Meta& meta,const std::string& key,const std::atomic<bool>
     if(value.is_number_integer())id=std::to_string(value.get<long long>());
   }
   if(id.empty() || id.size()>12 || id.find_first_not_of("0123456789")!=std::string::npos)return json::object();
-  return get(std::string(kind)+"/"+id+"/videos?");
+  const auto preferred=preferred_language(language);
+  const auto path=std::string(kind)+"/"+id+"/videos?";
+  if(preferred=="en")return get(path);
+  auto localized=get(path+"language="+preferred+"&");
+  const auto english=get(path+"language=en&");
+  if(!localized.is_object() || !jobj(localized,"results").is_array())localized=json{{"results",json::array()}};
+  const auto& fallback=jobj(english,"results");
+  if(fallback.is_array())for(const auto& row:fallback)localized["results"].push_back(row);
+  return localized;
 }
-std::vector<Candidate> candidates(const Meta& meta,const json& tmdb) {
+std::vector<Candidate> candidates(const Meta& meta,const json& tmdb,const std::string& language) {
+ const auto preferred=preferred_language(language);
  struct Ranked {Candidate c;int rank;};std::vector<Ranked> ranked;
  const auto add=[&](const json& row,bool from_tmdb) {
   if(!row.is_object())return;
@@ -73,7 +98,8 @@ std::vector<Candidate> candidates(const Meta& meta,const json& tmdb) {
    }
   }
   if(c.youtube_id.empty()&&c.url.empty())return;
-  int rank=(type=="trailer"?100:0)+(jbool(row,"official")?20:0)+(jstr(row,"iso_639_1")=="en"?10:0);
+  const auto lang=jstr(row,"iso_639_1");
+  int rank=(type=="trailer"?200:0)+(jbool(row,"official")?20:0)+(lang==preferred?80:lang=="en"?40:0);
   ranked.push_back({c,rank});
  };
  const auto& results=jobj(tmdb,"results");if(results.is_array())for(const auto& r:results)add(r,true);

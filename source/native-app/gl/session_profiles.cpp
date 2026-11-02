@@ -8,6 +8,7 @@
 namespace sx {
 void Session::load_profile_settings() {
     live_load();
+    media_load();
     prefs_.extra_addons.clear(); prefs_.provider_enabled = json::object(); prefs_.provider_settings=json::object();
     prefs_.subtitle_langs = "eng"; prefs_.audio_langs.clear(); prefs_.auto_subtitles = true;
     json j;
@@ -40,6 +41,7 @@ void Session::save_profile_settings() {
     if (!save_json(profile_dir_ + "/profile-settings.json", j)) say("Could not save profile preferences", 8.0, true);
 }
 void Session::clear_profile_views() {
+    media_reset();
     reset_library_search();
     series_updates_reset();
     live_reset();

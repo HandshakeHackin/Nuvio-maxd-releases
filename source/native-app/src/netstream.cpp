@@ -1,3 +1,4 @@
+#include "http_credentials.hpp"
 #include "netstream.h"
 
 extern "C" {
@@ -83,7 +84,7 @@ int io_close_cb(AVFormatContext* s, AVIOContext* pb) {
 
 NetStream::NetStream(const std::string& url, const std::vector<std::string>& headers, const std::atomic<bool>* abort,
                      bool parallel)
-    : parallel_wanted_(parallel), url_(url), headers_(headers), abort_(abort) {}
+    : parallel_wanted_(parallel), credential_scope_(http_credentials::scoped(headers)), url_(url), headers_(http_credentials::filter(headers,url)), abort_(abort) {}
 
 NetStream::~NetStream() {
 	{
@@ -261,7 +262,7 @@ void NetStream::worker() {
 		curl_easy_setopt(c, CURLOPT_URL, url.c_str());
 		curl_easy_setopt(c, CURLOPT_RANGE, range.c_str());
 		curl_easy_setopt(c, CURLOPT_USERAGENT, kUserAgent);
-		curl_easy_setopt(c, CURLOPT_FOLLOWLOCATION, 1L);
+		curl_easy_setopt(c, CURLOPT_FOLLOWLOCATION, credential_scope_?0L:1L);
 		curl_easy_setopt(c, CURLOPT_MAXREDIRS, 8L);
 		curl_easy_setopt(c, CURLOPT_NOSIGNAL, 1L);
 		curl_easy_setopt(c, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
@@ -404,7 +405,7 @@ bool NetStream::transfer(int64_t from, int gen) {
 		curl_easy_setopt(c, CURLOPT_URL, url_.c_str());
 		curl_easy_setopt(c, CURLOPT_RANGE, range.c_str());
 		curl_easy_setopt(c, CURLOPT_USERAGENT, kUserAgent);
-		curl_easy_setopt(c, CURLOPT_FOLLOWLOCATION, 1L);
+		curl_easy_setopt(c, CURLOPT_FOLLOWLOCATION, credential_scope_?0L:1L);
 		curl_easy_setopt(c, CURLOPT_MAXREDIRS, 8L);
 		curl_easy_setopt(c, CURLOPT_NOSIGNAL, 1L);
 		curl_easy_setopt(c, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
@@ -448,7 +449,7 @@ bool NetStream::transfer(int64_t from, int gen) {
 			cv_.notify_all();
 			return true;
 		}
-		if (status >= 400 && status < 500) {
+		if ((credential_scope_ && status>=300 && status<400) || (status >= 400 && status < 500)) {
 			error_ = "HTTP " + std::to_string(status);
 			dlog("net: request failed");
 			cv_.notify_all();

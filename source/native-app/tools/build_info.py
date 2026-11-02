@@ -32,8 +32,8 @@ display_profile = validate_display_metadata(json.loads(
     (Path(sys.argv[1]).parent / 'sce_sys/param.json').read_text()))
 info = {
     'name': "Nuvio Max'd",
-    'version': '1.0.0.5-native',
-    'releaseChannel': 'release',
+    'version': '1.0.0.6-native',
+    'releaseChannel': 'experimental',
     'titleId': sys.argv[2],
     'providerPlugins': {'engine': 'QuickJS 2026-06-04', 'repositories': True, 'perProviderOptIn': True, 'consoleSocketMode': 'direct SO_NBIO via wrapped pinned curlx_nonblock; retains public-address checks', 'hardwareVerified': False},
     'mediaRemote': {'hdmiCec': True, 'hardwareVerified': False},
@@ -43,6 +43,8 @@ info = {
     'issueTestFixes': {'issues': [12, 13], 'sharedSubtitleSizeScale': [42, 50, 60, 75, 100], 'independentLibraryArtwork': True, 'metadataConcurrencyLimit': 4, 'reporterConfirmationPending': False, 'reporterConfirmedFixes': [12, 13]},
     'librarySearch': {'activeProfileOnly': True, 'selectedLibrarySourceOnly': True, 'localLoadedTitlesOnly': True, 'typeAndSortFilters': True, 'clearOnProfileOrSourceChange': True, 'hardwareVerified': False},
     'newEpisodeIndicators': {'activeLibrarySeries': True, 'syncedHistoryRequired': True, 'airedDatesRequired': True, 'skipInProgress': True, 'profileScoped': True, 'metadataConcurrencyLimit': 2, 'hardwareVerified': False},
+    'upstreamAdaptations20261102': {'nightMode': 'optional PCM, off by default', 'stereoLfeLevels': [0,50,100], 'guideClockCorrection': 'profile/source scoped, +/-12 hours', 'chapterSkipIntervals': True, 'trailerLanguageFallback': True, 'subtitleAutoSync': 'optional Native/EVO, bounded embedded text timing reference', 'subtitleReaderQueue': '256 packets / 32 MiB', 'libassInputHardening': True, 'hardwareVerified': False},
+    'mediaServers': {'providers': ['jellyfin', 'emby'], 'experimental': True, 'perProfileConnections': True, 'conditionalSidebar': True, 'directPlayback': True, 'compatibleHls': True, 'serverProgressReporting': True, 'lanHttp': True, 'hardwareVerified': False, 'reporterConfirmationPending': True},
     'readAheadSeconds': [30, 60, 120, 300],
     'architecture': 'single native OpenGL app with integrated playback',
     'sourceCommit': source_commit,
@@ -54,7 +56,7 @@ info = {
     'experimentalAv': {'driverOwnedHdrSwitch': True, 'pcmDefault': True, 'audioModes': ['pcm','auto','bitstream'], 'bitstreamCodecs': ['AC3','EAC3','DTS core'], 'trueHdDtsHd': 'decoded PCM; S16 output preferred for compatibility', 'autoHonorsStereo': True, 'hardwareVerified': False, 'driverPatchSha256': hashlib.sha256((root/'gl/scanout_driver_extension.inc').read_bytes()).hexdigest(), 'driverObjectSha256': hashlib.sha256(Path(sys.argv[3]).read_bytes()).hexdigest()},
     'consoleLightSync': {'default': True, 'setting': 'Appearance & Lighting', 'channels': ['blue','white','amber'], 'approximateLogoColours': True, 'backgroundWorker': True, 'maxUpdatesPerSecond': 5, 'restoreOnDisableAndExit': True, 'respectSystemOwnership': True, 'hardwareVerified': False},
     'settingsCategories': True,
-    'localTestBuild': {'revision': '1.0.0.5', 'multiviewExperimental': True, 'hardwareVerified': False},
+    'localTestBuild': {'revision': '1.0.0.6', 'multiviewExperimental': True, 'hardwareVerified': False},
     'playbackBadges': {'sourceResolution': True, 'sourceHdr': True, 'selectedAudioChannels': True, 'releaseType': True, 'codecs': True, 'decodedFactsOverrideFilename': True, 'hardwareVerified': False},
     'settingsSearch': {'allCategories': True, 'caseInsensitive': True, 'hardwareVerified': False},
     'liveTv': {'sources': ['M3U', 'Xtream Codes'], 'groups': True, 'search': True, 'favorites': True, 'profileLocal': True, 'nowNextGuide': True, 'xmltv': True, 'xtreamShortEpg': True, 'profileLocalGuideToggle': True, 'guideDocumentMaxBytes': 33554432, 'recording': False, 'catchup': False, 'hardwareVerified': False},

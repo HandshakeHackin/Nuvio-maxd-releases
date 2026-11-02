@@ -1,3 +1,7 @@
+#include "playback_log.hpp"
+#include <cstdio>
+#include <cstdarg>
+#include "http_credentials.hpp"
 #include "player.h"
 #include "player_streams.hpp"
 #include "stream_colour.hpp"
@@ -13,6 +17,7 @@ extern "C" {
 #include <libavutil/dovi_meta.h>
 #include <libavutil/mastering_display_metadata.h>
 #include <libavutil/opt.h>
+#include <libavutil/log.h>
 #include <libavutil/time.h>
 #include <libswresample/swresample.h>
 #include <libswscale/swscale.h>
@@ -148,6 +153,13 @@ Player::Player() = default;
 Player::~Player() { close(); }
 
 void Player::open(const Options& opts) {
+    static std::once_flag safe_log;
+    std::call_once(safe_log,[]{av_log_set_callback([](void* context,int level,const char* format,va_list args){
+        if(level>av_log_get_level())return;
+        char line[4096];thread_local int prefix=1;
+        av_log_format_line(context,level,format,args,line,sizeof(line),&prefix);
+        const auto safe=playback_log::redact_urls(line);std::fputs(safe.c_str(),stderr);
+    });});
 	close();
     ++revision_;
 	if(opts.vlc) {
@@ -156,12 +168,12 @@ void Player::open(const Options& opts) {
 		opts_=opts;
 		vlc_=std::make_unique<VlcBackend>();
 		VlcBackend::Options v{opts.url,opts.headers,opts.audio_langs,opts.start,opts.surround,opts.start_paused};
-		v.audio=opts.initial_audio_stream;v.gain_percent=opts.gain_percent;v.audio_delay=opts.audio_delay;vlc_->open(v);
+		v.night_mode=opts.night_mode;v.audio=opts.initial_audio_stream;v.gain_percent=opts.gain_percent;v.audio_delay=opts.audio_delay;vlc_->open(v);
 		return;
 	}
 	opts_ = opts;
     audio_delay_=std::isfinite(opts.audio_delay)?std::clamp(opts.audio_delay,-2.0,2.0):0;
-    gain_percent_=std::clamp(opts.gain_percent,50,300);pcm_.set_gain(gain_percent_);
+    gain_percent_=std::clamp(opts.gain_percent,50,300);pcm_.set_gain(gain_percent_);pcm_.set_night_mode(opts.night_mode);
 	evo_presenter_ = opts.evo ? std::make_unique<EvoPresenter>() : nullptr;
 	evo_presenter_serial_ = -1;
 	dlog("player: playback engine %s", opts.evo ? "EVO Player 0.13.0 (experimental)" : "Nuvio native");
@@ -303,7 +315,7 @@ void Player::demux_run() {
 	const AVInputFormat* content_format = nullptr;
 	AVDictionary* dict = nullptr;
 	av_dict_set(&dict, "user_agent", kUserAgent, 0);
-	if (!opts_.headers.empty()) av_dict_set(&dict, "headers", (join(opts_.headers, "\r\n") + "\r\n").c_str(), 0);
+	if (!opts_.headers.empty() && !http_credentials::scoped(opts_.headers)) av_dict_set(&dict, "headers", (join(opts_.headers, "\r\n") + "\r\n").c_str(), 0);
 	av_dict_set(&dict, "reconnect", "1", 0);
 	av_dict_set(&dict, "reconnect_streamed", "1", 0);
 	av_dict_set(&dict, "reconnect_on_network_error", "1", 0);
@@ -311,12 +323,12 @@ void Player::demux_run() {
 	// A torrent's first bytes can take a while (the server is still finding
 	// peers); Circle still cancels at once through the interrupt callback.
 	av_dict_set(&dict, "rw_timeout", "120000000", 0);
-	av_dict_set(&dict, "tls_verify", "0", 0);
+	av_dict_set(&dict, "tls_verify", http_credentials::scoped(opts_.headers)?"1":"0", 0);
 	av_dict_set(&dict, "seekable", "-1", 0);
 	// HLS keepalive assumes FFmpeg-owned URLContexts; our AVIOs belong to
 	// NetStream. Open each playlist/segment through the hooks instead.
 	av_dict_set(&dict, "http_persistent", "0", 0);
-    if(opts_.live_tv) {
+    if(opts_.live_tv || http_credentials::scoped(opts_.headers)) {
         // Xtream services commonly use signed/extensionless HTTP segment paths.
         // Restrict protocols before relaxing HLS filename-extension checks.
         av_dict_set(&dict,"protocol_whitelist","http,https,tcp,tls,crypto",0);
@@ -334,7 +346,7 @@ void Player::demux_run() {
 
 	// HTTP(S) goes through libcurl (see netstream.h): the stream itself here,
 	// and whatever the demuxer opens later (HLS) through the hooks.
-	io_hooks_.http_only = opts_.live_tv;
+	io_hooks_.http_only = opts_.live_tv || http_credentials::scoped(opts_.headers);
 	io_hooks_.headers = opts_.headers;
 	io_hooks_.abort = &abort_;
 	io_hooks_.read_interrupt = &seek_pending_;
@@ -1155,7 +1167,7 @@ double Player::queued_audio_seconds() const {
 }
 
 void Player::open_audio_output(int stream, bool pcm_only) {
-    pcm_only=pcm_only || gain_percent_.load()!=100;
+    pcm_only=pcm_only || gain_percent_.load()!=100 || opts_.night_mode!=0;
     const auto* p=fmt_->streams[stream]->codecpar;
     const int kind=bitstream::kind(p);
     // HDMI EDID cannot describe a TV's downstream optical connection. Honor
@@ -1295,7 +1307,7 @@ void Player::audio_thread() {
 				av_channel_layout_default(&stereo, pcm_.channels());
 				swr_alloc_set_opts2(&swr_, &stereo, pcm_.floating_point() ? AV_SAMPLE_FMT_FLT : AV_SAMPLE_FMT_S16, kOutRate, &in_layout,
 				                    AVSampleFormat(frame->format), frame->sample_rate, 0, nullptr);
-				if (!swr_ || !configure_pcm_mix(swr_) || swr_init(swr_) < 0) {
+				if (!swr_ || !configure_pcm_mix(swr_,opts_.lfe_mix_percent) || swr_init(swr_) < 0) {
 					dlog("player: can't resample audio");
 					if (swr_) swr_free(&swr_);
 					av_channel_layout_uninit(&in_layout);
@@ -1654,6 +1666,17 @@ std::vector<Player::Track> Player::subtitle_tracks() const {
 
 void Player::select_audio(int stream) { if(vlc_) vlc_->select_audio(stream);else audio_switch_ = stream; }
 
+std::vector<subtitle_sync::Timing> Player::embedded_timeline(int stream) {
+    std::vector<subtitle_sync::Timing> out;
+    if(vlc_)return out; // libVLC does not expose an embedded cue index here.
+    std::lock_guard<std::mutex> lock(sub_m_);
+    const auto found=embedded_.find(stream);if(found==embedded_.end())return out;
+    const auto& cues=found->second;
+    const size_t first=cues.size()>2048?cues.size()-2048:0;
+    out.reserve(cues.size()-first);
+    for(size_t i=first;i<cues.size();++i)out.push_back({cues[i].start,cues[i].end});
+    return out;
+}
 std::string Player::embedded_subtitle(int stream, double t) {
 	if(vlc_) return "";
 	std::lock_guard<std::mutex> lock(sub_m_);

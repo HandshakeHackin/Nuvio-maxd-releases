@@ -75,6 +75,12 @@ enum SettingIndex
     kAudioGain,
     kAudioDelay,
     kSubtitleDelay,
+    kSubtitleAutoSync,
+    kTrailerLanguage,
+    kChapterSkip,
+    kNightMode,
+    kLfeMix,
+    kMediaServers,
     kSettingCount
 };
 
@@ -143,6 +149,14 @@ bool Session::init(const std::string &base_dir, const std::string &data_dir, hui
     if (!providers::configure(base_dir_ + "/providers/applications.json"))
         dlog("providers: metadata configuration unavailable");
     boot_start_ = now_seconds();
+    media_reporter_=std::make_unique<media_server::Reporter>();
+    tex_.private_image=[state=media_art_](const std::string& uri,const std::atomic<bool>* cancel){
+        const auto at=uri.find(':',10); HttpResponse failure;failure.error="Media server image unavailable";
+        if(at==std::string::npos)return failure;
+        const auto id=uri.substr(10,at-10),item=uri.substr(at+1);
+        media_server::Connection c;{std::lock_guard<std::mutex> l(state->mutex);for(const auto& a:state->accounts)if(a.id==id)c=a;}
+        return c.valid()?media_server::image(c,item,cancel):failure;
+    };
     tex_.init(data_dir_ + "/art", renderer_, 6);
     // The app's storage holds the read-ahead: the built-in torrent engine's 6 GB
     // rolling cache, and up to 6 GB for a stream from a server or a direct link.
@@ -207,6 +221,8 @@ void Session::shutdown()
     if (watching)
         watch_stop(false);
     player_.close();
+    media_reset();
+    media_reporter_.reset();
     bt::Engine::get().shutdown();
     *d_cancel_ = true;
     *d_stream_cancel_ = true;
@@ -685,6 +701,7 @@ void Session::refresh_settings()
         r.on = on;
     };
     using Kind = SettingRow::Kind;
+    set(kMediaServers, SettingRow::Kind::action, "Media servers (experimental)", std::to_string(media_accounts_.size())+" connected", "Connect Jellyfin or Emby. Browse server libraries and resume playback separately from addons.");
     set(kAccount, Kind::value, "Nuvio account", signed_in() ? prefs_.user_email : "Not signed in",
         signed_in() ? (confirm_sign_out_ ? "Press Cross again to sign out." : "Press Cross to sign out.")
                     : "Sign in with a QR code to choose a profile and load its addons and saved library. Press Cross.");
@@ -720,6 +737,12 @@ void Session::refresh_settings()
         "manages its own buffer.");
     set(kRefresh, Kind::value, "Display refresh", prefs_.display_refresh == 120 ? "Prefer 120 Hz" : "60 Hz",
         "120 Hz can make 24 fps films feel steadier on a compatible TV. Keeps the selected resolution; uses 60 Hz if unavailable. Close and reopen to apply.");
+    const std::vector<std::string> night_modes{"Off", "Light", "Medium", "Strong"};
+    set(kNightMode, Kind::value, "Night Mode", night_modes[std::clamp(prefs_.night_mode,0,3)], "Lift quiet dialogue with linked-channel compression and peak limiting. Off by default. Uses PCM; applies to the next video on all players.");
+    set(kLfeMix, Kind::value, "Bass in stereo downmix", std::to_string(prefs_.lfe_mix_percent)+"%", "Native/EVO: include the surround LFE channel in stereo, with normalized headroom. Default 50%; Off drops LFE. VLC uses its own downmix. Applies to the next video.");
+    set(kSubtitleAutoSync, Kind::toggle, "Subtitle auto-sync", "", "Native/EVO: align addon subtitles to embedded text timings already read from the file. Off by default. Requires enough matching cues; uncertain matches keep manual timing. No speech or video is uploaded.",prefs_.subtitle_auto_sync);
+    set(kTrailerLanguage, Kind::value, "Trailer language", prefs_.trailer_language.empty()?"Follow preferred languages":language_name(prefs_.trailer_language), "Prefer this language when finding trailers, with English as a fallback. Automatic follows audio then subtitle preferences.");
+    set(kChapterSkip, Kind::toggle, "Skip buttons from chapters", "", "Use explicitly named opening, recap and credits chapters when available. Regular chapters and post-credit scenes are preserved. Requires Skip intro / recap / credits.",prefs_.chapter_skip_segments);
     set(kAudioGain, Kind::value, "Audio volume / boost", std::to_string(prefs_.audio_gain_percent)+"%", "50–300%; uses PCM. Boost can distort loud peaks. Default 100%.");
     set(kAudioDelay, Kind::value, "Audio sync delay", std::to_string(prefs_.audio_delay_ms)+" ms", "Positive: sound later relative to picture. Negative: sound earlier. Default 0 ms.");
     set(kSubtitleDelay, Kind::value, "Subtitle sync delay", std::to_string(prefs_.subtitle_delay_ms)+" ms", "Positive: subtitles later; negative: earlier. Also adjustable during playback.");
@@ -775,11 +798,11 @@ void Session::refresh_settings()
     const auto group = [&](const char* name,std::initializer_list<int> ids) {
         for(int id:ids) settings.rows[id].category=name;
     };
-    group("Account & Services", {kAccount,kProfiles,kTracking,kLibrarySource,kConnectedServices,kServer});
+    group("Account & Services", {kAccount,kProfiles,kTracking,kLibrarySource,kConnectedServices,kServer,kMediaServers});
     group("Video", {kDisplay,kRefresh,kHdr,kPlaybackEngine});
-    group("Audio", {kAudioMode,kAudioOutput,kAudioLangs,kAudioGain,kAudioDelay});
-    group("Subtitles", {kSubLangs,kAutoSubs,kSubSize,kSubFont,kSubColour,kSubEffect,kSubBackground,kSubtitleDelay});
-    group("Playback", {kSeek, kShoulderSeek, kCountdown, kAutoplay, kSkipSegments, kReadAhead});
+    group("Audio", {kAudioMode,kAudioOutput,kAudioLangs,kAudioGain,kAudioDelay,kNightMode,kLfeMix});
+    group("Subtitles", {kSubLangs,kAutoSubs,kSubSize,kSubFont,kSubColour,kSubEffect,kSubBackground,kSubtitleDelay,kSubtitleAutoSync});
+    group("Playback", {kSeek, kShoulderSeek, kCountdown, kAutoplay, kSkipSegments, kReadAhead, kChapterSkip, kTrailerLanguage});
     group("Appearance & Lighting", {kReducedMotion,kHighContrast,kUiSounds,kCalmBackgrounds,kConsoleLights});
     group("Addons", {kTorrents,kAddAddon,kReload});
     group("App & Updates", {kReleaseNotes,kDiagnostics,kMetadataCredits,kDonation,kInstallSource,kUpdates,kExit});
@@ -804,7 +827,7 @@ void Session::settings_activate(int row)
         return;
     }
     if (signed_in() && !profile_ready_ &&
-        (row == kTracking || row == kLibrarySource || row == kConnectedServices || row == kServer || row == kAddAddon || row == kReload ||
+        (row == kMediaServers || row == kTracking || row == kLibrarySource || row == kConnectedServices || row == kServer || row == kAddAddon || row == kReload ||
          row == kSubLangs || row == kAudioLangs || row == kAutoSubs)) {
         say("Choose a profile in Account & Services > Profiles first.", 7.0); return;
     }
@@ -815,6 +838,7 @@ void Session::settings_activate(int row)
     {
     case kConsoleLights:
         prefs_.console_light_sync=!prefs_.console_light_sync; save_prefs(); cue(hui::audio::Cue::toggle); break;
+    case kMediaServers: media_menu(); break;
     case kConnectedServices:
         services_menu();
         break;
@@ -965,6 +989,17 @@ void Session::settings_activate(int row)
     }
     case kReducedMotion: prefs_.reduced_motion=!prefs_.reduced_motion; save_prefs(); cue(hui::audio::Cue::toggle); break;
     case kHighContrast: prefs_.high_contrast=!prefs_.high_contrast; save_prefs(); cue(hui::audio::Cue::toggle); break;
+    case kSubtitleAutoSync: prefs_.subtitle_auto_sync=!prefs_.subtitle_auto_sync;save_prefs();refresh_settings();break;
+    case kTrailerLanguage: {
+        const std::vector<std::string> ids{"","en","es","fr","de","it","pt","nl","pl","tr","ar","he","ja","ko","zh","hi","ru","uk","el","cs","sv","da","fi","ro","hu","vi","th","id"};
+        std::vector<std::string> labels;int active=0;for(size_t n=0;n<ids.size();++n){labels.push_back(ids[n].empty()?"Follow preferred languages":language_name(ids[n]));if(ids[n]==prefs_.trailer_language)active=int(n);}
+        open_dropdown("Trailer language",labels,active,[this,ids](int n){if(n<0 || n>=int(ids.size()))return;prefs_.trailer_language=ids[n];save_prefs();refresh_settings();});break;
+    }
+    case kChapterSkip: prefs_.chapter_skip_segments=!prefs_.chapter_skip_segments;save_prefs();refresh_settings();break;
+    case kNightMode:
+        open_dropdown("Night Mode", {"Off (default)","Light","Medium","Strong"}, prefs_.night_mode, [this](int i){if(i<0 || i>3)return;prefs_.night_mode=i;save_prefs();refresh_settings();});break;
+    case kLfeMix:
+        open_dropdown("Bass in stereo downmix", {"Off","50% (default)","100%"},prefs_.lfe_mix_percent/50,[this](int i){if(i<0 || i>2)return;prefs_.lfe_mix_percent=i*50;save_prefs();refresh_settings();});break;
     case kAudioGain: {
         std::vector<std::string> labels;for(int v=50;v<=300;v+=25)labels.push_back(std::to_string(v)+"%");
         open_dropdown("Audio volume / boost",labels,(prefs_.audio_gain_percent-50)/25,[this](int i){prefs_.audio_gain_percent=50+i*25;save_prefs();refresh_settings();});break;
@@ -1486,6 +1521,11 @@ void Session::refresh_art(const Cursor &cursor)
         const auto& image=e.poster.empty()?iptv_series_poster_:e.poster;
         int d=int(i)-cursor.iptv;
         iptv_content.items[i].poster=fetch(image,ArtKind::poster,d>-14&&d<28);
+    }
+
+    if(page_==Page::servers && media_account_<media_accounts_.size())for(size_t i=0;i<media_content.items.size()&&i<media_items_.size();++i){
+        int d=int(i)-cursor.media;
+        media_content.items[i].poster=fetch("media-art:"+media_accounts_[media_account_].id+":"+jstr(media_items_[i],"Id"),ArtKind::poster,d>-14&&d<28);
     }
 
     // Addons

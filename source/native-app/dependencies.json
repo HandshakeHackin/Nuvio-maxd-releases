@@ -424,7 +424,7 @@
       "target/user/homebrew/include/openssl/x509err.h": "be93ee6c9d58aadb5f836d5e293ec93c94ffc603c46a1d8d1c8b31cf83959fb9",
       "target/user/homebrew/include/openssl/x509v3.h": "f51142998519410cae007ad2601cd7a93698d14da625b8110822af23811c9f2d",
       "target/user/homebrew/include/openssl/x509v3err.h": "b9be8b0429bfaefb973531e81d598e40779b3788e129c4cc9e33651d2308b990",
-      "target/user/homebrew/lib/libass.a": "8a5529e59574514560a4779bc9150187d48589fa54c50cd119b9c663239316d2",
+      "target/user/homebrew/lib/libass.a": "69ec61951c1ef52b02670e7ed81a5f1c698af395fb79e6140c2ab0bee1b18aa7",
       "target/user/homebrew/lib/libcrypto.a": "c37f9454349d1d4c8592d567946e23247440fa942685bdb05f8828fab9eba035",
       "target/user/homebrew/lib/libcurl.a": "6a52f6d1a681e64c042be8f9cb41a8e7a66b6d130798671123f57e512d692639",
       "target/user/homebrew/lib/libssl.a": "01401508c9544541222a19d49f7a0497e4e8236b13d40f4ea225165d009ad43d",
@@ -435,6 +435,48 @@
       "target/user/homebrew/lib/pkgconfig/openssl.pc": "c768b2e5c4684d3886c5d7ceaceb9a95cc0bddc8d7a39c675d390d7970dcbab9"
     },
     "sourceDateEpoch": 1793232000,
-    "recipeSha256": "8ab15d9c9d8495c7871a8ed5a7dd006d87e5ddda9f6cfe81511019d47d44bccf"
+    "recipeSha256": "d41471ab07241f26a7489e47a0e084514730db74d32c14afabf95523367f3a6d",
+    "libassPatches": [
+      {
+        "path": "third_party/libass/0001-subtitle-input-hardening.patch",
+        "sha256": "0173e246351e08157b203e0b7d8b197399155586fd3f3b94ba3937b722970918",
+        "commit": "d4fa710425240cc1c1fcee1815041263bf83c745",
+        "url": "https://github.com/libass/libass/commit/d4fa710425240cc1c1fcee1815041263bf83c745"
+      },
+      {
+        "path": "third_party/libass/0002-subtitle-input-hardening.patch",
+        "sha256": "9b902280bd81c9ab460ccd3f76c896d8b9d7f603e564c8527b191d87da9a645e",
+        "commit": "1f0f8e344b30b27123bf9801d337448f68e18449",
+        "url": "https://github.com/libass/libass/commit/1f0f8e344b30b27123bf9801d337448f68e18449"
+      },
+      {
+        "path": "third_party/libass/0003-subtitle-input-hardening.patch",
+        "sha256": "169741adba65e230be7ee183a8f62a38aa237a8ecaa6bf069ccbea653b24aa7d",
+        "commit": "fe25f50686b1a6babef2f9b703abead0e97e0fec",
+        "url": "https://github.com/libass/libass/commit/fe25f50686b1a6babef2f9b703abead0e97e0fec"
+      }
+    ]
+  },
+  "upstreamAdaptations20261102": {
+    "baseRelease": "1.0.0.5",
+    "status": "staged, unreleased",
+    "hardwareVerified": false,
+    "nuvioTv": {
+      "version": "1.1.0-beta.9",
+      "nightModePr": 4366,
+      "lfePr": 4367,
+      "scope": "Independent PCM Night Mode and optional LFE levels; existing asynchronous tracking and live-history policy retained"
+    },
+    "nuvioTvSmart": {
+      "version": "1.3.1",
+      "commit": "ab4ff8e901cc5acee9a8583c10ad9e448ce08291",
+      "scope": "Conservative native subtitle timing alignment, explicit chapter skip labels, preferred-language trailers and decoupled subtitle packet ingestion"
+    },
+    "prosperoTv": {
+      "version": "01.000.100",
+      "commit": "d8410e5b4bd6b2db3672134f70f66da483eb09fc",
+      "scope": "Per-provider guide correction with unmodified raw cached timestamps"
+    },
+    "validation": "UPSTREAM_ADAPTATIONS_NEXT_VALIDATION.json"
   }
 }

@@ -29,6 +29,8 @@
 #include "live_guide.h"
 #include "series_updates.hpp"
 #include "iptv_library.h"
+#include "media_server.h"
+#include <mutex>
 #include "audio/cues.hpp"
 #include "core/input.hpp"
 
@@ -58,6 +60,7 @@ class Session
         int discover = 0;
         int library = 0;
         int iptv = 0;
+        int media = 0;
         int live = 0;
         int episode = 0;
         int search_row = 0, search_col = 0;
@@ -78,6 +81,7 @@ class Session
         kLive = 2048,
         kIptv = 4096,
         kIptvNew = 8192,
+        kMedia = 16384, kMediaNew = 32768,
         kDetail = 32,
         kDiscoverNew = 64,
         kLibraryNew = 128,
@@ -147,6 +151,13 @@ class Session
     void release_notes_dismiss();
 
     // ---- what the screens draw ----
+    LibraryContent media_content;
+    bool media_visible=false;
+    void media_menu();
+    void media_search();
+    void media_filter(int index);
+    void media_activate(int index);
+    bool media_back();
     BoardContent board;
     DiscoverContent discover;
     LibraryContent library;
@@ -338,6 +349,30 @@ class Session
     std::array<VideoSurface,4> multi_surfaces_;
     std::array<live_tv::Channel,4> multi_channels_;
 
+    void media_reset();
+    void media_load();
+    void media_save();
+    void media_connect(const std::string& kind, const std::string& replace_id="");
+    void media_reload();
+    void media_build(bool reset=false);
+    void media_play(const json& item, bool compatible=false, const std::string& source="");
+    void media_tick(bool stop=false);
+    struct MediaArtState {std::mutex mutex;std::vector<media_server::Connection> accounts;};
+    std::shared_ptr<MediaArtState> media_art_=std::make_shared<MediaArtState>();
+    std::vector<media_server::Connection> media_accounts_;
+    json media_items_=json::array();
+    struct MediaLocation {std::string parent,type="views",query,label;size_t offset=0;};
+    MediaLocation media_location_;
+    std::vector<MediaLocation> media_stack_;
+    size_t media_account_=0,media_total_=0;
+    bool media_loading_=false,media_play_pending_=false,media_report_started_=false,media_paused_=false;
+    unsigned media_generation_=0,media_play_generation_=0;
+    std::string media_error_,media_play_item_;
+    double media_resume_=0,media_report_at_=0,media_report_position_=0;
+    media_server::Connection media_play_account_;
+    media_server::Playback media_playback_;
+    std::unique_ptr<media_server::Reporter> media_reporter_;
+    std::shared_ptr<std::atomic<bool>> media_cancel_,media_play_cancel_;
     void iptv_reset();
     void iptv_saved_search(const std::string &query);
     void iptv_letters();
@@ -373,6 +408,8 @@ class Session
     void live_guide_reset();
     void live_guide_update(int focus);
     void live_guide_configure();
+    void live_guide_clock();
+    int live_guide_offset() const;
     std::pair<std::string,std::string> live_guide_labels(const live_tv::Channel&) const;
     live_guide::Result live_guide_xml_;
     struct GuideEntry {live_guide::Listings programmes;double expires=0,touched=0;};
@@ -434,7 +471,7 @@ class Session
     void refresh_art(const Cursor &cursor);
 
     // search and typing
-    void ask_text(const std::function<void(const std::string &)> &done, const std::string& title = "");
+    void ask_text(const std::function<void(const std::string &)> &done, const std::string& title = "", bool secret = false);
     void refresh_search();
     void poll_typing();
 
@@ -449,6 +486,9 @@ class Session
         std::string rich_text; // retain external ASS/text through quick-input reopen on seek
         bool is_default=false, forced=false, hearing_impaired=false;
         bool loading = false, failed = false;
+        bool sync_busy=false, synced=false, sync_manual=false;
+        double sync_scale=1,sync_offset=0,sync_after=0;
+        size_t sync_reference_count=0;
     };
     void play_stream(const ::Stream &stream, bool transcode, bool trailer=false);
     void watch_start(const std::string &url, const std::vector<std::string> &headers, double start,
@@ -460,6 +500,8 @@ class Session
     void watch_build_menu();
     void watch_refresh_tracks();
     void watch_select_sub(int index);
+    void watch_sync_subtitles();
+    void watch_manual_subtitle_timing();
     void watch_load_addon_subtitles();
     void watch_auto_subtitles();
     void watch_next_episode();
@@ -635,6 +677,7 @@ class Session
     std::vector<WatchSub> w_subs_;
     int w_sub_active_ = -1; // index in w_subs_, -1 off
     double w_sub_delay_ = 0;
+    bool w_sub_sync_busy_=false;
     double w_info_until_ = 0, w_last_save_ = 0, w_last_saved_pos_ = -1;
     bool w_started_ = false, w_menu_built_ = false, w_auto_sub_done_ = false, w_heavy_warned_ = false;
     bool w_menu_dirty_ = false;

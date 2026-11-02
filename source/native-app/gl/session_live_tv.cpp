@@ -379,10 +379,11 @@ void Session::live_menu() {
       "Channel groups",    "Search channels",
       "All channels",      "Favorites",
       "Recent channels",   "Remove current source",
-      "Next channel page", "Previous channel page", "Four-screen TV (experimental)", "Check IPTV Library availability", "Set XMLTV guide URL", "Refresh programme guide", jbool(live_state_,"guide_enabled",true)?"Programme guide: On":"Programme guide: Off"};
+      "Next channel page", "Previous channel page", "Four-screen TV (experimental)", "Check IPTV Library availability", "Set XMLTV guide URL", "Refresh programme guide", jbool(live_state_,"guide_enabled",true)?"Programme guide: On":"Programme guide: Off", "Correct provider guide clock"};
   open_dropdown("Live TV", options, 0, [this, generation](int i) {
     if (generation != profile_generation_)
       return;
+    if (i == 17) {live_guide_clock();return;}
     if (i == 14) {live_guide_configure();return;}
     if (i == 15) {live_guide_reset();live_build();say("Programme guide will refresh in the background",5);return;}
     if (i == 16) {live_state_["guide_enabled"]=!jbool(live_state_,"guide_enabled",true);live_guide_reset();live_save();live_build();return;}

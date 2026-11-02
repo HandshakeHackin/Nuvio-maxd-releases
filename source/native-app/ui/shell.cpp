@@ -11,11 +11,11 @@ using hui::Direction;
 
 namespace
 {
-constexpr int kPageCount = 7;
+constexpr int kPageCount = 8;
 }
 
 Shell::Shell(const Env &env, Session &session)
-    : env_(env), s_(session), board_(env), search_board_(env), discover_(env), library_(env), iptv_library_(env,Page::iptv), addons_(env), live_tv_(env,Page::livetv), settings_(env),
+    : env_(env), s_(session), board_(env), search_board_(env), discover_(env), library_(env), iptv_library_(env,Page::iptv), media_library_(env,Page::servers), addons_(env), live_tv_(env,Page::livetv), settings_(env),
       detail_(env), player_ui_(env)
 {
     board_.set_content(&s_.board);
@@ -24,6 +24,7 @@ Shell::Shell(const Env &env, Session &session)
     discover_.set_content(&s_.discover);
     library_.set_content(&s_.library);
     iptv_library_.set_content(&s_.iptv_content);
+    media_library_.set_content(&s_.media_content);
     addons_.set_content(&s_.addons);
     live_tv_.set_content(&s_.live_content);
     settings_.set_content(&s_.settings);
@@ -37,6 +38,7 @@ Session::Cursor Shell::cursor() const
     c.board_col = board_.cursor_col();
     c.discover = discover_.cursor_index();
     c.library = library_.cursor_index();
+    c.media=media_library_.cursor_index();
     c.iptv=iptv_library_.cursor_index();
     c.live=live_tv_.cursor_index();
     c.episode = detail_.episode_index();
@@ -52,6 +54,7 @@ void Shell::go_page(int page)
 {
     page_ = std::clamp(page, 0, kPageCount - 1);
     if(page_==6 && !s_.iptv_visible)page_=0;
+    if(page_==7 && !s_.media_visible)page_=0;
     screen_ = Screen::page;
     switch (page_)
     {
@@ -66,6 +69,9 @@ void Shell::go_page(int page)
         break;
     case 3:
         addons_.enter();
+        break;
+    case 7:
+        media_library_.enter();
         break;
     case 6:
         iptv_library_.enter();
@@ -121,6 +127,9 @@ void Shell::apply_changes()
     if (c & Session::kAddons)
         addons_.refresh();
     if(c & Session::kLive)live_tv_.refresh();
+    if(c & Session::kMediaNew)media_library_.set_content(&s_.media_content);
+    else if(c & Session::kMedia)media_library_.refresh();
+    if(page_==7 && !s_.media_visible)go_page(0);
     if(c & Session::kIptvNew)iptv_library_.set_content(&s_.iptv_content);
     else if(c & Session::kIptv)iptv_library_.refresh();
     if(page_==6 && !s_.iptv_visible)go_page(0);
@@ -274,6 +283,15 @@ void Shell::route_page(const hui::InputFrame &input, float dt)
         if (!on_rail && input.is_pressed(Action::west))
             s_.addons_reload();
         break;
+    case 7:
+        media_library_.update(input,dt);on_rail=media_library_.rail_focused();cursor=media_library_.rail_cursor();
+        if(!on_rail){
+            if(input.is_pressed(Action::back)&&s_.media_back())return;
+            if(confirm){if(media_library_.filter_cursor()>=0)s_.media_filter(media_library_.filter_cursor());else s_.media_activate(media_library_.cursor_index());return;}
+            if(input.is_pressed(Action::north)){s_.media_search();return;}
+            if(input.is_pressed(Action::menu)||input.is_pressed(Action::west)){s_.media_menu();return;}
+        }
+        break;
     case 6:
         iptv_library_.update(input,dt);on_rail=iptv_library_.rail_focused();cursor=iptv_library_.rail_cursor();
         if(!on_rail){
@@ -366,6 +384,7 @@ unsigned Shell::focus_signature()
     mix(library_.rail_focused());
     mix(library_.rail_cursor());
     mix(library_.filter_cursor());
+    mix(media_library_.rail_cursor());mix(media_library_.cursor_index());mix(media_library_.filter_cursor());
     mix(iptv_library_.rail_cursor());mix(iptv_library_.cursor_index());mix(iptv_library_.filter_cursor());
     mix(addons_.rail_focused());
     mix(addons_.rail_cursor());
@@ -569,6 +588,9 @@ void Shell::draw(hui::gfx::DrawList &list, hui::gfx::BackdropSpec &backdrop) con
             break;
         case 3:
             addons_.draw(list, backdrop);
+            break;
+        case 7:
+            media_library_.draw(list,backdrop);
             break;
         case 6:
             iptv_library_.draw(list,backdrop);

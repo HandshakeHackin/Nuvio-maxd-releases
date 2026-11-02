@@ -2,6 +2,7 @@
 #include "bitstream.h"
 #include "audio_pcm.h"
 #include "pcm_gain.h"
+#include "pcm_night_mode.h"
 
 #include <algorithm>
 #include <cstring>
@@ -175,6 +176,7 @@ void* PcmOut::thread_main(void* self) {
 
 void PcmOut::run() {
 	unsigned buffer_index=0;
+    PcmNightMode night; uint64_t processed_epoch=UINT64_MAX;
 	const int frames=grain_frames_,rate=rate_;
 	const size_t grain_bytes = frames * bytes_per_frame();
     int errors=0;
@@ -194,7 +196,12 @@ void PcmOut::run() {
 			}
 		}
 		if (got < grain_bytes) std::memset(grain + got, 0, grain_bytes - got);
-        if(!bitstream_kind_)pcm_apply_gain(grain,grain_bytes/(floating_?sizeof(float):sizeof(int16_t)),floating_,gain_percent_);
+        if(!bitstream_kind_) {
+            pcm_apply_gain(grain,grain_bytes/(floating_?sizeof(float):sizeof(int16_t)),floating_,gain_percent_);
+            if(epoch!=processed_epoch || !got)night.reset();
+            processed_epoch=epoch;
+            night.process(grain,got/bytes_per_frame(),channels_,floating_,rate,night_mode_);
+        }
 #ifdef PLATFORM_PS5_NATIVE
 		const double output_started=now_seconds();
 		drained_=false;

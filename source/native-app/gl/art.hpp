@@ -1,3 +1,5 @@
+#include "http.h"
+#include <functional>
 // Artwork as GL textures: downloaded (or read from the disk cache), cut to the
 // shape it is drawn in, decoded on worker threads and uploaded on the thread
 // that owns the GL context.
@@ -36,6 +38,7 @@ enum class ArtKind
 class TexCache
 {
   public:
+    std::function<HttpResponse(const std::string&,const std::atomic<bool>*)> private_image;
     ~TexCache()
     {
         shutdown();

@@ -1,6 +1,7 @@
 // Exercise the production stream reader and worker scheduler over local HTTP.
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "netstream.h"
+#include "http_credentials.hpp"
 #include "http.h"
 #include "util.h"
 #include <curl/curl.h>
@@ -31,7 +32,9 @@ int main(int argc, char** argv) {
     if (argc != 4) return 2;
     http_init(""); NetStream::set_cache_dir(std::string(argv[2]) == "seek" ? "" : argv[3]);
     std::atomic<bool> cancel{false};
-    NetStream stream(argv[1], {}, &cancel, std::string(argv[2]) != "single" && std::string(argv[2]) != "rapid-single");
+    std::vector<std::string> headers;
+    if(std::string(argv[2]).starts_with("media-"))headers={"X-Emby-Authorization: MediaBrowser Token=\"fixture-only\"", "X-Maxd-Credential-Origin: "+(std::string(argv[2])=="media-foreign"?std::string("http://foreign.invalid"):http_credentials::origin(argv[1]))};
+    NetStream stream(argv[1], headers, &cancel, !std::string(argv[2]).starts_with("media-") && std::string(argv[2]) != "single" && std::string(argv[2]) != "rapid-single");
     rapid=std::string(argv[2])=="rapid-single";
     json result; result["started"] = stream.start();
     if (result["started"] == true) {
