@@ -1,5 +1,5 @@
 {
-  "sourceCommit": "e93fea71b0c65d2d677e76f1e2b7da29fddbd3e9",
+  "sourceCommit": "ac3924630139a53858e2cbcd3de7d2312915319d",
   "version": "1.0.0.6",
   "fileSha256": {
     ".github/workflows/native-checks.yml": "64b21fd9b26e40429a5758d3af667fdb022374a7ca935c20eaf5989d61842563",
@@ -465,7 +465,7 @@
     "native-app/tests/tasks.sh": "5820206595bb6a2f8efb646ada9c460f0a215e9cc1125f2299716efca642af6e",
     "native-app/tests/tasks_host.cpp": "30e6aa5cad22fea73ea6ebc4215bc29771fd0c9cde1979058a8e473ed784dc4c",
     "native-app/tests/track_recovery.sh": "3b945a1b2991a3ba4e91789bf6ebb75e6e9ee65f84d473363996f5d5a31aedac",
-    "native-app/tests/track_recovery_host.cpp": "fa256e2eb0991e1e559802ca7acdc22200e457cbdf0ebd0552fdf0e646e491ae",
+    "native-app/tests/track_recovery_host.cpp": "a6505710a1a9f683f34d73c5a6c5e115d8b6093417fdb5b6a509156a67f2d964",
     "native-app/tests/tracker_applications_test.py": "7b96f95a4d946e6edcab236f0fe6c04fd671c5467898f05e32de1f8c7d0d68ce",
     "native-app/tests/tracking.sh": "e3deacb1504e9bd863796d4de30b1e9f5675465d36d0522aaa9129487a805714",
     "native-app/tests/tracking_host.cpp": "1142a8ff62349b04b68cdb0ba12192d58351aa93ca9e5dba79326333cb36a016",

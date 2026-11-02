@@ -31,7 +31,7 @@ struct Session {
     PlayerState playing;
     struct Prefs {int audio_delay_ms=0,subtitle_delay_ms=0,audio_gain_percent=100;}prefs_;
     std::vector<WatchSub> w_subs_;
-    int w_sub_active_=-1,automatic=0;
+    int w_sub_active_=-1,automatic=0,manual_timing=0;
     bool w_menu_built_=false,w_menu_dirty_=false;
     uint64_t w_player_revision_=0;
     double w_chapters_at_=10,w_sub_delay_=0;
@@ -40,6 +40,7 @@ struct Session {
     void watch_auto_subtitles(){++automatic;}
     void watch_select_sub(int index){w_sub_active_=index;}
     void watch_show_info(){}
+    void watch_manual_subtitle_timing(){++manual_timing;}
     void watch_build_menu(){}
     void save_prefs(){}
     void say(const char*,int){}
@@ -74,5 +75,9 @@ int main() {
     assert(s.player_.target==4 && s.player_.paused && !s.playing.menu);
     s.playing.chapters.clear();s.playing.menu=true;s.playing.menu_column=1;
     in={};in.nav=hui::Direction::right;s.menu_input(in);assert(s.playing.menu_column==1);
+    in={};in.pressed=hui::action_bit(hui::Action::jump_next);s.menu_input(in);
+    assert(s.prefs_.subtitle_delay_ms==50 && s.manual_timing==1);
+    in={};in.pressed=hui::action_bit(hui::Action::north);s.menu_input(in);
+    assert(s.prefs_.subtitle_delay_ms==0 && s.manual_timing==2);
     std::cout<<"Production Session: renumbered subtitles, explicit Off, external cues, missing/ambiguous tracks and chapter controller navigation passed\n";
 }
