@@ -1,0 +1,16 @@
+1.0.0.6 temporary media-server test
+
+PASS: PS5 compilation/linking; all 414 imports resolve to loaded modules.
+PASS: Synthetic Jellyfin and Emby APIs, bounds, authentication, paging, versions, direct/HLS negotiation, progress, reverse-proxy paths, cancellation and token scoping.
+PASS: Production media-server Session persistence (0600), reconnect, library browsing, cancellation, profile isolation, playback dispatch and removal.
+PASS: Real FFmpeg authenticated HLS picture/audio decoding and extensionless segments; manifest URL tokens redacted from logs.
+PASS: 10 sidebar/navigation cases, including both optional tabs.
+PASS: Existing IPTV, history, artwork, trailer and HTTP-reader regressions.
+PASS: Password IME masking, disabled learning/resume and buffer cleanup.
+PASS: 46 updater tests; production shutdown fixture includes media-server cancellation and reporter cleanup.
+PASS: Image verify (0 errors/warnings), deep round trip and ZIP round trip; all 153 packaged file hashes match. All 864 source archive hashes match the public source tree.
+
+Full GitHub CI is running for source commit 6ba02195915116acbcc835c174604b1d340931e9:
+https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/41547698365
+
+Physical PS5 and real Jellyfin/Emby server acceptance remain pending. Please report results in issue #14. This is a manual test download, not an official release.
