@@ -2,3 +2,6 @@
 /*.py linguist-vendored
 /source/native-app/third_party/** linguist-vendored
 /source/native-app/gl/scanout_driver_extension.inc linguist-language=C
+
+# Upstream patch context lines intentionally retain their checksum-pinned whitespace.
+/source/native-app/third_party/libass/*.patch -whitespace

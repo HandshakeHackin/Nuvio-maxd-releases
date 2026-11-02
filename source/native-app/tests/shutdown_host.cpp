@@ -33,10 +33,13 @@ struct Updater {
         }
     }
 };
+struct Reporter { ~Reporter(){events.push_back("media reporter joined");} };
 struct Session {
     #include "shutdown_fields.hpp"
     std::shared_ptr<Boundary> prepared_ = std::make_shared<Boundary>(Boundary{"prepared"});
     Updater updater_;
+    std::unique_ptr<Reporter> media_reporter_=std::make_unique<Reporter>();
+    void media_reset(){if(media_cancel_)*media_cancel_=true;if(media_play_cancel_)*media_play_cancel_=true;events.push_back("media reset");}
     bool watching = false;
     Boundary player_{"player"}, provider_tasks_{"providers"}, tex_{"textures"};
     void watch_stop(bool) { events.push_back("playback stopped"); watching = false; }
@@ -58,11 +61,14 @@ int main() {
         assert(sx::events.front()=="pin cleared");
         assert(sx::events.back() == "progress saved");
         assert(!session.updater_.handed_off);
+        assert(!session.media_reporter_);
         session.updater_.finish_exit();
         assert(session.updater_.handed_off == updating);
     }
     sx::events.clear();
     sx::Session session;
+    session.media_cancel_ = std::make_shared<std::atomic<bool>>(false);
+    session.media_play_cancel_ = std::make_shared<std::atomic<bool>>(false);
     session.device_cancel_ = std::make_shared<std::atomic<bool>>(false);
     session.live_cancel_ = std::make_shared<std::atomic<bool>>(false);
     session.live_guide_cancel_ = std::make_shared<std::atomic<bool>>(false);
@@ -75,7 +81,7 @@ int main() {
     session.updater_.closing = true;
     session.shutdown();
     assert(*session.live_guide_cancel_ && *session.series_updates_cancel_ && *session.iptv_cancel_ && *session.iptv_probe_cancel_ && *session.live_cancel_ && *episode_cancel && *session.device_cancel_ && *session.d_cancel_ && *session.d_stream_cancel_);
-    assert(!session.watching);
+    assert(!session.watching && *session.media_cancel_ && *session.media_play_cancel_ && !session.media_reporter_);
     session.updater_.finish_exit();
     assert(session.updater_.handed_off);
     std::cout << "Shutdown: fresh-launch exit and update handoff, active-task cancellation and cleanup ordering passed\n";
