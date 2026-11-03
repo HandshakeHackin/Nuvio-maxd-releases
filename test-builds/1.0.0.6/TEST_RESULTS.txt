@@ -10,7 +10,7 @@ PASS: Password IME masking, disabled learning/resume and buffer cleanup.
 PASS: 46 updater tests; production shutdown fixture includes media-server cancellation and reporter cleanup.
 PASS: Image verify (0 errors/warnings), deep round trip and ZIP round trip; all 153 packaged file hashes match. All 864 source archive hashes match the public source tree.
 
-Full GitHub CI is running for source commit 6ba02195915116acbcc835c174604b1d340931e9:
+PASS: Full GitHub native/account/transport/UI and real VLC playback CI for source commit 6ba02195915116acbcc835c174604b1d340931e9:
 https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/41547698365
 
 Physical PS5 and real Jellyfin/Emby server acceptance remain pending. Please report results in issue #14. This is a manual test download, not an official release.

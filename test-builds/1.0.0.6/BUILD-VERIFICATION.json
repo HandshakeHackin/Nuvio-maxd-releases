@@ -341,6 +341,52 @@
     "runId": 41547698365,
     "publicSourceCommit": "6ba02195915116acbcc835c174604b1d340931e9",
     "url": "https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/41547698365",
-    "status": "in_progress"
+    "status": "completed",
+    "conclusion": "success",
+    "jobs": [
+      {
+        "id": 125627223228,
+        "name": "vlc-playback",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/41547698365/job/125627223228"
+      },
+      {
+        "id": 125627223838,
+        "name": "account-and-transport",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/41547698365/job/125627223838"
+      }
+    ]
+  },
+  "publicSourceArchiveCorrespondence": {
+    "developmentSourceCommit": "ac3924630139a53858e2cbcd3de7d2312915319d",
+    "publicHostCiCommit": "6ba02195915116acbcc835c174604b1d340931e9",
+    "allHashesMatch": true,
+    "filesVerified": 864
+  },
+  "publicDownloadVerification": {
+    "commit": "690cbe3",
+    "files": [
+      {
+        "name": "PPSA99288.zip",
+        "bytes": 44194984,
+        "sha256": "e04ac1cb1f912bb419d81b5b500dabf07faf251834e24899c2dfbc7482310ae3",
+        "match": true
+      },
+      {
+        "name": "NuvioMaxd-1.0.0.6-native.ffpfsc",
+        "bytes": 46530560,
+        "sha256": "3d368ea1603a375944140d6201ca8f341a79e44c31474bd283f8108cce2b5665",
+        "match": true
+      },
+      {
+        "name": "NuvioMaxd-1.0.0.6-source.tar.gz",
+        "bytes": 46472076,
+        "sha256": "821ef5a15381854230dfc6fbfec0660c1fa56bc3a3d27ca8233ba50c573f864b",
+        "match": true
+      }
+    ]
   }
 }
