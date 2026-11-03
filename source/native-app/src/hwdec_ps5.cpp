@@ -443,7 +443,7 @@ unsigned hevc_ps_id(int type, const uint8_t* payload, int len) {
 }
 
 // Copies an HEVC access unit without what the decoder can't take: NAL types
-// 48-63 (Dolby Vision RPU / enhancement layer; the base layer plays) and a
+// 48-63 and nonzero HEVC layers (Dolby Vision enhancement pictures), and a
 // parameter set that a later one in the same AU replaces (UHD Blu-ray remuxes
 // repeat theirs in-band; two different PPS 0 in one AU make the decoder
 // refuse the keyframe).
@@ -492,7 +492,9 @@ int hevc_copy_base_layer(uint8_t* dst, const uint8_t* au, int size) {
 	int o = 0;
 	for (int k = 0; k < count; k++) {
 		int type = (au[nal_at[k]] >> 1) & 0x3f;
-		if (type >= 48) continue;
+		if (end_at[k] - nal_at[k] < 2) continue;
+		const unsigned layer = ((au[nal_at[k]] & 1u) << 5) | (au[nal_at[k] + 1] >> 3);
+		if (type >= 48 || layer != 0) continue;
 		if (key[k]) {
 			bool replaced = false;
 			for (int m = k + 1; m < count && !replaced; m++) replaced = key[m] == key[k];

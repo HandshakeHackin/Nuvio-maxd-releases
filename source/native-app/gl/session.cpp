@@ -701,7 +701,7 @@ void Session::refresh_settings()
         r.on = on;
     };
     using Kind = SettingRow::Kind;
-    set(kMediaServers, SettingRow::Kind::action, "Media servers (experimental)", std::to_string(media_accounts_.size())+" connected", "Connect Jellyfin or Emby. Browse server libraries and resume playback separately from addons.");
+    set(kMediaServers, SettingRow::Kind::action, "Media servers (experimental)", std::to_string(media_accounts_.size())+" connected", "Connect Jellyfin, Emby or Plex. Browse server libraries and resume playback separately from addons.");
     set(kAccount, Kind::value, "Nuvio account", signed_in() ? prefs_.user_email : "Not signed in",
         signed_in() ? (confirm_sign_out_ ? "Press Cross again to sign out." : "Press Cross to sign out.")
                     : "Sign in with a QR code to choose a profile and load its addons and saved library. Press Cross.");
@@ -1285,6 +1285,7 @@ void Session::sign_in_cancel()
             const auto key=prefs_.auth_key, p=device_provider_.substr(9);
             bg<ApiResult>([key,p]{return api_tracking(key,"device_cancel",{{"provider",p}});},[](auto&){});
         }
+        if(device_provider_=="plex")media_plex_cancel();
         device_provider_.clear(); device_code_ = {}; return;
     }
     prefs_.onboarding_done = true;
@@ -1381,10 +1382,12 @@ void Session::update(float dt, const Cursor &cursor)
     }
     if (sign_in_open && !sign_in.link_only) {
         if (device_provider_.empty()) login_poll();
+        else if (device_provider_=="plex")media_plex_poll();
         else if (starts_with(device_provider_, "tracking:")) tracker_login_poll();
         else service_login_poll();
     }
     poll_typing();
+    media_flush_auth();
     live_guide_update(cursor.live);
     if(page_==Page::library && now>=series_updates_tick_){series_updates_tick_=now+60;refresh_library();}
     if (watching)

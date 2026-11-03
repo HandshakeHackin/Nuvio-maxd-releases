@@ -120,7 +120,12 @@ bool Ime::open(const std::string& title, bool secret)
     g_param.user_id = static_cast<std::uint32_t>(user);
     // Public OrbisImeOption ABI: PASSWORD=4, NO_LEARNING=32,
     // NO_AUTO_CAPITALIZATION=2, DISABLE_RESUME=256, DISABLE_AUTO_SPACE=512.
-    if(secret)g_param.option=4u|32u|2u|256u|512u;
+    // Password mode requires Basic Latin (OrbisImeType value 1), including on
+    // older firmware. Default text fields keep the multilingual type (0).
+    if (secret) {
+        g_param.type = 1;
+        g_param.option = 4u | 32u | 2u | 256u | 512u;
+    }
     g_param.max_text_length = kMaxChars;
     g_param.buffer = g_text;
     std::memset(g_title,0,sizeof(g_title));

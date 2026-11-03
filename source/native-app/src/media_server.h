@@ -10,8 +10,18 @@
 #include <thread>
 #include <vector>
 namespace media_server {
+struct CredentialState {
+  std::mutex mutex;
+  bool initialized = false;
+  std::string token;
+  json auth;
+};
 struct Connection {
   std::string id, kind, base, user, user_name, server_name, token, device;
+  json auth = json::object();
+  std::shared_ptr<CredentialState> credentials =
+      std::make_shared<CredentialState>();
+  Connection snapshot() const;
   bool valid() const;
   json saved() const;
   static Connection restore(const json &);
@@ -25,7 +35,7 @@ struct Result {
 struct Playback {
   std::string url, source, session, method, error;
   std::vector<std::string> headers;
-  double resume = 0;
+  double resume = 0, duration = 0;
 };
 class Reporter {
 public:
@@ -51,6 +61,9 @@ private:
 std::string normalize(std::string base, const std::string &kind);
 std::string origin(const std::string &url);
 bool safe_id(const std::string &);
+HttpResponse transport(const Connection &, const std::string &,
+                       const json *body = nullptr,
+                       const std::atomic<bool> *cancel = nullptr);
 Result request(const Connection &, const std::string &path,
                const json *body = nullptr,
                const std::atomic<bool> *cancel = nullptr);

@@ -1,0 +1,129 @@
+{
+  "checkedAt": "2026-11-03T13:01:08.017636+00:00",
+  "branch": "builds/v1.0.0.7",
+  "status": "staged, unreleased",
+  "implementationCommit": "631d813b4698d054b0903c013d5daae1e166ed6e",
+  "baseCommit": "77db038280232489a006eaaacf29c6f7064108be",
+  "updatedVersions": {
+    "ffmpeg": "7.0.3",
+    "expat": "2.10.0",
+    "libpng": "1.6.59",
+    "freetype": "2.15.0",
+    "harfbuzz": "15.0.0",
+    "fribidi": "1.0.18"
+  },
+  "libass": "0.17.5 + five upstream patches",
+  "runtimeVersion": "1.0.0.6 retained until next-build packaging/version preparation",
+  "checks": [
+    {
+      "name": "Source/recipe/SDK/OpenGL pin validation",
+      "command": "tools/validate_build_dependencies.py",
+      "result": "passed",
+      "log": "test-output/maintenance-pins.log",
+      "logSha256": "a1908254164c03c0e4aff348626961292fd04030fdf06ca74c2e8d67683f8f96"
+    },
+    {
+      "name": "Native/EVO HEVC base-layer filtering and decoder allocation/retry cleanup",
+      "command": "tests/hwdec.sh",
+      "result": "passed",
+      "log": "test-output/maintenance-hwdec.log",
+      "logSha256": "c0eeb917a348bfea16dd930e7fd7bad01c28200c3639fd1a4e3e80348e899a68"
+    },
+    {
+      "name": "Expat 2.10.0 upstream suite",
+      "command": "tests/maintenance_runtime.sh (Expat stage)",
+      "result": "passed",
+      "log": "test-output/maintenance-host-libraries.log",
+      "logSha256": "6969f5a95bac0c19495c496ceb0c7c19e6cc04d0c5df02389cd8271f7075aa70"
+    },
+    {
+      "name": "All 37 libpng tests, multilingual glyph shaping/rasterization and production XMLTV guide tests",
+      "command": "tests/maintenance_runtime.sh (resumed after build-tool correction)",
+      "result": "passed",
+      "log": "test-output/maintenance-host-runtime.log",
+      "logSha256": "202475846737c0fdf2f4db643662e6271b0456f5db76147009526eb14b4674cd"
+    },
+    {
+      "name": "Hebrew glyph fallback, both font weights, 27 letter rasters and RTL ordering using updated FriBidi",
+      "command": "tests/hebrew.sh with updated host library overrides",
+      "result": "passed",
+      "log": "test-output/maintenance-bidi.log",
+      "logSha256": "b3cc36a03f2453849a46b666282b0e717c25e214c905724a1be3e25d854c6250"
+    },
+    {
+      "name": "Patched libass empty/codepage/SIZE_MAX inputs and pixel-identical clamped vector clips under ASan/UBSan",
+      "command": "tests/libass_hardening.sh",
+      "result": "passed",
+      "log": "test-output/maintenance-libass.log",
+      "logSha256": "a6411e6cd293fdf31c0db04d1378f4e91d05690aef9826776605f2a7469b9fe8"
+    },
+    {
+      "name": "Real EVO SDR and 10-bit B-frame decode, reopen, owned planes and frame cadence with FFmpeg 7.0.3",
+      "command": "tests/evo.sh with updated host library overrides",
+      "result": "passed",
+      "log": "test-output/maintenance-evo.log",
+      "logSha256": "37d0f32fc8403148e088e8f13425281567513c36bb8ead844f6c6afd35731ed1"
+    },
+    {
+      "name": "Production Native HLS groups, live stall recovery and authenticated extensionless-segment playback with FFmpeg 7.0.3",
+      "command": "tests/hls_variants.sh with updated host library overrides",
+      "result": "passed",
+      "log": "test-output/maintenance-hls.log",
+      "logSha256": "999539eb989c3549fe7b9f66cc28a8037d13c60818bfd99412c3f44c4cbd49cc"
+    },
+    {
+      "name": "PS5 Native/EVO/VLC compile/link and 414 loaded-module imports",
+      "command": "/workspace/verify-upstream-next-target.sh",
+      "result": "passed",
+      "log": "test-output/maintenance-target.log",
+      "logSha256": "e2bc179658b4c2d28493497fb54d39709f02742961064d7a64d23ecdc28f2d00"
+    }
+  ],
+  "sourceSha256": {
+    "DEPENDENCY_UPDATES_NEXT.md": "4ab60c45365668d5478e192e4fe0c4b4d9d7cd1676b61cc1fa011cd035d05399",
+    "RELEASE_NOTES_NEXT.md": "bc3fce3b383e180280c739180aac1a3459666a30e2ce71214a8fbe7342a4cdba",
+    "UPSTREAM_ADAPTATIONS_NEXT.md": "f325c18fca881428a50fcd76ef398f58997546606a508963f23a70e6f7e960d2",
+    "app/licenses/FreeType.txt": "5a5ee54c5001bbad1cdc1a57cc3dd4c42199b2da09d39c7ee41fab002d02967f",
+    "app/licenses/FriBidi.txt": "20e50fe7aae3e56378ebf0417d9de904f55a0e61e4df315333e632a4d3555d95",
+    "app/licenses/README.txt": "753d5832e9d9f9d4dde309ab5407884d58bad5537801dc465c6cff9787553ce7",
+    "app/licenses/expat.txt": "31b15de82aa19a845156169a17a5488bf597e561b2c318d159ed583139b25e87",
+    "app/licenses/libpng.txt": "bdb0a645ea18c60507d0368379b1ac5474b92255fcc2d115e07486a7672ba526",
+    "dependencies.json": "1c9ae21628d234fa8b1998fd804446fd5f35db2bc55c959cc34693393ddc7d8a",
+    "src/hwdec_ps5.cpp": "ec8c170381953c96ccb7faab897e0f533b32d9b823efb66eb9b824c62c220b77",
+    "tests/build_ffmpeg_maintenance_host.sh": "b71db14a0fa5c752346d03967bd186d3895d8af5c59a42cb972e771fc41b262b",
+    "tests/hwdec.sh": "902537300028025a0b2be8ee0c12bf65aca361abfaa2f0c9c22a0f2622078eae",
+    "tests/hwdec_host.cpp": "2c774ec21cb18d7cdc13a11440abc2e5c202d08a349fdc3dfbf1dd9e287c10e4",
+    "tests/libass_hardening.sh": "69dc6ded73710813d8871feeaea31c93222c54f68dfe42aa68cd93ba505554cd",
+    "tests/maintenance_runtime.sh": "3d77cb1d51324081717dfcbaf642e9ba616a26ad6b184502a24ccb950ade24e8",
+    "tests/maintenance_runtime_host.cpp": "c0e50e05f64e5b2ae371bca9bd23481fc3c9cf2bcb864488d816859ff012a630",
+    "tests/subtitle_input_host.c": "5f6b51abb1c61cf43a3c04f610e30f8d78e504cb5b83580baf18837196f48845",
+    "third_party/evo/LOCAL_CHANGES.md": "c900c21596f630edb2fe035ec2831804a816d9d295916098f7b3fbbee65100b6",
+    "third_party/evo/UPSTREAM.json": "7d4a9053374e47d113075198227f1e3b0054c170baf90f55364d9c154719c2e2",
+    "third_party/evo/media/src/evo_vdec_native.c": "f300ae0f9b604cbbd398ca4575975cae80a76b5897cb9bc2a5b5ba2536e7f4f5",
+    "third_party/evo/patches/0001-hevc-base-layer-only.patch": "d8af613cc199247c68f14296f82da35f485c766cdebe6134ecc35a3c4d4dae35",
+    "third_party/libass/0004-outline-hardening.patch": "8672196e43958069781205a0094283b9c2c6227610c30c55a299c8dd050450ef",
+    "third_party/libass/0005-outline-hardening.patch": "61f26dd5f6f9f5f37243feb9165f39ba7d5d6415c67348c5df14da12fc63dab2",
+    "third_party/libass/README.md": "c7455b5c20a8875b9c624cd21ae1444663affcf80e7ae4c1c6ca9391000df938",
+    "tools/build_maintenance_libraries.sh": "7dd3782d00216339aa5d2f8279c86308b8da264404ee86595af076b50f83f1c9",
+    "tools/build_media_maintenance.sh": "3491f47b8fd90533cec65e2c459d7dc3fe1312830e750822c31182bff442bfcb",
+    "tools/validate_evo_source.py": "6740900cd7680be5f770337bd777d4e7bb6ad2b97c85b7072fa865644e74d115",
+    "tools/validate_maintenance_libraries.py": "b389a38e5f178691630eb3ec2305ab311b4686f799ef89e5b28c7d0f26138877"
+  },
+  "sdkPinSetSha256": "1c9ae21628d234fa8b1998fd804446fd5f35db2bc55c959cc34693393ddc7d8a",
+  "ps5Artifacts": {
+    "eboot.elf": "676897a89e7cf6bddfe6ae63931547bd67ee473a2d4347a1f31f5f63d6c60775",
+    "pie.elf": "265f46ccaaeccd3dceede843925d96dcaeb28e51116c94667ef8bb98b6cbeb85"
+  },
+  "baseSdkCoreFilesUnchanged": true,
+  "graphicsPinsUnchanged": true,
+  "physicalConsoleVerified": false,
+  "releasePublished": false,
+  "storeSubmissionCreated": false,
+  "limits": [
+    "PS5 cross-build uses the complete FFmpeg 7.0.3 feature set. Host playback fixtures use a minimal build from the same checksum-pinned source archive.",
+    "Host FFmpeg VERSION is normalized from RELEASE; both final host and PS5 headers identify 7.0.3. The PS5 target already used 7.0.3 before the recipe normalization, so target binary inputs did not change.",
+    "The libass sanitizer harness uses available host shaping dependencies. Updated FreeType/HarfBuzz/FriBidi were separately tested for multilingual shaping/rasterization and linked together with patched libass in the PS5 build.",
+    "Host Native/EVO playback fixtures are not physical PS5 playback acceptance. The VLC backend was cross-compiled/linked with the shared target ABI; real VLC-console playback remains unverified.",
+    "No package was published and existing 1.0.0.6 tester downloads were not modified. No HDR output-format or TrueHD transport change is included."
+  ]
+}

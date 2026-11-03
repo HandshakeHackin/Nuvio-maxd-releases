@@ -14,7 +14,7 @@ permissions:
 jobs:
   account-and-transport:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - name: Install host dependencies
@@ -37,6 +37,12 @@ jobs:
           echo "QUICKJS_DIR=$RUNNER_TEMP/quickjs/quickjs-2026-06-04" >> "$GITHUB_ENV"
       - name: Test account, catalogs, stream cards, navigation, decoder setup and GPU video
         run: bash native-app/tests/run.sh
+      - name: Check Plex and existing media-server connections
+        run: |
+          bash native-app/tests/ime_secret.sh
+          bash native-app/tests/plex.sh
+          bash native-app/tests/media_servers.sh
+          bash native-app/tests/media_session.sh
       - name: Render controller dialogs and update guidance
         run: bash native-app/tests/preview.sh
       - name: Check whitespace

@@ -1,5 +1,6 @@
 #include "media_server.h"
 #include "http_credentials.hpp"
+#include "plex.h"
 #include <algorithm>
 #include <cmath>
 #include <curl/curl.h>
@@ -38,6 +39,10 @@ int progress(void *v, curl_off_t, curl_off_t, curl_off_t, curl_off_t) {
 HttpResponse transfer(const Connection &c, const std::string &path,
                       const json *body, const std::atomic<bool> *cancel) {
   HttpResponse r;
+  if (cancel && cancel->load()) {
+    r.error = "Cancelled";
+    return r;
+  }
   auto h = curl_easy_init();
   if (!h) {
     r.error = "Could not start media server request";
@@ -54,8 +59,8 @@ HttpResponse transfer(const Connection &c, const std::string &path,
   curl_easy_setopt(h, CURLOPT_HTTPHEADER, headers);
   curl_easy_setopt(h, CURLOPT_FOLLOWLOCATION, 0L);
   curl_easy_setopt(h, CURLOPT_PROTOCOLS_STR, "http,https");
-  curl_easy_setopt(h, CURLOPT_CONNECTTIMEOUT, 8L);
-  curl_easy_setopt(h, CURLOPT_TIMEOUT, 20L);
+  curl_easy_setopt(h, CURLOPT_CONNECTTIMEOUT, c.kind == "plex" ? 4L : 8L);
+  curl_easy_setopt(h, CURLOPT_TIMEOUT, c.kind == "plex" ? 10L : 20L);
   curl_easy_setopt(h, CURLOPT_NOSIGNAL, 1L);
   curl_easy_setopt(h, CURLOPT_USERAGENT, kUserAgent);
   if (!http_ca_bundle().empty())
@@ -114,10 +119,25 @@ std::string normalize(std::string b, const std::string &kind) {
     b += "/emby";
   return b;
 }
+Connection Connection::snapshot() const {
+  Connection c = *this;
+  if (kind == "plex" && credentials) {
+    std::unique_lock<std::mutex> l(credentials->mutex, std::try_to_lock);
+    if (l.owns_lock() && credentials->initialized) {
+      c.token = credentials->token;
+      c.auth = credentials->auth;
+    }
+  }
+  return c;
+}
+HttpResponse transport(const Connection &c, const std::string &path,
+                       const json *body, const std::atomic<bool> *cancel) {
+  return transfer(c, path, body, cancel);
+}
 bool Connection::valid() const {
-  return (kind == "jellyfin" || kind == "emby") && safe_id(id) &&
-         safe_id(user) && safe_id(device) && !token.empty() &&
-         token.size() < 4096 &&
+  return (kind == "jellyfin" || kind == "emby" || kind == "plex") &&
+         safe_id(id) && safe_id(user) && safe_id(device) && !token.empty() &&
+         token.size() < (kind == "plex" ? 16384u : 4096u) &&
          std::all_of(
              token.begin(), token.end(),
              [](unsigned char v) {
@@ -126,10 +146,16 @@ bool Connection::valid() const {
          !base.empty() && normalize(base, kind) == base;
 }
 json Connection::saved() const {
-  return {
-      {"id", id},       {"kind", kind},           {"base", base},
-      {"user", user},   {"user_name", user_name}, {"server_name", server_name},
-      {"token", token}, {"device", device}};
+  const auto c = snapshot();
+  return {{"id", id},
+          {"kind", kind},
+          {"base", base},
+          {"user", user},
+          {"user_name", user_name},
+          {"server_name", server_name},
+          {"token", c.token},
+          {"device", device},
+          {"plexAuth", c.auth}};
 }
 Connection Connection::restore(const json &j) {
   Connection c;
@@ -141,9 +167,24 @@ Connection Connection::restore(const json &j) {
   c.server_name = jstr(j, "server_name");
   c.token = jstr(j, "token");
   c.device = jstr(j, "device");
+  if (jobj(j, "plexAuth").is_object())
+    c.auth = j["plexAuth"];
   return c;
 }
 std::vector<std::string> Connection::headers(bool scoped) const {
+  if (kind == "plex") {
+    const auto c = snapshot();
+    std::vector<std::string> h = {
+        "Accept: application/json",     "X-Plex-Client-Identifier: " + device,
+        "X-Plex-Product: Maxd PS5",     "X-Plex-Version: 1.0",
+        "X-Plex-Platform: PS5",         "X-Plex-Device: PS5",
+        "X-Plex-Device-Name: Maxd PS5", "X-Plex-Client-Profile-Name: generic"};
+    if (!c.token.empty())
+      h.push_back("X-Plex-Token: " + c.token);
+    if (scoped)
+      h.push_back("X-Maxd-Credential-Origin: " + origin(base));
+    return h;
+  }
   std::string v = "MediaBrowser Client=\"Maxd\", Device=\"PS5\", DeviceId=\"" +
                   device + "\", Version=\"1.0\"";
   if (!token.empty())
@@ -222,6 +263,8 @@ Result authenticate(Connection &c, const std::string &username,
 Result browse(const Connection &c, const std::string &parent,
               const std::string &type, const std::string &query, size_t offset,
               const std::atomic<bool> *cancel) {
+  if (c.kind == "plex")
+    return plex::Client().browse(c, parent, type, query, offset, cancel);
   if (!c.valid() || (!parent.empty() && !safe_id(parent)) ||
       query.size() > 256 || offset > 1000000)
     return {{}, "Invalid media server library request"};
@@ -257,6 +300,8 @@ Result browse(const Connection &c, const std::string &parent,
 Playback playback(const Connection &c, const std::string &item,
                   const std::string &source, bool compatible,
                   const std::atomic<bool> *cancel) {
+  if (c.kind == "plex")
+    return plex::Client().playback(c, item, source, compatible, cancel);
   Playback p;
   if (!c.valid() || !safe_id(item) || (!source.empty() && !safe_id(source))) {
     p.error = "Invalid media server item";
@@ -379,6 +424,8 @@ Playback playback(const Connection &c, const std::string &item,
 Result report(const Connection &c, const Playback &p, const std::string &item,
               double pos, bool paused, const std::string &event,
               const std::atomic<bool> *cancel) {
+  if (c.kind == "plex")
+    return plex::Client().report(c, p, item, pos, paused, event, cancel);
   if (!safe_id(item) || !std::isfinite(pos) || pos < 0 || pos > 1e8)
     return {{}, "Invalid playback progress"};
   json body = {{"ItemId", item},
@@ -397,6 +444,8 @@ Result report(const Connection &c, const Playback &p, const std::string &item,
 }
 HttpResponse image(const Connection &c, const std::string &item,
                    const std::atomic<bool> *cancel) {
+  if (c.kind == "plex")
+    return plex::Client().image(c, item, cancel);
   if (!c.valid() || !safe_id(item)) {
     HttpResponse r;
     r.error = "Invalid image";

@@ -31,7 +31,7 @@ zstd                                       BSD-3-Clause                    zstd.
 xz / liblzma                               0BSD                            xz.txt, xz-0BSD.txt
 bzip2                                      bzip2 License                   bzip2.txt
 GNU libiconv                               LGPL-2.1-or-later               LGPL-2.1.txt
-GNU FriBidi                                LGPL-2.1-or-later               LGPL-2.1.txt
+GNU FriBidi                                LGPL-2.1-or-later               FriBidi.txt
 dlmalloc (Doug Lea)                        MIT-0                           dlmalloc.txt
 nlohmann/json (Niels Lohmann)              MIT                             nlohmann-json.txt
 dht (Juliusz Chroboczek)                   MIT                             dht.txt

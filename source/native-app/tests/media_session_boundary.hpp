@@ -1,8 +1,10 @@
 #pragma once
 #include "../gl/model.hpp"
 #include "../ui/content.hpp"
+#include "../ui/overlays.hpp"
 #include "iptv_library.h"
 #include "media_server.h"
+#include "plex.h"
 #include <deque>
 #include <functional>
 #include <memory>
@@ -43,6 +45,18 @@ inline MediaTasks g_tasks;
 namespace sx {
 struct Session {
 #include "media_session_fields.hpp"
+  SignInState sign_in;
+  bool sign_in_open = false, login_polling_ = false;
+  int login_gen_ = 0;
+  double login_next_poll_ = 0, login_expires_ = 0;
+  std::string device_provider_;
+  std::shared_ptr<std::atomic<bool>> device_cancel_;
+  void sign_in_cancel() {
+    media_plex_cancel();
+    ++login_gen_;
+    sign_in_open = false;
+    device_provider_.clear();
+  }
   LibraryContent media_content;
   bool media_visible = false;
   void media_menu();

@@ -17,9 +17,9 @@ tar xf "$ARCHIVE" --strip-components=1 -C "$B"
 cd "$B"
 for patch_file in "$R"/third_party/libass/*.patch; do patch --batch --fuzz=0 -p1 < "$patch_file"; done
 export ASAN_OPTIONS=${ASAN_OPTIONS:-detect_leaks=0:abort_on_error=1}
-./configure --prefix="$B/install" --disable-static --enable-shared --disable-fontconfig --disable-require-system-font-provider --disable-asm --disable-libunibreak CFLAGS='-O1 -g0 -fsanitize=address -fno-omit-frame-pointer' LDFLAGS='-fsanitize=address'
+./configure --prefix="$B/install" --disable-static --enable-shared --disable-fontconfig --disable-require-system-font-provider --disable-asm --disable-libunibreak CFLAGS='-O1 -g0 -fsanitize=address,undefined -fno-omit-frame-pointer' LDFLAGS='-fsanitize=address,undefined'
 make -j"${JOBS:-2}"
 mkdir "$B/include"
 ln -s "$B/libass" "$B/include/ass"
-${CC:-cc} -O1 -g -fsanitize=address -I"$B/include" "$R/tests/subtitle_input_host.c" -L"$B/libass/.libs" -Wl,-rpath,"$B/libass/.libs" -lass -o "$B/input-test"
-"$B/input-test"
+${CC:-cc} -O1 -g -fsanitize=address,undefined -I"$B/include" "$R/tests/subtitle_input_host.c" -L"$B/libass/.libs" -Wl,-rpath,"$B/libass/.libs" -lass -o "$B/input-test"
+"$B/input-test" "$R/app/fonts/Inter-Regular.ttf"

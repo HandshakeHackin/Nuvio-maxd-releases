@@ -1468,7 +1468,10 @@ __attribute__((noinline)) static int hevc_copy_base_layer(uint8_t *dst, const ui
     int o = 0;
     for (int k = 0; k < count; k++) {
         const int type = (au[nal_at[k]] >> 1) & 0x3f;
-        if (type >= 48) {
+        const int header_size = end_at[k] - nal_at[k];
+        const unsigned layer = header_size >= 2 ?
+            ((au[nal_at[k]] & 1u) << 5) | (au[nal_at[k] + 1] >> 3) : 1;
+        if (type >= 48 || layer != 0) {
             (*stripped)++;
             continue;
         }

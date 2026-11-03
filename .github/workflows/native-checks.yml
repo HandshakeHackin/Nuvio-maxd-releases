@@ -17,7 +17,7 @@ jobs:
     defaults:
       run:
         working-directory: source
-    timeout-minutes: 15
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - name: Install host dependencies
@@ -40,25 +40,26 @@ jobs:
           echo "QUICKJS_DIR=$RUNNER_TEMP/quickjs/quickjs-2026-06-04" >> "$GITHUB_ENV"
       - name: Test account, catalogs, stream cards, navigation, decoder setup and GPU video
         run: bash native-app/tests/run.sh
-      - name: Test Jellyfin and Emby API, profile callbacks and secret input
+      - name: Check Plex and existing media-server connections
         run: |
+          bash native-app/tests/ime_secret.sh
+          bash native-app/tests/plex.sh
           bash native-app/tests/media_servers.sh
           bash native-app/tests/media_session.sh
-          bash native-app/tests/ime_secret.sh
       - name: Render controller dialogs and update guidance
         run: bash native-app/tests/preview.sh
       - name: Check whitespace
         run: git diff --check
   vlc-playback:
     runs-on: ubuntu-latest
-    # Test the real Debian VLC 3.0.x ABI used by the PS5 target.
+    defaults:
+      run:
+        working-directory: source
+    # Match the tested 3.0.23 host ABI, close to the PS5 target's 3.0.24.
     # Ubuntu 24.04 still supplies 3.0.20 with older adaptive seek behavior.
     container:
       image: debian:trixie
       options: --cap-add=SYS_PTRACE --security-opt seccomp=unconfined
-    defaults:
-      run:
-        working-directory: source
     timeout-minutes: 10
     steps:
       - name: Install real VLC and codec development libraries
@@ -68,4 +69,6 @@ jobs:
           apt-get install -y git ca-certificates python3 g++ gdb pkg-config ffmpeg libcurl4-openssl-dev libavformat-dev libavcodec-dev libavutil-dev libswresample-dev libvlc-dev libvlccore-dev vlc-plugin-base
       - uses: actions/checkout@v4
       - name: Test VLC file playback, authenticated HTTP/HLS, seeking and cancellation
-        run: bash native-app/tests/vlc_host.sh
+        run: |
+          bash native-app/tests/vlc_host.sh
+          bash native-app/tests/vlc_issue3.sh

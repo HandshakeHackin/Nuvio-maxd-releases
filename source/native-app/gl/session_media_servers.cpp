@@ -17,6 +17,13 @@ bool container(const json &j) {
 }
 } // namespace
 void Session::media_reset() {
+  if (device_provider_ == "plex") {
+    media_plex_cancel();
+    device_provider_.clear();
+    sign_in_open = false;
+    ++login_gen_;
+  }
+  media_saved_connections_ = json::array();
   if (watching && w_item_.type == "media-video")
     watch_stop(false);
   media_play_account_ = {};
@@ -58,6 +65,9 @@ void Session::media_load() {
                        [&](const auto &x) { return x.id == c.id; }))
         media_accounts_.push_back(c);
     }
+  media_saved_connections_ = json::array();
+  for (const auto &c : media_accounts_)
+    media_saved_connections_.push_back(c.saved());
   media_visible = !media_accounts_.empty();
   {
     std::lock_guard<std::mutex> l(media_art_->mutex);
@@ -74,6 +84,8 @@ void Session::media_save() {
   if (!iptv::save_private(profile_dir_ + "/media-servers.json",
                           {{"connections", a}}))
     say("Could not save media server connection", 7, true);
+  else
+    media_saved_connections_ = a;
   media_visible = !media_accounts_.empty();
   {
     std::lock_guard<std::mutex> l(media_art_->mutex);
@@ -83,6 +95,10 @@ void Session::media_save() {
 }
 void Session::media_connect(const std::string &kind,
                             const std::string &replace_id) {
+  if (kind == "plex") {
+    media_plex_start(replace_id);
+    return;
+  }
   if (!profile_ready_) {
     say("Select a Nuvio profile first", 6);
     return;
@@ -147,7 +163,9 @@ void Session::media_connect(const std::string &kind,
                             say(a.r.error, 9, true);
                             return;
                           }
-                          if (watching && media_play_account_.id == replace_id)
+                          if (!replace_id.empty() && watching &&
+                              w_item_.type == "media-video" &&
+                              media_play_account_.id == replace_id)
                             watch_stop(false);
                           auto existing = std::find_if(
                               media_accounts_.begin(), media_accounts_.end(),
@@ -180,17 +198,18 @@ void Session::media_connect(const std::string &kind,
 void Session::media_menu() {
   const auto profile = profile_generation_;
   std::vector<std::string> labels{"Connect Jellyfin (experimental)",
-                                  "Connect Emby (experimental)"};
+                                  "Connect Emby (experimental)",
+                                  "Connect Plex (experimental)"};
   for (const auto &a : media_accounts_)
     labels.push_back(a.server_name + " · " + a.user_name);
   open_dropdown("Media servers", labels, 0, [this, profile](int n) {
     if (profile != profile_generation_ || n < 0)
       return;
-    if (n < 2) {
-      media_connect(n ? "emby" : "jellyfin");
+    if (n < 3) {
+      media_connect(n == 2 ? "plex" : n ? "emby" : "jellyfin");
       return;
     }
-    size_t index = size_t(n - 2);
+    size_t index = size_t(n - 3);
     if (index >= media_accounts_.size())
       return;
     const auto id = media_accounts_[index].id;
@@ -224,7 +243,8 @@ void Session::media_menu() {
                 [this, profile, id, c](int confirm) {
                   if (confirm != 1 || profile != profile_generation_)
                     return;
-                  if (watching && media_play_account_.id == id)
+                  if (watching && w_item_.type == "media-video" &&
+                      media_play_account_.id == id)
                     watch_stop(false);
                   if (media_cancel_)
                     *media_cancel_ = true;
@@ -244,10 +264,11 @@ void Session::media_menu() {
                   media_items_ = json::array();
                   media_save();
                   media_build(true);
-                  g_tasks.run([c] {
-                    json body = json::object();
-                    media_server::request(c, "/Sessions/Logout", &body);
-                  });
+                  if (c.kind != "plex")
+                    g_tasks.run([c] {
+                      json body = json::object();
+                      media_server::request(c, "/Sessions/Logout", &body);
+                    });
                   if (media_visible)
                     media_reload();
                 });
@@ -289,7 +310,9 @@ void Session::media_build(bool reset) {
   if (media_account_ < media_accounts_.size()) {
     const auto &c = media_accounts_[media_account_];
     media_content.heading = c.server_name.empty()
-                                ? (c.kind == "emby" ? "Emby" : "Jellyfin")
+                                ? (c.kind == "plex"   ? "Plex"
+                                   : c.kind == "emby" ? "Emby"
+                                                      : "Jellyfin")
                                 : c.server_name;
     media_content.heading +=
         " · " +
@@ -345,7 +368,10 @@ void Session::media_reload() {
   media_items_ = json::array();
   media_build(true);
   g_tasks.run<media_server::Result>(
-      [c, loc, cancel] {
+      [c, loc, cancel, client = media_plex_client_] {
+        if (c.kind == "plex")
+          return client.browse(c, loc.parent, loc.type, loc.query, loc.offset,
+                               cancel.get());
         return media_server::browse(c, loc.parent, loc.type, loc.query,
                                     loc.offset, cancel.get());
       },
@@ -483,7 +509,9 @@ void Session::media_play(const json &item, bool compatible,
   auto generation = ++media_play_generation_, profile = profile_generation_;
   say("Preparing server playback… Circle cancels.", 5);
   g_tasks.run<media_server::Playback>(
-      [c, id, source, compatible, cancel] {
+      [c, id, source, compatible, cancel, client = media_plex_client_] {
+        if (c.kind == "plex")
+          return client.playback(c, id, source, compatible, cancel.get());
         return media_server::playback(c, id, source, compatible, cancel.get());
       },
       [this, c, id, item, profile, generation,
@@ -519,7 +547,9 @@ void Session::media_play(const json &item, bool compatible,
         ::Stream s;
         s.url = p.url;
         s.name = d_item_.name;
-        s.addon = c.kind == "emby" ? "Emby" : "Jellyfin";
+        s.addon = c.kind == "plex"   ? "Plex"
+                  : c.kind == "emby" ? "Emby"
+                                     : "Jellyfin";
         s.request_headers = p.headers;
         play_stream(s, false);
       });

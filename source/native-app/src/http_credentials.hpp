@@ -30,7 +30,7 @@ inline std::string origin(const std::string &s) {
 inline bool secret(const std::string &s) {
   auto k = folded(s.substr(0, s.find(':')));
   return k == "authorization" || k == "x-emby-authorization" ||
-         k == "x-emby-token";
+         k == "x-emby-token" || k == "x-plex-token";
 }
 inline bool scoped(const std::vector<std::string> &h) {
   for (const auto &s : h)

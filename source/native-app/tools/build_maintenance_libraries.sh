@@ -17,6 +17,11 @@ python3 - "$ROOT" "$W" "$BASE" <<'PY'
 from pathlib import Path
 import hashlib,json,sys,urllib.request
 root,work,base=map(Path,sys.argv[1:]);pins=json.loads((root/'dependencies.json').read_text())
+maintenance=pins['maintenanceLibraries']
+for name,digest in {maintenance['recipe']:maintenance['recipeSha256'],**maintenance.get('extraRecipeSha256',{})}.items():
+    assert hashlib.sha256((root/name).read_bytes()).hexdigest()==digest, 'Maintenance recipe mismatch: '+name
+for patch in maintenance.get('libassPatches',[]):
+    assert hashlib.sha256((root/patch['path']).read_bytes()).hexdigest()==patch['sha256'], 'libass patch checksum mismatch'
 for name,digest in pins['sdk']['coreFileSha256'].items():
     assert hashlib.sha256((base/name).read_bytes()).hexdigest()==digest, 'Use the unmodified pinned base SDK: '+name
 for item in pins['maintenanceLibraries']['sources'].values():
@@ -67,6 +72,7 @@ if [ ! -f openssl.done ]; then
   install_overlay "$W/stage-openssl"
   cd "$W"; touch openssl.done
 fi
+source "$ROOT/tools/build_media_maintenance.sh"
 LIBASS_PATCHSET=$(python3 - "$ROOT" <<'PATCHES'
 from pathlib import Path
 import hashlib,json,sys

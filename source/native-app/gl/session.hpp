@@ -30,6 +30,7 @@
 #include "series_updates.hpp"
 #include "iptv_library.h"
 #include "media_server.h"
+#include "plex.h"
 #include <mutex>
 #include "audio/cues.hpp"
 #include "core/input.hpp"
@@ -349,6 +350,16 @@ class Session
     std::array<VideoSurface,4> multi_surfaces_;
     std::array<live_tv::Channel,4> multi_channels_;
 
+    void media_plex_start(const std::string& replace_id="");
+    void media_plex_poll();
+    void media_plex_cancel();
+    void media_plex_servers(const plex::Pair&);
+    void media_flush_auth();
+    plex::Client media_plex_client_;
+    plex::Pair media_plex_pair_;
+    std::string media_plex_replace_;
+    json media_saved_connections_=json::array();
+    double media_auth_save_at_=0;
     void media_reset();
     void media_load();
     void media_save();

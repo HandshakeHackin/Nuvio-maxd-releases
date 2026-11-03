@@ -18,5 +18,15 @@
     "include/evo_boot_log.h": "ea617ed0a53c92d20de989aa7c4ac8b59f2a148a2c84a2a56e42cf5b4699ef89",
     "LICENSE": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
     "VERSION": "f9a397ab92ada6170545b1faf0600dc4679a9d81b9ddaaf222b620a47c73863f"
+  },
+  "localPatches": [
+    {
+      "path": "patches/0001-hevc-base-layer-only.patch",
+      "sha256": "d8af613cc199247c68f14296f82da35f485c766cdebe6134ecc35a3c4d4dae35",
+      "scope": "Reject nonzero HEVC nuh_layer_id and truncated NAL headers; retain HDR10 base pictures."
+    }
+  ],
+  "patchedFileSha256": {
+    "media/src/evo_vdec_native.c": "f300ae0f9b604cbbd398ca4575975cae80a76b5897cb9bc2a5b5ba2536e7f4f5"
   }
 }

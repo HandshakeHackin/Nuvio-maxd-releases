@@ -15,7 +15,7 @@ Reviewed on 2026-11-02. These changes are staged for the next build. No release 
 
 ## Experimental media servers
 
-Jellyfin and Emby support has subsequently been added to the same staged build. See [setup, scope and interoperability limits](MEDIA_SERVERS.md) and its separate `MEDIA_SERVERS_VALIDATION.json` receipt. The earlier adaptation receipt remains historical evidence for its pinned implementation commit, rather than a claim that all of its source hashes describe this later media-server change.
+Jellyfin and Emby support was delivered in the 1.0.0.6 tester. Plex support is staged next on `builds/v1.0.0.7`, using device-JWT linking, accessible-server discovery, the shared media-server library UI and automatic token renewal. See `PLEX_VALIDATION.json` for the separate Plex checks. See [setup, scope and interoperability limits](MEDIA_SERVERS.md) and its separate `MEDIA_SERVERS_VALIDATION.json` receipt. The earlier adaptation receipt remains historical evidence for its pinned implementation commit, rather than a claim that all of its source hashes describe this later media-server change.
 
 ## Existing fixes retained without reimplementation
 
@@ -34,3 +34,7 @@ Jellyfin and Emby support has subsequently been added to the same staged build. 
 - [libass patch provenance](third_party/libass/README.md)
 
 The C++ features are adapted to Max’d's existing player/session boundaries. Subtitle auto-sync is an independent conservative timing matcher, not a claim of full Android/Smart TV engine parity. See UPSTREAM_ADAPTATIONS_NEXT_VALIDATION.json for executed checks.
+
+## Following dependency maintenance
+
+The next-build branch also includes the 2026-11-03 XML, image, font, FFmpeg and HEVC-layer maintenance described in [DEPENDENCY_UPDATES_NEXT.md](DEPENDENCY_UPDATES_NEXT.md), with its own validation receipt. Earlier receipts remain pinned historical evidence.

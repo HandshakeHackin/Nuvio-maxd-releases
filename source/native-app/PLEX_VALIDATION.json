@@ -1,0 +1,79 @@
+{
+  "checkedAt": "2026-11-03T02:47:10.832404+00:00",
+  "status": "staged, unreleased",
+  "branch": "builds/v1.0.0.7",
+  "implementationCommit": "f7c152059b12f6bd6a45897fd8850f000494d21f",
+  "baseCommit": "ac3924630139a53858e2cbcd3de7d2312915319d",
+  "apiReference": "https://developer.plex.tv/pms/",
+  "checks": [
+    {
+      "name": "Plex signed API contracts, playback, credential isolation and reactive/proactive renewal",
+      "command": "bash tests/plex.sh",
+      "result": "passed",
+      "log": "test-output/plex-api.log",
+      "sha256": "c127ebd64254e5e427b74cee4435c3feb20f8e74d7107bce794fc3da5d9570a8"
+    },
+    {
+      "name": "Production pairing UI, server selection, private persistence, cancellation, profile isolation and Plex playback dispatch",
+      "command": "bash tests/media_session.sh (local fixture with network permission)",
+      "result": "passed",
+      "log": "test-output/plex-session.log",
+      "sha256": "76e33d3b959a61e540eb5f6293f0a50b1655da1a10d911a2ddbe7a142ad2146e"
+    },
+    {
+      "name": "Existing Jellyfin/Emby API and transport compatibility",
+      "command": "bash tests/media_servers.sh",
+      "result": "passed",
+      "log": "test-output/plex-media-regression.log",
+      "sha256": "2675509f23782c5d0ee512f13279704b6aba871b0e5266c9746ddd8306c8bfc5"
+    },
+    {
+      "name": "Production shutdown cancellation and cleanup",
+      "command": "bash tests/shutdown.sh",
+      "result": "passed",
+      "log": "test-output/plex-shutdown.log",
+      "sha256": "77b6433b79cbf1d66c58e924e03ff74df8f6c89e75eecbc456519d6719c75a69"
+    },
+    {
+      "name": "PS5 Native/EVO/VLC compile, link and 414 imports",
+      "command": "bash /workspace/verify-upstream-next-target.sh",
+      "result": "passed",
+      "log": "test-output/plex-target.log",
+      "sha256": "966bb180270832b1e3e602d78cd69a4f4d93c3f99af7188f7ba132b0359709b0"
+    },
+    {
+      "name": "Live Plex public device-key PIN registration and signed pending poll",
+      "command": "test-output/plex-host --live-pending",
+      "result": "passed",
+      "accountApproved": false,
+      "notes": "Live API accepted registration and a signed pending poll. No Plex account token was acquired."
+    }
+  ],
+  "sourceSha256": {
+    "src/plex.cpp": "76b6b03b028cdd3e6c322970c0ddaabf59fc071c6a8c54119d4d459f7e54b626",
+    "src/plex.h": "c9111a04d959c312daac1ca6ce2f8a92f2d6c2fdb9e50a3dafd3c2fbdf11692d",
+    "src/media_server.cpp": "d89ad2ea31de50beee77c75e73bb9e7730cca7c23a73d33c76d98b5e31da6db9",
+    "src/media_server.h": "964d5fb85d4e6f3feb8e4b2e4b4ac2d03a432f39b2066122658a893b1199106d",
+    "src/http_credentials.hpp": "e521050c42395cad291667430bb3ab5814772e3d5bd5c467e41132889fa0450d",
+    "gl/session_plex.cpp": "10217b04de3c64e92f805b5d1625fcf4e78a08e1cec4b47f7957ea9e6aa02807",
+    "gl/session_media_servers.cpp": "658a8a88a3ae225c922f7235e6ad6163654fbe063ecd41ff75dd58a3b7299d66",
+    "gl/session.hpp": "968e97c9a2a06d516a408f1574ef6b9ee4790c3ecb6d0a15df51d21670b13f30",
+    "gl/session.cpp": "e93e544d652b395640df5f22b17242d67f0cbf0ec4ff975a714924d817d621f8",
+    "gl/build.sh": "234cda31c908b460953d21aa6a6609821c54d626240786bc9717c46aaf8cba26",
+    "tests/plex_host.cpp": "ba036abaff41f1a41d3edd78d1275aa3a8214924247b9b656a35d41cf5b7556e",
+    "tests/plex_fixture.hpp": "bff730f79de2f99b851b85e379d653617956bf409f023dcc589da91035ae1729",
+    "tests/plex.sh": "bda42ea14722d1bb27014ccfc1cb1a08828cd3bd0e5db984ebbd198787e78a82",
+    "tests/media_session_host.cpp": "0fbc31d8237079be1e2a89583ffeab83dbec4e077b4730f89b9f9cad044a676a",
+    "tests/media_session.sh": "9c6fa46705be0cea3115412d48ba78a5780d1f230a475ab5acc07124464d86cf",
+    "tests/media_session_boundary.hpp": "0c0894bd660a683e7f96625fe1451f7cb335fc3480f6aa6041ac20c4fca67bd7"
+  },
+  "targetArtifacts": {
+    "eboot.elf": "0ee36eb00a7332dcca0273e3c4030045910bffcd372e41a4062e02bf5ef67677",
+    "pie.elf": "f37a60b5637b9794344eea22ad6d58b34dbbdc458790926b23db012aca155ef4"
+  },
+  "physicalConsoleVerified": false,
+  "realPlexServerPlaybackVerified": false,
+  "releasePublished": false,
+  "storeSubmissionCreated": false,
+  "notes": "Compile/link/import verification only. Runtime metadata remains 1.0.0.6 pending next build preparation. Reused unchanged verified HDR driver object and existing SDK/decoder dependencies. Synthetic Plex fixtures are not real-server playback acceptance. Existing 1.0.0.6 tester downloads were not modified."
+}

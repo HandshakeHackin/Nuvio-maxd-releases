@@ -29,6 +29,7 @@ extern "C" {
 #include <memory>
 #include <stdexcept>
 #include <vector>
+#include "evo_hevc_filter.hpp"
 
 namespace test {
 enum Failure { None, DeepQuery, DeepCreate, DeepCpuMap, AllQuery };
@@ -135,6 +136,20 @@ int main() {
         try { test::clean(); fn(); test::clean(); printf("%s: PASS\n", name); }
         catch (const std::exception& e) { ++failures; printf("%s: FAIL (%s)\n", name, e.what()); test::clean(); }
     };
+    run("hevc_only_keeps_base_layer", [&] {
+        auto nal=[](int type,int layer){return std::vector<uint8_t>{0,0,0,1,uint8_t((type<<1)|(layer>>5)),uint8_t(((layer&31)<<3)|1),0x80};};
+        auto base=nal(19,0),input=base;
+        for(auto n:{nal(19,1),nal(1,32),nal(62,0),nal(33,1)})input.insert(input.end(),n.begin(),n.end());
+        std::vector<uint8_t> output(input.size());int n=hevc_copy_base_layer(output.data(),input.data(),input.size());output.resize(n);
+        test::require(output==base,"enhancement layer or Dolby Vision RPU reached the decoder");
+        int stripped=0,dups=0;output.resize(input.size());
+        n=evo_hevc_copy_base_layer(output.data(),input.data(),input.size(),&stripped,&dups);output.resize(n);
+        test::require(output==base&&stripped==4&&dups==0,"EVO enhancement-layer filtering differs from Native");
+        auto ordinary=nal(1,0);input=base;input.insert(input.end(),ordinary.begin(),ordinary.end());output.resize(input.size());n=hevc_copy_base_layer(output.data(),input.data(),input.size());output.resize(n);
+        test::require(output==input,"ordinary HEVC pictures changed");
+        input={0,0,1,0x26};output.resize(input.size());
+        test::require(hevc_copy_base_layer(output.data(),input.data(),input.size())==0,"truncated NAL header survived");
+    });
     auto main10 = [] { return test::open(AV_CODEC_ID_HEVC, AV_PROFILE_HEVC_MAIN_10, AV_PIX_FMT_YUV420P10LE); };
     run("vp9_profile2_uses_hardware_and_retries_depth", [&] {
         test::failure = test::DeepQuery;
@@ -193,6 +208,6 @@ int main() {
         test::require(!d && test::queried == std::vector<unsigned>{4, 1}, "H.264 retry is not bounded");
         test::require(test::mappings.empty() && test::allocations.empty(), "H.264 failure leaked memory");
     });
-    printf("Hardware decoder setup: 10 tests, %d failures\n", failures);
+    printf("Hardware decoder setup and HEVC base-layer filtering: 11 tests, %d failures\n", failures);
     return failures ? 1 : 0;
 }
