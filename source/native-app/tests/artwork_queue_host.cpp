@@ -17,6 +17,36 @@ std::string HttpResponse::describe() const {return error;}
 extern "C" void glDeleteTextures(GLsizei n,const GLuint*) {deleted_textures+=n;}
 namespace sx {
 struct TexCacheProbe {
+    static void private_art() {
+        const std::string dir="/tmp/maxd-private-art-test";
+        std::filesystem::remove_all(dir);
+        TexCache cache;
+        cache.init(dir,nullptr,1);
+        // Unsupported schemes and private images without an authenticated
+        // handler must never enter the ordinary HTTP path.
+        cache.get("file:///secret",ArtKind::poster);
+        cache.get("media-art:account:movie",ArtKind::poster);
+        assert(cache.entries_.empty());
+        std::atomic<int> private_reads{0};
+        const int public_reads=reads;
+        cache.private_image=[&](const std::string& key,const std::atomic<bool>*) {
+            assert(key=="media-art:account:movie");
+            ++private_reads;
+            return HttpResponse{200,image,"","",0};
+        };
+        cache.get("media-art:account:movie",ArtKind::poster);
+        const auto end=std::chrono::steady_clock::now()+std::chrono::seconds(5);
+        bool decoded=false;
+        while(std::chrono::steady_clock::now()<end) {
+            {std::lock_guard<std::mutex> lock(cache.mutex_);
+             decoded=!cache.ready_.empty() && !cache.ready_[0].pixels.empty();}
+            if(decoded) break;
+            std::this_thread::sleep_for(std::chrono::milliseconds(5));
+        }
+        assert(decoded && private_reads==1 && reads==public_reads);
+        cache.shutdown();
+        std::filesystem::remove_all(dir);
+    }
     static void check() {
         TexCache cache;
         assert(cache.init("/tmp/maxd-artwork-queue-test",nullptr,2));
@@ -53,6 +83,6 @@ struct TexCacheProbe {
 }
 int main(int argc,char** argv) {
     assert(argc==2);std::ifstream f(argv[1],std::ios::binary);image.assign(std::istreambuf_iterator<char>(f),{});
-    sx::TexCacheProbe::check();std::filesystem::remove_all("/tmp/maxd-artwork-queue-test");
+    sx::TexCacheProbe::private_art();sx::TexCacheProbe::check();std::filesystem::remove_all("/tmp/maxd-artwork-queue-test");
     std::cout<<"Production artwork workers: bounded request/decoded queues, backpressure and shutdown cancellation passed\n";
 }

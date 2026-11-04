@@ -4,6 +4,12 @@
 #include <filesystem>
 #include <iostream>
 #include <sys/stat.h>
+#include <cerrno>
+// Simulate a firmware/libc boundary where the path-based metadata API fails.
+extern "C" int __wrap_lstat(const char *, struct stat *) {
+  errno = ENOSYS;
+  return -1;
+}
 using namespace sx;
 int main(int argc, char **argv) {
   assert(argc == 2);
@@ -31,6 +37,26 @@ int main(int argc, char **argv) {
   auto saved =
       iptv::load_private(s.profile_dir_ + "/media-servers.json").dump();
   assert(saved.find("test-password") == std::string::npos);
+  // A genuinely new Session (app restart), not just a reset of existing state.
+  Session restarted;
+  restarted.profile_dir_ = s.profile_dir_;
+  restarted.media_load();
+  assert(restarted.media_visible && restarted.media_accounts_.size()==1);
+  assert(restarted.media_accounts_[0].saved()==s.media_accounts_[0].saved());
+  auto original = iptv::load_private(s.profile_dir_ + "/media-servers.json");
+  restarted.profile_ready_=false;
+  restarted.media_accounts_.clear();
+  assert(!restarted.media_save());
+  assert(iptv::load_private(s.profile_dir_ + "/media-servers.json")==original);
+  restarted.profile_ready_=true;
+  // A write failure is observable and never marks the new state as persisted.
+  restarted.profile_dir_="/dev/null/maxd-impossible-profile";
+  assert(!restarted.media_save());
+  assert(restarted.media_saved_connections_.size()==1);
+  restarted.profile_dir_=s.profile_dir_+"/other";
+  make_dirs(restarted.profile_dir_);
+  restarted.media_load();
+  assert(!restarted.media_visible && restarted.media_accounts_.empty());
   auto old_id = s.media_accounts_[0].id;
   s.media_connect("jellyfin", old_id);
   typed = s.typed;

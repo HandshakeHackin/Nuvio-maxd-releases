@@ -377,7 +377,8 @@ std::string TexCache::key_for(const std::string &url, ArtKind kind) const
 
 std::uint32_t TexCache::get(const std::string &url, ArtKind kind)
 {
-    if (url.empty() || (!starts_with(url, "http://") && !starts_with(url, "https://")))
+    if (url.empty() || (!starts_with(url, "http://") && !starts_with(url, "https://") &&
+                        !(starts_with(url, "media-art:") && private_image)))
         return 0;
     const std::string key = key_for(url, kind);
     if(entries_.find(key)==entries_.end() && entries_.size()>=artwork::kEntries)return 0;

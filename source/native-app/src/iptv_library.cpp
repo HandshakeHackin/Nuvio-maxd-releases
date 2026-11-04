@@ -2,6 +2,7 @@
 #include "live_tv.h"
 #include <algorithm>
 #include <cctype>
+#include <cerrno>
 #include <cmath>
 #include <cstdio>
 #include <curl/curl.h>
@@ -710,16 +711,48 @@ bool save_private(const std::string &path, const Json &value) {
     unlink(tmp.c_str());
   return ok;
 }
-Json load_private(const std::string &path) {
-  struct stat st{};
-  if (lstat(path.c_str(), &st) != 0 || !S_ISREG(st.st_mode) || st.st_size < 0 ||
-      size_t(st.st_size) > max_info_bytes)
+Json load_private(const std::string &path, std::string *error) {
+  if (error) error->clear();
+  const auto fail = [&](const char *stage, int code = 0) {
+    if (error) *error = std::string(stage) + (code ? " errno=" + std::to_string(code) : "");
     return Json::object();
-  std::ifstream in(path);
-  std::string body((std::istreambuf_iterator<char>(in)),
-                   std::istreambuf_iterator<char>());
+  };
+  // Inspect the opened file, not a separate lstat lookup. O_NOFOLLOW keeps
+  // credentials from being loaded through a symlink.
+  const int fd = open(path.c_str(), O_RDONLY | O_NOFOLLOW | O_NONBLOCK);
+  if (fd < 0)
+    return fail(errno == ENOENT ? "not found" : "open failed", errno);
+  struct stat st{};
+  if (fstat(fd, &st) != 0) {
+    const int code = errno;
+    close(fd);
+    return fail("fstat failed", code);
+  }
+  if (!S_ISREG(st.st_mode) || st.st_size < 0 ||
+      size_t(st.st_size) > max_info_bytes) {
+    close(fd);
+    return fail("invalid file type or size");
+  }
+  std::string body;
+  char chunk[8192];
+  for (;;) {
+    const auto n = read(fd, chunk, sizeof(chunk));
+    if (n < 0 && errno == EINTR) continue;
+    if (n < 0) {
+      const int code = errno;
+      close(fd);
+      return fail("read failed", code);
+    }
+    if (!n) break;
+    if (size_t(n) > max_info_bytes - body.size()) {
+      close(fd);
+      return fail("file too large");
+    }
+    body.append(chunk, size_t(n));
+  }
+  if (close(fd) != 0) return fail("close failed", errno);
   auto out = parse_json(body);
-  return out.is_object() ? out : Json::object();
+  return out.is_object() ? out : fail("invalid JSON");
 }
 bool save_cache(const std::string &dir, const std::string &source, Kind kind,
                 const std::string &category, const Catalog &catalog,

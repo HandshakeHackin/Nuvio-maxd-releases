@@ -55,7 +55,11 @@ void Session::media_reset() {
 }
 void Session::media_load() {
   media_reset();
-  auto saved = iptv::load_private(profile_dir_ + "/media-servers.json");
+  std::string load_error;
+  auto saved = iptv::load_private(profile_dir_ + "/media-servers.json", &load_error);
+  if (!load_error.empty())
+    dlog("media servers: load %s", load_error.c_str());
+  size_t rejected = 0;
   auto a = jobj(saved, "connections");
   if (a.is_array())
     for (const auto &j : a) {
@@ -64,7 +68,13 @@ void Session::media_load() {
           std::none_of(media_accounts_.begin(), media_accounts_.end(),
                        [&](const auto &x) { return x.id == c.id; }))
         media_accounts_.push_back(c);
+      else {
+        ++rejected;
+        dlog("media servers: rejected saved connection (%s)",
+             !c.valid() ? "invalid fields" : media_accounts_.size() >= 8 ? "limit" : "duplicate");
+      }
     }
+  dlog("media servers: loaded %zu connection(s), rejected %zu", media_accounts_.size(), rejected);
   media_saved_connections_ = json::array();
   for (const auto &c : media_accounts_)
     media_saved_connections_.push_back(c.saved());
@@ -75,23 +85,37 @@ void Session::media_load() {
   }
   media_build(true);
 }
-void Session::media_save() {
-  if (!profile_ready_)
-    return;
+bool Session::media_save() {
+  if (!profile_ready_ || profile_dir_.empty()) {
+    dlog("media servers: save skipped; profile not ready");
+    say("Select a profile before saving media server connections", 7, true);
+    return false;
+  }
+  make_dirs(profile_dir_);
   json a = json::array();
   for (const auto &c : media_accounts_)
     a.push_back(c.saved());
-  if (!iptv::save_private(profile_dir_ + "/media-servers.json",
-                          {{"connections", a}}))
-    say("Could not save media server connection", 7, true);
-  else
+  const auto path = profile_dir_ + "/media-servers.json";
+  const bool written = iptv::save_private(path, {{"connections", a}});
+  std::string read_error;
+  const bool verified = written &&
+      jobj(iptv::load_private(path, &read_error), "connections") == a;
+  if (!verified) {
+    dlog("media servers: save failed (%s), %zu connection(s)",
+         !written ? "write" : read_error.empty() ? "readback mismatch" : read_error.c_str(),
+         a.size());
+    say("Could not save media server connection; reconnect after restart", 9, true);
+  } else {
     media_saved_connections_ = a;
+    dlog("media servers: saved and verified %zu connection(s)", a.size());
+  }
   media_visible = !media_accounts_.empty();
   {
     std::lock_guard<std::mutex> l(media_art_->mutex);
     media_art_->accounts = media_accounts_;
   }
   refresh_settings();
+  return verified;
 }
 void Session::media_connect(const std::string &kind,
                             const std::string &replace_id) {
@@ -182,10 +206,11 @@ void Session::media_connect(const std::string &kind,
                           }
                           media_location_ = {};
                           media_stack_.clear();
-                          media_save();
+                          const bool saved = media_save();
                           media_reload();
                           goto_ = Page::servers;
-                          say("Media server connected", 5);
+                          say(saved ? "Media server connected"
+                                    : "Connected for this session; saving failed", 7, !saved);
                         });
                   },
                   "Server password (used only to sign in)", true);

@@ -362,7 +362,7 @@ class Session
     double media_auth_save_at_=0;
     void media_reset();
     void media_load();
-    void media_save();
+    bool media_save();
     void media_connect(const std::string& kind, const std::string& replace_id="");
     void media_reload();
     void media_build(bool reset=false);

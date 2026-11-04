@@ -60,7 +60,7 @@ bool available(const Json &state, const std::vector<Account> &);
 std::vector<Category> categories(const Json &state, const std::string &source,
                                  Kind);
 bool save_private(const std::string &path, const Json &);
-Json load_private(const std::string &path);
+Json load_private(const std::string &path, std::string *error = nullptr);
 bool save_cache(const std::string &dir, const std::string &source, Kind,
                 const std::string &category, const Catalog &,
                 const std::atomic<bool> *cancel = nullptr);

@@ -1,6 +1,7 @@
 # Staged for the next Max’d build
 
-- Issue #14 password-keyboard test fix: secret fields now select Basic Latin input while retaining masking and the existing learning/resume protections. Intended to address the firmware 7.00 keyboard-open error; reporter confirmation pending.
+- Issue #14 follow-up: authenticated Media Servers posters now reach the artwork worker. Connection loading uses bounded descriptor-based reads; saves are read back and verified, with private diagnostics for load/rejection/save failures. PS5 restart confirmation remains pending.
+- Issue #14 password-keyboard test fix: secret fields now select Basic Latin input while retaining masking and the existing learning/resume protections. Intended to address the firmware 7.00 keyboard-open error; confirmed by the reporter on firmware 7.00.
 - Maintenance updates: FFmpeg 7.0.3, Expat 2.10.0, libpng 1.6.59, FreeType 2.15.0, HarfBuzz 15.0.0 and FriBidi 1.0.18, plus two additional libass drawing-input fixes.
 - Native/EVO HEVC compatibility: discard Dolby Vision enhancement-layer pictures while keeping the HDR10-compatible base layer. VLC already applies this filtering; no new Dolby Vision output mode is added.
 - Experimental Plex support: link your account with a QR/code at plex.tv/link, choose a server, browse movies/shows, search, resume and report watch progress. Includes direct playback, compatible HLS and automatic credential renewal. Saved per Nuvio profile alongside Jellyfin/Emby; real Plex-server/PS5 testing is still required.
