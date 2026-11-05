@@ -66,7 +66,10 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
     assert info['name'] == "Nuvio Max'd"
     assert info['updater']['repository'] == 'HandshakeHackin/Nuvio-maxd-releases'
     assert not info['sourceDirty']
-    assert info['cloudProgressSync'] is True and info['accountProfile'] == 1
+    assert info['cloudProgressSync'] is True
+    assert info['accountProfiles']['maximum'] == 6
+    assert info['accountProfiles']['selection'] and info['accountProfiles']['create']
+    assert info['accountProfiles']['isolatedLocalData']
     assert info['episodePlayback']['controllerGlyphs'] is True
     assert info['connectedServices']['providers'] == ['torbox', 'premiumize']
     assert info['connectedServices']['cachedFilesOnly'] is True
@@ -150,7 +153,7 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
         'hostHdrOutputTestsPassed': 10, 'hostEpisodePlaybackTestsPassed': 61,
         'hostDisplaySelectionAssertionsPassed': 27,
         'hostDisplayRefreshTestsPassed': 6,
-        'watchProgressSync': 'Nuvio Sync profile 1; portable merged snapshots and persistent offline mutations',
+        'watchProgressSync': 'Profile-isolated Nuvio Sync; portable merged snapshots and persistent offline mutations',
         'videoPresentation': info['videoConversion'],
         'videoConversionSurface': 'RGB10_A2; HDR10 final pixels packed exactly into BGRA8 transport for the accepted RGB/BGR10A2 PQ VideoOut format',
         'userExperienceUpdates': info['userExperienceUpdates'],

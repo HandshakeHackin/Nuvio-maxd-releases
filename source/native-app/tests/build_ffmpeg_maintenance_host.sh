@@ -20,7 +20,7 @@ cd "$B/FFmpeg-n7.0.3"
  --enable-shared --disable-static --enable-pic --disable-programs --disable-doc --disable-debug \
  --disable-avfilter --disable-avdevice --disable-postproc --disable-everything \
  --enable-zlib --enable-openssl --enable-version3 \
- --enable-decoder=h264,hevc,aac,ac3,eac3,dca,flac,mp3,pcm_s16le,pcm_f32le,subrip,ass \
+ --enable-decoder=h264,hevc,aac,ac3,eac3,dca,flac,mp3,pcm_s16le,pcm_f32le,subrip,ass,mov_text \
  --enable-parser=h264,hevc,aac,ac3,mpegaudio \
  --enable-demuxer=mov,matroska,hls,mpegts,aac,ac3,mp3,flac,srt,ass,wav \
  --enable-protocol=file,http,https,tcp,tls,crypto --enable-swscale --enable-swresample
