@@ -245,23 +245,32 @@ Use the versions and checksums in [dependencies.json](dependencies.json).
 You'll need LLVM/Clang/lld 18 or newer, g++, zlib development headers, Python 3,
 git and zip, plus these components:
 
-1. **PS5 payload SDK 0.44**, including its playback and networking libraries.
+1. **PS5 payload SDK 0.45**, including its playback and networking libraries.
 2. **ps5-native-app-boilerplate** at the recorded commit. Build
    `build/host/ps5-native-tool`, reproduce `runtime/libc.prx` with
    `tools/rebuild-libc.sh` and check the runtime checksum.
 3. **ps5-homebrew-ui** at the recorded vendored base, with the local adaptations.
-   `native-app/tools/fetch_opengl_sdk.sh` downloads verified OpenGL 1.0.1; the
+   `native-app/tools/fetch_opengl_sdk.sh` downloads verified OpenGL 1.0.2; the
    build validates the manifest and every SDK file even when GL_SDK is supplied.
 4. **MkPFS 1.1.0** at the recorded revision. Install its Python dependencies and
    set MKPFS to a wrapper invoking that version. The older boilerplate toolchain
    remains pinned for native SELF/libc generation.
+
+The maintenance output pins also record the original SDK prefix. To reproduce
+those binaries, use `/workspace/nuvio-maintenance-libs` as the maintenance work
+directory, and export `CPPFLAGS=-I/workspace/nuvio-maintenance-libs/sdk/target/user/homebrew/include`
+before running `tools/build_maintenance_libraries.sh BASE_SDK /workspace/nuvio-maintenance-libs`.
+The include path is needed for libass's early iconv header check. Use the resulting
+`/workspace/nuvio-maintenance-libs/sdk` as `PS5_PAYLOAD_SDK`; keep the base SDK unchanged.
+The recipe validates every source and recorded output hash. Other work paths can
+embed different compiler/configuration paths in FFmpeg archives and pkg-config files.
 
 From the repository root, set the paths to your toolchain and build:
 
 ```sh
 export PS5_PAYLOAD_SDK=/path/to/ps5-payload-sdk
 export BOILERPLATE_DIR=/path/to/ps5-native-app-boilerplate
-export GL_SDK=/path/to/ps5-opengl-sdk-1.0.1/sdk
+export GL_SDK=/path/to/ps5-opengl-sdk-1.0.2/sdk
 export LLVM_CONFIG=llvm-config-19
 export MKPFS=/path/to/ps5-native-app-boilerplate/.deps/MkPFS/.mkpfs-run-linux
 bash native-app/gl/build.sh PPSA99288 "Nuvio Max'd"

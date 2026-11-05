@@ -103,7 +103,7 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
     assert 'Production startup: actual entry point passes conditional-indentation compiler check' in test_log
     assert re.search(r'Ran 80 tests', test_log) and '\nOK\n' in test_log
     assert 'NetworkTests.test_parallel_dns_failure_does_not_walk_entire_file' in test_log
-    assert re.search(r'Ran 6 tests', test_log)
+    assert re.search(r'Ran 8 tests', test_log)
     assert 'EVO integration: SDR/10-bit B-frame decode, EOF, reopen after seek, owned planes, 24/120 cadence, early/late frames and P5 rejection passed' in test_log
     assert 'Upstream refresh: Unicode wrapping, 24/60 and 24/120 frame order, bounded catch-up, holds and nonblocking logging passed' in test_log
     assert 'Release notes: first launch, update and persistent acknowledgement passed' in test_log
@@ -146,7 +146,7 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
         'hostInstantPlaybackTestsPassed': 26,
         'hostDecoderSetupTestsPassed': 11,
         'hostStreamPresentationTestsPassed': 14,
-        'hostVideoPackingAndGpuTestsPassed': 24, 'hostNetworkTestsPassed': 6,
+        'hostVideoPackingAndGpuTestsPassed': 24, 'hostNetworkTestsPassed': 8,
         'hostHdrOutputTestsPassed': 10, 'hostEpisodePlaybackTestsPassed': 61,
         'hostDisplaySelectionAssertionsPassed': 27,
         'hostDisplayRefreshTestsPassed': 6,
