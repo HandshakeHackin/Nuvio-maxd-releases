@@ -43,7 +43,7 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
     param = json.loads((extracted / 'sce_sys/param.json').read_text())
     display_profile = validate_display_metadata(param)
     assert param['titleId'] == 'PPSA99288'
-    assert param['contentVersion'] == '05.000.027'
+    assert param['contentVersion'] == '07.000.008'
     assert param['localizedParameters']['en-US']['titleName'] == "Nuvio Max'd"
     assert param['contentId'] == 'UP9000-PPSA99288_00-NUVIOPS5NAT00001'
     assert param['applicationCategoryType'] == 0
@@ -55,7 +55,7 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
     assert struct.unpack_from('<HH', data, elf + 16) == (0xFE10, 62)
     assert struct.unpack_from('<Q', data, elf + 24)[0] != 0
     info = json.loads((extracted / 'build-info.json').read_text())
-    assert info['version'] == '0.5.27-native-experimental'
+    assert info['version'] == '1.0.0.8-native'
     assert info['userExperienceUpdates']['optionalDonationQr']
     assert info['userExperienceUpdates']['installSourceSelector'] and info['userExperienceUpdates']['sourceAwareUpdateReminders']
     assert info['experimentalAv']['driverOwnedHdrSwitch'] and info['experimentalAv']['pcmDefault']
@@ -101,7 +101,7 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
     test_log = args.host_test_log.read_text()
     assert 'Controller lightbar: throttling, failure suppression, reconnect, reset and logo/reduced-motion envelopes passed' in test_log
     assert 'Production startup: actual entry point passes conditional-indentation compiler check' in test_log
-    assert re.search(r'Ran 52 tests', test_log) and '\nOK\n' in test_log
+    assert re.search(r'Ran 80 tests', test_log) and '\nOK\n' in test_log
     assert 'NetworkTests.test_parallel_dns_failure_does_not_walk_entire_file' in test_log
     assert re.search(r'Ran 6 tests', test_log)
     assert 'EVO integration: SDR/10-bit B-frame decode, EOF, reopen after seek, owned planes, 24/120 cadence, early/late frames and P5 rejection passed' in test_log
@@ -111,19 +111,21 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
     assert 'User experience: preference recovery, subtitle styles, motion/contrast, custom countdown and private crash/runtime diagnostics passed' in test_log
     assert all(info['userExperienceUpdates'][key] for key in ('subtitleStylingPreview','customSeekIntervals','customEpisodeCountdown','reducedMotion','higherContrast','privateRuntimeAndCrashDiagnostics'))
     assert 'FAILED' not in test_log and 'FAIL (' not in test_log
-    assert 'UI navigation: 6 tests, 0 failures' in test_log
+    assert 'Traceback (most recent call last)' not in test_log
+    assert 'AssertionError' not in test_log
+    assert 'UI navigation: 10 tests, 0 failures' in test_log
     assert 'Stream presentation and navigation: 14 tests, 0 failures' in test_log
-    assert 'Hardware decoder setup: 10 tests, 0 failures' in test_log
-    assert 'Video packing and GPU presentation: 23 tests, 0 failures' in test_log
+    assert 'Hardware decoder setup and HEVC base-layer filtering: 11 tests, 0 failures' in test_log
+    assert 'Video packing and GPU presentation: 24 tests, 0 failures' in test_log
     assert 'Display refresh lifecycle: 6 tests, 0 failures' in test_log
-    assert '16 Connected Services tests passed' in test_log
+    assert '19 Connected Services tests passed' in test_log
     assert '26 Instant playback tests passed' in test_log
-    assert 'Episode skip and next playback: 35 tests, 0 failures' in test_log
-    assert 'FFPFSC updater: 28 tests, 0 failures' in test_log
-    assert 'Driver HDR transactions: 8 registration, busy and rollback cases passed' in test_log
+    assert 'Episode skip and next playback: 61 tests, 0 failures' in test_log
+    assert 'FFPFSC updater: 46 tests, 0 failures' in test_log
+    assert 'Scanout driver: in-place HDR/SDR, refusal preserves registration, busy queue passed' in test_log
     assert 'Bitstream audio: framing, capabilities, lossless fallback, pacing, seek epoch and port recovery passed' in test_log
-    assert 'HDR output transitions: 9 tests, 0 failures' in test_log
-    assert test_log.count('Playback quality:') == 11
+    assert 'HDR output transitions: 10 tests, 0 failures' in test_log
+    assert test_log.count('Playback quality:') == 13
     assert 'Install source: unset migration, validated local persistence and source-specific update routing passed' in test_log
     for preview in ('install-source', 'store-update', 'github-update', 'donation', 'audio-output'):
         assert preview + ': GL error 0x0' in test_log
@@ -133,18 +135,19 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
     assert 'PS5 display output: 27 display output selection and probe-lifecycle assertions' in test_log
     report = {
         'name': info['name'], 'version': info['version'], 'sourceCommit': info['sourceCommit'],
+        'contentVersion': param['contentVersion'],
         'image': args.image.name, 'imageBytes': args.image.stat().st_size,
         'imageSha256': sha(args.image), 'container': 'PS5 PFS + PFSC containing exFAT',
         'containerErrors': 0, 'containerWarnings': 0,
         'extractedFileCount': len(actual), 'allExtractedFileHashesMatch': True,
         'executable': 'x86-64 ET_SCE_EXEC inside native PS5 SELF',
-        'hostHttpsTestsPassed': 52, 'hostUiNavigationTestsPassed': 6,
-        'hostConnectedServicesTestsPassed': 16, 'connectedServices': info['connectedServices'],
+        'hostHttpsTestsPassed': 80, 'hostUiNavigationTestsPassed': 10,
+        'hostConnectedServicesTestsPassed': 19, 'connectedServices': info['connectedServices'],
         'hostInstantPlaybackTestsPassed': 26,
-        'hostDecoderSetupTestsPassed': 10,
+        'hostDecoderSetupTestsPassed': 11,
         'hostStreamPresentationTestsPassed': 14,
-        'hostVideoPackingAndGpuTestsPassed': 23, 'hostNetworkTestsPassed': 6,
-        'hostHdrOutputTestsPassed': 9, 'hostEpisodePlaybackTestsPassed': 35,
+        'hostVideoPackingAndGpuTestsPassed': 24, 'hostNetworkTestsPassed': 6,
+        'hostHdrOutputTestsPassed': 10, 'hostEpisodePlaybackTestsPassed': 61,
         'hostDisplaySelectionAssertionsPassed': 27,
         'hostDisplayRefreshTestsPassed': 6,
         'watchProgressSync': 'Nuvio Sync profile 1; portable merged snapshots and persistent offline mutations',
@@ -155,12 +158,12 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
         'hostUpstreamAdaptationTestsPassed': True, 'hostExperienceTestsPassed': True,
         'playbackEngines': info['playbackEngines'],
         'evoPlayer': evo, 'hostEvoIntegrationTestsPassed': True,
-        'nativeHdr': info['nativeHdr'], 'experimentalAv': info['experimentalAv'], 'startupHotfix': info['startupHotfix'], 'hostStartupCompileCheckPassed': True, 'hostDriverHdrTransactionTestsPassed': 8, 'hostBitstreamTestsPassed': True,
+        'nativeHdr': info['nativeHdr'], 'experimentalAv': info['experimentalAv'], 'startupHotfix': info['startupHotfix'], 'hostStartupCompileCheckPassed': True, 'hostDriverHdrTransactionsPassed': True, 'hostBitstreamTestsPassed': True,
         'playbackQualityUpdates': info['playbackQualityUpdates'],
-        'hostPlaybackQualityTestsPassed': 11, 'hostPlaybackLifecycleTestsPassed': 3,
+        'hostPlaybackQualityTestsPassed': 13, 'hostPlaybackLifecycleTestsPassed': 3,
         'applicationDisplayProfile': display_profile,
         'hdrToSdr': info['hdrToSdr'], 'displayRefresh': info['displayRefresh'],
-        'updater': info['updater'], 'hostUpdaterTestsPassed': 28,
+        'updater': info['updater'], 'hostUpdaterTestsPassed': 46,
         'episodePlayback': info['episodePlayback'],
         'displaySelection': info['displaySelection'],
         'hardwareVerified': False, 'verifiedFirmwares': [],
@@ -168,4 +171,4 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
         'fileSha256': actual,
     }
 args.report.write_text(json.dumps(report, indent=2) + '\n')
-print(f'Verified {len(actual)} files; native SELF and clean source metadata match; 229 existing host tests, 27 display assertions and EVO/upstream integration tests passed')
+print(f'Verified {len(actual)} files; native SELF and clean source metadata match; current host suites, 27 display assertions and EVO/upstream integration tests passed')

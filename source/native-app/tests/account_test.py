@@ -1092,6 +1092,7 @@ class AccountTests(unittest.TestCase):
         self.assertEqual(row['state']['timeOffset'], 120000)
         self.assertFalse(any(p.endswith('sync_push_watch_progress') for p,_,_ in self.state['calls']))
         self.assertTrue(self.command('select_profile', profile=2)['ok'])
+        self.state['expected_profile'] = 2
         loaded = self.command('library')
         self.assertFalse(any(x.get('state', {}).get('timeOffset') == 120000 for x in loaded['result']))
 
