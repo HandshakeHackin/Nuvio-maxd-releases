@@ -795,6 +795,7 @@ void store_piece(Torrent* t, int piece, const std::string& data, double now) {
 // Metadata
 
 bool parse_info(Torrent* t, const std::string& raw) {
+    if(raw.size()>(4u<<20))return false;
 	BValue info;
 	if (!bdecode(raw, info) || !info.is_dict()) return false;
 	int64_t plen = info.get_int("piece length");
@@ -810,7 +811,7 @@ bool parse_info(Torrent* t, const std::string& raw) {
 		for (auto& f : fl->l) {
 			FileInfo fi;
 			fi.size = f.get_int("length", -1);
-			if (fi.size < 0) return false;
+			if (fi.size < 0 || fi.size > INT64_MAX-total || files.size()>=10000) return false;
 			const BValue* path = f.get("path.utf-8");
 			if (!path || !path->is_list()) path = f.get("path");
 			std::string p = name;
@@ -831,7 +832,7 @@ bool parse_info(Torrent* t, const std::string& raw) {
 		files.push_back(fi);
 	}
 	int64_t np = total / plen + (total % plen != 0);
-	if (total <= 0 || np * 20 != int64_t(hashes.size())) return false;
+	if (total <= 0 || np != int64_t(hashes.size()/20)) return false;
 
 	t->plen = plen;
 	t->total = total;
@@ -2556,7 +2557,7 @@ bool Engine::parse_torrent_buffer(const std::string& data, TorrentMeta& out, std
 		out.files.push_back(fi);
 	}
 	int64_t np = total / plen + (total % plen != 0);
-	if (total <= 0 || np * 20 != int64_t(hashes.size())) {
+	if (total <= 0 || np != int64_t(hashes.size()/20)) {
 		if (error) *error = "Piece count does not match total file size in .torrent";
 		return false;
 	}

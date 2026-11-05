@@ -244,6 +244,21 @@ int main(int argc, char** argv) {
         assert(mi_bare.info_hash_hex == "abcdef0123456789abcdef0123456789abcdef01");
     }
 
+    // Malformed and oversized file metadata must fail before arithmetic or allocation.
+    {
+        BValue info=BValue::dict();info.d["name"]=BValue(std::string("invalid.mkv"));
+        info.d["piece length"]=BValue(int64_t(1));info.d["pieces"]=BValue(std::string(20,'x'));
+        info.d["length"]=BValue(int64_t(999999999999999999LL));
+        BValue root=BValue::dict();root.d["info"]=info;bt::TorrentMeta meta;std::string error;
+        assert(!bt::Engine::parse_torrent_buffer(bencode(root),meta,nullptr,&error));
+        info.d.erase("length");BValue files=BValue::list();
+        BValue file=BValue::dict();file.d["length"]=BValue(int64_t(999999999999999999LL));
+        for(int i=0;i<12;++i)files.l.push_back(file);
+        info.d["files"]=files;root.d["info"]=info;
+        assert(!bt::Engine::parse_torrent_buffer(bencode(root),meta,nullptr,&error));
+        assert(!bt::Engine::parse_torrent_buffer(std::string((4u<<20)+1,'x'),meta,nullptr,&error));
+    }
+
     // 2. Test .torrent bencode parsing, exact raw info-hash, file loading, header/tail prioritization, seek_reader, and read_interrupt
     const std::string test_dir = (argc > 1 && argv[1] && argv[1][0]) ? std::string(argv[1]) : std::string("test-output/torrent-streaming/bt-test-dir");
     make_dirs(test_dir + "/nested/season1");
