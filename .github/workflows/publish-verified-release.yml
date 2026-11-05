@@ -96,3 +96,35 @@ jobs:
           if [ "$RELEASE_PRERELEASE" = true ]; then latest=(--latest=false); fi
           gh release edit "$RELEASE_TAG" --draft=false --prerelease="$RELEASE_PRERELEASE" "${latest[@]}" \
             --title "Nuvio Max'd $version experimental" --notes-file RELEASE_NOTES.md
+  notify-issue-16-tester:
+    if: ${{ inputs.tag == 'v1.0.0.10-native-experimental' }}
+    needs: publish
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      issues: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.asset_ref }}
+          persist-credentials: false
+      - name: Share verified test build and limitations with the requester
+        shell: bash
+        run: |
+          test "$(gh release view v1.0.0.10-native-experimental --json isDraft --jq .isDraft)" = false
+          gh api repos/"$GH_REPO"/issues/16/comments --paginate > issue-comments.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          comments=json.loads(Path('issue-comments.json').read_text())
+          body=Path('ISSUE_COMMENT.md').read_text().strip()
+          if any(c.get('body','').strip()==body for c in comments):
+              Path('.test-comment-already-posted').touch()
+          PY
+          if [ ! -f .test-comment-already-posted ]; then
+            gh issue comment 16 --body-file ISSUE_COMMENT.md
+          fi
