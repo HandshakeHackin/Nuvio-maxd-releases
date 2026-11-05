@@ -1,5 +1,7 @@
 #include "torrent_session_boundary.hpp"
 #include "../src/torrent/torrent_stream.h"
+#include "../src/torrent/playback_policy.hpp"
+#include <limits>
 extern "C" {
 #include <libavformat/avformat.h>
 }
@@ -259,6 +261,23 @@ int main(int argc, char** argv) {
         assert(!bt::Engine::parse_torrent_buffer(std::string((4u<<20)+1,'x'),meta,nullptr,&error));
     }
 
+    // Strict stream addresses and container-aware startup.
+    {
+        std::string hash;int file=-1;
+        const auto base="torrent://"+std::string(40,'a')+"/";
+        assert(TorrentStream::parse_url(base+"12",&hash,&file) && file==12);
+        for(const auto &bad : {"", "-1", "1junk", "999999999999999999999", "1/2", "+1"})
+            assert(!TorrentStream::parse_url(base+bad,&hash,&file));
+        assert(!TorrentStream::parse_url("torrent://"+std::string(40,'z')+"/0",&hash,&file));
+        std::string ts(512,'\0');ts[0]=ts[188]=ts[376]=0x47;
+        assert(bt::head_only_start(ts,0) && !bt::head_only_start(ts,30));
+        ts.assign(512,'\0');ts[4]=ts[196]=ts[388]=0x47;
+        assert(bt::head_only_start(ts,0));
+        assert(bt::head_only_start(std::string("\x1a\x45\xdf\xa3",4),0));
+        assert(!bt::head_only_start(std::string("\0\0\0\x18",4)+"ftypisom",0));
+        assert(!bt::head_only_start("G",0));
+    }
+
     // 2. Test .torrent bencode parsing, exact raw info-hash, file loading, header/tail prioritization, seek_reader, and read_interrupt
     const std::string test_dir = (argc > 1 && argv[1] && argv[1][0]) ? std::string(argv[1]) : std::string("test-output/torrent-streaming/bt-test-dir");
     make_dirs(test_dir + "/nested/season1");
@@ -354,6 +373,13 @@ int main(int argc, char** argv) {
         assert(rk == -1);
         assert(elapsed_ms < 500);
 
+        seek_interrupt=false;
+        const auto deadline_start=std::chrono::steady_clock::now();
+        assert(eng.read(t_handle,reader_id,best,8*262144,dummy,sizeof(dummy),&abort_flag,
+                        &seek_interrupt,now_seconds()+0.06)==-3);
+        assert(std::chrono::steady_clock::now()-deadline_start<std::chrono::milliseconds(500));
+        assert(eng.read(t_handle,reader_id,best,-1,dummy,sizeof(dummy),&abort_flag)==-4);
+
         eng.close_reader(t_handle, reader_id);
 
         // Test TorrentStream::open_avio, seek (with seek_reader), and set_read_interrupt
@@ -386,6 +412,15 @@ int main(int argc, char** argv) {
         const int ts_r = ts->read(ts_buf, sizeof(ts_buf));
         ts_trigger.join();
         assert(ts_r == AVERROR_EXIT);
+        ts_seek_pending=false;
+        TorrentStream::set_read_deadline(pb,now_seconds()+0.06);
+        assert(ts->read(ts_buf,sizeof(ts_buf))==AVERROR(ETIMEDOUT));
+        TorrentStream::set_read_deadline(pb,0);
+        assert(ts->seek(std::numeric_limits<int64_t>::max(),SEEK_CUR)==AVERROR(EINVAL));
+        assert(ts->seek(std::numeric_limits<int64_t>::min(),SEEK_END)==AVERROR(EINVAL));
+        assert(ts->seek(ts->size()+1,SEEK_SET)==AVERROR(EINVAL));
+        assert(ts->seek(0,AVSEEK_SIZE)==ts->size());
+
         TorrentStream::close_avio(&pb);
         assert(pb == nullptr);
     }
@@ -490,6 +525,35 @@ int main(int argc, char** argv) {
         // Rebuild UI and verify "Resume 0:42" badge appears on the Recent stream card
         sess.torrent_build();
         assert(sess.torrents_content.items[3].version.find("Resume 0:42") != std::string::npos);
+
+        const auto episode_id=sess.w_item_.id;
+        const auto other_id="torrent:"+expected_hash+":0";
+        sess.torrent_state_["resume"][other_id]={{"position",25},{"duration",120},{"updated",1}};
+        sess.watching=false;
+        sess.torrent_activate(3,true);
+        assert(sess.choices[0].find("Resume file 2 from 0:42")!=std::string::npos);
+        assert(sess.choices[1]=="Play this file from beginning");
+        auto resume=sess.pick;resume(0);
+        assert(sess.played.back().file_idx==1 && sess.torrent_resume(episode_id)==42);
+        sess.watching=false;
+        sess.torrent_activate(3,true);auto stale_resume=sess.pick;
+        ++sess.profile_generation_;stale_resume(1);
+        assert(sess.torrent_resume(episode_id)==42 && !sess.watching);
+        sess.torrent_activate(3,true);auto restart=sess.pick;restart(1);
+        assert(sess.played.back().file_idx==1 && sess.torrent_resume(episode_id)==0);
+        assert(sess.torrent_resume(other_id)==25); // Other files are never erased.
+        sess.player_.time=42;sess.player_.duration_value=0;
+        sess.torrent_progress();assert(sess.torrent_resume(episode_id)==42);
+        sess.player_.duration_value=120;
+        sess.torrent_state_["resume"][episode_id]["position"]=std::numeric_limits<double>::infinity();
+        assert(sess.torrent_resume(episode_id)==0);
+        sess.torrent_progress();
+
+        sess.w_item_.id="torrent:"+expected_hash+":-1";
+        sess.torrent_progress();
+        assert(!sess.torrent_state_["resume"].contains(sess.w_item_.id));
+        assert(sess.torrent_resume(other_id)==25);
+        sess.w_item_.id=episode_id;
 
         // Verify finishing a video (>= 95%) clears resume progress
         sess.player_.time = 118.0;

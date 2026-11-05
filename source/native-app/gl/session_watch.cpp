@@ -455,7 +455,15 @@ void Session::play_stream(const ::Stream &st, bool transcode, bool trailer)
             // and the streaming server's torrent streams. Not for transcoding, which is
             // a playlist of pieces.
             const bool par = !w_trailer_ && w_item_.type != "tv" && w_item_.type != "media-video" && w_item_.type != "torrent" && !iptv::library_type(w_item_.type) && r.url.find("/hlsv2/") == std::string::npos;
-            watch_start(r.url, r.headers, start, title, subtitle, par);
+            double actual_start = start;
+            if (builtin && w_item_.type == "torrent" && r.file_idx >= 0) {
+                // The default file is chosen after metadata arrives; do not attribute
+                // another file's progress to the temporary index-zero placeholder.
+                w_item_.id = "torrent:" + s.info_hash + ":" + std::to_string(r.file_idx);
+                w_video_id_ = w_item_.id;
+                actual_start = torrent_resume(w_item_.id);
+            }
+            watch_start(r.url, r.headers, actual_start, title, subtitle, par);
         });
 }
 
@@ -592,6 +600,7 @@ void Session::watch_update()
     if(multiview_active){multi_update();return;}
     const double now = now_seconds();
     const Player::State st = player_.state();
+    if(player_.take_seek_rejected()) say("That torrent position is not available yet. Playback returned to the previous position.",7.0);
     player_.log_stats();
     media_tick();
     // The PlayStation's menu is over the app (the PS button), or the app is in the background: pause.
@@ -647,7 +656,7 @@ void Session::watch_update()
         }
         else if (st == Player::State::Opening)
         {
-            launch.stage = 1;
+            launch.stage = t_visible_ && t_has_meta_ && t_progress_ > 0 ? 2 : 1;
         }
         else if (buffering)
         {

@@ -32,6 +32,7 @@ bash "$ROOT/tests/iptv_library.sh"
 bash "$ROOT/tests/iptv_session.sh"
 bash "$ROOT/tests/media_session.sh"
 bash "$ROOT/tests/torrent_streaming.sh"
+bash "$ROOT/tests/torrent_player.sh"
 ${HOST_CXX:-g++} -std=c++20 -O1 -g -Wall -Wextra -Werror -pthread \
     -I"$ROOT/src" -I"$ROOT/third_party" "$ROOT/tests/account_host.cpp" \
     "$ROOT/src/nuvio_account.cpp" "$ROOT/src/watch_sync.cpp" "$ROOT/src/tracking.cpp" "$ROOT/src/stremio.cpp" "$ROOT/src/http.cpp" "$ROOT/src/util.cpp" \

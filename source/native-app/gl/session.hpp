@@ -475,7 +475,7 @@ class Session
     double torrent_resume(const std::string &id) const;
     void torrent_play_hash(const std::string &info_hash, const std::string &name,
                            const std::vector<std::string> &trackers,
-                           const std::vector<std::string> &webseeds, int file_idx);
+                           const std::vector<std::string> &webseeds, int file_idx, bool from_beginning = false);
     void torrent_present_files(const std::string &info_hash, const std::string &name,
                                const std::vector<bt::FileInfo> &files,
                                const std::vector<std::string> &trackers,

@@ -9,6 +9,8 @@
 
 #include <algorithm>
 #include <cmath>
+#include <charconv>
+#include <limits>
 #include <cstdio>
 
 namespace sx
@@ -31,6 +33,35 @@ std::string format_bytes(int64_t bytes)
     else
         std::snprintf(buf, sizeof(buf), "%lld B", static_cast<long long>(bytes));
     return buf;
+}
+
+// Saved progress belongs to one concrete file, never an arbitrary file in the swarm.
+double valid_resume_position(const json &entry)
+{
+    const double pos = jnum(entry, "position", 0), dur = jnum(entry, "duration", 0);
+    return std::isfinite(pos) && std::isfinite(dur) && pos > 5 &&
+           pos < std::numeric_limits<int>::max() - 1.0 && dur >= 0 &&
+           (dur == 0 || pos < dur * 0.95) ? pos : 0;
+}
+struct TorrentResume { int file = -1; double position = 0, updated = -1; };
+TorrentResume latest_resume(const json &state, const std::string &hash)
+{
+    TorrentResume best;
+    const auto &res = jobj(state, "resume");
+    if (!res.is_object() || hash.empty()) return best;
+    const auto prefix = "torrent:" + hash + ":";
+    for (auto it = res.begin(); it != res.end(); ++it) {
+        if (!starts_with(it.key(), prefix)) continue;
+        const auto suffix = it.key().substr(prefix.size());
+        int file = -1;
+        const auto parsed = std::from_chars(suffix.data(), suffix.data()+suffix.size(), file);
+        if (parsed.ec != std::errc{} || parsed.ptr != suffix.data()+suffix.size() || file < 0) continue;
+        const double pos = valid_resume_position(it.value());
+        double updated = jnum(it.value(), "updated", 0);
+        if (!std::isfinite(updated) || updated < 0) updated = 0;
+        if (pos > 0 && (best.file < 0 || updated > best.updated)) best = {file, pos, updated};
+    }
+    return best;
 }
 
 std::string format_resume_time(double seconds)
@@ -120,22 +151,17 @@ double Session::torrent_resume(const std::string &id) const
     const json &res = jobj(torrent_state_, "resume");
     if (!res.is_object() || !res.contains(id))
         return 0;
-    const json &entry = res[id];
-    const double pos = jnum(entry, "position", 0);
-    const double dur = jnum(entry, "duration", 0);
-    if (pos > 5.0 && (dur <= 0 || pos < dur * 0.95))
-        return pos;
-    return 0;
+    return valid_resume_position(res[id]);
 }
 
 void Session::torrent_progress(bool finished)
 {
-    if (w_item_.type != "torrent" || w_item_.id.empty())
+    if (w_item_.type != "torrent" || w_item_.id.empty() || ends_with(w_item_.id, ":-1"))
         return;
     const double pos = player_.position(), dur = player_.duration();
-    if (dur <= 0)
+    if (!std::isfinite(pos) || !std::isfinite(dur) || pos < 0 || dur < 0)
         return;
-    const bool done = finished || (pos >= dur * 0.95);
+    const bool done = finished || (dur > 0 && pos >= dur * 0.95);
     if (!torrent_state_.is_object())
         torrent_state_ = json::object();
     if (!jobj(torrent_state_, "resume").is_object())
@@ -234,7 +260,6 @@ void Session::torrent_build()
     }
 
     const std::string q = lower(trim(torrent_query_));
-    const json &resume_map = jobj(torrent_state_, "resume");
 
     // Recent / Saved torrents (shown in All or Recent views)
     if (torrent_view_ == 0 || torrent_view_ == 2)
@@ -268,23 +293,8 @@ void Session::torrent_build()
                         if (v.is_string())
                             te.webseeds.push_back(v.get<std::string>());
 
-                // Check if any file in this torrent has a saved resume point
-                if (resume_map.is_object())
-                {
-                    const std::string prefix = "torrent:" + id + ":";
-                    for (auto it = resume_map.begin(); it != resume_map.end(); ++it)
-                    {
-                        if (starts_with(it.key(), prefix))
-                        {
-                            const double pos = jnum(it.value(), "position", 0);
-                            if (pos > 5.0)
-                            {
-                                te.subtitle += " · Resume " + format_resume_time(pos);
-                                break;
-                            }
-                        }
-                    }
-                }
+                const auto saved = latest_resume(torrent_state_, id);
+                if (saved.file >= 0) te.subtitle += " · Resume " + format_resume_time(saved.position);
 
                 sx::Addon row;
                 row.name = te.name;
@@ -293,7 +303,7 @@ void Session::torrent_build()
                 row.initial = first_letter(te.name.empty() ? "T" : te.name);
                 row.colour = 0x6d6ae0;
                 row.local = true;
-                row.description = "X: stream now · Square: choose file inside torrent or remove";
+                row.description = "X: play/resume · Square: resume, restart, choose file or remove";
                 torrents_content.items.push_back(std::move(row));
                 torrent_entries_.push_back(std::move(te));
             }
@@ -485,33 +495,36 @@ void Session::torrent_activate(int index, bool secondary)
         }
         torrent_open_input(entry.path_or_uri, force_picker);
     };
-    if (!secondary)
-    {
-        open_entry(false);
+    const auto saved = latest_resume(torrent_state_, entry.id);
+    if (!secondary) {
+        if (saved.file >= 0) torrent_play_hash(entry.id, entry.name, entry.trackers, entry.webseeds, saved.file);
+        else open_entry(false);
         return;
     }
-    std::vector<std::string> actions = {"Choose file inside torrent to stream", "Stream default video file"};
-    if (!entry.id.empty())
-        actions.push_back("Remove from recent list");
-    open_dropdown(entry.name, actions, 0, [this, entry, open_entry](int pick) {
-        if (pick == 0)
-        {
-            open_entry(true);
+    std::vector<std::string> actions;
+    if (saved.file >= 0) {
+        actions.push_back("Resume file " + std::to_string(saved.file+1) + " from " + format_resume_time(saved.position));
+        actions.push_back("Play this file from beginning");
+    } else actions.push_back("Stream default video file");
+    actions.push_back("Choose file inside torrent to stream");
+    if (!entry.id.empty()) actions.push_back("Remove from recent list");
+    const int count = static_cast<int>(actions.size());
+    open_dropdown(entry.name, actions, 0, [this, entry, open_entry, saved, count, generation=profile_generation_](int pick) {
+        if (generation != profile_generation_ || !profile_ready_ || !prefs_.builtin_torrents ||
+            watching || resuming_ || pick < 0 || pick >= count) return;
+        if (saved.file >= 0 && pick < 2) {
+            torrent_play_hash(entry.id, entry.name, entry.trackers, entry.webseeds, saved.file, pick == 1);
+            return;
         }
-        else if (pick == 1)
-        {
-            open_entry(false);
-        }
-        else if (pick == 2 && !entry.id.empty())
-        {
+        if (saved.file < 0 && pick == 0) { open_entry(false); return; }
+        const int action = pick - (saved.file >= 0 ? 2 : 1);
+        if (action == 0) open_entry(true);
+        else if (action == 1 && !entry.id.empty()) {
             auto &rec = torrent_state_["recent"];
-            if (rec.is_array())
-            {
+            if (rec.is_array()) {
                 rec.erase(std::remove_if(rec.begin(), rec.end(),
-                                         [&](const json &j) { return jstr(j, "id") == entry.id; }),
-                          rec.end());
-                torrent_save();
-                torrent_build();
+                    [&](const json &j) { return jstr(j, "id") == entry.id; }), rec.end());
+                torrent_save(); torrent_build();
             }
         }
     });
@@ -519,7 +532,7 @@ void Session::torrent_activate(int index, bool secondary)
 
 void Session::torrent_play_hash(const std::string &info_hash, const std::string &name,
                                 const std::vector<std::string> &trackers,
-                                const std::vector<std::string> &webseeds, int file_idx)
+                                const std::vector<std::string> &webseeds, int file_idx, bool from_beginning)
 {
     if (watching || resuming_)
         return;
@@ -533,7 +546,12 @@ void Session::torrent_play_hash(const std::string &info_hash, const std::string 
     if (file_idx >= 0)
         bt::Engine::get().select_file(info_hash, file_idx);
 
-    const std::string item_id = "torrent:" + info_hash + ":" + std::to_string(std::max(0, file_idx));
+    const std::string item_id = "torrent:" + info_hash + ":" + std::to_string(file_idx);
+    if (from_beginning) {
+        auto &resume = torrent_state_["resume"];
+        if (resume.is_object()) resume.erase(item_id);
+        torrent_save();
+    }
     d_item_ = Item{};
     d_item_.id = item_id;
     d_item_.name = name.empty() ? ("Torrent " + info_hash.substr(0, 8)) : name;

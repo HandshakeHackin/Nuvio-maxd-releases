@@ -2885,9 +2885,10 @@ void Engine::close_reader(const std::shared_ptr<Torrent>& t, int reader_id) {
 }
 
 int Engine::read(const std::shared_ptr<Torrent>& t, int reader_id, int file_idx, int64_t pos, uint8_t* buf, int n,
-                 const std::atomic<bool>* abort, const std::atomic<bool>* read_interrupt) {
+                 const std::atomic<bool>* abort, const std::atomic<bool>* read_interrupt, double deadline) {
 	Impl& I = impl();
 	std::unique_lock<std::mutex> lock(I.mu);
+	if (!t || file_idx < 0 || size_t(file_idx) >= t->files.size() || pos < 0 || n < 0 || (n > 0 && !buf)) return -4;
 	const FileInfo& f = t->files[size_t(file_idx)];
 	if (pos >= f.size || n <= 0) return 0;
 	int64_t abs = f.offset + pos;
@@ -2916,6 +2917,7 @@ int Engine::read(const std::shared_ptr<Torrent>& t, int reader_id, int file_idx,
 	while (!t->have[size_t(piece)]) {
 		if (t->stopped) return -2;
 		if ((abort && abort->load()) || (read_interrupt && read_interrupt->load())) return -1;
+		if (deadline > 0 && now_seconds() >= deadline) return -3;
 		I.cv.wait_for(lock, std::chrono::milliseconds(50));
 	}
 	int64_t in_piece = abs - int64_t(piece) * t->plen;

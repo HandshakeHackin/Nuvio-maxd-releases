@@ -52,11 +52,13 @@ std::string NetStream::peek(size_t){return "";}
 std::string NetStream::failure(){return "";}
 std::string NetStream::effective_url(){return "";}
 #endif
+#ifndef NUVIO_TEST_REAL_TORRENT
 AVIOContext* TorrentStream::open_avio(const std::string&,const std::atomic<bool>*,std::string*){return nullptr;}
 bool TorrentStream::is_ours(AVIOContext*){return false;}
 TorrentStream* TorrentStream::of(AVIOContext*){return nullptr;}
 void TorrentStream::close_avio(AVIOContext**){}
 std::string TorrentStream::peek(size_t){return "";}
+#endif
 std::unique_ptr<EvoDecoder> EvoDecoder::open(const AVCodecParameters*,std::string&){return nullptr;}
 EvoDecoder::~EvoDecoder()=default;
 int EvoDecoder::send(const uint8_t*,int,int64_t){return -1;}

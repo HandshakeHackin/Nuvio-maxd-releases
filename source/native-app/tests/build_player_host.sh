@@ -14,10 +14,14 @@ key=$(printf '%s\0' "$CXX" "${flags[@]}" | sha256sum | cut -d' ' -f1)
 cache="$ROOT/test-output/player-host-objects/$key";mkdir -p "$cache"
 sources=("$ROOT/$main" "$ROOT/src/"{player,vlc_backend,pcm_out,bitstream,packet_storage,subtitle_renderer,subtitles,video_frame,yuv_convert,util,bidi}.cpp)
 case "$mode" in
- network) sources+=("$ROOT/src/netstream.cpp" "$ROOT/src/http.cpp");;
+ network|torrent) sources+=("$ROOT/src/netstream.cpp" "$ROOT/src/http.cpp");;
  file) ;;
  *) echo "Unknown player fixture mode" >&2;exit 2;;
 esac
+if [ "$mode" = torrent ]; then
+ read -r -a torrent_libs <<< "$(pkg-config --libs openssl)"
+ libs+=("${torrent_libs[@]}")
+fi
 objects=()
 for source in "${sources[@]}";do
  object="$cache/$(basename "$source").o"

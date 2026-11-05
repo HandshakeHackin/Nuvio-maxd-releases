@@ -79,6 +79,7 @@ public:
 
 	State state() const { return vlc_ ? State(vlc_->state()) : state_.load(); }
 	std::string error() const;
+    bool take_seek_rejected() { return seek_rejected_.exchange(false); }
 
 	bool paused() const { return vlc_ ? vlc_->paused() : paused_.load(); }
 	void set_paused(bool p);
@@ -190,6 +191,7 @@ private:
 	std::atomic<State> state_{State::Idle};
 	mutable std::mutex err_m_;
 	std::string error_;
+    std::atomic<bool> seek_rejected_{false};
 
 	std::thread demux_, video_, audio_;
 	std::atomic<bool> abort_{false};

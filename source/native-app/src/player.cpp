@@ -3,6 +3,7 @@
 #include <cstdarg>
 #include "http_credentials.hpp"
 #include "player.h"
+#include "torrent/playback_policy.hpp"
 #include "player_streams.hpp"
 #include "stream_colour.hpp"
 #include "bitstream.h"
@@ -178,7 +179,7 @@ void Player::open(const Options& opts) {
 	evo_presenter_serial_ = -1;
 	dlog("player: playback engine %s", opts.evo ? "EVO Player 0.13.0 (experimental)" : "Nuvio native");
 	abort_ = false;
-	quick_ = false;
+	quick_ = false; seek_rejected_ = false;
 	eof_ = false;
 	paused_ = opts.start_paused;
     audio_switch_ = -1; // never carry a pending choice into a different title
@@ -365,7 +366,8 @@ void Player::demux_run() {
 			if (!abort_) fail("Could not open the stream (" + err + ")");
 			return;
 		}
-		NetStream::set_read_interrupt(main_pb_, &seek_pending_);
+		if (torrent) TorrentStream::set_read_interrupt(main_pb_, &seek_pending_);
+		else NetStream::set_read_interrupt(main_pb_, &seek_pending_);
 		fmt_->pb = main_pb_;
 		fmt_->flags |= AVFMT_FLAG_CUSTOM_IO;
 		// Matroska keeps tags, attachments and its index at the end of the
@@ -373,7 +375,7 @@ void Player::demux_run() {
 		// the part the server has least of, so it could take minutes before
 		// the first frame. Start from the beginning instead, without them;
 		// the first seek opens the file again with the index (see seek()).
-		std::string magic = torrent ? TorrentStream::of(main_pb_)->peek(4) : NetStream::of(main_pb_)->peek(64);
+		std::string magic = torrent ? TorrentStream::of(main_pb_)->peek(512) : NetStream::of(main_pb_)->peek(64);
 		if (!torrent) {
 			input_url = NetStream::of(main_pb_)->effective_url();
 			// Some providers serve genuine HLS at opaque addresses as octet-stream.
@@ -393,14 +395,14 @@ void Player::demux_run() {
 				return;
 			}
 		}
-		if (opts_.start <= 0 && starts_with(magic, "\x1A\x45\xDF\xA3")) {
+		if (opts_.start <= 0 && (torrent ? bt::head_only_start(magic, opts_.start) : starts_with(magic, "\x1A\x45\xDF\xA3"))) {
 			main_pb_->seekable = 0;
 			quick_ = true;
 			// Matroska describes its tracks in the header, so a short look
 			// is enough; with few seeders every MB here is a long wait.
-			fmt_->probesize = 1 << 20;
-			fmt_->max_analyze_duration = AV_TIME_BASE / 2;
-			dlog("player: Matroska, starting without reading the end of the file");
+			fmt_->probesize = torrent ? 2 << 20 : 1 << 20;
+			fmt_->max_analyze_duration = torrent ? AV_TIME_BASE : AV_TIME_BASE / 2;
+			dlog("player: head-only container startup; explicit seek can load deferred indexes");
 		}
 	}
 	int r = avformat_open_input(&fmt_, input_url.c_str(), content_format, &dict);
@@ -571,7 +573,7 @@ void Player::demux_run() {
 		start_target_ = opts_.live_tv ? 2 : mbps >= 40 ? 15 : mbps >= 20 ? 10 : mbps >= 10 ? 5 : 2;
 		dlog("player: about %.0f Mbit/s, buffering %.0f s before playing", mbps, start_target_);
 	}
-	if (opts_.start > 0) do_seek(opts_.start);
+	if (opts_.start > 0) { do_seek(opts_.start); if (state_ == State::Failed || abort_) return; }
 	state_ = State::Playing;
 	apply_run_state();
 
@@ -723,6 +725,13 @@ void Player::demux_run() {
 }
 
 void Player::do_seek(double target, bool switching_audio) {
+    const bool torrent = TorrentStream::is_url(opts_.url);
+    const double anchor = position();
+    struct DeadlineGuard {
+        AVIOContext* pb;
+        ~DeadlineGuard() { TorrentStream::set_read_deadline(pb,0); }
+    } deadline_guard{torrent ? main_pb_ : nullptr};
+    if(torrent) TorrentStream::set_read_deadline(main_pb_,now_seconds()+5);
 	const bool short_refill = state_ == State::Playing && !recovering_;
 	// Promote a quick Matroska open to a seekable input on its demux thread.
 	// FFmpeg can load deferred cues here without discarding the decoders/tracks.
@@ -741,7 +750,7 @@ void Player::do_seek(double target, bool switching_audio) {
 	if (r < 0) {
 		dlog("player: seek to %.1f failed: %s", target, av_err(r).c_str());
 		if (seek_pending_) return; // a newer request superseded this attempt
-		if (was_quick && !recovering_) {
+		if (was_quick && !torrent && !recovering_) {
 			// Some Matroska inputs cannot load their index in place. The UI
 			// performs the old reopen fallback; never join this demux thread here.
 			reopen_target_ = target;
@@ -749,7 +758,23 @@ void Player::do_seek(double target, bool switching_audio) {
 		}
 		if(recovering_.exchange(false)) { fail("Decoder recovery could not seek this source. Choose another stream."); return; }
         if (switching_audio) { fail("Could not resynchronize the selected audio track. Restart playback or choose another stream."); return; }
-		vdrop_ = adrop_ = -1; seek_refill_ = false; buffering_ = false; apply_run_state(); return;
+        if (!torrent) {
+            vdrop_ = adrop_ = -1; seek_refill_ = false; buffering_ = false; apply_run_state(); return;
+        }
+        if (abort_) return;
+        if (state_ != State::Playing) {
+            fail("The saved torrent position is unavailable. Try Play from beginning."); return;
+        }
+        // A failed demux seek may have consumed bytes. Restore a real demux
+        // timestamp before using the old timeline; never pretend it was untouched.
+        TorrentStream::set_read_deadline(main_pb_,now_seconds()+5);
+        fmt_->pb->error=0;fmt_->pb->eof_reached=0;
+        const int64_t previous=static_cast<int64_t>((anchor+start_offset_)*AV_TIME_BASE);
+        int restored=avformat_seek_file(fmt_,-1,INT64_MIN,previous,previous,0);
+        if(restored<0) restored=av_seek_frame(fmt_,-1,previous,AVSEEK_FLAG_BACKWARD);
+        if(seek_pending_ || abort_) return;
+        if(restored<0) { fail("Torrent seek could not recover safely. Restart playback or choose another stream.");return; }
+        target=anchor;seek_rejected_=true;
 	}
     read_chapters(); // quick Matroska seeks can load a deferred chapter table
 	subtitle_renderer_.seek();

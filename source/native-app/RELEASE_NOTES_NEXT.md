@@ -1,3 +1,13 @@
+# Unreleased torrent integration
+
+- Resume the most recently watched file in a torrent, or restart only that file. Keep other files’ progress and ignore stale profile callbacks.
+- Resolve the actual selected file before applying/saving torrent progress, including automatic magnet-file selection. Save progress for streams with unknown duration.
+- Use short head-only probing for MKV/TS/M2TS, while preserving MP4 tail-metadata access and indexed resume behavior.
+- Report buffering when actual torrent data has arrived, rather than inferring it from peer count alone.
+- Interrupt blocked torrent reads for new seeks. Bound index-search reads, roll failed seeks back to a confirmed demux position, and report unrecoverable failures without reopen loops. Decoder/audio errors remain visible.
+
+Based on the latest torrent-edition source at c8837a9. This is an unpublished development candidate based on official 1.0.0.11; physical PS5/swarm testing remains pending.
+
 # Included in 1.0.0.11
 
 - Dependency security: replace the legacy Cheerio fork with maintained browser-compatible selectors, removing the known nth-check denial-of-service advisory while retaining provider module aliases.

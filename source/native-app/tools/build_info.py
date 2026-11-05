@@ -34,7 +34,7 @@ display_profile = validate_display_metadata(json.loads(
 info = {
     'name': "Nuvio Max'd",
     'version': '1.0.0.11-native',
-    'releaseChannel': 'stable',
+    'releaseChannel': 'development',
     'titleId': sys.argv[2],
     'providerPlugins': {'engine': 'QuickJS 2026-06-04', 'repositories': True, 'perProviderOptIn': True, 'consoleSocketMode': 'direct SO_NBIO via wrapped pinned curlx_nonblock; retains public-address checks', 'hardwareVerified': False},
     'mediaRemote': {'hdmiCec': True, 'buttonRemapping': True, 'pressToAssign': True, 'testButtonDetection': True, 'appLocalOnly': True, 'controllerUnchanged': True, 'hardwareVerified': False},
@@ -119,6 +119,7 @@ info = {
     'playbackEngines': {'default': 'native', 'optional': ['EVO Player 0.13.0', 'VLC 3.0.24'], 'scope': 'integrated optional playback engines', 'hardwareVerified': False},
     'presentationSafety': {'lowRatePacing': 'PTS deadlines at accepted 120 Hz; GPU completion before scheduled swap', 'refreshLattice': '119.88 Hz calibration from ProsperoTube; console validation pending', 'reset': ['pause', 'buffering', 'seek', 'output mode change'], 'textureLifetime': 'GPU fences before overwrite and teardown', 'hardwareVerified': False},
     'videoConversion': 'Native-resolution YUV to RGB10_A2; compatible PQ/BT.2020 sources use experimental 10-bit HDR10 output',
+    'torrentRefresh': {'upstreamCommit': 'c8837a9e5f431ddf21b3aedb532f37c6923175d6', 'perFileResume': True, 'containerAwareStartup': True, 'boundedSeekRecovery': True, 'hardwareVerified': False},
     'torrentHub': {'optIn': True, 'magnetAndTorrentFiles': True, 'filePicker': True, 'profileLocalHistory': True, 'cacheGiB': [1, 2, 4, 6], 'numericDhtBootstrap': True, 'trackerWorkers': 2, 'pairedTemporaryWebDrop': True, 'consoleConfirmation': True, 'upstreamCommit': '8e34590582ad89c0f12182289f83c2526bd47c4a', 'hardwareVerified': False},
     'nativeHdr': {
         'default': True,
