@@ -1,0 +1,13 @@
+Nuvio Max'd 1.0.0.10 experimental validation
+
+Source: dc7b71234461a0baf7d0fb8d14e7d18ca3bdadfc (clean)
+Publication metadata: dc7b71234461a0baf7d0fb8d14e7d18ca3bdadfc (native source unchanged)
+GitHub CI: https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/42016650133 — both jobs passed
+PS5 app and bundled updater: compiled, linked and signed
+Image and ZIP: all 158 packaged files match; zero container errors/warnings; safe ZIP entries and permissions
+Matching source archive: 902 file hashes verified
+Local host regressions, remote input/remapping/settings, capture cancellation/timeout, preference roundtrip, sanitizer checks and production UI previews passed. Existing media/torrent/HDR checks remain included.
+Hosted account/transport/decoder/GPU, provider, media-server and real VLC checks passed.
+Pinned LLVM 19.1.7, Payload SDK 0.45, PacBrew 0.40.2, OpenGL 1.0.2 and MkPFS 1.1.0 toolchain retained; dependency pins unchanged from verified 1.0.0.8.
+
+PS5 hardware, which remote buttons the OS delivers, real torrent swarms, HDR output and server restart persistence remain unverified. This is an experimental prerelease.
