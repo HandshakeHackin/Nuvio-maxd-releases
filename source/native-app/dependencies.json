@@ -895,7 +895,7 @@
     "libxml2Patches": [
       {
         "path": "third_party/libxml2/0001-ps5-random.patch",
-        "sha256": "38f2b60765120ff5a0faf104e8889895bd3242cc27956aced537df190c7a2126",
+        "sha256": "4fedaaee55e24dd6575cb1e22283556b0ff080f3b81e685d63659385842ffe4a",
         "scope": "Use SDK arc4random_buf for XML hash randomization; do not fall back to time/address entropy on PS5."
       }
     ]

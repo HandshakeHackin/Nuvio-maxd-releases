@@ -359,5 +359,22 @@
     }
   },
   "hardwareVerified": false,
-  "published": false
+  "published": false,
+  "verification": {
+    "targetPinnedOutputs": 522,
+    "targetCompileAndLinkPassed": true,
+    "vlcStaticPlugins": 98,
+    "targetResolvedImports": 414,
+    "fullHostRegressionSuitePassed": true,
+    "providerRegressionSuitePassed": true,
+    "mediaServersAndPlexPassed": true,
+    "upstreamTestsPassed": {
+      "libxml2": 8,
+      "expat": 1,
+      "libpng": 37
+    },
+    "providerBundleAndNoticesReproduce": true,
+    "npmKnownAdvisories": 0,
+    "physicalConsoleTestingPending": true
+  }
 }
