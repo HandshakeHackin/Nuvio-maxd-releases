@@ -1,6 +1,8 @@
-Nuvio Max'd 1.0.0.8 experimental console checklist
+Nuvio Max'd 1.0.0.9 experimental console checklist
 
-Confirm Settings → App updates shows 1.0.0.8 and the package contentVersion is 07.000.008.
-Test masked password entry, Jellyfin/Emby/Plex connection and artwork, close/reopen and console restart persistence, profile isolation and sign-out/removal.
-Check Native/EVO/VLC playback, resume/seek, subtitles, PCM/optional bitstream and HDR/SDR. Keep prior installers and user data.
-Console results remain pending; host tests simulate PS5 interfaces. Share sanitized logs only.
+Confirm version 1.0.0.9 and contentVersion 07.000.009.
+Enable Peer-to-peer torrents in Settings > Addons. Test a lawful magnet and USB multi-file torrent, file selection, resume and forward/backward seeking. Disable torrents during discovery/playback; confirm the listener and engine stop.
+Pair Web Drop from the QR screen on trusted Wi-Fi. Submit a magnet/file; cancel once, accept once. Check QR closure, profile switching and ten-minute expiry stop the listener; history must not cross profiles.
+Test SDR, native HDR10, rejected HDR in Auto mode (including paused playback), Require native HDR10 and Convert HDR to SDR. Check the saved preference is unchanged by fallback.
+Recheck Plex/Jellyfin/Emby artwork, direct/HLS playback, saved connections after console restart, progress and subtitles.
+Console acceptance is pending. Keep prior installers and saved user data; share sanitized logs only.

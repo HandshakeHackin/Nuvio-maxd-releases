@@ -1,10 +1,16 @@
-# Nuvio Max'd 1.0.0.8 experimental
+# Nuvio Max'd 1.0.0.9 experimental
 
-- Fix authenticated Media Servers artwork and verify saved connections after writing. Connections and private caches stay separate for each profile.
-- Include the issue #14 password-keyboard fix with masked Basic Latin input. The reporter confirmed that keyboard fix on firmware 7.00; connection persistence after a real console restart still needs confirmation.
-- Add experimental Plex, Jellyfin and Emby browsing, search, playback and server watch progress under Settings → Account & Services → Media servers.
-- Include dependency maintenance, Native/EVO HEVC base-layer filtering, PCM Night Mode, guide clock correction, chapter controls and optional subtitle auto-sync.
+## Torrent streaming
+- Enable Settings > Addons > Peer-to-peer torrents to reveal the torrent hub. Open magnets, info hashes, USB/app .torrent files and direct .torrent URLs; choose a file and resume recent streams separately for each profile.
+- Improve read/seek buffering, container header/tail retention and numerical DHT bootstrap. Use a configurable 1, 2, 4 or 6 GiB rolling cache and two tracker workers.
+- Pair a phone or PC using the Web Drop QR screen on the same trusted LAN. The temporary listener uses port 8088, expires after ten minutes and requires console confirmation before opening a received torrent. Closing the QR, changing profiles or disabling torrents stops it.
 
-Replace the existing PPSA99288 app folder with the ZIP contents, or replace the old FFPFSC image. Keep user data to preserve profiles and saved connections. Use one install format at a time.
+## HDR and existing features
+- Add Auto HDR-to-SDR fallback after successful SDR output restoration. The fallback affects only the current playback session; existing saved HDR choices retain their behavior. Require native HDR10 and Convert HDR to SDR remain available.
+- Preserve Plex, Jellyfin, Emby, issue #14 authenticated artwork/connection persistence, IPTV and previous subtitle/playback fixes.
+- Fix torrent worker shutdown and reject malformed metadata lengths before arithmetic or allocation. Adapted from chewlord76/nuvio-torrent-edition with attribution included.
 
-This is an experimental prerelease. Host and package verification do not establish PS5 firmware compatibility, real server persistence, HDR output or live service interoperability. Test on console and retain the previous installer for rollback. Do not include account tokens or playable URLs in bug reports.
+## Installation and testing
+Use PPSA99288.zip for ProsperoStore/folder installation, or the FFPFSC image for image installation. Keep user data and use one installation format at a time. Content version: 07.000.009.
+
+Experimental prerelease: automated host, sanitizer, UI and package verification passed; PS5 runtime, real torrent swarms and display/server compatibility still need console testing. HDR10+ dynamic metadata and unsupported Dolby Vision conversion are not claimed.
