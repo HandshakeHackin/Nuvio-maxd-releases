@@ -226,6 +226,7 @@ void Session::play_stream(const ::Stream &st, bool transcode, bool trailer)
             start = cw.offset;
     }
 
+    if(w_item_.type=="torrent")start=torrent_resume(w_item_.id);
     if(w_item_.type=="media-video")start=media_resume_;
     if(iptv::library_type(w_item_.type))start=iptv_resume(w_item_.id);
     if(w_trailer_)subtitle="Trailer";
@@ -271,7 +272,7 @@ void Session::play_stream(const ::Stream &st, bool transcode, bool trailer)
     w_episode_tick_ = now_seconds();
     if (w_episode_cancel_) *w_episode_cancel_ = true;
     w_episode_cancel_ = std::make_shared<std::atomic<bool>>(false);
-    if(!w_trailer_ && w_item_.type != "tv" && w_item_.type != "media-video" && !iptv::library_type(w_item_.type)) watch_load_segments(season, episode);
+    if(!w_trailer_ && w_item_.type != "tv" && w_item_.type != "media-video" && w_item_.type != "torrent" && !iptv::library_type(w_item_.type)) watch_load_segments(season, episode);
     if (detail.series && !w_trailer_)
         if (const auto* next = episode_playback::next_video(d_meta_.videos, w_video_id_, now_epoch_ms())) w_next_ = *next;
     art_dirty_ = true;
@@ -453,7 +454,7 @@ void Session::play_stream(const ::Stream &st, bool transcode, bool trailer)
             // Several connections and the long read-ahead for big files: direct links
             // and the streaming server's torrent streams. Not for transcoding, which is
             // a playlist of pieces.
-            const bool par = !w_trailer_ && w_item_.type != "tv" && w_item_.type != "media-video" && !iptv::library_type(w_item_.type) && r.url.find("/hlsv2/") == std::string::npos;
+            const bool par = !w_trailer_ && w_item_.type != "tv" && w_item_.type != "media-video" && w_item_.type != "torrent" && !iptv::library_type(w_item_.type) && r.url.find("/hlsv2/") == std::string::npos;
             watch_start(r.url, r.headers, start, title, subtitle, par);
         });
 }
@@ -466,8 +467,9 @@ void Session::watch_start(const std::string &url, const std::vector<std::string>
     o.parallel = direct;
     o.live_tv = w_item_.type == "tv";
     o.read_ahead_seconds = w_trailer_ || w_item_.type == "tv" ? 2 : prefs_.read_ahead_seconds;
-    o.evo = prefs_.evo_player;
-    o.vlc = prefs_.vlc_player;
+    hdr_fallback_session_=false;
+    o.evo = prefs_.evo_player && !TorrentStream::is_url(url);
+    o.vlc = prefs_.vlc_player && !TorrentStream::is_url(url);
     o.surround = prefs_.surround_audio;
     o.audio_mode=prefs_.audio_gain_percent==100 && prefs_.night_mode==0?prefs_.audio_output_mode:"pcm";
     o.night_mode=prefs_.night_mode;o.lfe_mix_percent=prefs_.lfe_mix_percent;
@@ -501,7 +503,7 @@ void Session::watch_start(const std::string &url, const std::vector<std::string>
     w_last_saved_pos_ = start;
     w_info_until_ = now_seconds() + kInfoSeconds;
     launch.stage = 1;
-    if(!w_trailer_ && w_item_.type != "tv" && w_item_.type != "media-video" && !iptv::library_type(w_item_.type)) watch_load_addon_subtitles();
+    if(!w_trailer_ && w_item_.type != "tv" && w_item_.type != "media-video" && w_item_.type != "torrent" && !iptv::library_type(w_item_.type)) watch_load_addon_subtitles();
 }
 
 // ---------------------------------------------------------------------------
@@ -825,15 +827,22 @@ void Session::arm_presentation_timing() {
     else presentation::disarm();
 }
 
-void Session::upload_video()
+void Session::fallback_to_sdr() {
+    hdr_fallback_session_=true;
+    upload_video(true);
+    say("Native HDR output was rejected. Playing in SDR.",6);
+}
+
+void Session::upload_video(bool reuse_picture)
 {
     if(multiview_active)return;
     const int64_t selected_us = int64_t(now_seconds()*1000000);
-    const Player::Picture *pic = player_.present();
+    const Player::Picture *pic = reuse_picture ? &last_video_picture_ : player_.present();
     if (!pic)
         return;
+    last_video_picture_ = *pic;
     std::string error;
-    const bool hdr = prefs_.native_hdr && pic->colors == YuvColors::Hdr10;
+    const bool hdr = prefs_.native_hdr && !hdr_fallback_session_ && pic->colors == YuvColors::Hdr10;
     if (hdr && (!pic->hdr10_compatible || pic->format == VideoFormat::Rgba)) {
         fail_video_output("This source has no supported HDR10 base picture. Choose an HDR10 or SDR stream.");
         return;
@@ -889,6 +898,7 @@ void Session::watch_stop(bool ended)
     resuming_ = false;
     if (w_started_ && !ended)
         watch_save_progress(true);
+    if(w_started_ && ended && w_item_.type=="torrent")torrent_progress(true);
     if(w_started_ && ended && iptv::library_type(w_item_.type))iptv_progress(true);
     if (ended && trailers::records_history(w_trailer_,w_item_.type) && !w_video_id_.empty())
     {
@@ -911,6 +921,7 @@ void Session::watch_stop(bool ended)
     subtitle_shown_.clear();
     if(subtitle_texture_) glDeleteTextures(1,&subtitle_texture_);
     subtitle_texture_=0; subtitle_width_=subtitle_height_=0;
+    last_video_picture_={};
     video_surface_.reset();
     presentation::reset(); timing_picture_={};
     video_texture = 0;
@@ -921,6 +932,7 @@ void Session::watch_stop(bool ended)
     if (d_open_)
         for (std::size_t i = 0; i < detail.episodes.size() && i < d_season_videos_.size(); ++i)
             detail.episodes[i].watched = watched(d_season_videos_[i]->id);
+    if(w_item_.type=="torrent")torrent_build();
     if(iptv::library_type(w_item_.type))iptv_build();
     changed_ |= kDetail;
     refresh_board();
@@ -938,6 +950,7 @@ void Session::fail_video_output(const std::string& error) {
 
 void Session::watch_save_progress(bool final, bool force_finished)
 {
+    if(w_item_.type=="torrent"){torrent_progress(force_finished);return;}
     if(w_item_.type=="media-video")return;
     if(iptv::library_type(w_item_.type)){iptv_progress(force_finished);return;}
     const double pos = player_.position(), dur = player_.duration();
@@ -1149,7 +1162,7 @@ void Session::watch_input(const hui::InputFrame &in)
         return;
     }
 
-    if (!w_trailer_ && w_item_.type != "tv" && w_item_.type != "media-video" && !iptv::library_type(w_item_.type) && watch_episode_input(in)) return;
+    if (!w_trailer_ && w_item_.type != "tv" && w_item_.type != "media-video" && w_item_.type != "torrent" && !iptv::library_type(w_item_.type) && watch_episode_input(in)) return;
 
     if (in.is_pressed(Action::confirm) || in.is_pressed(Action::touch))
     {

@@ -164,6 +164,8 @@ bool Session::init(const std::string &base_dir, const std::string &data_dir, hui
     NetStream::set_cache_dir(data_dir_);
 
     load_prefs();
+    bt::Engine::get().set_cache_bytes(int64_t(prefs_.torrent_cache_gb)<<30);
+    bt::Engine::get().set_enabled(prefs_.builtin_torrents);
     release_notes_version=nuvio_update::current_version;
     release_notes_open=should_show_release_notes(prefs_.seen_release,release_notes_version);
     if (!nuvio_account_init(base_dir_ + "/account-config.json", data_dir_))
@@ -221,6 +223,7 @@ void Session::shutdown()
     if (watching)
         watch_stop(false);
     player_.close();
+    torrent_reset();
     media_reset();
     media_reporter_.reset();
     bt::Engine::get().shutdown();
@@ -249,6 +252,8 @@ void Session::load_prefs()
         load_experience(j, prefs_);
         prefs_.server_url.clear();
         prefs_.builtin_torrents = jbool(j, "allow_torrents", false);
+        const double cache=jnum(j,"torrent_cache_gb",6);
+        prefs_.torrent_cache_gb=(cache==1||cache==2||cache==4||cache==6)?int(cache):6;
         prefs_.onboarding_done = jbool(j, "onboarding_done");
         prefs_.subtitle_langs = jstr(j, "subtitle_languages", prefs_.subtitle_langs);
         prefs_.auto_subtitles = jbool(j, "auto_subtitles", prefs_.auto_subtitles);
@@ -261,6 +266,7 @@ void Session::load_prefs()
         prefs_.display_output = display_output_preference_name(display_output_preference(jstr(j, "display_output")));
         prefs_.display_refresh = jnum(j, "display_refresh", 60) == 120 ? 120 : 60;
         prefs_.native_hdr = jbool(j, "native_hdr", true);
+        prefs_.auto_hdr_fallback = jbool(j,"auto_hdr_fallback",!j.contains("native_hdr"));
         prefs_.evo_player = jstr(j, "playback_engine") == "evo";
         prefs_.vlc_player = jstr(j, "playback_engine") == "vlc";
         const auto read_ahead = jnum(j, "read_ahead_seconds", 60);
@@ -276,6 +282,7 @@ void Session::save_prefs()
     save_experience(j, prefs_);
     j["onboarding_done"] = prefs_.onboarding_done;
     j["allow_torrents"] = prefs_.builtin_torrents;
+    j["torrent_cache_gb"] = prefs_.torrent_cache_gb;
     j["subtitle_languages"] = prefs_.subtitle_langs;
     j["auto_subtitles"] = prefs_.auto_subtitles;
     j["subtitle_size"] = prefs_.sub_size;
@@ -287,6 +294,7 @@ void Session::save_prefs()
     j["display_output"] = prefs_.display_output;
     j["display_refresh"] = prefs_.display_refresh;
     j["native_hdr"] = prefs_.native_hdr;
+    j["auto_hdr_fallback"] = prefs_.auto_hdr_fallback;
     j["playback_engine"] = prefs_.vlc_player ? "vlc" : prefs_.evo_player ? "evo" : "native";
     j["read_ahead_seconds"] = prefs_.read_ahead_seconds;
     save_profile_settings();
@@ -728,7 +736,7 @@ void Session::refresh_settings()
     const char* display_labels[] = {"Follow PS5", "1080p", "1440p", "4K"};
     set(kDisplay, Kind::value, "Display output", display_labels[display_output_preference(prefs_.display_output) + 1],
         "Follow the PS5's output resolution, or choose an override. Close and reopen Nuvio Max'd to apply a change.");
-    set(kHdr, Kind::value, "HDR playback", prefs_.native_hdr ? "Native HDR10 (experimental)" : "Convert HDR to SDR",
+    set(kHdr, Kind::value, "HDR playback", prefs_.native_hdr ? (prefs_.auto_hdr_fallback ? "Auto (HDR or SDR fallback)" : "Require native HDR10") : "Convert HDR to SDR",
         "Native HDR10 keeps PQ colour and highlights on a compatible TV. SDR conversion changes the colour range. Applies to the next stream.");
     set(kPlaybackEngine, Kind::value, "Playback engine", prefs_.vlc_player ? "VLC 3.0.24 (experimental)" : prefs_.evo_player ? "EVO Player 0.13.0 (experimental)" : "Nuvio native",
         "Choose the video engine. Applies to the next stream; subtitles and Watch Progress stay available.");
@@ -858,6 +866,14 @@ void Session::settings_activate(int row)
         break;
     case kTorrents:
         prefs_.builtin_torrents = !prefs_.builtin_torrents;
+        if(!prefs_.builtin_torrents){
+            if(watching && t_visible_ && starts_with(t_stats_url_,"torrent://"))watch_stop(false);
+            torrent_reset();
+        }
+        bt::Engine::get().set_enabled(prefs_.builtin_torrents);
+        torrents_visible=prefs_.builtin_torrents;
+        if(torrents_visible)torrent_load();
+        changed_|=kTorrentPage;
         save_prefs();
         cue(hui::audio::Cue::toggle);
         detail_refresh_streams();
@@ -896,10 +912,11 @@ void Session::settings_activate(int row)
         });
         break;
     case kHdr:
-        open_dropdown("HDR playback", {"Native HDR10 (experimental)", "Convert HDR to SDR"},
-                      prefs_.native_hdr ? 0 : 1, [this](int i) {
-            if (i != 0 && i != 1) return;
-            prefs_.native_hdr = i == 0;
+        open_dropdown("HDR playback", {"Auto (HDR or SDR fallback)", "Require native HDR10", "Convert HDR to SDR"},
+                      !prefs_.native_hdr ? 2 : prefs_.auto_hdr_fallback ? 0 : 1, [this](int i) {
+            if (i < 0 || i > 2) return;
+            prefs_.native_hdr = i != 2;
+            prefs_.auto_hdr_fallback = i == 0;
             save_prefs(); refresh_settings(); cue(hui::audio::Cue::saved);
         });
         break;
@@ -1274,7 +1291,7 @@ void Session::login_poll()
 
 void Session::sign_in_cancel()
 {
-    if(sign_in.link_only) {sign_in_open=false;return;}
+    if(sign_in.link_only) {if(torrent_drop_open_){bt::Engine::get().stop_web_drop();torrent_drop_open_=false;}sign_in_open=false;return;}
     ++login_gen_;
     nuvio_pairing_cancel();
     sign_in_open = false;
@@ -1342,6 +1359,7 @@ void Session::update(float dt, const Cursor &cursor)
     (void)dt;
     g_tasks.drain();
     provider_tasks_.drain();
+    torrent_poll_drop();
     update_status();
     if (signed_in() && !nuvio_account_saved())
     {

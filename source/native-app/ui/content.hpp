@@ -241,6 +241,7 @@ enum class Page
     livetv,
     iptv,
     servers,
+    torrents,
 };
 
 } // namespace sx

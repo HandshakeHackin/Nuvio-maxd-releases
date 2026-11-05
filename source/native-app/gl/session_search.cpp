@@ -71,6 +71,7 @@ void Session::start_search(const std::string &text)
     const std::string q = trim(text);
     if (q.empty())
         return;
+    if(prefs_.builtin_torrents && torrent_try_search_input(q))return;
     const int gen = ++search_gen_;
     search_query = q;
     search_open = true;

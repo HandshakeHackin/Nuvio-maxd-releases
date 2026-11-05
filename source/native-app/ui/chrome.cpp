@@ -17,7 +17,7 @@ using hui::ui::text;
 namespace
 {
 
-constexpr const char *kPageNames[8] = {"Board", "Discover", "Library", "Addons", "Settings", "Live TV", "IPTV Library", "Media Servers"};
+constexpr const char *kPageNames[9] = {"Board", "Discover", "Library", "Addons", "Settings", "Live TV", "IPTV Library", "Media Servers", "Torrents"};
 constexpr float kItemW = 100.0f;
 constexpr float kItemH = 108.0f;
 constexpr float kItemGap = 12.0f;
@@ -31,9 +31,10 @@ Rail::Rail()
 
 Rect Rail::item_rect(int index) const
 {
-    const float count=6.0f+float(iptv_visible_)+float(servers_visible_);
-    const float height=count==8?94.0f:kItemH;
-    if(index==7&&!iptv_visible_)index=6;
+    const float count=6.0f+float(iptv_visible_)+float(servers_visible_)+float(torrents_visible_);
+    const float height=count>=8? (count==9?82.0f:94.0f):kItemH;
+    if(index>=8&&!servers_visible_)--index;
+    if(index>=6&&!iptv_visible_)--index;
     const float total = count * height + (count-1) * kItemGap;
     const float top = (theme::kScreenH - total) * 0.5f;
     return {(theme::kRailWidth - kItemW) * 0.5f, top + static_cast<float>(index) * (height + kItemGap),
@@ -56,9 +57,10 @@ void Rail::focus(bool on)
 
 void Rail::move(int delta)
 {
-    int next=cursor_+delta;
-    if(next==6&&!iptv_visible_)next+=delta>0?1:-1;
-    cursor_=std::clamp(next,0,servers_visible_?7:iptv_visible_?6:5);
+    int next=cursor_;
+    do { next+=delta>0?1:-1; }
+    while(next>=0 && next<9 && ((next==6&&!iptv_visible_)||(next==7&&!servers_visible_)||(next==8&&!torrents_visible_)));
+    if(next>=0 && next<9)cursor_=next;
 }
 
 void Rail::reset(Page page)
@@ -75,8 +77,11 @@ void Rail::set_iptv_visible(bool visible) {
     if(!iptv_visible_&&cursor_==6)cursor_=0;
     if(!iptv_visible_&&page_==6)page_=0;
 }
-void Rail::update(float dt, bool iptv_visible, bool servers_visible)
+void Rail::update(float dt, bool iptv_visible, bool servers_visible, bool torrents_visible)
 {
+    torrents_visible_=torrents_visible;
+    if(!torrents_visible_ && cursor_==8)cursor_=0;
+    if(!torrents_visible_ && page_==8)page_=0;
     servers_visible_=servers_visible;
     if(!servers_visible_&&cursor_==7)cursor_=0;
     if(!servers_visible_&&page_==7)page_=0;
@@ -98,11 +103,11 @@ void Rail::draw(hui::gfx::DrawList &list, const Env &env, float age) const
         list.bordered_rect(p, 26, theme::accent, 3.0f, Color::rgb(0xffffff));
         list.pop_opacity();
     }
-    for (int i = 0; i < 8; ++i)
+    for (int i = 0; i < 9; ++i)
     {
-        if((i==6&&!iptv_visible_)||(i==7&&!servers_visible_))continue;
+        if((i==6&&!iptv_visible_)||(i==7&&!servers_visible_)||(i==8&&!torrents_visible_))continue;
         const Rect r = item_rect(i);
-        const bool compact=iptv_visible_&&servers_visible_;
+        const bool compact=int(iptv_visible_)+int(servers_visible_)+int(torrents_visible_)>=2;
         const bool active = i == page_;
         const bool under_cursor = focused_ && i == cursor_;
         // Items arrive one after the other when a page opens.
@@ -123,8 +128,8 @@ void Rail::draw(hui::gfx::DrawList &list, const Env &env, float age) const
             list.image(icon, {r.cx() - size/2, r.y + (compact?8.0f:14.0f) + 6.0f * (1.0f - in), size, size}, kFullUv, tint);
         }
         if(i>=6){
-            text(list,env.fonts.regular,(i==6?"IPTV":"Media"),r.cx(),r.y+r.h-27,theme::kLabel,tint,Align::center);
-            text(list,env.fonts.regular,(i==6?"Library":"Servers"),r.cx(),r.y+r.h-7,theme::kLabel,tint,Align::center);
+            text(list,env.fonts.regular,(i==6?"IPTV":i==7?"Media":"Torrent"),r.cx(),r.y+r.h-27,theme::kLabel,tint,Align::center);
+            text(list,env.fonts.regular,(i==6?"Library":i==7?"Servers":"Streams"),r.cx(),r.y+r.h-7,theme::kLabel,tint,Align::center);
         } else text(list, env.fonts.regular, kPageNames[i], r.cx(), r.y + r.h-18.0f, theme::kLabel, tint, Align::center);
         list.pop_opacity();
     }

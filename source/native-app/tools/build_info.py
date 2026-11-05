@@ -33,7 +33,7 @@ display_profile = validate_display_metadata(json.loads(
     (Path(sys.argv[1]).parent / 'sce_sys/param.json').read_text()))
 info = {
     'name': "Nuvio Max'd",
-    'version': '1.0.0.8-native',
+    'version': '1.0.0.9-native',
     'releaseChannel': 'experimental',
     'titleId': sys.argv[2],
     'providerPlugins': {'engine': 'QuickJS 2026-06-04', 'repositories': True, 'perProviderOptIn': True, 'consoleSocketMode': 'direct SO_NBIO via wrapped pinned curlx_nonblock; retains public-address checks', 'hardwareVerified': False},
@@ -59,7 +59,7 @@ info = {
     'experimentalAv': {'driverOwnedHdrSwitch': True, 'pcmDefault': True, 'audioModes': ['pcm','auto','bitstream'], 'bitstreamCodecs': ['AC3','EAC3','DTS core'], 'trueHdDtsHd': 'decoded PCM; S16 output preferred for compatibility', 'autoHonorsStereo': True, 'hardwareVerified': False, 'driverPatchSha256': hashlib.sha256((root/'gl/scanout_driver_extension.inc').read_bytes()).hexdigest(), 'driverObjectSha256': hashlib.sha256(Path(sys.argv[3]).read_bytes()).hexdigest()},
     'consoleLightSync': {'default': True, 'setting': 'Appearance & Lighting', 'channels': ['blue','white','amber'], 'approximateLogoColours': True, 'backgroundWorker': True, 'maxUpdatesPerSecond': 5, 'restoreOnDisableAndExit': True, 'respectSystemOwnership': True, 'hardwareVerified': False},
     'settingsCategories': True,
-    'localTestBuild': {'revision': '1.0.0.8', 'multiviewExperimental': True, 'hardwareVerified': False},
+    'localTestBuild': {'revision': '1.0.0.9', 'multiviewExperimental': True, 'hardwareVerified': False},
     'playbackBadges': {'sourceResolution': True, 'sourceHdr': True, 'selectedAudioChannels': True, 'releaseType': True, 'codecs': True, 'decodedFactsOverrideFilename': True, 'hardwareVerified': False},
     'settingsSearch': {'allCategories': True, 'caseInsensitive': True, 'hardwareVerified': False},
     'liveTv': {'sources': ['M3U', 'Xtream Codes'], 'groups': True, 'search': True, 'favorites': True, 'profileLocal': True, 'nowNextGuide': True, 'xmltv': True, 'xtreamShortEpg': True, 'profileLocalGuideToggle': True, 'guideDocumentMaxBytes': 33554432, 'recording': False, 'catchup': False, 'hardwareVerified': False},
@@ -118,13 +118,14 @@ info = {
     'playbackEngines': {'default': 'native', 'optional': ['EVO Player 0.13.0', 'VLC 3.0.24'], 'scope': 'integrated optional playback engines', 'hardwareVerified': False},
     'presentationSafety': {'lowRatePacing': 'PTS deadlines at accepted 120 Hz; GPU completion before scheduled swap', 'refreshLattice': '119.88 Hz calibration from ProsperoTube; console validation pending', 'reset': ['pause', 'buffering', 'seek', 'output mode change'], 'textureLifetime': 'GPU fences before overwrite and teardown', 'hardwareVerified': False},
     'videoConversion': 'Native-resolution YUV to RGB10_A2; compatible PQ/BT.2020 sources use experimental 10-bit HDR10 output',
+    'torrentHub': {'optIn': True, 'magnetAndTorrentFiles': True, 'filePicker': True, 'profileLocalHistory': True, 'cacheGiB': [1, 2, 4, 6], 'numericDhtBootstrap': True, 'trackerWorkers': 2, 'pairedTemporaryWebDrop': True, 'consoleConfirmation': True, 'upstreamCommit': '8e34590582ad89c0f12182289f83c2526bd47c4a', 'hardwareVerified': False},
     'nativeHdr': {
         'default': True,
         'format': 'Bgr10A2Bt2100Pq; Rgb10A2Bt2100Pq only after invalid-format rejection',
         'switching': 'in-place SubmitChangeBufferAttribute2 only; no unregister fallback',
         'packingMatchesAcceptedFormat': True,
         'confirmation': 'VideoOut output status after a successful flip',
-        'sdrConversion': 'Explicit HDR playback setting',
+        'sdrConversion': 'Auto fallback after successful SDR restore, or explicit SDR setting; legacy choices retained',
         'sourceMasteringMetadataForwarded': False,
         'dynamicMetadataSupported': False,
         'hardwareVerified': False,

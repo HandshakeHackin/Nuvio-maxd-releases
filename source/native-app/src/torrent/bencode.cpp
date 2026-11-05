@@ -5,6 +5,7 @@ namespace {
 const int kMaxDepth = 64;
 
 struct Parser {
+	const char* begin;
 	const char* p;
 	const char* end;
 
@@ -34,13 +35,14 @@ struct Parser {
 
 	bool value(BValue& v, int depth) {
 		if (depth > kMaxDepth || p >= end) return false;
+		const char* start = p;
 		char c = *p;
+		bool ok = false;
 		if (c == 'i') {
 			p++;
 			v.type = BValue::Int;
-			return number(v.i, 'e');
-		}
-		if (c == 'l') {
+			ok = number(v.i, 'e');
+		} else if (c == 'l') {
 			p++;
 			v.type = BValue::List;
 			while (p < end && *p != 'e') {
@@ -49,9 +51,8 @@ struct Parser {
 			}
 			if (p >= end) return false;
 			p++;
-			return true;
-		}
-		if (c == 'd') {
+			ok = true;
+		} else if (c == 'd') {
 			p++;
 			v.type = BValue::Dict;
 			while (p < end && *p != 'e') {
@@ -61,13 +62,16 @@ struct Parser {
 			}
 			if (p >= end) return false;
 			p++;
-			return true;
-		}
-		if (c >= '0' && c <= '9') {
+			ok = true;
+		} else if (c >= '0' && c <= '9') {
 			v.type = BValue::Str;
-			return string(v.s);
+			ok = string(v.s);
 		}
-		return false;
+		if (ok) {
+			v.raw_offset = size_t(start - begin);
+			v.raw_size = size_t(p - start);
+		}
+		return ok;
 	}
 };
 
@@ -122,7 +126,7 @@ std::string BValue::get_str(const std::string& key) const {
 }
 
 bool bdecode(const char* data, size_t n, BValue& out, size_t* used) {
-	Parser ps{data, data + n};
+	Parser ps{data, data, data + n};
 	out = BValue();
 	if (!ps.value(out, 0)) return false;
 	if (used) *used = size_t(ps.p - data);

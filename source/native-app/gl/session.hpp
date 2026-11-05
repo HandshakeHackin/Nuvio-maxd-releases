@@ -29,6 +29,7 @@
 #include "live_guide.h"
 #include "series_updates.hpp"
 #include "iptv_library.h"
+#include "torrent/engine.h"
 #include "media_server.h"
 #include "plex.h"
 #include <mutex>
@@ -62,6 +63,7 @@ class Session
         int library = 0;
         int iptv = 0;
         int media = 0;
+        int torrents = 0;
         int live = 0;
         int episode = 0;
         int search_row = 0, search_col = 0;
@@ -82,7 +84,7 @@ class Session
         kLive = 2048,
         kIptv = 4096,
         kIptvNew = 8192,
-        kMedia = 16384, kMediaNew = 32768,
+        kMedia = 16384, kMediaNew = 32768, kTorrentPage = 65536,
         kDetail = 32,
         kDiscoverNew = 64,
         kLibraryNew = 128,
@@ -99,6 +101,8 @@ class Session
     }
     void set_display_configuration(unsigned width, unsigned height, bool fallback);
     void fail_video_output(const std::string& error);
+    bool allow_hdr_fallback() const { return prefs_.native_hdr && prefs_.auto_hdr_fallback && !hdr_fallback_session_; }
+    void fallback_to_sdr();
     void poll_presentation_timing();
     void arm_presentation_timing();
     void mark_video_submitted() { if(video_texture) video_surface_.submitted();
@@ -184,6 +188,16 @@ class Session
     void live_search();
     void live_cycle();
     void live_activate(int index, bool favorite = false);
+    AddonsContent torrents_content;
+    bool torrents_visible = false;
+    void torrent_menu();
+    void torrent_rescan();
+    void torrent_search();
+    void torrent_cycle();
+    void torrent_activate(int index, bool secondary = false);
+    void torrent_open_input(const std::string &input, bool force_file_picker = false);
+    bool torrent_try_search_input(const std::string &query);
+    void torrent_show_web_drop_qr();
     SettingsContent settings;
     DetailContent detail;
     BoardContent search; // the results of a search, rows like the Board's
@@ -444,6 +458,40 @@ class Session
     unsigned live_generation_ = 0;
     int live_view_ = 0;
     bool live_loading_ = false;
+    void torrent_reset();
+    void torrent_load();
+    void torrent_save();
+    void torrent_build();
+    void torrent_progress(bool finished = false);
+    double torrent_resume(const std::string &id) const;
+    void torrent_play_hash(const std::string &info_hash, const std::string &name,
+                           const std::vector<std::string> &trackers,
+                           const std::vector<std::string> &webseeds, int file_idx);
+    void torrent_present_files(const std::string &info_hash, const std::string &name,
+                               const std::vector<bt::FileInfo> &files,
+                               const std::vector<std::string> &trackers,
+                               const std::vector<std::string> &webseeds,
+                               int preferred_idx, bool force_picker);
+    json torrent_state_ = json::object();
+    std::vector<bt::LocalTorrentFile> torrent_local_files_;
+    struct TorrentEntry
+    {
+        bool is_local_file = false;
+        std::string id;
+        std::string name;
+        std::string path_or_uri;
+        std::string subtitle;
+        std::vector<std::string> trackers;
+        std::vector<std::string> webseeds;
+    };
+    std::vector<TorrentEntry> torrent_entries_;
+    std::string torrent_query_;
+    int torrent_view_ = 0;
+    std::shared_ptr<std::atomic<bool>> torrent_cancel_;
+    void torrent_set_cache(int gb);
+    void torrent_poll_drop();
+    bool torrent_drop_open_ = false;
+    bool hdr_fallback_session_ = false;
     void open_dropdown(const std::string &title, const std::vector<std::string> &options, int active,
                        std::function<void(int)> chosen);
     void login_start();
@@ -523,7 +571,8 @@ class Session
     void watch_prefetch_next();
     bool watch_episode_update(double now, double position, double duration, bool advancing, bool ended = false);
     bool watch_episode_input(const hui::InputFrame &input);
-    void upload_video();
+    void upload_video(bool reuse_picture = false);
+    Player::Picture last_video_picture_{};
     void torrent_stats_start(const std::string &url, const std::string &info_hash);
     void torrent_stats_poll();
     std::vector<std::string> pref_langs(const std::string &list) const;

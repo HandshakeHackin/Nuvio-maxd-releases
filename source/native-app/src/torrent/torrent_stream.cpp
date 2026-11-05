@@ -35,14 +35,15 @@ std::string TorrentStream::make_url(const std::string& hash, int idx) {
 
 int TorrentStream::read(uint8_t* buf, int n) {
 	if (!t_) return AVERROR(EIO);
-	int k = bt::Engine::get().read(t_, reader_, file_, pos_, buf, n, abort_);
+	int k = bt::Engine::get().read(t_, reader_, file_, pos_, buf, n, abort_, read_interrupt_);
 	if (k > 0) {
 		pos_ += k;
 		return k;
 	}
 	if (k == 0) return AVERROR_EOF;
 	if (k == -2) failure_ = "the torrent was stopped";
-	return k == -1 && abort_ && abort_->load() ? AVERROR_EXIT : AVERROR(EIO);
+	const bool interrupted = (abort_ && abort_->load()) || (read_interrupt_ && read_interrupt_->load());
+	return k == -1 && interrupted ? AVERROR_EXIT : AVERROR(EIO);
 }
 
 int64_t TorrentStream::seek(int64_t offset, int whence) {
@@ -55,6 +56,7 @@ int64_t TorrentStream::seek(int64_t offset, int whence) {
 	else return AVERROR(EINVAL);
 	if (target < 0) return AVERROR(EINVAL);
 	pos_ = target;
+	if (t_) bt::Engine::get().seek_reader(t_, reader_, file_, pos_);
 	return target;
 }
 
@@ -64,7 +66,7 @@ std::string TorrentStream::peek(size_t n) {
 	size_t got = 0;
 	while (got < n) {
 		int k = bt::Engine::get().read(t_, reader_, file_, pos_ + int64_t(got),
-		                               reinterpret_cast<uint8_t*>(&out[got]), int(n - got), abort_);
+		                               reinterpret_cast<uint8_t*>(&out[got]), int(n - got), abort_, read_interrupt_);
 		if (k <= 0) break;
 		got += size_t(k);
 	}

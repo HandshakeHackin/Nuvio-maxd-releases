@@ -15,6 +15,8 @@ struct BValue {
 	std::string s;
 	std::vector<BValue> l;
 	std::map<std::string, BValue> d;
+	size_t raw_offset = 0;  // byte offset of this value in the source buffer
+	size_t raw_size = 0;    // byte length of this value in the source buffer
 
 	BValue() = default;
 	explicit BValue(int64_t v) : type(Int), i(v) {}

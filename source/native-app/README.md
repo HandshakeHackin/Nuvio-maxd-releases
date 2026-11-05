@@ -174,7 +174,7 @@ resolution selection.
 Presentation errors stop playback with a message. Videos above 4096 pixels per
 side are rejected.
 
-Settings → HDR playback defaults to **Native HDR10 (experimental)**. Compatible
+Fresh settings default to **Auto (HDR or SDR fallback)**. Existing saved HDR choices remain unchanged. **Require native HDR10** retains strict output failure behavior; **Convert HDR to SDR** always tone-maps. Compatible
 PQ/BT.2020 YUV pictures bypass SDR tone mapping. The final shader packs exact
 RGB10A2 pixel words into the existing BGRA8 EGL attachment, and VideoOut reads
 those words as 10-bit BT.2100 PQ. Blending, dithering and sRGB conversion are
@@ -184,8 +184,7 @@ its buffer registration or context ownership.
 Controls use a separate premultiplied sRGB overlay, converted to BT.2020 and
 composed in linear light at 100-nit white. Mode changes drain GPU work and the
 flip queue before changing the registered buffer attributes in place. Refused
-HDR or missing post-flip HDR confirmation stops playback with a message. SDR
-conversion requires the explicit **Convert HDR to SDR** setting. If returning
+HDR or missing post-flip HDR confirmation triggers tone mapping in Auto mode only after SDR output restoration succeeds. The fallback lasts for that playback session and does not rewrite the saved HDR preference. Require native HDR10 stops playback on failure. If returning
 to SDR is refused, the app keeps packing HDR pixels while it retries, so menu
 pixels aren't interpreted in the wrong format.
 
@@ -387,3 +386,14 @@ links. It stays hidden for live-only services, retains cached browsing during
 outages, and keeps provider playback/resume separate from addon catalogs and
 Nuvio/tracker history. See [IPTV Library](IPTV_LIBRARY.md) for controls, limits
 and validation. This is staged source, not a replacement 1.0.0.1 installer.
+
+
+## Optional torrent hub (1.0.0.9 experimental)
+
+Enable **Settings > Addons > Peer-to-peer torrents** to reveal Torrents in the sidebar. The hub accepts magnets, info hashes, local USB/app .torrent files and direct HTTP(S) .torrent URLs. Choose a video from multi-file torrents, search local files, and resume recent streams independently for each profile. It uses the native player even when EVO/VLC is selected. Disabling torrents stops its network engine and removes the hub.
+
+The rolling disk cache offers 1, 2, 4 or 6 GiB (default 6); stop playback before resizing it. Download scheduling prioritizes blocked reads and the playback position, retains container headers/tails, and performs bounded sequential readahead. DHT bootstraps with numerical IP routes without waiting for DNS. Two tracker workers run concurrently. Discovery speed still depends on reachable peers, trackers and network access.
+
+**Phone / PC Web Drop** starts only when its QR screen is opened. Scan that QR on the same trusted Wi-Fi network; the URL includes a random pairing token. The listener uses port 8088, lasts ten minutes, and stops on QR closure, profile change, disabling torrents or app shutdown. It accepts a magnet or up to 4 MiB of torrent metadata, rejects cross-origin submissions, and holds one pending item. Confirm **Open torrent** on the console before anything starts or uploaded data is saved. The local HTTP link is not encrypted; use it on a trusted LAN and keep the QR private. No router mapping is requested for this listener.
+
+The integration adapts [chewlord76/nuvio-torrent-edition](https://github.com/chewlord76/nuvio-torrent-edition) at commit `8e34590582ad89c0f12182289f83c2526bd47c4a` under the repository's GPL license. Its torrent engine/parser/stream changes and hub were reviewed and adapted into the existing app; the current Plex/Jellyfin/Emby integration, authenticated artwork, verified connection persistence and playback improvements are retained. Hardware testing is required before treating this experimental build as console-verified.

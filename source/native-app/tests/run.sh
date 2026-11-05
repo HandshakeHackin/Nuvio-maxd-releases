@@ -29,6 +29,8 @@ bash "$ROOT/tests/live_guide_session.sh"
 bash "$ROOT/tests/series_updates.sh"
 bash "$ROOT/tests/iptv_library.sh"
 bash "$ROOT/tests/iptv_session.sh"
+bash "$ROOT/tests/media_session.sh"
+bash "$ROOT/tests/torrent_streaming.sh"
 ${HOST_CXX:-g++} -std=c++20 -O1 -g -Wall -Wextra -Werror -pthread \
     -I"$ROOT/src" -I"$ROOT/third_party" "$ROOT/tests/account_host.cpp" \
     "$ROOT/src/nuvio_account.cpp" "$ROOT/src/watch_sync.cpp" "$ROOT/src/tracking.cpp" "$ROOT/src/stremio.cpp" "$ROOT/src/http.cpp" "$ROOT/src/util.cpp" \
@@ -54,6 +56,7 @@ bash "$ROOT/tests/display.sh"
 bash "$ROOT/tests/display_refresh.sh"
 bash "$ROOT/tests/presentation_timing.sh"
 bash "$ROOT/tests/hdr.sh"
+bash "$ROOT/tests/hdr_fallback.sh"
 bash "$ROOT/tests/video_safety.sh"
 bash "$ROOT/tests/experimental_av.sh"
 bash "$ROOT/tests/playback_quality.sh"

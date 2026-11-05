@@ -125,6 +125,18 @@ void media_server_visibility_changes() {
     move(page,hui::Direction::up);expect(page.filter_cursor()>=0,"media server filters unavailable");
 }
 
+void torrent_visibility_combinations() {
+    for(int mask=0;mask<8;++mask){
+        Fixture f;bool iptv=mask&1,media=mask&2,torrents=mask&4;
+        f.env.iptv_visible=&iptv;f.env.media_servers_visible=&media;f.env.torrents_visible=&torrents;
+        sx::Board b(f.env);sx::BoardContent empty;b.set_content(&empty);b.enter();move(b,hui::Direction::left);
+        for(int i=0;i<5;++i)move(b,hui::Direction::down);
+        for(int page=6;page<=8;++page)if(mask&(1<<(page-6))){move(b,hui::Direction::down);expect(b.rail_cursor()==page,"optional tab skipped");}
+        for(int page=8;page>=6;--page)if(mask&(1<<(page-6))){expect(b.rail_cursor()==page,"reverse optional navigation failed");move(b,hui::Direction::up);}
+        expect(b.rail_cursor()==5,"hidden optional tab took focus");
+    }
+}
+
 void library_search_controls() {
     Fixture f; sx::Library page(f.env);sx::LibraryContent content;
     content.filters={{"Show","All types"},{"Sort","A-Z"},{"Search","dark"},{"Clear","Search"}};
@@ -145,6 +157,7 @@ void library_search_controls() {
 int main() {
     const struct { const char* name; void (*run)(); } tests[] = {
         {"library_search_controls",library_search_controls},
+        {"torrent_visibility_combinations",torrent_visibility_combinations},
         {"iptv_visibility_changes",iptv_visibility_changes},
         {"live_tv_rail_and_channel_arrival",live_tv_rail_and_channel_arrival},
         {"media_server_visibility_changes",media_server_visibility_changes},

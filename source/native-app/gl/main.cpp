@@ -20,6 +20,7 @@
 #include "overlays.hpp"
 #include "page.hpp"
 #include "session.hpp"
+#include "hdr_fallback.hpp"
 #include "diagnostics.h"
 #include "../update/core.hpp"
 #include "shell.hpp"
@@ -209,6 +210,7 @@ int main()
     static sx::Env env{fonts, icons};
     env.iptv_visible=&session.iptv_visible;
     env.media_servers_visible=&session.media_visible;
+    env.torrents_visible=&session.torrents_visible;
     static sx::Shell shell(env, session);
     shell.start_sound(root + "/sounds"); // the interface's sounds
     shell.start_boot_at(boot_seconds()); // the animation goes on from where the frames above left it
@@ -280,7 +282,10 @@ int main()
 
         bool wants_hdr = session.watching && !session.launch_open && session.video_hdr && session.video_texture;
         if (wants_hdr && sx::HdrOutput::failed()) {
-            session.fail_video_output(sx::HdrOutput::error());
+            if(!sx::try_hdr_fallback(session.allow_hdr_fallback(),
+                [&]{glFinish();return sx::HdrOutput::set(false,display.width(),display.height());},
+                [&]{session.fallback_to_sdr();}))
+                session.fail_video_output(sx::HdrOutput::error());
             wants_hdr = false;
         }
         if (wants_hdr != sx::HdrOutput::active() && (wants_hdr || now >= restore_retry_at)) {
@@ -289,10 +294,12 @@ int main()
             sx::presentation::reset(); // a mode change invalidates the refresh phase
             glFinish(); // drain GPU writes before VideoOut retypes the registered set
             if (!ready || !sx::HdrOutput::set(wants_hdr,display.width(),display.height())) {
-                if (wants_hdr)
-                    session.fail_video_output(error.empty()
-                        ? sx::HdrOutput::error()
-                        : error);
+                if (wants_hdr) {
+                    if(!sx::try_hdr_fallback(session.allow_hdr_fallback(),
+                        [&]{return sx::HdrOutput::set(false,display.width(),display.height());},
+                        [&]{session.fallback_to_sdr();}))
+                        session.fail_video_output(error.empty()?sx::HdrOutput::error():error);
+                }
                 else {
                     sys::log("[HDR] SDR restore refused rc=%08x; keep packing HDR pixels and retry",sx::HdrOutput::result());
                     restore_retry_at = now + 1000000;

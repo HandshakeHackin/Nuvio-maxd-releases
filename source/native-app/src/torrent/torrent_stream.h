@@ -25,6 +25,9 @@ public:
 	static AVIOContext* open_avio(const std::string& url, const std::atomic<bool>* abort, std::string* error);
 	static bool is_ours(AVIOContext* pb);
 	static TorrentStream* of(AVIOContext* pb);
+	static void set_read_interrupt(AVIOContext* pb, const std::atomic<bool>* interrupt) {
+		if (auto* ts = of(pb)) ts->read_interrupt_ = interrupt;
+	}
 	static void close_avio(AVIOContext** pb);
 
 	// The first bytes of the file, without moving (waits for them).
@@ -41,5 +44,6 @@ private:
 	int reader_ = 0, file_ = 0;
 	int64_t size_ = 0, pos_ = 0;
 	const std::atomic<bool>* abort_ = nullptr;
+	const std::atomic<bool>* read_interrupt_ = nullptr;
 	std::string failure_;
 };

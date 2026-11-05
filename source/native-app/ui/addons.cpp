@@ -166,8 +166,9 @@ void Addons::draw(hui::gfx::DrawList &list, hui::gfx::BackdropSpec &backdrop) co
         return;
     const float in = tween::stagger(age_, 0, 0.0f, 0.45f);
     list.push_opacity(in);
-    char count[48];
+    char count[96];
     if(page_ == Page::livetv)std::snprintf(count,sizeof(count),"Live TV · %zu channels shown",content_->items.empty()?0:content_->items.size()-1);
+    else if(page_ == Page::torrents)std::snprintf(count,sizeof(count),"Torrents · %zu items",content_->items.size());
     else std::snprintf(count, sizeof(count), "%zu addons installed", content_->items.size());
     text(list, env_.fonts.semibold, count, theme::kLeft, 158.0f, theme::kSubtitle, theme::ink_2);
     list.pop_opacity();
@@ -201,6 +202,7 @@ void Addons::draw(hui::gfx::DrawList &list, hui::gfx::BackdropSpec &backdrop) co
     draw_topbar(list, env_, false, age_);
     // The only action here, where it can be seen.
     if(page_ == Page::livetv)draw_chip(list,env_,hui::ui::Button::square,"Favorite",theme::kRight-252.0f,148.0f);
+    else if(page_ == Page::torrents)draw_chip(list,env_,hui::ui::Button::square,"Files / Options",theme::kRight-268.0f,148.0f);
     else draw_chip(list, env_, hui::ui::Button::square, "Reload addons", theme::kRight - 252.0f, 148.0f);
     rail_.draw(list, env_, age_);
 }

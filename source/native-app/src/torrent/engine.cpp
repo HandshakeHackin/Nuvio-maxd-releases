@@ -1,4 +1,6 @@
 #include "engine.h"
+#include <sstream>
+#include <system_error>
 
 #include <arpa/inet.h>
 #include <errno.h>
@@ -8,7 +10,9 @@
 #include <netinet/tcp.h>
 #include <poll.h>
 #include <stdio.h>
+#include <dirent.h>
 #include <sys/socket.h>
+#include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
 
@@ -65,8 +69,8 @@ const double kChokedTimeout = 60;    // a peer that keeps us choked this long ma
 const uint32_t kMaxMessage = 2u << 20;
 // How far ahead of the player to download: half the 6 GB cache, about a
 // quarter of an hour of a 4K remux, to ride out slow patches in the swarm.
-const int64_t kMaxReadahead = 3ll << 30;
-const int64_t kMaxActiveBytes = 128ll << 20;  // pieces being assembled in memory
+const int64_t kMaxReadahead = 4ll << 30;
+const int64_t kMaxActiveBytes = 256ll << 20;  // pieces being assembled in memory
 const int64_t kMaxRamCache = 384ll << 20;     // when the cache file can't be used
 const double kPauseAfter = 45;       // no reader for this long: stop downloading
 const int kTrackerThreads = 2;
@@ -74,22 +78,33 @@ const int kExtMetadata = 1, kExtPex = 2;  // our extension message ids (BEP 10)
 
 const char* kDefaultTrackers[] = {
     "udp://tracker.opentrackr.org:1337/announce",
+    "udp://open.demonii.com:1337/announce",
     "udp://open.stealth.si:80/announce",
     "udp://tracker.torrent.eu.org:451/announce",
-    "udp://exodus.desync.com:6969/announce",
-    "udp://open.demonii.com:1337/announce",
     "udp://explodie.org:6969/announce",
     "udp://tracker.openbittorrent.com:6969/announce",
+    "udp://exodus.desync.com:6969/announce",
     "udp://tracker.dler.org:6969/announce",
+    "udp://tracker.moeking.me:6969/announce",
+    "udp://movies.zsw.ca:6969/announce",
+    "udp://opentracker.i2p.rocks:6969/announce",
+    "udp://tracker.bitsearch.to:1337/announce",
     "udp://p4p.arenabg.com:1337/announce",
     "http://tracker.opentrackr.org:1337/announce",
+    "http://tracker.openbittorrent.com:80/announce",
 };
 
 const char* kDhtBootstrap[][2] = {
     {"router.bittorrent.com", "6881"},
+    {"67.215.246.10", "6881"},
     {"dht.transmissionbt.com", "6881"},
+    {"87.98.162.88", "6881"},
     {"router.utorrent.com", "6881"},
+    {"82.221.103.244", "6881"},
     {"dht.libtorrent.org", "25401"},
+    {"185.157.221.247", "25401"},
+    {"dht.aelitis.com", "6881"},
+    {"212.129.33.59", "6881"},
 };
 
 // ---------------------------------------------------------------------------
@@ -116,6 +131,68 @@ bool hex_to_bytes(const std::string& hex, uint8_t out[20]) {
 		out[i] = uint8_t(v);
 	}
 	return true;
+}
+
+std::string bytes_to_hex(const uint8_t* p, size_t n) {
+	static const char* d = "0123456789abcdef";
+	std::string out;
+	out.reserve(n * 2);
+	for (size_t i = 0; i < n; i++) {
+		out += d[p[i] >> 4];
+		out += d[p[i] & 0x0f];
+	}
+	return out;
+}
+
+std::string pct_decode(const std::string& in) {
+	std::string out;
+	out.reserve(in.size());
+	for (size_t i = 0; i < in.size(); i++) {
+		if (in[i] == '%' && i + 2 < in.size() && isxdigit(uint8_t(in[i + 1])) && isxdigit(uint8_t(in[i + 2]))) {
+			unsigned v = 0;
+			sscanf(in.substr(i + 1, 2).c_str(), "%2x", &v);
+			out += char(v);
+			i += 2;
+		} else if (in[i] == '+') {
+			out += ' ';
+		} else {
+			out += in[i];
+		}
+	}
+	return out;
+}
+
+bool parse_btih_to_hex(const std::string& raw, std::string& hex_out) {
+	std::string v = trim(raw);
+	if (v.size() == 40) {
+		for (char c : v)
+			if (!isxdigit(uint8_t(c))) return false;
+		hex_out = lower(v);
+		return true;
+	}
+	if (v.size() == 32) {
+		uint64_t acc = 0;
+		int bits = 0, n = 0;
+		uint8_t ih[20] = {};
+		for (char c : v) {
+			int x = (c >= 'A' && c <= 'Z') ? (c - 'A')
+			      : (c >= 'a' && c <= 'z') ? (c - 'a')
+			      : (c >= '2' && c <= '7') ? (c - '2' + 26)
+			                               : -1;
+			if (x < 0) return false;
+			acc = (acc << 5) | uint64_t(x);
+			bits += 5;
+			if (bits >= 8 && n < 20) {
+				ih[n++] = uint8_t(acc >> (bits - 8));
+				bits -= 8;
+			}
+		}
+		if (n == 20) {
+			hex_out = bytes_to_hex(ih, 20);
+			return true;
+		}
+	}
+	return false;
 }
 
 std::string pct_encode(const std::string& raw) {
@@ -258,6 +335,9 @@ struct Torrent {
 
 	std::mutex trk_m;  // trackers and tracker_peers (tracker threads)
 	std::vector<std::string> trackers;
+	std::vector<std::string> webseeds;
+	std::set<int> webseed_claiming;
+	bool single_file_mode = false;
 	std::vector<sockaddr_in> tracker_peers;
 	std::atomic<bool> want_peers{true};
 	std::atomic<bool> idle{false};
@@ -354,6 +434,18 @@ struct Impl {
 	std::string upnp_control, upnp_service;  // to remove the mapping at exit
 	std::atomic<int> mapped_port{0};
 	std::atomic<bool> map_started{false};
+
+	// Companion Phone/PC Web Drop server
+	std::atomic<bool> enabled{false};
+	std::mutex web_m;
+	std::thread web_thread;
+	std::atomic<bool> web_running{false};
+	std::atomic<bool> web_quit{false};
+	int web_fd = -1;
+	int web_port = 0;
+	std::string web_url, web_token, web_host;
+	double web_expires = 0;
+	std::deque<WebDropSubmission> web_submissions;
 };
 
 Impl& impl() {
@@ -451,16 +543,18 @@ void drop_peer(Torrent* t, Peer* p, const char* why) {
 // Download order
 
 int64_t readahead_bytes(Torrent* t) {
-	int64_t cache = int64_t(t->nslots) * t->plen;
-	return std::max<int64_t>(std::min<int64_t>(cache / 2, kMaxReadahead), 4 * t->plen);
+	int64_t budget = t->cache ? impl().cache_bytes : (int64_t(t->nslots) * t->plen);
+	int64_t limit = std::min<int64_t>(budget > (128ll << 20) ? budget - (64ll << 20) : budget, kMaxReadahead);
+	return std::max<int64_t>(limit, 8 * t->plen);
 }
 
 void refresh_wanted(Torrent* t) {
 	t->wanted_dirty = false;
 	t->wanted.clear();
-	if (!t->has_meta || t->file < 0) return;
+	if (!t->has_meta || t->file < 0 || size_t(t->file) >= t->files.size()) return;
 	const FileInfo& f = t->files[size_t(t->file)];
 	if (f.size <= 0) return;
+	int first_file = int(f.offset / t->plen);
 	int last = int((f.offset + f.size - 1) / t->plen);
 	std::vector<int64_t> starts;
 	for (auto& r : t->readers) starts.push_back(r.second);
@@ -468,12 +562,36 @@ void refresh_wanted(Torrent* t) {
 	std::sort(starts.begin(), starts.end());
 	int64_t ahead = readahead_bytes(t);
 	std::set<int> seen;
+	auto add_piece = [&](int p) {
+		if (p >= first_file && p <= last && !t->have[size_t(p)] && seen.insert(p).second)
+			t->wanted.push_back(p);
+	};
+	// 0. Immediate priority for pieces readers are waiting on right now
+	for (const auto& [id, demand] : t->waiting_readers) {
+		if (demand.piece >= first_file && demand.piece <= last && !t->have[size_t(demand.piece)]) {
+			add_piece(demand.piece);
+			if (demand.piece + 1 <= last) add_piece(demand.piece + 1);
+		}
+	}
+	// 1. Immediate playhead pieces for any active reader
+	for (int64_t s : starts) {
+		int first = int(std::max(s, f.offset) / t->plen);
+		for (int p = first; p <= std::min(first + 3, last); p++)
+			add_piece(p);
+	}
+	// 2. Container header and tail pieces (first 2 and last 2 pieces of the file)
+	// so MP4 moov atoms and MKV Cues at the end of the file arrive immediately.
+	add_piece(first_file);
+	add_piece(first_file + 1);
+	add_piece(last);
+	add_piece(last - 1);
+	// 3. Full sequential read-ahead window from each reader position
 	for (int64_t s : starts) {
 		int first = int(std::max(s, f.offset) / t->plen);
 		int end = int(std::min(s + ahead, f.offset + f.size - 1) / t->plen);
 		end = std::min(end, last);
 		for (int p = first; p <= end; p++)
-			if (!t->have[size_t(p)] && seen.insert(p).second) t->wanted.push_back(p);
+			add_piece(p);
 	}
 
 	// After a jump the peers are still busy with blocks for the old spot:
@@ -531,7 +649,7 @@ void pick(Torrent* t, Peer* p, double now) {
 		if (t->have[size_t(piece)] || !peer_has(p, piece)) continue;
 		auto it = t->active.find(piece);
 		if (it == t->active.end()) {
-			if (t->active.size() >= max_active && wi >= 2) continue;
+			if (t->active.size() >= max_active && wi >= 4) continue;
 			Piece pc;
             try {
                 pc.data.resize(size_t(t->piece_size(piece)));
@@ -558,7 +676,7 @@ void pick(Torrent* t, Peer* p, double now) {
 	}
 	// The next pieces the reader needs: when every block is already asked
 	// for, ask this peer too (a slow peer shouldn't hold up playback).
-	for (size_t wi = 0; wi < t->wanted.size() && wi < 3 && room > 0; wi++) {
+	for (size_t wi = 0; wi < t->wanted.size() && wi < 6 && room > 0; wi++) {
 		int piece = t->wanted[wi];
 		if (t->have[size_t(piece)] || !peer_has(p, piece)) continue;
 		auto it = t->active.find(piece);
@@ -566,12 +684,13 @@ void pick(Torrent* t, Peer* p, double now) {
 		Piece& pc = it->second;
 		int nb = t->blocks(piece);
 		for (int b = 0; b < nb && room > 0; b++) {
-			if (pc.got[size_t(b)] || pc.asked[size_t(b)] != 1) continue;
+			if (pc.got[size_t(b)]) continue;
 			uint32_t begin = uint32_t(b) * kBlock;
 			bool mine = false;
 			for (auto& r : p->reqs)
-				if (r.piece == uint32_t(piece) && r.begin == begin) mine = true;
+				if (r.piece == uint32_t(piece) && r.begin == begin) { mine = true; break; }
 			if (mine) continue;
+			if (pc.asked[size_t(b)] >= 3 && t->waiting_readers.empty()) continue;
 			uint32_t len = uint32_t(std::min<int64_t>(kBlock, t->piece_size(piece) - begin));
 			send_request(p, uint32_t(piece), begin, len, now);
 			pc.asked[size_t(b)]++;
@@ -621,25 +740,38 @@ bool slot_read(Torrent* t, int slot, int64_t off, uint8_t* buf, int n) {
 }
 
 // A free slot, or the one whose piece is least likely to be read again:
-// not ahead of a reader, and used longest ago.
+// not ahead of a reader, not a pinned container header/tail piece, and used longest ago.
 int take_slot(Torrent* t, double now) {
 	if (t->slots_used < t->nslots) return t->slots_used++;
 	int64_t ahead = readahead_bytes(t);
+	int first_file = -1, last_file = -1;
+	if (t->has_meta && t->file >= 0 && size_t(t->file) < t->files.size() && t->files[size_t(t->file)].size > 0) {
+		const FileInfo& f = t->files[size_t(t->file)];
+		first_file = int(f.offset / t->plen);
+		last_file = int((f.offset + f.size - 1) / t->plen);
+	}
 	int best = -1;
 	double best_touch = 1e300;
 	for (int s = 0; s < t->nslots; s++) {
 		int p = t->piece_in_slot[size_t(s)];
 		bool keep = false;
+		if (first_file >= 0 && (p == first_file || p == first_file + 1 || p == last_file || p == last_file - 1))
+			keep = true;
 		int64_t ps = int64_t(p) * t->plen;
 		for (auto& r : t->readers)
-			if (ps + t->plen > r.second && ps <= r.second + ahead) keep = true;
+			if (ps + 2 * t->plen >= r.second && ps <= r.second + ahead) keep = true;
 		if (keep) continue;
 		if (t->slot_touch[size_t(s)] < best_touch) best_touch = t->slot_touch[size_t(s)], best = s;
 	}
 	if (best < 0) {  // everything is ahead of a reader: the oldest anyway
-		for (int s = 0; s < t->nslots; s++)
+		for (int s = 0; s < t->nslots; s++) {
+			int p = t->piece_in_slot[size_t(s)];
+			if (first_file >= 0 && (p == first_file || p == first_file + 1 || p == last_file || p == last_file - 1))
+				continue;
 			if (t->slot_touch[size_t(s)] < best_touch) best_touch = t->slot_touch[size_t(s)], best = s;
+		}
 	}
+	if (best < 0) best = 0;
 	int old = t->piece_in_slot[size_t(best)];
 	if (old >= 0) t->have[size_t(old)] = 0, t->slot_of[size_t(old)] = -1;
 	(void)now;
@@ -672,6 +804,7 @@ bool parse_info(Torrent* t, const std::string& raw) {
 	if (name.empty()) name = info.get_str("name");
 	std::vector<FileInfo> files;
 	int64_t total = 0;
+	t->single_file_mode = (info.get("files") == nullptr);
 	if (const BValue* fl = info.get("files")) {
 		if (!fl->is_list()) return false;
 		for (auto& f : fl->l) {
@@ -697,7 +830,7 @@ bool parse_info(Torrent* t, const std::string& raw) {
 		total = fi.size;
 		files.push_back(fi);
 	}
-	int64_t np = (total + plen - 1) / plen;
+	int64_t np = total / plen + (total % plen != 0);
 	if (total <= 0 || np * 20 != int64_t(hashes.size())) return false;
 
 	t->plen = plen;
@@ -711,6 +844,12 @@ bool parse_info(Torrent* t, const std::string& raw) {
 
 	// The cache: as many slots as fit in the cache size (at least 8).
 	Impl& I = impl();
+	for (auto& other : I.torrents) {
+		if (other.get() != t && other->stopped && other->cache) {
+			fclose(other->cache);
+			other->cache = nullptr;
+		}
+	}
 	int64_t slots = std::max<int64_t>(8, std::min<int64_t>(np, I.cache_bytes / plen));
 	t->nslots = int(slots);
 	std::string path = I.data_dir + "/torrent-cache.bin";
@@ -772,7 +911,7 @@ void request_metadata(Torrent* t, Peer* p, double now) {
 	}
 	if (p->metadata_size != t->meta_size) return;
 	for (size_t i = 0; i < t->meta_got.size(); i++) {
-		if (t->meta_got[i] || now - t->meta_asked[i] < 8) continue;
+		if (t->meta_got[i] || now - t->meta_asked[i] < 3) continue;
 		BValue d = BValue::dict();
 		d.d["msg_type"] = BValue(int64_t(0));
 		d.d["piece"] = BValue(int64_t(i));
@@ -836,6 +975,20 @@ void add_candidates(Torrent* t, const std::vector<sockaddr_in>& addrs) {
 		t->known[k] = Known();
 		t->candidates.push_back(a);
 	}
+}
+
+void feed_dht(const std::vector<sockaddr_in>& addrs) {
+    (void)addrs;
+#ifdef HAVE_DHT
+	if (addrs.empty() || !impl().dht_ok) return;
+	std::lock_guard<std::mutex> lock(impl().boot_m);
+	if (impl().boot.size() < 256) {
+		for (const auto& a : addrs) {
+			if (impl().boot.size() >= 256) break;
+			impl().boot.push_back(a);
+		}
+	}
+#endif
 }
 
 void on_block(Torrent* t, Peer* p, uint32_t piece, uint32_t begin, const char* data, size_t len, double now) {
@@ -930,6 +1083,7 @@ void on_pex(Torrent* t, const char* data, size_t n) {
 	if (!bdecode(data, n, d) || !d.is_dict()) return;
 	std::vector<sockaddr_in> v;
 	parse_compact(d.get_str("added"), v);
+	feed_dht(v);
 	add_candidates(t, v);
 }
 
@@ -1203,6 +1357,7 @@ void recover_stalled_torrent(Torrent* t, double now) {
     if (t->stopped || t->idle || now < t->allocation_retry_at) return;
     double since = now;
     bool waiting = false;
+    int waiting_piece = -1;
     int64_t active_bytes = 0;
     for (const auto& entry : t->active) active_bytes += int64_t(entry.second.data.size());
     for (const auto& [id, demand] : t->waiting_readers) {
@@ -1214,15 +1369,24 @@ void recover_stalled_torrent(Torrent* t, double now) {
             if (!t->active.count(demand.piece) && active_bytes + t->piece_size(demand.piece) > kMaxActiveBytes) continue;
         }
         waiting = true; since = std::min(since, demand.since);
+        waiting_piece = demand.piece;
     }
     if (!waiting) return;
     const double progress = t->has_meta ? t->last_payload : t->metadata_progress_at;
     if (progress > t->last_recovery) t->recovery_attempts = 0;
+    // If the engine is actively receiving payload data, the swarm is working!
+    if (t->has_meta && (now - progress < 10.0 || t->rate > 200 * 1024)) return;
     const double quiet = std::max({since, progress, t->last_recovery});
     if (now < t->next_recovery || now - quiet < 30) return;
     unsigned retired = 0;
     for (auto& peer : t->peers) {
-        if (peer->dead || peer->state != Peer::Active || now - std::max(peer->since, peer->payload_at) < 30) continue;
+        if (peer->dead || peer->state != Peer::Active) continue;
+        // Never drop peers that have sent us data recently!
+        if (peer->payload_at > 0 && now - peer->payload_at < 20) continue;
+        if (now - peer->since < 30) continue;
+        Known& k = t->known[peer->key];
+        k.fails = 0;
+        k.retry_at = now + 1.0;
         drop_peer(t, peer.get(), "no useful data; automatic reconnect");
         ++retired;
     }
@@ -1232,7 +1396,7 @@ void recover_stalled_torrent(Torrent* t, double now) {
     const double delay = 30 * double(1u << std::min(t->recovery_attempts, 2u));
     t->next_recovery = now + delay;
     ++t->recovery_attempts;
-    dlog("torrent recovery: waiting_s=%.1f retired=%u retry_s=%.0f", now-quiet, retired, delay);
+    dlog("torrent recovery: waiting_s=%.1f piece=%d retired=%u retry_s=%.0f", now-quiet, waiting_piece, retired, delay);
 }
 
 
@@ -1241,6 +1405,7 @@ void upkeep(Torrent* t, double now) {
 	{
 		std::lock_guard<std::mutex> lock(t->trk_m);
 		if (!t->tracker_peers.empty()) {
+			feed_dht(t->tracker_peers);
 			add_candidates(t, t->tracker_peers);
 			t->tracker_peers.clear();
 		}
@@ -1277,7 +1442,7 @@ void upkeep(Torrent* t, double now) {
 		// Late blocks: ask someone else, and expect less from this peer.
 		bool late = false;
 		for (size_t i = 0; i < p->reqs.size();) {
-			if ((p->payload_at <= 0 || now - p->payload_at > kRequestTimeout) && now - p->reqs[i].at > kRequestTimeout) {
+			if (now - p->reqs[i].at > kRequestTimeout) {
 				release_request(t, p->reqs[i]);
 				p->reqs.erase(p->reqs.begin() + long(i));
 				late = true;
@@ -1361,6 +1526,8 @@ void upkeep(Torrent* t, double now) {
 // DHT
 
 #ifdef HAVE_DHT
+void resolve_bootstrap();
+
 void dht_event(void* closure, int event, const unsigned char* info_hash, const void* data, size_t len) {
 	(void)closure;
 	if (event != DHT_EVENT_VALUES) return;
@@ -1411,6 +1578,7 @@ void dht_start() {
 	for (auto& a : nodes) dht_ping_node(reinterpret_cast<sockaddr*>(&a), sizeof(a));
 	dlog("dht: started, %zu saved nodes", nodes.size());
 	I.dht_saved = now_seconds();
+	resolve_bootstrap(); // Numeric bootstrap routes need no blocking resolver.
 }
 
 void dht_save() {
@@ -1435,6 +1603,13 @@ void dht_poll(bool readable, double now) {
 		for (auto& a : I.boot) dht_ping_node(reinterpret_cast<sockaddr*>(&a), sizeof(a));
 		I.boot.clear();
 	}
+	static double last_boot_check = 0;
+	if(now-last_boot_check>15.0){
+        last_boot_check=now;int good=0,dubious=0,cached=0,incoming=0;
+        dht_nodes(AF_INET,&good,&dubious,&cached,&incoming);
+        if(good+dubious<8)resolve_bootstrap();
+    }
+
 	time_t tosleep = 1;
 	if (readable) {
 		char buf[4096];
@@ -1457,14 +1632,14 @@ void dht_poll(bool readable, double now) {
 		if (t->stopped || t->idle || now < t->next_dht) continue;
 		int good = 0, dubious = 0, cached = 0, incoming = 0;
 		dht_nodes(AF_INET, &good, &dubious, &cached, &incoming);
-		if (good + dubious < 4) {
-			t->next_dht = now + 3;  // still bootstrapping
+		if (good + dubious < 1) {
+			t->next_dht = now + 2;  // still bootstrapping
 			continue;
 		}
 		// With the port open on the router, also tell the DHT we have it,
 		// so peers that can't be reached come to us.
 		if (dht_search(t->ih, I.mapped_port.load(), AF_INET, dht_event, nullptr) >= 0) {
-			t->next_dht = now + (t->want_peers ? 45 : 300);
+			t->next_dht = now + (t->peers.empty() ? 15 : (t->want_peers ? 45 : 300));
 		} else {
 			t->next_dht = now + 10;
 		}
@@ -1479,16 +1654,16 @@ void dht_poll(bool readable, double now) {
 void resolve_bootstrap() {
 	std::vector<sockaddr_in> found;
 	for (auto& h : kDhtBootstrap) {
-		addrinfo hints{}, *res = nullptr;
-		hints.ai_family = AF_INET;
-		hints.ai_socktype = SOCK_DGRAM;
-		if (getaddrinfo(h[0], h[1], &hints, &res) != 0 || !res) continue;
-		for (addrinfo* r = res; r; r = r->ai_next)
-			if (r->ai_family == AF_INET) found.push_back(*reinterpret_cast<sockaddr_in*>(r->ai_addr));
-		freeaddrinfo(res);
+		sockaddr_in sa{};
+		sa.sin_family = AF_INET;
+		sa.sin_port = htons(uint16_t(std::atoi(h[1])));
+		if (inet_pton(AF_INET, h[0], &sa.sin_addr) == 1) {
+			found.push_back(sa);
+			continue;
+		}
 	}
 	std::lock_guard<std::mutex> lock(impl().boot_m);
-	impl().boot.insert(impl().boot.end(), found.begin(), found.end());
+	if(impl().enabled && impl().boot.size()<256)impl().boot.insert(impl().boot.end(),found.begin(),found.end());
 }
 
 // ---------------------------------------------------------------------------
@@ -1526,8 +1701,9 @@ void net_loop() {
 		int n = poll(fds.data(), nfds_t(fds.size()), 50);
 		if (n < 0 && errno != EINTR) usleep(20000);
 
-		std::lock_guard<std::mutex> lock(I.mu);
+		std::unique_lock<std::mutex> lock(I.mu);
 		if (I.quit) break;
+        std::vector<std::shared_ptr<Torrent>> retired;
 		double now = now_seconds();
 		size_t base = 0;
 		bool dht_in = false, listen_in = false;
@@ -1571,25 +1747,28 @@ void net_loop() {
 		}
 		for (auto it = I.torrents.begin(); it != I.torrents.end();) {
 			if ((*it)->stopped) {
-				for (auto& th : (*it)->tracker_threads)
-					if (th.joinable()) th.join();
+				retired.push_back(*it);
 				dlog("torrent %s: stopped", (*it)->hex.c_str());
 				it = I.torrents.erase(it);
 			} else {
 				++it;
 			}
 		}
+        lock.unlock();
+        for(auto& t:retired)for(auto& thread:t->tracker_threads)if(thread.joinable())thread.join();
 	}
 	// Quitting
-	std::lock_guard<std::mutex> lock(I.mu);
-	for (auto& t : I.torrents) {
+	std::unique_lock<std::mutex> lock(I.mu);
+    auto retired=std::move(I.torrents);
+    I.torrents.clear();
+	for (auto& t : retired) {
 		t->stopped = true;
 		for (auto& p : t->peers)
 			if (p->fd >= 0) close(p->fd), p->fd = -1;
-		for (auto& th : t->tracker_threads)
-			if (th.joinable()) th.join();
 	}
-	I.torrents.clear();
+    lock.unlock();
+    for(auto& t:retired)for(auto& thread:t->tracker_threads)if(thread.joinable())thread.join();
+    lock.lock();
 #ifdef HAVE_DHT
 	if (I.dht_ok) {
 		dht_save();
@@ -1646,7 +1825,7 @@ bool announce_http(Torrent* t, const std::string& url, bool first, std::vector<s
 bool udp_exchange(Torrent* t, int fd, const std::string& req, std::string& resp, uint32_t tid) {
 	for (int attempt = 0; attempt < 2; attempt++) {
 		if (send(fd, req.data(), req.size(), 0) < 0) return false;
-		double until = now_seconds() + 4 + attempt * 4;
+		double until = now_seconds() + 2.5 + attempt * 2.5;
 		while (now_seconds() < until) {
 			if (t->stopped) return false;
 			pollfd pf{fd, POLLIN, 0};
@@ -1775,7 +1954,11 @@ void tracker_worker(std::shared_ptr<Torrent> t, int worker) {
 	// One-time set-up, beside the first announces: the router mapping first
 	// (so the trackers get a port that works), the DHT's first nodes.
 	if (worker == 0 && !impl().map_started.exchange(true)) map_port();
-	if (worker == kTrackerThreads - 1 && !impl().boot_started.exchange(true)) resolve_bootstrap();
+	if (!impl().boot_started.exchange(true)) {
+		try {
+			resolve_bootstrap(); // Numeric bootstrap routes need no blocking resolver.
+		} catch (...) {}
+	}
 	int round = 0;
 	while (!tp->stopped) {
 		std::vector<std::string> list;
@@ -1812,6 +1995,298 @@ void tracker_worker(std::shared_ptr<Torrent> t, int worker) {
 	}
 }
 
+std::string encode_url_path(const std::string& in) {
+	std::string out;
+	static const char* hx = "0123456789ABCDEF";
+	for (unsigned char c : in) {
+		if (isalnum(c) || c == '/' || c == '-' || c == '_' || c == '.' || c == '~') out += char(c);
+		else out += '%', out += hx[c >> 4], out += hx[c & 15];
+	}
+	return out;
+}
+
+bool fetch_webseed_piece(Torrent* t, const std::string& seed, const std::vector<FileInfo>& files,
+                         bool single_file, int64_t piece_start, int64_t piece_len, std::string& out) {
+	out.clear();
+	out.reserve(size_t(piece_len));
+	for (const FileInfo& f : files) {
+		int64_t a = std::max(piece_start, f.offset);
+		int64_t b = std::min(piece_start + piece_len, f.offset + f.size);
+		if (a >= b) continue;
+		std::string url = seed;
+		if (!single_file) {
+			if (!url.empty() && url.back() != '/') url += '/';
+			url += encode_url_path(f.path);
+		} else if (!url.empty() && url.back() == '/') {
+			url += encode_url_path(f.path);
+		}
+		std::string range = "Range: bytes=" + std::to_string(a - f.offset) + "-" + std::to_string(b - f.offset - 1);
+		HttpResponse r = http_get(url, 30, &t->stopped, {range});
+		if ((r.status != 206 && r.status != 200) || int64_t(r.body.size()) < (b - a)) return false;
+		if (int64_t(r.body.size()) == (b - a)) {
+			out.append(r.body);
+		} else if (r.status == 200 && int64_t(r.body.size()) >= (b - f.offset)) {
+			out.append(r.body.data() + (a - f.offset), size_t(b - a));
+		} else {
+			return false;
+		}
+	}
+	return int64_t(out.size()) == piece_len;
+}
+
+void webseed_worker(std::shared_ptr<Torrent> t) {
+	Impl& I = impl();
+	size_t seed_idx = 0;
+	int failures = 0;
+	while (!t->stopped && failures < 12) {
+		std::string seed;
+		std::vector<FileInfo> files;
+		bool single_file = false;
+		int piece = -1;
+		int64_t pstart = 0, plen = 0;
+		{
+			std::lock_guard<std::mutex> lock(I.mu);
+			if (t->stopped || t->webseeds.empty()) break;
+			if (!t->has_meta || t->idle) {
+				piece = -1;
+			} else {
+				if (t->wanted_dirty) refresh_wanted(t.get());
+				for (int w : t->wanted) {
+					if (!t->have[size_t(w)] && !t->active.count(w) && !t->webseed_claiming.count(w)) {
+						piece = w;
+						t->webseed_claiming.insert(w);
+						break;
+					}
+				}
+				if (piece >= 0) {
+					seed = t->webseeds[seed_idx % t->webseeds.size()];
+					files = t->files;
+					single_file = t->single_file_mode;
+					pstart = int64_t(piece) * t->plen;
+					plen = t->piece_size(piece);
+				}
+			}
+		}
+		if (piece < 0) {
+			if (!wait_stoppable(t.get(), 0.25)) break;
+			continue;
+		}
+		std::string data;
+		bool ok = fetch_webseed_piece(t.get(), seed, files, single_file, pstart, plen, data);
+		{
+			std::lock_guard<std::mutex> lock(I.mu);
+			t->webseed_claiming.erase(piece);
+			if (!t->stopped && ok && int64_t(data.size()) == plen) {
+				unsigned char digest[20];
+				SHA1(reinterpret_cast<const unsigned char*>(data.data()), data.size(), digest);
+				if (memcmp(digest, t->hashes.data() + size_t(piece) * 20, 20) == 0) {
+					if (!t->have[size_t(piece)]) {
+						double now = now_seconds();
+						t->active.erase(piece);
+						store_piece(t.get(), piece, data, now);
+						t->bytes_window += plen;
+						t->last_payload = now;
+						t->wanted_dirty = true;
+						I.cv.notify_all();
+					}
+					failures = 0;
+				} else {
+					failures++;
+					seed_idx++;
+				}
+			} else {
+				failures++;
+				seed_idx++;
+			}
+		}
+	}
+}
+
+std::string detect_lan_ip() {
+	int fd = socket(AF_INET, SOCK_DGRAM, 0);
+	if (fd < 0) return "127.0.0.1";
+	sockaddr_in remote{};
+	remote.sin_family = AF_INET;
+	remote.sin_port = htons(53);
+	inet_pton(AF_INET, "8.8.8.8", &remote.sin_addr);
+	std::string ip = "127.0.0.1";
+	if (connect(fd, reinterpret_cast<sockaddr*>(&remote), sizeof(remote)) == 0) {
+		sockaddr_in local{};
+		socklen_t len = sizeof(local);
+		if (getsockname(fd, reinterpret_cast<sockaddr*>(&local), &len) == 0) {
+			char buf[INET_ADDRSTRLEN] = {};
+			if (inet_ntop(AF_INET, &local.sin_addr, buf, sizeof(buf))) ip = buf;
+		}
+	}
+	close(fd);
+	return ip;
+}
+
+
+
+const char* kWebDropHtml = R"HTML(<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Nuvio Max'd · PS5 Torrent Stream Drop</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  body { margin: 0; background: #0b0a12; color: #f3f2f8; display: flex; justify-content: center; padding: 24px 16px; }
+  .wrap { width: 100%; max-width: 540px; }
+  h1 { font-size: 22px; margin: 0 0 6px; color: #fff; }
+  p.sub { margin: 0 0 20px; color: #9c98b2; font-size: 14px; }
+  .card { background: #161424; border: 1px solid #2b2744; border-radius: 16px; padding: 18px; margin-bottom: 16px; }
+  .card h2 { font-size: 16px; margin: 0 0 10px; color: #d8cfff; }
+  input[type="text"] { width: 100%; padding: 12px 14px; border-radius: 10px; border: 1px solid #353054; background: #0e0c18; color: #fff; font-size: 14px; margin-bottom: 12px; }
+  input[type="file"] { width: 100%; margin-bottom: 12px; color: #b8b3cc; font-size: 14px; }
+  button { width: 100%; padding: 12px 16px; border-radius: 10px; border: none; background: #7b5bf5; color: #fff; font-weight: 600; font-size: 15px; cursor: pointer; }
+  button:active { opacity: 0.85; }
+  #status { margin-top: 12px; padding: 12px; border-radius: 10px; display: none; font-size: 14px; }
+  .ok { background: #133326; color: #6ee7b7; border: 1px solid #059669; }
+  .err { background: #3b1520; color: #fca5a5; border: 1px solid #dc2626; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Nuvio Max'd · PS5 Torrent Drop</h1>
+  <p class="sub">Send a magnet or .torrent file, then confirm on your PS5. Pairing expires after ten minutes.</p>
+  <div class="card">
+    <h2>1. Paste Magnet Link</h2>
+    <input type="text" id="magnet" placeholder="magnet:?xt=urn:btih:...">
+    <button onclick="sendMagnet()">Send to PS5</button>
+  </div>
+  <div class="card">
+    <h2>2. Upload .torrent File from Phone / PC</h2>
+    <input type="file" id="tfile" accept=".torrent,application/x-bittorrent">
+    <button onclick="sendFile()">Upload &amp; Send to PS5</button>
+  </div>
+  <div id="status"></div>
+</div>
+<script>
+const pairing = location.hash.slice(1);
+history.replaceState(null, '', '/');
+function showStatus(msg, ok) {
+  const el = document.getElementById('status');
+  el.style.display = 'block';
+  el.className = ok ? 'ok' : 'err';
+  el.textContent = msg;
+}
+async function sendMagnet() {
+  const v = document.getElementById('magnet').value.trim();
+  if (!v) return showStatus('Paste a magnet link or info-hash first.', false);
+  try {
+    const r = await fetch('/add', { method: 'POST', headers: {'X-Nuvio-Pairing': pairing}, body: v });
+    const j = await r.json();
+    if (j.ok) { showStatus('Sent to PS5! Confirm on your PS5: ' + (j.title || ''), true); document.getElementById('magnet').value = ''; }
+    else showStatus(j.error || 'Could not start torrent.', false);
+  } catch (e) { showStatus('Network error: ' + e, false); }
+}
+async function sendFile() {
+  const f = document.getElementById('tfile').files[0];
+  if (!f) return showStatus('Choose a .torrent file first.', false);
+  try {
+    const buf = await f.arrayBuffer();
+    const r = await fetch('/upload', { method: 'POST', headers: {'X-Nuvio-Pairing': pairing}, body: buf });
+    const j = await r.json();
+    if (j.ok) showStatus('Uploaded ' + f.name + '! Confirm on your PS5.', true);
+    else showStatus(j.error || 'Invalid .torrent file.', false);
+  } catch (e) { showStatus('Upload error: ' + e, false); }
+}
+</script>
+</body>
+</html>)HTML";
+
+void handle_web_drop_client(int cfd) {
+ Impl& I=impl();
+ set_nonblocking(cfd);
+#ifdef SO_NOSIGPIPE
+ int one=1; setsockopt(cfd,SOL_SOCKET,SO_NOSIGPIPE,&one,sizeof(one));
+#endif
+ auto reply=[&](int code,const std::string& body,const char* type="application/json") {
+  const std::string response="HTTP/1.1 "+std::to_string(code)+" Response\r\nContent-Type: "+type+
+   "\r\nCache-Control: no-store\r\nReferrer-Policy: no-referrer\r\nX-Content-Type-Options: nosniff\r\nContent-Length: "+std::to_string(body.size())+"\r\nConnection: close\r\n\r\n"+body;
+  size_t sent=0; const double end=now_seconds()+2;
+  while(sent<response.size() && !I.web_quit && now_seconds()<end) {
+   pollfd p{cfd,POLLOUT,0}; if(poll(&p,1,50)<=0)continue;
+   auto n=send(cfd,response.data()+sent,response.size()-sent,MSG_NOSIGNAL);
+   if(n>0)sent+=size_t(n); else if(errno!=EAGAIN && errno!=EINTR)break;
+  }
+ };
+ constexpr size_t max_header=8192,max_body=4u<<20;
+ std::string request; size_t header=std::string::npos,length=0;
+ std::string method,path,host,origin,token;
+ const double deadline=now_seconds()+8;
+ bool parsed=false;
+ while(!I.web_quit && now_seconds()<deadline) {
+  pollfd p{cfd,POLLIN,0}; if(poll(&p,1,50)<=0)continue;
+  char buf[8192];auto n=recv(cfd,buf,sizeof(buf),0);if(n<=0)break;
+  request.append(buf,size_t(n));
+  if(!parsed) {
+   header=request.find("\r\n\r\n");
+   if(header==std::string::npos){if(request.size()>max_header){reply(413,"{}");return;}continue;}
+   if(header>max_header){reply(413,"{}");return;}
+   const auto first=request.find("\r\n");
+   std::istringstream line(request.substr(0,first));std::string version;line>>method>>path>>version;
+   if(version!="HTTP/1.1" && version!="HTTP/1.0"){reply(400,"{}");return;}
+   bool has_length=false;size_t at=first+2;
+   while(at<header) {
+    auto end=request.find("\r\n",at),colon=request.find(':',at);
+    if(colon>=end){reply(400,"{}");return;}
+    auto key=lower(request.substr(at,colon-at)),value=trim(request.substr(colon+1,end-colon-1));
+    if(key=="content-length") {
+     if(has_length||value.empty()||value.find_first_not_of("0123456789")!=std::string::npos||value.size()>8){reply(400,"{}");return;}
+     has_length=true;length=size_t(strtoul(value.c_str(),nullptr,10));
+    } else if(key=="transfer-encoding"){reply(400,"{}");return;}
+    else if(key=="host"){if(!host.empty()){reply(400,"{}");return;}host=value;}
+    else if(key=="origin")origin=value;
+    else if(key=="x-nuvio-pairing")token=value;
+    at=end+2;
+   }
+   if(length>max_body){reply(413,"{}");return;}
+   std::string expected_host,expected_token;
+   {std::lock_guard<std::mutex> lock(I.web_m);expected_host=I.web_host;expected_token=I.web_token;}
+   if(!I.enabled || now_seconds()>=I.web_expires || host!=expected_host || (!origin.empty()&&origin!="http://"+expected_host)) {reply(403,"{}");return;}
+   if(method=="GET"&&path=="/"){reply(200,kWebDropHtml,"text/html; charset=utf-8");return;}
+   if(method!="POST" || (path!="/add"&&path!="/upload")){reply(404,"{}");return;}
+   if(token.empty()||token!=expected_token){reply(403,R"({"error":"Pair using the console QR code"})");return;}
+   if(!has_length || (path=="/add"&&length>16384)){reply(413,"{}");return;}
+   parsed=true;
+  }
+  if(request.size()>=header+4+length)break;
+ }
+ if(!parsed||request.size()!=header+4+length||I.web_quit){reply(400,"{}");return;}
+ const std::string body=request.substr(header+4,length);
+ WebDropSubmission submission;
+ if(path=="/add") {
+  MagnetInfo magnet;std::string err;auto val=trim(body);
+  if(!Engine::parse_magnet(val,magnet,&err)){reply(400,R"({"error":"Enter a magnet link or info hash"})");return;}
+  submission={"magnet",val,magnet.display_name.empty()?magnet.info_hash_hex:magnet.display_name};
+ } else {
+  TorrentMeta meta;std::string info,error;
+  if(!Engine::parse_torrent_buffer(body,meta,&info,&error)){reply(400,R"({"error":"Invalid torrent file"})");return;}
+  // Queue bytes until the console accepts them; no unapproved files are persisted.
+  submission={"buffer",body,meta.name};
+ }
+ {std::lock_guard<std::mutex> lock(I.web_m);
+  if(I.web_quit || !I.enabled || now_seconds()>=I.web_expires){reply(403,"{}");return;}
+  if(I.web_submissions.size()>=1){reply(429,R"({"error":"Confirm the pending item on the console first"})");return;}
+  I.web_submissions.push_back(std::move(submission));
+ }
+ reply(200,R"({"ok":true,"title":"Confirm on your PS5"})");
+}
+
+void web_drop_loop() {
+ Impl& I=impl();
+ while(!I.web_quit && now_seconds()<I.web_expires) {
+  pollfd pf{I.web_fd,POLLIN,0};if(poll(&pf,1,100)<=0||!(pf.revents&POLLIN))continue;
+  int fd=accept(I.web_fd,nullptr,nullptr);if(fd<0)continue;
+  handle_web_drop_client(fd);close(fd);
+ }
+ I.web_running=false;
+}
+
 void ensure_running() {
 	Impl& I = impl();
 	if (I.running) return;
@@ -1826,7 +2301,7 @@ void ensure_running() {
 	for (int i = 0; i < 12; i++) pid += al[r[i] % 36];
 	I.peer_id = pid;
 	if (I.listen_fd < 0) open_listener();
-	I.net = std::thread(net_loop);
+	try{I.net = std::thread(net_loop);}catch(const std::system_error&){I.running=false;if(I.listen_fd>=0){close(I.listen_fd);I.listen_fd=-1;}throw;}
 }
 
 }  // namespace
@@ -1842,11 +2317,33 @@ Engine& Engine::get() {
 void Engine::configure(const std::string& data_dir, int64_t cache_bytes) {
 	std::lock_guard<std::mutex> lock(impl().mu);
 	impl().data_dir = data_dir;
-	impl().cache_bytes = cache_bytes;
+	impl().cache_bytes = std::max<int64_t>(512ll << 20, cache_bytes);
+}
+
+void Engine::set_cache_bytes(int64_t cache_bytes) {
+	Impl& I = impl();
+	std::lock_guard<std::mutex> lock(I.mu);
+	I.cache_bytes = std::max<int64_t>(512ll << 20, cache_bytes);
+	for (auto& t : I.torrents) {
+		if (t->stopped || !t->has_meta || !t->cache || t->plen <= 0) continue;
+		int new_slots = int(std::max<int64_t>(8, std::min<int64_t>(t->npieces, I.cache_bytes / t->plen)));
+		if (new_slots > t->nslots) {
+			t->piece_in_slot.resize(size_t(new_slots), -1);
+			t->slot_touch.resize(size_t(new_slots), 0);
+			t->nslots = new_slots;
+			t->wanted_dirty = true;
+		}
+	}
+}
+
+int64_t Engine::cache_bytes() const {
+	std::lock_guard<std::mutex> lock(impl().mu);
+	return impl().cache_bytes;
 }
 
 void Engine::shutdown() {
 	Impl& I = impl();
+	stop_web_drop();
 	{
 		std::lock_guard<std::mutex> lock(I.mu);
 		if (!I.running) return;
@@ -1858,9 +2355,15 @@ void Engine::shutdown() {
 	unmap_port();
 	std::lock_guard<std::mutex> lock(I.mu);
 	I.running = false;
+    if(I.listen_fd>=0){close(I.listen_fd);I.listen_fd=-1;}
 }
 
 void Engine::start(const std::string& hex_in, const std::vector<std::string>& trackers_in) {
+	start_with_webseeds(hex_in, trackers_in, {});
+}
+
+void Engine::start_with_webseeds(const std::string& hex_in, const std::vector<std::string>& trackers_in,
+                                 const std::vector<std::string>& webseeds_in) {
 	Impl& I = impl();
 	std::string hex = lower(hex_in);
 	std::vector<std::string> trackers;
@@ -1874,12 +2377,24 @@ void Engine::start(const std::string& hex_in, const std::vector<std::string>& tr
 	for (auto* d : kDefaultTrackers)
 		if (std::find(trackers.begin(), trackers.end(), d) == trackers.end()) trackers.push_back(d);
 
+	std::vector<std::string> webseeds;
+	for (const auto& ws : webseeds_in) {
+		if ((starts_with(ws, "http://") || starts_with(ws, "https://")) &&
+		    std::find(webseeds.begin(), webseeds.end(), ws) == webseeds.end())
+			webseeds.push_back(ws);
+	}
+
 	std::lock_guard<std::mutex> lock(I.mu);
-	ensure_running();
+	if(!I.enabled || (I.running && I.quit))return;
+	try{ensure_running();}catch(const std::system_error&){dlog("torrent: unable to start network worker");return;}
 	if (auto t = find_locked(hex)) {
 		std::lock_guard<std::mutex> tl(t->trk_m);
 		for (auto& x : trackers)
 			if (std::find(t->trackers.begin(), t->trackers.end(), x) == t->trackers.end()) t->trackers.push_back(x);
+		bool had_webseeds = !t->webseeds.empty();
+		for (auto& ws : webseeds)
+			if (std::find(t->webseeds.begin(), t->webseeds.end(), ws) == t->webseeds.end()) t->webseeds.push_back(ws);
+		if(!had_webseeds&&!t->webseeds.empty())try{t->tracker_threads.emplace_back(webseed_worker,t);}catch(const std::system_error&){dlog("torrent: no webseed worker available");}
 		t->started = now_seconds();  // fresh grace period before pausing
 		return;
 	}
@@ -1895,16 +2410,365 @@ void Engine::start(const std::string& hex_in, const std::vector<std::string>& tr
 	}
 	t->started = now_seconds();
 	t->trackers = trackers;
+	t->webseeds = webseeds;
 	// Metadata saved from an earlier time: no need to ask the peers.
 	std::string saved;
-	if (read_file(I.data_dir + "/torrents/" + hex + ".info", saved)) {
+	if (!I.data_dir.empty() && read_file(I.data_dir + "/torrents/" + hex + ".info", saved)) {
 		unsigned char digest[20];
 		SHA1(reinterpret_cast<const unsigned char*>(saved.data()), saved.size(), digest);
 		if (memcmp(digest, t->ih, 20) == 0 && parse_info(t.get(), saved)) dlog("torrent %s: metadata from the cache", hex.c_str());
 	}
-	dlog("torrent %s: starting with %zu trackers", hex.c_str(), trackers.size());
+	dlog("torrent %s: starting with %zu trackers, %zu webseeds", hex.c_str(), trackers.size(), webseeds.size());
 	I.torrents.push_back(t);
-	for (int w = 0; w < kTrackerThreads; w++) t->tracker_threads.emplace_back(tracker_worker, t, w);
+	try {
+        for(int w=0;w<kTrackerThreads;w++)t->tracker_threads.emplace_back(tracker_worker,t,w);
+        if(!t->webseeds.empty())t->tracker_threads.emplace_back(webseed_worker,t);
+    }catch(const std::system_error&){dlog("torrent: tracker workers limited by available resources");}
+}
+
+bool Engine::parse_magnet(const std::string& uri_or_hash, MagnetInfo& out, std::string* error) {
+	out = MagnetInfo{};
+	std::string s = trim(uri_or_hash);
+	while (s.size() >= 2 && ((s.front() == '"' && s.back() == '"') || (s.front() == '\'' && s.back() == '\'') ||
+	                         (s.front() == '<' && s.back() == '>'))) {
+		s = trim(s.substr(1, s.size() - 2));
+	}
+	for (size_t pos = 0; (pos = s.find("&amp;", pos)) != std::string::npos;) {
+		s.replace(pos, 5, "&");
+		pos += 1;
+	}
+	if (s.empty()) {
+		if (error) *error = "Empty magnet link or info-hash";
+		return false;
+	}
+	// Check bare 40-char hex or 32-char Base32 hash first.
+	if (parse_btih_to_hex(s, out.info_hash_hex)) return true;
+
+	if (!starts_with(lower(s), "magnet:")) {
+		if (error) *error = "Not a valid magnet:? URI or info-hash";
+		return false;
+	}
+	size_t q = s.find('?');
+	std::string query = (q == std::string::npos) ? s.substr(7) : s.substr(q + 1);
+	for (size_t p = 0; p <= query.size();) {
+		size_t amp = query.find('&', p);
+		if (amp == std::string::npos) amp = query.size();
+		std::string kv = query.substr(p, amp - p);
+		size_t eq = kv.find('=');
+		if (eq != std::string::npos) {
+			std::string k = lower(kv.substr(0, eq));
+			std::string raw_v = kv.substr(eq + 1);
+			std::string v = pct_decode(raw_v);
+			if (k == "xt" || starts_with(k, "xt.")) {
+				std::string dv = v.find('%') != std::string::npos ? pct_decode(v) : v;
+				std::string lv = lower(dv);
+				if (starts_with(lv, "urn:btih:")) {
+					parse_btih_to_hex(dv.substr(9), out.info_hash_hex);
+				} else if (starts_with(lv, "urn:btmh:1220") && dv.size() >= 13 + 40) {
+					parse_btih_to_hex(dv.substr(13, 40), out.info_hash_hex);
+				}
+			} else if (k == "dn") {
+				out.display_name = v;
+			} else if (k == "tr" || starts_with(k, "tr.")) {
+				if (!v.empty() && std::find(out.trackers.begin(), out.trackers.end(), v) == out.trackers.end())
+					out.trackers.push_back(v);
+			} else if (k == "ws" || k == "as" || starts_with(k, "ws.")) {
+				if ((starts_with(v, "http://") || starts_with(v, "https://")) &&
+				    std::find(out.webseeds.begin(), out.webseeds.end(), v) == out.webseeds.end())
+					out.webseeds.push_back(v);
+			} else if (k == "so" && !v.empty()) {
+				bool digits = std::all_of(v.begin(), v.end(), [](unsigned char c) { return isdigit(c) != 0; });
+				if (digits) out.select_only_file = atoi(v.c_str());
+			}
+		}
+		p = amp + 1;
+	}
+	if (out.info_hash_hex.size() != 40) {
+		if (error) *error = "Magnet link is missing a valid xt=urn:btih: info-hash";
+		return false;
+	}
+	return true;
+}
+
+bool Engine::parse_torrent_buffer(const std::string& data, TorrentMeta& out, std::string* raw_info_out,
+                                  std::string* error) {
+	out = TorrentMeta{};
+    if(data.size()>(4u<<20)){if(error)*error="Torrent metadata exceeds 4 MiB";return false;}
+	BValue root;
+	if (!bdecode(data, root) || !root.is_dict()) {
+		if (error) *error = "Not a valid bencoded .torrent file";
+		return false;
+	}
+	const BValue* info = root.get("info");
+	if (!info || !info->is_dict() || info->raw_offset + info->raw_size > data.size() || info->raw_size == 0) {
+		if (error) *error = "The .torrent file is missing its info dictionary";
+		return false;
+	}
+	std::string raw_info = data.substr(info->raw_offset, info->raw_size);
+	unsigned char digest[20];
+	SHA1(reinterpret_cast<const unsigned char*>(raw_info.data()), raw_info.size(), digest);
+	out.info_hash_hex = bytes_to_hex(digest, 20);
+
+	int64_t plen = info->get_int("piece length");
+	std::string hashes = info->get_str("pieces");
+	if (plen <= 0 || plen > (64ll << 20) || hashes.empty() || hashes.size() % 20 != 0) {
+		if (error) *error = "The .torrent file has invalid piece metadata";
+		return false;
+	}
+	out.name = info->get_str("name.utf-8");
+	if (out.name.empty()) out.name = info->get_str("name");
+
+	int64_t total = 0;
+	if (const BValue* fl = info->get("files")) {
+		if (!fl->is_list()) {
+			if (error) *error = "Invalid file list in .torrent";
+			return false;
+		}
+		out.single_file_mode = false;
+		for (const auto& f : fl->l) {
+			FileInfo fi;
+			fi.size = f.get_int("length", -1);
+			if (fi.size < 0 || fi.size > INT64_MAX-total || out.files.size()>=10000) {
+				if (error) *error = "Invalid file length in .torrent";
+				return false;
+			}
+			const BValue* path = f.get("path.utf-8");
+			if (!path || !path->is_list()) path = f.get("path");
+			std::string p = out.name;
+			if (path && path->is_list())
+				for (const auto& part : path->l)
+					if (part.is_str()) p += (p.empty() ? "" : "/") + part.s;
+			fi.path = p;
+			fi.offset = total;
+			total += fi.size;
+			out.files.push_back(fi);
+		}
+	} else {
+		out.single_file_mode = true;
+		FileInfo fi;
+		fi.size = info->get_int("length", -1);
+		if (fi.size <= 0) {
+			if (error) *error = "Invalid single-file length in .torrent";
+			return false;
+		}
+		fi.path = out.name;
+		total = fi.size;
+		out.files.push_back(fi);
+	}
+	int64_t np = total / plen + (total % plen != 0);
+	if (total <= 0 || np * 20 != int64_t(hashes.size())) {
+		if (error) *error = "Piece count does not match total file size in .torrent";
+		return false;
+	}
+	out.total_size = total;
+	out.piece_length = plen;
+	out.num_pieces = int(np);
+
+	auto add_tr = [&](const std::string& tr) {
+		std::string t = trim(tr);
+		if (!t.empty() && std::find(out.trackers.begin(), out.trackers.end(), t) == out.trackers.end())
+			out.trackers.push_back(t);
+	};
+	add_tr(root.get_str("announce"));
+	if (const BValue* al = root.get("announce-list")) {
+		if (al->is_list()) {
+			for (const auto& tier : al->l) {
+				if (tier.is_list()) {
+					for (const auto& u : tier.l)
+						if (u.is_str()) add_tr(u.s);
+				} else if (tier.is_str()) {
+					add_tr(tier.s);
+				}
+			}
+		}
+	}
+	auto add_ws = [&](const std::string& ws) {
+		std::string w = trim(ws);
+		if ((starts_with(w, "http://") || starts_with(w, "https://")) &&
+		    std::find(out.webseeds.begin(), out.webseeds.end(), w) == out.webseeds.end())
+			out.webseeds.push_back(w);
+	};
+	for (const char* key : {"url-list", "httpseeds"}) {
+		if (const BValue* ul = root.get(key)) {
+			if (ul->is_str()) add_ws(ul->s);
+			else if (ul->is_list()) {
+				for (const auto& u : ul->l)
+					if (u.is_str()) add_ws(u.s);
+			}
+		}
+	}
+	if (raw_info_out) *raw_info_out = std::move(raw_info);
+	return true;
+}
+
+bool Engine::start_magnet(const std::string& uri_or_hash, MagnetInfo* out, std::string* error) {
+	MagnetInfo mi;
+	if (!parse_magnet(uri_or_hash, mi, error)) return false;
+	start_with_webseeds(mi.info_hash_hex, mi.trackers, mi.webseeds);
+	if (mi.select_only_file >= 0) select_file(mi.info_hash_hex, mi.select_only_file);
+	if (out) *out = std::move(mi);
+	return true;
+}
+
+bool Engine::load_torrent_buffer(const std::string& data, TorrentMeta& out, std::string* error) {
+	if(!impl().enabled){if(error)*error="Torrent streaming is disabled";return false;}
+	std::string raw_info;
+	if (!parse_torrent_buffer(data, out, &raw_info, error)) return false;
+	Impl& I = impl();
+	{
+		std::lock_guard<std::mutex> lock(I.mu);
+		if (!I.data_dir.empty()) {
+			make_dirs(I.data_dir + "/torrents");
+			write_file(I.data_dir + "/torrents/" + out.info_hash_hex + ".info", raw_info);
+			write_file(I.data_dir + "/torrents/" + out.info_hash_hex + ".torrent", data);
+		}
+	}
+	start_with_webseeds(out.info_hash_hex, out.trackers, out.webseeds);
+	{
+		std::lock_guard<std::mutex> lock(I.mu);
+		if (auto t = find_locked(out.info_hash_hex)) {
+			if (!t->has_meta) parse_info(t.get(), raw_info);
+			t->single_file_mode = out.single_file_mode;
+			I.cv.notify_all();
+		}
+	}
+	return true;
+}
+
+bool Engine::load_torrent_file(const std::string& path, TorrentMeta& out, std::string* error) {
+	std::string data;
+    struct stat st{};
+    if(stat(path.c_str(),&st)!=0 || !S_ISREG(st.st_mode) || st.st_size>(4ll<<20)){if(error)*error="Torrent file must be a regular file of at most 4 MiB";return false;}
+	if (!read_file(path, data) || data.empty()) {
+		if (error) *error = "Could not read .torrent file: " + path;
+		return false;
+	}
+	return load_torrent_buffer(data, out, error);
+}
+
+std::vector<LocalTorrentFile> Engine::scan_local_torrents(const std::string& extra_dir, const std::string& query) {
+	struct RootSpec {
+		std::string path;
+		std::string label;
+		int max_depth;
+	};
+	std::vector<RootSpec> roots;
+	for (int u = 0; u < 8; u++) {
+		std::string usb = "/mnt/usb" + std::to_string(u);
+		std::string label = "USB " + std::to_string(u);
+		roots.push_back({usb + "/torrents", label + " /torrents", 3});
+		roots.push_back({usb + "/Downloads", label + " /Downloads", 3});
+		roots.push_back({usb, label, 3});
+	}
+	roots.push_back({"/data/torrents", "PS5 /data/torrents", 3});
+	roots.push_back({"/data/homebrew/torrents", "PS5 /data/homebrew/torrents", 3});
+	roots.push_back({"/data/downloads", "PS5 /data/downloads", 3});
+	roots.push_back({"/data", "PS5 /data", 1});
+	if (!extra_dir.empty()) {
+		roots.push_back({extra_dir + "/torrents", "App /torrents", 3});
+		roots.push_back({extra_dir, "App storage", 3});
+	}
+	std::set<std::string> seen_paths;
+	std::vector<LocalTorrentFile> found;
+	std::string q = lower(trim(query));
+    int inspected=0;
+
+	auto is_internal_hash_cache = [](const std::string& name) {
+		if (name.size() != 48 || !ends_with(lower(name), ".torrent")) return false;
+		for (int i = 0; i < 40; ++i)
+			if (!isxdigit(uint8_t(name[size_t(i)]))) return false;
+		return true;
+	};
+
+	auto scan_dir = [&](auto& self, const std::string& dir_path, const std::string& label, int depth_left) -> void {
+		if (depth_left <= 0 || found.size() >= 500) return;
+		DIR* d = opendir(dir_path.c_str());
+		if (!d) return;
+		std::vector<std::string> subdirs;
+		while (dirent* ent = readdir(d)) {
+            if(++inspected>16384)break;
+			std::string name = ent->d_name;
+			if (name.empty() || name[0] == '.') continue;
+			std::string full = dir_path + "/" + name;
+			struct stat st{};
+			if (lstat(full.c_str(), &st) != 0) continue;
+			if (S_ISREG(st.st_mode)) {
+				if (!ends_with(lower(name), ".torrent") || is_internal_hash_cache(name)) continue;
+				if (st.st_size <= 0 || st.st_size > (4ll << 20)) continue;
+				if (!seen_paths.insert(full).second) continue;
+				if (!q.empty() && lower(name).find(q) == std::string::npos && lower(full).find(q) == std::string::npos)
+					continue;
+				found.push_back({full, name, label, int64_t(st.st_size)});
+			} else if (S_ISDIR(st.st_mode) && depth_left > 1) {
+				subdirs.push_back(full);
+			}
+		}
+		closedir(d);
+		for (const auto& sub : subdirs)
+			self(self, sub, label, depth_left - 1);
+	};
+
+	for (const auto& r : roots)
+		scan_dir(scan_dir, r.path, r.label, r.max_depth);
+
+	std::sort(found.begin(), found.end(), [](const LocalTorrentFile& a, const LocalTorrentFile& b) {
+		return lower(a.filename) < lower(b.filename);
+	});
+	return found;
+}
+
+void Engine::set_enabled(bool enabled) {
+ impl().enabled=enabled;
+ if(!enabled)shutdown();
+}
+
+void Engine::stop_web_drop() {
+ Impl& I=impl();I.web_quit=true;
+ if(I.web_thread.joinable())I.web_thread.join();
+ std::lock_guard<std::mutex> lock(I.web_m);
+ if(I.web_fd>=0)close(I.web_fd);
+ I.web_fd=-1;I.web_running=false;I.web_url.clear();I.web_token.clear();I.web_submissions.clear();
+}
+
+std::string Engine::start_web_drop(int preferred_port) {
+ Impl& I=impl();stop_web_drop();if(!I.enabled)return {};
+ unsigned char bytes[24];if(RAND_bytes(bytes,sizeof(bytes))!=1)return {};
+ std::string token;static const char hex[]="0123456789abcdef";
+ for(auto c:bytes){token+=hex[c>>4];token+=hex[c&15];}
+ int fd=socket(AF_INET,SOCK_STREAM,0);if(fd<0)return {};
+ int one=1;setsockopt(fd,SOL_SOCKET,SO_REUSEADDR,&one,sizeof(one));
+ sockaddr_in addr{};addr.sin_family=AF_INET;addr.sin_addr.s_addr=htonl(INADDR_ANY);addr.sin_port=htons(uint16_t(preferred_port));
+ if(bind(fd,reinterpret_cast<sockaddr*>(&addr),sizeof(addr))!=0||listen(fd,4)!=0){close(fd);return {};}
+ set_nonblocking(fd);
+ std::lock_guard<std::mutex> lock(I.web_m);
+ I.web_fd=fd;I.web_port=preferred_port;I.web_host=detect_lan_ip()+":"+std::to_string(preferred_port);
+ I.web_token=token;I.web_url="http://"+I.web_host+"/#"+token;
+ I.web_expires=now_seconds()+600;I.web_quit=false;I.web_running=true;
+ try{I.web_thread=std::thread(web_drop_loop);}catch(const std::system_error&){close(fd);I.web_fd=-1;I.web_running=false;I.web_url.clear();}
+ return I.web_url;
+}
+
+std::string Engine::web_drop_url() const {
+	Impl& I = impl();
+	std::lock_guard<std::mutex> lock(I.web_m);
+	return I.web_running ? I.web_url : std::string();
+}
+
+bool Engine::take_web_submission(WebDropSubmission* out) {
+	Impl& I = impl();
+	std::lock_guard<std::mutex> lock(I.web_m);
+	if (!I.enabled || I.web_submissions.empty()) return false;
+	if (out) *out = std::move(I.web_submissions.front());
+	I.web_submissions.pop_front();
+	return true;
+}
+
+std::vector<int> Engine::wanted_pieces_for_test(const std::string& hex) {
+	std::lock_guard<std::mutex> lock(impl().mu);
+	auto t = find_locked(lower(hex));
+	if (!t) return {};
+	if (t->wanted_dirty) refresh_wanted(t.get());
+	return t->wanted;
 }
 
 bool Engine::wait_metadata(const std::string& hex, std::vector<FileInfo>& files, const std::atomic<bool>* cancel,
@@ -1945,7 +2809,7 @@ void Engine::select_file(const std::string& hex, int file_idx) {
 	std::lock_guard<std::mutex> lock(impl().mu);
 	if (auto t = find_locked(lower(hex))) {
 		if (file_idx >= 0 && size_t(file_idx) < t->files.size()) t->file = file_idx;
-		t->wanted_dirty = true;
+		refresh_wanted(t.get());
 	}
 }
 
@@ -1988,11 +2852,27 @@ std::shared_ptr<Torrent> Engine::open_reader(const std::string& hex, int file_id
 	t->file = file_idx;
 	int id = t->next_reader++;
 	t->readers[id] = t->files[size_t(file_idx)].offset;
-	t->wanted_dirty = true;
+	refresh_wanted(t.get());
 	t->idle = false;
 	*reader_id = id;
 	*file_size = t->files[size_t(file_idx)].size;
 	return t;
+}
+
+void Engine::seek_reader(const std::shared_ptr<Torrent>& t, int reader_id, int file_idx, int64_t pos) {
+	if (!t) return;
+	Impl& I = impl();
+	std::lock_guard<std::mutex> lock(I.mu);
+	if (t->stopped || file_idx < 0 || size_t(file_idx) >= t->files.size()) return;
+	const FileInfo& f = t->files[size_t(file_idx)];
+	int64_t clamped = std::max<int64_t>(0, std::min<int64_t>(pos, f.size));
+	int64_t abs = f.offset + clamped;
+	auto r = t->readers.find(reader_id);
+	if (r != t->readers.end() && r->second != abs) {
+		r->second = abs;
+		refresh_wanted(t.get());
+		I.cv.notify_all();
+	}
 }
 
 void Engine::close_reader(const std::shared_ptr<Torrent>& t, int reader_id) {
@@ -2004,7 +2884,7 @@ void Engine::close_reader(const std::shared_ptr<Torrent>& t, int reader_id) {
 }
 
 int Engine::read(const std::shared_ptr<Torrent>& t, int reader_id, int file_idx, int64_t pos, uint8_t* buf, int n,
-                 const std::atomic<bool>* abort) {
+                 const std::atomic<bool>* abort, const std::atomic<bool>* read_interrupt) {
 	Impl& I = impl();
 	std::unique_lock<std::mutex> lock(I.mu);
 	const FileInfo& f = t->files[size_t(file_idx)];
@@ -2014,19 +2894,28 @@ int Engine::read(const std::shared_ptr<Torrent>& t, int reader_id, int file_idx,
 	if (r != t->readers.end() && r->second != abs) {
 		// Into another piece (reading on, or a jump): the download order
 		// follows the reader.
-		if (abs / t->plen != r->second / t->plen) t->wanted_dirty = true;
+		bool piece_changed = (abs / t->plen != r->second / t->plen);
 		r->second = abs;
+		if (piece_changed) refresh_wanted(t.get());
 	}
 	int piece = int(abs / t->plen);
     struct WaitingGuard {
-        Torrent* torrent; int id;
-        ~WaitingGuard() { torrent->waiting_readers.erase(id); }
-    } waiting{t.get(), reader_id};
-    if (!t->have[size_t(piece)]) t->waiting_readers[reader_id] = {now_seconds(), piece, abort};
+        Torrent* torrent; int id; int p;
+        ~WaitingGuard() {
+            torrent->waiting_readers.erase(id);
+            if (torrent->have.size() > size_t(p) && torrent->have[size_t(p)])
+                dlog("torrent %s: reader %d unblocked for piece %d", torrent->hex.c_str(), id, p);
+        }
+    } waiting{t.get(), reader_id, piece};
+    if (!t->have[size_t(piece)]) {
+        t->waiting_readers[reader_id] = {now_seconds(), piece, abort};
+        refresh_wanted(t.get());
+        dlog("torrent %s: reader %d waiting for piece %d (pos=%lld)", t->hex.c_str(), reader_id, piece, (long long)pos);
+    }
 	while (!t->have[size_t(piece)]) {
 		if (t->stopped) return -2;
-		if (abort && abort->load()) return -1;
-		I.cv.wait_for(lock, std::chrono::milliseconds(100));
+		if ((abort && abort->load()) || (read_interrupt && read_interrupt->load())) return -1;
+		I.cv.wait_for(lock, std::chrono::milliseconds(50));
 	}
 	int64_t in_piece = abs - int64_t(piece) * t->plen;
 	int64_t k = std::min<int64_t>({int64_t(n), t->piece_size(piece) - in_piece, f.size - pos});

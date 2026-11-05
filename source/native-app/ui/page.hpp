@@ -65,7 +65,7 @@ class PageBase
         age_ += dt;
         if (!hui::tween::reduced_motion) clock_ += dt;
         rail_.set_page(page_);
-        rail_.update(dt,env_.iptv_visible && *env_.iptv_visible,env_.media_servers_visible && *env_.media_servers_visible);
+        rail_.update(dt,env_.iptv_visible && *env_.iptv_visible,env_.media_servers_visible && *env_.media_servers_visible,env_.torrents_visible && *env_.torrents_visible);
     }
 
     const Env &env_;

@@ -39,6 +39,7 @@ struct Session {
     std::shared_ptr<Boundary> prepared_ = std::make_shared<Boundary>(Boundary{"prepared"});
     Updater updater_;
     std::unique_ptr<Reporter> media_reporter_=std::make_unique<Reporter>();
+    void torrent_reset() {}
     void media_reset(){if(media_cancel_)*media_cancel_=true;if(media_play_cancel_)*media_play_cancel_=true;events.push_back("media reset");}
     bool watching = false;
     Boundary player_{"player"}, provider_tasks_{"providers"}, tex_{"textures"};

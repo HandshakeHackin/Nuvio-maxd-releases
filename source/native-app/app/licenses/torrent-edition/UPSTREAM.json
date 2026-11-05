@@ -1,0 +1,7 @@
+{
+  "repository": "https://github.com/chewlord76/nuvio-torrent-edition",
+  "commit": "8e34590582ad89c0f12182289f83c2526bd47c4a",
+  "license": "GPL-3.0-or-later",
+  "adaptedFiles": ["src/torrent/bencode.cpp", "src/torrent/bencode.h", "src/torrent/engine.cpp", "src/torrent/engine.h", "src/torrent/torrent_stream.cpp", "src/torrent/torrent_stream.h", "gl/session_torrents.cpp", "tests/torrent_streaming_host.cpp", "tests/torrent_session_boundary.hpp"],
+  "localChanges": "Opt-in lifecycle, bounded paired temporary Web Drop with console confirmation, bounded scans and metadata, cancellable worker shutdown, existing media server and playback integration preserved. HDR fallback implemented separately without changing saved preferences."
+}
