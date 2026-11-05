@@ -150,6 +150,8 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
         'extractedFileCount': len(actual), 'allExtractedFileHashesMatch': True,
         'executable': 'x86-64 ET_SCE_EXEC inside native PS5 SELF',
         'hostHttpsTestsPassed': 80, 'hostUiNavigationTestsPassed': 11,
+        'hostTorrentIntegrationTestsPassed': True, 'hostHdrFallbackTestsPassed': True,
+        'torrentHub': info['torrentHub'],
         'hostConnectedServicesTestsPassed': 19, 'connectedServices': info['connectedServices'],
         'hostInstantPlaybackTestsPassed': 26,
         'hostDecoderSetupTestsPassed': 11,

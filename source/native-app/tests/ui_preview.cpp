@@ -48,7 +48,10 @@ int main(int argc, char** argv) {
         state.qr_modules[y * state.qr_size + x] = qrcodegen_getModule(qr, x, y);
     hui::gfx::DrawList list;
     bool iptv_visible=argc==4 && (std::string(argv[3])=="iptv"||std::string(argv[3])=="iptv-search");
-    const sx::Env env{fonts,icons,"21:45",&iptv_visible};
+    bool torrents_visible=argc==4 && std::string(argv[3]).starts_with("torrents");
+    bool media_visible=argc==4 && std::string(argv[3])=="torrents-all";
+    iptv_visible=iptv_visible||media_visible;
+    const sx::Env env{fonts,icons,"21:45",&iptv_visible,&media_visible,&torrents_visible};
     const std::string mode = argc == 4 ? argv[3] : "login";
     const auto artwork = [&](int w, int h, float tint) {
         std::vector<std::uint8_t> px(static_cast<std::size_t>(w)*h*4);
@@ -66,7 +69,15 @@ int main(int argc, char** argv) {
     };
     const auto backdrop_texture=artwork(1920,1080,0);
     const auto poster_texture=artwork(480,720,3);
-    if(mode=="live-guide") {
+    if(mode=="torrents"||mode=="torrents-all") {
+        sx::AddonsContent content;
+        const char* names[]={"Torrents & Magnet Hub","Enter Magnet or .torrent URL","Phone / PC Web Drop (QR Code)","Sample video.mkv"};
+        const char* hints[]={"Choose cache size or rescan USB files","Paste a magnet, info hash or torrent URL","Pair temporarily, then confirm on this console","Resume 0:42 · Local .torrent"};
+        for(int i=0;i<4;++i){sx::Addon a;a.name=names[i];a.version=i==0?"Cache: 6 GB · All sources":"";a.description=hints[i];a.types="Torrent streaming";a.initial=i==2?"QR":"BT";a.local=true;a.colour=0x7b5bf5;content.items.push_back(a);}
+        sx::Addons page(env,sx::Page::torrents);page.set_content(&content);page.enter();hui::InputFrame input;
+        for(int i=0;i<120;++i)page.update(input,1.f/60);hui::gfx::BackdropSpec bg;page.draw(list,bg);
+    }
+    else if(mode=="live-guide") {
         sx::AddonsContent content;
         sx::Addon manage;manage.name="Live TV sources & filters";manage.version="Programme guide enabled";manage.description="Options: guide settings and XMLTV URL";manage.types="Live TV";content.items.push_back(manage);
         for(int i=0;i<3;++i){sx::Addon c;c.name=i==0?"News HD":i==1?"Sports":"Documentaries";c.version="Live TV";c.types="Live";c.initial="TV";c.programme_now=i==2?"Programme guide unavailable":"Now: 20:00 · Evening news and weather";c.programme_next=i==2?"X: watch channel":"Next: 20:30 · World headlines and a long programme title";content.items.push_back(c);}
