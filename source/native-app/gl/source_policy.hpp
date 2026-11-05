@@ -73,7 +73,7 @@ inline Assessment assess(const ::Stream& s,const Preferences& p,Context ctx={}) 
     const auto n=bytes(s);const auto res=stream_display::resolution_of(s);
     const int height=res=="4K"?2160:res=="1440p"?1440:res=="1080p"?1080:res=="720p"?720:res=="SD"?480:0;
     const auto has=[&](const char* word){return stream_display::has(text,word);};
-    const bool hdr=has("hdr")||has("hdr10")||has("hdr10+")||has("dolby vision")||has("dovi")||has("dv");
+    const bool hdr=has("hdr")||has("hdr10")||has("hdr10+")||has("hdr10plus")||has("hdr10 plus")||has("hlg")||has("dolby vision")||has("dovi")||has("dv");
     const bool cam=has("cam")||has("camrip")||has("hdcam")||has("telesync")||has("hdts")||has("telecine")||has("screener")||has("dvdscr");
     std::vector<std::string> reasons;
     const auto hide=[&](const char* reason){a.hidden=true;if(a.reason.empty())a.reason=reason;};

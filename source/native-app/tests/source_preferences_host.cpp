@@ -30,6 +30,8 @@ int main(int argc,char** argv){
     assert(assess(source("film.720p.mkv"),p).hidden);
     assert(assess(source("film.1080p.mkv",6e9),p).hidden);
     assert(assess(source("film.1080p.HDR10.mkv"),p).hidden);
+    assert(assess(source("film.1080p.HDR10plus.mkv"),p).hidden);
+    assert(assess(source("film.1080p.HLG.mkv"),p).hidden);
     assert(!assess(source("film.1080p.DVD.mkv"),p).hidden);
     assert(!assess(source("unknown",std::numeric_limits<double>::quiet_NaN()),p).hidden);
     assert(!assess(source("unknown",std::numeric_limits<double>::infinity()),p).hidden);
