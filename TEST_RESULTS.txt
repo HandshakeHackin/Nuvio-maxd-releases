@@ -1,17 +1,13 @@
-Max’d 1.0.0.5 public release
+Nuvio Max'd 1.0.0.8 experimental validation
 
-PASS: full GitHub native/account/transport/GPU regressions and UI renders.
-PASS: real VLC file, authenticated HTTP/HLS, seeking, rejection and cancellation regressions.
-CI: https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/41359837020
+Source: 8a7b7d2e8f951c9ff8dfec9caac7ff847c50c94e (clean)
+GitHub CI: https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/41945656033 — both jobs passed
+PS5 app and bundled updater: compiled, linked and signed
+Image: fully verified and deeply extracted; 156 files match; zero container errors/warnings
+ZIP: all 156 files match the image; safe entries; 0777 permissions
+Matching source archive: 886 file hashes verified
+Local full host suite, 33 UI preview scenes, dedicated issue #14 and curl socket checks: passed
+FFmpeg 7.0.3 EVO, authenticated HLS, MP4/Matroska seek and subtitle fixtures: passed
+Two codec/scaler output pins intentionally refreshed with owner approval after independent clean source builds produced identical outputs; all upstream source pins and other 454 maintenance outputs preserved.
 
-PASS: PS5 compile/link and 414 loaded-module imports.
-PASS: deep image extraction, all 151 packaged file hashes, ZIP integrity and matching clean source archive (831 hashes).
-PASS: production Library search, profile/source isolation, type/sort filters and clearing.
-PASS: Xtream/XMLTV guide parsing, bounded document reuse, background loading, cancellation and stale-profile handling.
-PASS: series updates with synchronized history, aired dates, in-progress exclusions, metadata request bounds and profile isolation.
-PASS: shutdown regression covers guide and episode task cancellation, cleanup ordering and updater exit handoff.
-PASS: zero OpenGL errors in feature previews; navigation and large Live TV catalog regressions.
-PASS: static catalog scan: zero errors, four maintainer-review warnings and one notice for existing updater/console-light capabilities. Helper approval unchanged.
-
-Reporters confirmed subtitle sizing (#12) and Library covers (#13) on the earlier 1.0.0.4 test build. Those fixes are included. New features passed automated checks; physical-console/provider acceptance remains pending.
-The final source adjustment updated only the shutdown test fixture; compiled application code is unchanged from the verified PS5 build. Packaging metadata and source archive were regenerated and both packages reverified against the final clean source.
+PS5 hardware, HDR output, real accounts/servers and console-restart persistence remain unverified. This is an experimental prerelease.
