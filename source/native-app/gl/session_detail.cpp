@@ -2,6 +2,7 @@
 // streams the addons offer for a film or an episode.
 
 #include "session.hpp"
+#include "source_policy.hpp"
 #include "providers.h"
 #include "trailers.h"
 #include "stream_display.hpp"

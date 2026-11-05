@@ -1,6 +1,7 @@
 // Native source preferences, independent of any external UI or account service.
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "session.hpp"
+#include "source_policy.hpp"
 namespace sx {
 void Session::source_options() {
     if(watching||resuming_)return;

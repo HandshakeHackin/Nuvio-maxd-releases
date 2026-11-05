@@ -1,4 +1,5 @@
 #include "session.hpp"
+#include "source_policy.hpp"
 #include "http.h"
 #include "providers.h"
 #include <algorithm>
