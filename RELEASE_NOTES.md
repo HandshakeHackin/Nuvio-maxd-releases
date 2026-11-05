@@ -1,16 +1,17 @@
-# Nuvio Max'd 1.0.0.9 experimental
+# Nuvio Max'd 1.0.0.10 experimental — remote remapping attempt
 
-## Torrent streaming
-- Enable Settings > Addons > Peer-to-peer torrents to reveal the torrent hub. Open magnets, info hashes, USB/app .torrent files and direct .torrent URLs; choose a file and resume recent streams separately for each profile.
-- Improve read/seek buffering, container header/tail retention and numerical DHT bootstrap. Use a configurable 1, 2, 4 or 6 GiB rolling cache and two tracker workers.
-- Pair a phone or PC using the Web Drop QR screen on the same trusted LAN. The temporary listener uses port 8088, expires after ten minutes and requires console confirmation before opening a received torrent. Closing the QR, changing profiles or disabling torrents stops it.
+## Remote buttons
+- Add Settings > Controls > Remote buttons (experimental) with Test remote buttons and press-to-assign mapping.
+- Assign detected Media Remote or TV/HDMI-CEC buttons to Search, Options, Select/Back, navigation, play/pause, playback or seeking. Search uses the same app action as Triangle on the controller.
+- Save up to 16 mappings. Change or remove individual mappings, or reset all app remote mappings. Controller controls stay unchanged as a way back.
+- Ignore assignment presses, held buttons when switching modes, idle/release sentinels and inputs intercepted by system overlays. A 15-second timeout explains when no button reaches the app.
 
-## HDR and existing features
-- Add Auto HDR-to-SDR fallback after successful SDR output restoration. The fallback affects only the current playback session; existing saved HDR choices retain their behavior. Require native HDR10 and Convert HDR to SDR remain available.
-- Preserve Plex, Jellyfin, Emby, issue #14 authenticated artwork/connection persistence, IPTV and previous subtitle/playback fixes.
-- Fix torrent worker shutdown and reject malformed metadata lengths before arithmetic or allocation. Adapted from chewlord76/nuvio-torrent-edition with attribution included.
+## This is only an attempt
+This is not a confirmed fix for issue #16. PlayStation itself, or your TV, may handle Mute, volume, microphone, PS/Home and branded app buttons before Nuvio receives them. If the app never receives a button press, a setting inside Nuvio cannot remap it. This build does not change controls on the PlayStation home screen or in other apps.
 
-## Installation and testing
-Use PPSA99288.zip for ProsperoStore/folder installation, or the FFPFSC image for image installation. Keep user data and use one installation format at a time. Content version: 07.000.009.
+## Testing and installation
+Install PPSA99288.zip as an app folder, or use the FFPFSC image. Keep saved user data and the previous installer. Content version: 07.000.010.
 
-Experimental prerelease: automated host, sanitizer, UI and package verification passed; PS5 runtime, real torrent swarms and display/server compatibility still need console testing. HDR10+ dynamic metadata and unsupported Dolby Vision conversion are not claimed.
+Use Test remote buttons first, then assign Search to a detected button and test from Home. Please report the firmware, remote type, physical button, button name/number shown and what happened. Close/reopen to check persistence. Automated host and package checks do not establish PS5 hardware compatibility.
+
+Existing media-server, torrent/Web Drop, HDR and playback features are retained. See TESTING.txt for the full checklist.
