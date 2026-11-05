@@ -69,6 +69,7 @@ struct WebDropSubmission {
 };
 
 struct Stats {
+    int64_t cached_bytes = 0, ready_bytes = 0, file_size = 0;
 	bool found = false;           // the torrent is running
 	bool has_metadata = false;
 	int peers = 0;                // connected
@@ -90,6 +91,9 @@ public:
 	void set_cache_bytes(int64_t cache_bytes);
 	int64_t cache_bytes() const;
 	void shutdown();
+    int64_t cache_storage_bytes() const;
+    bool enabled() const;
+    bool clear_cache(std::string* error);
 	void set_enabled(bool enabled);
 	void stop_web_drop();
 

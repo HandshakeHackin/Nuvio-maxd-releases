@@ -44,6 +44,7 @@ void draw_pin_entry(hui::gfx::DrawList&, const Env&, const PinEntry&);
 
 struct SignInState
 {
+    bool text_payload = false; // QR contains safe plain text, not a network address
     bool link_only = false; // informational QR page; no authentication polling
     std::string title = "Sign in to Nuvio";
     std::string cancel_label = "Continue as guest";

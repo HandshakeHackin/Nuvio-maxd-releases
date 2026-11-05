@@ -5,6 +5,9 @@ HUI="$ROOT/third_party/hui"
 B="$ROOT/test-output"
 mkdir -p "$B"
 if [[ -z "${PREVIEW_MODES:-}" || "${PREVIEW_MODES:-}" == *remote-* ]]; then bash "$ROOT/tests/remote_session.sh"; fi
+if [[ -z "${PREVIEW_MODES:-}" || "${PREVIEW_MODES:-}" =~ torrent-resume|torrent-settings|playback-recovery|diagnostic-summary ]]; then
+    bash "$ROOT/tests/torrent_streaming.sh"
+fi
 ${HOST_CC:-gcc} -O2 -c "$ROOT/third_party/qrcodegen.c" -o "$B/qr-host.o"
 ${HOST_CXX:-g++} -std=c++20 -O1 -DGL_GLEXT_PROTOTYPES=1 \
     -I"$ROOT/ui" -I"$ROOT/src" -I"$ROOT/third_party" -I"$HUI/src" -I"$HUI/third_party/stb" \
@@ -22,7 +25,7 @@ EGL_PLATFORM=surfaceless LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=llvmpipe \
 
 fi
 
-read -r -a modes <<< "${PREVIEW_MODES:-remote-remap remote-learn remote-timeout torrents torrents-all live-guide series-updates library-search library-search-empty library-search-long iptv movie series seasons player tracks chapters chapters-menu home skip skip-focused recap-focused credits-focused next-focused subtitle-preview subtitle-preview-largest subtitle-preview-high-contrast release-notes install-source store-update github-update donation audio-output settings-categories settings-lighting profile-pin}"
+read -r -a modes <<< "${PREVIEW_MODES:-torrent-resume torrent-settings playback-recovery diagnostic-summary torrent-buffer remote-remap remote-learn remote-timeout torrents torrents-all live-guide series-updates library-search library-search-empty library-search-long iptv movie series seasons player tracks chapters chapters-menu home skip skip-focused recap-focused credits-focused next-focused subtitle-preview subtitle-preview-largest subtitle-preview-high-contrast release-notes install-source store-update github-update donation audio-output settings-categories settings-lighting profile-pin}"
 for mode in "${modes[@]}"; do
     EGL_PLATFORM=surfaceless LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=llvmpipe \
         MESA_GL_VERSION_OVERRIDE=4.6 MESA_GLSL_VERSION_OVERRIDE=460 MESA_SHADER_CACHE_DISABLE=true \

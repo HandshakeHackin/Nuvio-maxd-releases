@@ -175,6 +175,7 @@ struct PlayerState
     double duration = 0.0;
     double buffered = 0.0;  // seconds, how far ahead is ready
     bool paused = false;
+    std::string buffer_info;
     int buffering = -1;     // percent while stalled, negative when playing
     std::string net;        // "8.4 MB/s  ·  32 peers"
     std::string audio;      // "English  5.1"
@@ -217,6 +218,7 @@ struct LaunchState
     int stage = 0;                   // the one in progress; earlier ones are done
     float progress = -1.0f;          // how full the buffer is, negative when not known yet
     bool torrent = true;
+    std::string ready; // verified bytes ahead and decoded playable seconds
     std::string peers; // "32"
     std::string speed; // "8.4 MB/s"
     std::string done;  // "12%"

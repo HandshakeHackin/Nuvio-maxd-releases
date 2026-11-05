@@ -43,7 +43,7 @@ double valid_resume_position(const json &entry)
            pos < std::numeric_limits<int>::max() - 1.0 && dur >= 0 &&
            (dur == 0 || pos < dur * 0.95) ? pos : 0;
 }
-struct TorrentResume { int file = -1; double position = 0, updated = -1; };
+struct TorrentResume { int file = -1; double position = 0, updated = -1; std::string name; };
 TorrentResume latest_resume(const json &state, const std::string &hash)
 {
     TorrentResume best;
@@ -60,7 +60,7 @@ TorrentResume latest_resume(const json &state, const std::string &hash)
         const double pos = valid_resume_position(it.value());
         double updated = jnum(it.value(), "updated", 0);
         if (!std::isfinite(updated) || updated < 0) updated = 0;
-        if (pos > 0 && (best.file < 0 || updated > best.updated)) best = {file, pos, updated};
+        if (pos > 0 && (best.file < 0 || updated > best.updated)) best = {file, pos, updated, jstr(it.value(), "fileName")};
     }
     return best;
 }
@@ -174,6 +174,7 @@ void Session::torrent_progress(bool finished)
     else if (pos >= 5.0)
     {
         torrent_state_["resume"][w_item_.id] = {
+            {"fileName", w_item_.name},
             {"position", pos},
             {"duration", dur},
             {"updated", now_epoch_ms()},
@@ -379,9 +380,9 @@ void Session::torrent_show_web_drop_qr()
     torrent_build();
 }
 
-void Session::torrent_menu()
+void Session::torrent_menu(bool settings_only)
 {
-    if(!prefs_.builtin_torrents){say("Enable torrent streaming first",5,true);return;}
+    if(!prefs_.builtin_torrents && !settings_only){say("Enable torrent streaming first",5,true);return;}
     std::vector<std::string> options = {
         "Enter Magnet link, Info-Hash or .torrent URL",
         "Scan USB & PS5 storage for .torrent files",
@@ -393,8 +394,14 @@ void Session::torrent_menu()
         "View: Local .torrent files only",
         "View: Recent streams only",
         "Clear recent torrent history",
+        "Cached storage: " + format_bytes(bt::Engine::get().cache_storage_bytes()) + " (limit " + std::to_string(prefs_.torrent_cache_gb) + " GB)",
+        "Turn off torrents and clear buffered data",
+        bt::Engine::get().web_drop_url().empty() ? "Web Drop: inactive" : "Web Drop: pairing active (close pairing)",
     };
-    open_dropdown("Torrents & Magnet Streaming", options, 0, [this](int pick) {
+    if(settings_only)options={options[5],options[10],options[11],options[12]};
+    open_dropdown(settings_only?"Torrent settings":"Torrents & Magnet Streaming", options, 0, [this, settings_only, generation=profile_generation_](int pick) {
+        if(settings_only){if(pick<0 || pick>=4)return;static constexpr int actions[]={5,10,11,12};pick=actions[pick];}
+        if(generation!=profile_generation_ || !profile_ready_)return;
         switch (pick)
         {
         case 0:
@@ -439,6 +446,24 @@ void Session::torrent_menu()
         case 8:
             torrent_view_ = pick - 6;
             torrent_build();
+            break;
+        case 10:
+            say("Buffered torrent pieces use this storage. .torrent files and saved progress are separate. The limit controls rolling storage, not total video size.",12);break;
+        case 11:
+            open_dropdown("Clear buffered torrent data?",{"Cancel","Turn off torrents and clear buffer"},0,
+                [this,generation=profile_generation_](int choice){
+                    if(choice!=1 || generation!=profile_generation_ || !profile_ready_)return;
+                    if(watching || resuming_){say("Stop playback before clearing buffered data.",7,true);return;}
+                    if(torrent_cancel_)*torrent_cancel_=true;
+                    std::string error;const bool ok=bt::Engine::get().clear_cache(&error);
+                    prefs_.builtin_torrents=bt::Engine::get().enabled();torrents_visible=prefs_.builtin_torrents;
+                    if(!prefs_.builtin_torrents){torrent_reset();torrent_drop_open_=false;sign_in_open=false;}
+                    save_prefs();refresh_settings();
+                    say(ok?"Buffered data cleared; torrent streaming is off. Saved progress and .torrent files were kept.":error,9,!ok);
+                });break;
+        case 12:
+            if(!bt::Engine::get().web_drop_url().empty()){bt::Engine::get().stop_web_drop();torrent_drop_open_=false;say("Web Drop pairing closed.",5);}
+            else torrent_show_web_drop_qr();
             break;
         case 9:
             torrent_state_["recent"] = json::array();
@@ -496,25 +521,31 @@ void Session::torrent_activate(int index, bool secondary)
         }
         torrent_open_input(entry.path_or_uri, force_picker);
     };
-    const auto saved = latest_resume(torrent_state_, entry.id);
+    auto saved = latest_resume(torrent_state_, entry.id);
+    if(saved.file>=0 && saved.name.empty()) {
+        std::vector<bt::FileInfo> files;std::string error;
+        if(bt::Engine::get().wait_metadata(entry.id,files,nullptr,0,&error) && size_t(saved.file)<files.size())
+            saved.name=short_filename(files[size_t(saved.file)].path);
+    }
+    if(saved.name.empty())saved.name="File "+std::to_string(saved.file+1);
     if (!secondary) {
-        if (saved.file >= 0) torrent_play_hash(entry.id, entry.name, entry.trackers, entry.webseeds, saved.file);
+        if (saved.file >= 0) torrent_play_hash(entry.id, saved.name, entry.trackers, entry.webseeds, saved.file);
         else open_entry(false);
         return;
     }
     std::vector<std::string> actions;
     if (saved.file >= 0) {
-        actions.push_back("Resume file " + std::to_string(saved.file+1) + " from " + format_resume_time(saved.position));
-        actions.push_back("Play this file from beginning");
+        actions.push_back("Resume from " + format_resume_time(saved.position));
+        actions.push_back("Start over");
     } else actions.push_back("Stream default video file");
-    actions.push_back("Choose file inside torrent to stream");
+    actions.push_back("Choose another file");
     if (!entry.id.empty()) actions.push_back("Remove from recent list");
     const int count = static_cast<int>(actions.size());
     open_dropdown(entry.name, actions, 0, [this, entry, open_entry, saved, count, generation=profile_generation_](int pick) {
         if (generation != profile_generation_ || !profile_ready_ || !prefs_.builtin_torrents ||
             watching || resuming_ || pick < 0 || pick >= count) return;
         if (saved.file >= 0 && pick < 2) {
-            torrent_play_hash(entry.id, entry.name, entry.trackers, entry.webseeds, saved.file, pick == 1);
+            torrent_play_hash(entry.id, saved.name, entry.trackers, entry.webseeds, saved.file, pick == 1);
             return;
         }
         if (saved.file < 0 && pick == 0) { open_entry(false); return; }
@@ -529,6 +560,7 @@ void Session::torrent_activate(int index, bool secondary)
             }
         }
     });
+    if (saved.file >= 0) dropdown.message = "File: " + saved.name;
 }
 
 void Session::torrent_play_hash(const std::string &info_hash, const std::string &name,

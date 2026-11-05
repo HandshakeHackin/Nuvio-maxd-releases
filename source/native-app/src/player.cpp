@@ -179,7 +179,7 @@ void Player::open(const Options& opts) {
 	evo_presenter_serial_ = -1;
 	dlog("player: playback engine %s", opts.evo ? "EVO Player 0.13.0 (experimental)" : "Nuvio native");
 	abort_ = false;
-	quick_ = false; seek_rejected_ = false;
+	quick_ = false; seek_rejected_ = false; diagnostic_video_codec_=diagnostic_audio_codec_=0;
 	eof_ = false;
 	paused_ = opts.start_paused;
     audio_switch_ = -1; // never carry a pending choice into a different title
@@ -545,6 +545,8 @@ void Player::demux_run() {
 	}
     if (playback_streams::is_hls(fmt_))
         dlog("player: HLS selected video=%d audio=%d programs=%u; unused audio playlists disabled",vs,as,fmt_->nb_programs);
+	diagnostic_video_codec_=vs>=0?fmt_->streams[vs]->codecpar->codec_id:AV_CODEC_ID_NONE;
+    diagnostic_audio_codec_=as>=0?fmt_->streams[as]->codecpar->codec_id:AV_CODEC_ID_NONE;
 	video_stream_ = vs;
 	audio_stream_ = as;
 	if (vs < 0) vdrop_ = -1;
@@ -613,7 +615,7 @@ void Player::demux_run() {
                     if (audio_stream_ >= 0) fmt_->streams[audio_stream_]->discard = AVDISCARD_ALL;
                     fmt_->streams[sw]->discard = AVDISCARD_DEFAULT;
                 }
-				audio_stream_ = sw;
+				audio_stream_ = sw; diagnostic_audio_codec_=fmt_->streams[sw]->codecpar->codec_id;
                 {
                     std::lock_guard<std::mutex> clock(clock_m_);
                     pcm_.close(false);
@@ -1754,9 +1756,9 @@ void Player::log_stats() {
 }
 
 nlohmann::json Player::diagnostic_snapshot() {
-	if(vlc_) return {{"engine","vlc"},{"paused",vlc_->paused()},{"buffering",vlc_->buffering()},{"positionSeconds",vlc_->position()},{"durationSeconds",vlc_->duration()}};
+	if(vlc_) {const auto codecs=vlc_->diagnostic_codecs();return {{"videoCodec",codecs.first},{"audioCodec",codecs.second},{"engine","vlc"},{"paused",vlc_->paused()},{"buffering",vlc_->buffering()},{"positionSeconds",vlc_->position()},{"durationSeconds",vlc_->duration()}};}
     const double now=now_seconds(); const int shown=shown_.load();
-    nlohmann::json context={{"sourceFps",fps_},{"shownFrames",shown},{"decodedFrames",decoded_.load()},
+    nlohmann::json context={{"engine",opts_.evo?"evo":"native"},{"videoCodec",avcodec_get_name(static_cast<AVCodecID>(diagnostic_video_codec_.load()))},{"audioCodec",avcodec_get_name(static_cast<AVCodecID>(diagnostic_audio_codec_.load()))},{"sourceFps",fps_},{"shownFrames",shown},{"decodedFrames",decoded_.load()},
             {"droppedFrames",dropped_.load()},{"bufferedSeconds",std::max(vq_.duration(),aq_.duration())},
             {"paused",paused_.load()},{"buffering",buffering_.load()},{"audioGainPercent",gain_percent_.load()},{"audioDelaySeconds",audio_delay_.load()},
             {"state",int(state_.load())},{"positionSeconds",position()},{"videoPacketSeconds",vq_.duration()},{"audioPacketSeconds",aq_.duration()},

@@ -2,6 +2,8 @@
 #include "buffered_log.h"
 #include "util.h"
 #include <csignal>
+#include <algorithm>
+#include <vector>
 #include <cmath>
 #include <cstdio>
 #include <fcntl.h>
@@ -41,7 +43,32 @@ nlohmann::json filter_context(const nlohmann::json& input) {
     }
     const auto phase=input.find("phase");
     if(phase!=input.end() && phase->is_string()) for(const char* value : {"boot","ready","playback","fatal","output-rejected","exit"}) if(*phase==value) output["phase"]=value;
+    for(const auto& spec : std::initializer_list<std::pair<const char*,std::vector<std::string>>>{
+        {"engine",{"native","evo","vlc"}},
+        {"videoCodec",{"h264","hevc","vp9","av1","mpeg2video","mpeg4","unknown","other"}},
+        {"audioCodec",{"aac","ac3","eac3","dts","truehd","flac","opus","vorbis","mp3","pcm_s16le","unknown","other"}},
+        {"errorCode",{"none","open-failed","playback-failed","network-failed","decode-failed","output-failed","seek-failed"}}}) {
+        const auto it=input.find(spec.first);
+        if(it!=input.end() && it->is_string() && std::find(spec.second.begin(),spec.second.end(),it->get<std::string>())!=spec.second.end())output[spec.first]=*it;
+    }
     return output;
+}
+std::string classify_error(const std::string& error) {
+    const auto e=lower(error);
+    if(e.find("seek")!=std::string::npos || e.find("resynchron")!=std::string::npos || e.find("saved torrent position")!=std::string::npos)return "seek-failed";
+    if(e.find("audio output")!=std::string::npos || e.find("display")!=std::string::npos)return "output-failed";
+    if(e.find("decod")!=std::string::npos)return "decode-failed";
+    if(e.find("http")!=std::string::npos || e.find("peer")!=std::string::npos || e.find("timed out")!=std::string::npos || e.find("network")!=std::string::npos)return "network-failed";
+    if(e.find("open")!=std::string::npos)return "open-failed";
+    return "playback-failed";
+}
+std::string support_summary(const std::string& version) {
+    const auto safe=filter_context(current);
+    const auto text=[&](const char* key,const char* fallback){auto it=safe.find(key);return it!=safe.end() && it->is_string()?it->get<std::string>():std::string(fallback);};
+    const auto v=!version.empty() && version.size()<=32 && version.find_first_not_of("0123456789.")==std::string::npos?version:"development";
+    std::string result="Nuvio Max'd "+v+"\nPlayer: "+text("engine","unknown")+"\nVideo: "+text("videoCodec","unknown")+"; Audio: "+text("audioCodec","unknown")+"\nError code: "+text("errorCode","none");
+    if(safe.contains("bufferedSeconds") && safe["bufferedSeconds"].is_number())result+="\nBuffered seconds: "+std::to_string(std::min(3600.0,std::max(0.0,safe["bufferedSeconds"].get<double>())));
+    return result;
 }
 void init(const std::string& directory, const std::string& version) {
     shutdown(); root=directory; make_dirs(root);

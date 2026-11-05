@@ -62,7 +62,8 @@ std::string stats_line(const LaunchState &s)
     if (!s.speed.empty())
         out += (out.empty() ? "" : "   \xC2\xB7   ") + s.speed;
     if (!s.done.empty())
-        out += (out.empty() ? "" : "   \xC2\xB7   ") + s.done + " downloaded";
+        out += (out.empty() ? "" : "   \xC2\xB7   ") + s.done;
+    if(!s.ready.empty()) out += (out.empty()?"":"   ·   ")+s.ready;
     return out;
 }
 
@@ -448,11 +449,12 @@ void draw_sign_in(hui::gfx::DrawList &list, const Env &env, const SignInState &s
         text(list, env.fonts.regular, line, x + 58.0f, y, 28.0f, theme::ink_2);
     };
     step(1, "Scan the code with your phone", r.y + 218.0f);
-    step(2, "or open this address on any device", r.y + 282.0f);
-    text(list,env.fonts.semibold,s.link,x+58.0f,r.y+346.0f,s.link_only?29.0f:38.0f,theme::accent_soft);
+    step(2, s.text_payload ? "then choose Copy text on your phone" : "or open this address on any device", r.y + 282.0f);
+    if(s.text_payload) hui::ui::paragraph(list,env.fonts.regular,s.link,x+58.0f,r.y+346.0f,24.0f,620.0f,34.0f,theme::ink_2,7);
+    else text(list,env.fonts.semibold,s.link,x+58.0f,r.y+346.0f,s.link_only?29.0f:38.0f,theme::accent_soft);
     if(s.link_only) {
-        hui::ui::paragraph(list,env.fonts.regular,"Donations are optional. Thank you for supporting development.",
-            x+58.0f,r.y+440.0f,28.0f,620.0f,40.0f,theme::ink_2,3);
+        hui::ui::paragraph(list,env.fonts.regular,s.text_payload ? "No account details, filenames, stream URLs or tokens are included." : s.title=="Support on Ko-fi" ? "Donations are optional. Thank you for supporting development." : s.status,
+            x+58.0f,r.y+(s.text_payload?650.0f:440.0f),28.0f,620.0f,40.0f,theme::ink_2,3);
     } else {
     step(3, "and enter this code", r.y + 428.0f);
     const Rect code{x + 58.0f, r.y + 462.0f, 520.0f, 124.0f};

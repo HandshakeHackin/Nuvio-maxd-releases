@@ -200,6 +200,7 @@ void PlayerUi::draw_buffering(hui::gfx::DrawList &list, float amount) const
     text(list, env_.fonts.semibold, label, cx, cy + 128.0f, 36.0f, theme::ink, Align::center);
     if (!state.net.empty())
         text(list, env_.fonts.regular, state.net, cx, cy + 172.0f, 26.0f, theme::ink_2, Align::center);
+    if(!state.buffer_info.empty())text(list,env_.fonts.regular,state.buffer_info,cx,cy+214.0f,24.0f,theme::ink_2,Align::center);
     list.pop_opacity();
 }
 

@@ -37,6 +37,7 @@ enum SettingIndex
     kLibrarySource,
     kConnectedServices,
     kTorrents,
+    kTorrentOptions,
     kServer,
     kDisplay,
     kRefresh,
@@ -721,6 +722,8 @@ void Session::refresh_settings()
     set(kTorrents, Kind::toggle, "Peer-to-peer torrents", "",
         "Off uses direct and debrid links from your configured addons. Turn on to also download raw torrents.",
         prefs_.builtin_torrents);
+    set(kTorrentOptions,Kind::action,"Torrent settings",prefs_.builtin_torrents?"Enabled":"Off",
+        "Cache limit and storage usage, safe buffered-data cleanup, and paired Web Drop. .torrent files and watch progress are kept separately.");
     const int connections = int(!services_.torbox.key.empty()) + int(!services_.premiumize.key.empty()) + int(!services_.animeskip.key.empty());
     set(kConnectedServices, Kind::value, "Connected Services", connections ? std::to_string(connections) + " connected" : "TorBox / Premiumize",
         "Connect TorBox or Premiumize, import connections from Nuvio Sync, and prepare cached links for faster playback. The selected file keeps its original quality.");
@@ -779,7 +782,7 @@ void Session::refresh_settings()
     set(kReducedMotion, Kind::toggle, "Reduced motion", "", "Make focus, scrolling and menu transitions immediate; keep decorative backgrounds still.", prefs_.reduced_motion);
     set(kHighContrast, Kind::toggle, "Higher contrast", "", "Brighter interface text and stronger panel and focus boundaries. The video picture is unchanged.", prefs_.high_contrast);
     set(kReleaseNotes, Kind::action, "What’s new", "Nuvio Max’d " + std::string(nuvio_update::current_version), "Read the changes in this version again.");
-    set(kDiagnostics, Kind::action, "Playback diagnostics", "", "Show where this app saves playback, frame timing and crash diagnostics for troubleshooting.");
+    set(kDiagnostics, Kind::action, "Playback diagnostics", "", "Show or save a privacy-safe summary; scan its QR code to copy text on your phone. Detailed private logs stay on this console.");
     set(kAudioLangs, Kind::value, "Audio languages", prefs_.audio_langs.empty() ? "Default" : prefs_.audio_langs,
         "Preferred audio track language, for example \"eng\". Leave empty for the default.");
     set(kAutoplay, Kind::toggle, "Play next episode automatically", "", "Show a cancellable countdown during credits or at the end of an episode. Match the selected stream quality.",
@@ -816,7 +819,8 @@ void Session::refresh_settings()
     group("Subtitles", {kSubLangs,kAutoSubs,kSubSize,kSubFont,kSubColour,kSubEffect,kSubBackground,kSubtitleDelay,kSubtitleAutoSync});
     group("Playback", {kSeek, kShoulderSeek, kCountdown, kAutoplay, kSkipSegments, kReadAhead, kChapterSkip, kTrailerLanguage});
     group("Appearance & Lighting", {kReducedMotion,kHighContrast,kUiSounds,kCalmBackgrounds,kConsoleLights});
-    group("Addons", {kTorrents,kAddAddon,kReload});
+    group("Addons", {kAddAddon,kReload});
+    group("Torrents",{kTorrents,kTorrentOptions});
     group("Controls",{kRemoteButtons});
     group("App & Updates", {kReleaseNotes,kDiagnostics,kMetadataCredits,kDonation,kInstallSource,kUpdates,kExit});
     changed_ |= kSettings;
@@ -870,6 +874,7 @@ void Session::settings_activate(int row)
         }
         break;
     case kRemoteButtons:remote_menu();break;
+    case kTorrentOptions: torrent_menu(true);break;
     case kTorrents:
         prefs_.builtin_torrents = !prefs_.builtin_torrents;
         if(!prefs_.builtin_torrents){
@@ -1057,7 +1062,7 @@ void Session::settings_activate(int row)
         break;
     case kInstallSource: install_source_menu(); break;
     case kReleaseNotes: release_notes_open=true; release_notes_version=nuvio_update::current_version; break;
-    case kDiagnostics: say("Diagnostics: " + data_dir_ + "/runtime.json, boot-current.txt and crash-current.txt. Previous run files are kept too.", 15.0); break;
+    case kDiagnostics: diagnostic_menu();break;
     case kAudioLangs:
         ask_text([this](const std::string &v) {
             if (trim(v).empty())

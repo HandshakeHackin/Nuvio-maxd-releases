@@ -25,6 +25,14 @@ inline bool save_json(const std::string& path, const json& j) {
 }
 
 struct Session {
+    void diagnostic_menu();void diagnostic_qr();void watch_fail(const std::string&);
+    void watch_stop(bool){watching=false;++w_gen_;}
+    void detail_load_streams(const std::string& video,const std::string&){requested_video=video;}
+    std::string requested_video;
+    int w_gen_=0,services_generation_=0,media_generation_=0;
+    bool w_trailer_=false,w_transcode_=false,start_over_next_=false,d_open_=false;
+    ::Stream w_stream_;std::vector<::Stream> d_streams_;
+    enum {kDetail=2};
     void torrent_set_cache(int gb);
     void torrent_poll_drop();
     bool torrent_drop_open_=false,profile_ready_=true;
@@ -39,7 +47,7 @@ struct Session {
     void torrent_cycle();
     void torrent_search();
     void torrent_show_web_drop_qr();
-    void torrent_menu();
+    void torrent_menu(bool settings_only = false);
     void torrent_activate(int index, bool secondary = false);
     void torrent_open_input(const std::string &input, bool force_file_picker = false);
     bool torrent_try_search_input(const std::string &query);
@@ -89,6 +97,7 @@ struct Session {
     } player_;
 
     std::vector<std::string> choices, messages;
+    std::string dropdown_title;
     std::function<void(int)> pick;
     std::function<void(const std::string &)> text_cb;
     std::vector<::Stream> played;
@@ -99,8 +108,9 @@ struct Session {
         done(r);
     }
 
-    void open_dropdown(const std::string &, const std::vector<std::string> &options, int,
+    void open_dropdown(const std::string &title, const std::vector<std::string> &options, int,
                        std::function<void(int)> chosen) {
+        dropdown_title=title;
         choices = options;
         pick = std::move(chosen);
     }

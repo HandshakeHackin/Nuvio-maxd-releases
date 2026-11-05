@@ -1,5 +1,11 @@
 # Unreleased torrent integration
 
+- Show the selected filename separately from Resume, Start over and Choose another file controls.
+- Show launch stages, transfer speed, verified data ready ahead and actual buffered playback seconds.
+- Recover with retry, restart or alternate file/source while preserving saved progress; reject stale callbacks.
+- Group optional torrent controls, allocated cache usage, safe cleanup and Web Drop status in settings.
+- Export a privacy-filtered diagnostic summary as on-screen text, a plain-text QR for phone copying, or a local text file.
+
 - Resume the most recently watched file in a torrent, or restart only that file. Keep other files’ progress and ignore stale profile callbacks.
 - Resolve the actual selected file before applying/saving torrent progress, including automatic magnet-file selection. Save progress for streams with unknown duration.
 - Use short head-only probing for MKV/TS/M2TS, while preserving MP4 tail-metadata access and indexed resume behavior.

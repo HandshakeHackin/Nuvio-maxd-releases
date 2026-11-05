@@ -15,6 +15,7 @@
 
 #include "http.h"
 #include "torrent/engine.h"
+#include "torrent/playback_policy.hpp"
 #include "torrent/torrent_stream.h"
 
 #include <algorithm>
@@ -131,6 +132,7 @@ void Session::detail_play(int index, bool with_server)
 
 void Session::play_stream(const ::Stream &st, bool transcode, bool trailer)
 {
+    const bool force_start=start_over_next_;start_over_next_=false;
     const bool was_resuming = resuming_;
     const auto refuse = [&](const char *message) {
         if (was_resuming)
@@ -165,7 +167,7 @@ void Session::play_stream(const ::Stream &st, bool transcode, bool trailer)
     if (watching && !resuming_)
         return;
     resuming_ = false;
-    w_trailer_=trailer;
+    w_trailer_=trailer;w_transcode_=transcode;
 
     // What is being played, for progress and the player's titles.
     w_item_ = d_item_;
@@ -229,6 +231,7 @@ void Session::play_stream(const ::Stream &st, bool transcode, bool trailer)
     if(w_item_.type=="torrent")start=torrent_resume(w_item_.id);
     if(w_item_.type=="media-video")start=media_resume_;
     if(iptv::library_type(w_item_.type))start=iptv_resume(w_item_.id);
+    if(force_start)start=0;
     if(w_trailer_)subtitle="Trailer";
     const int gen = ++w_gen_;
     launch = LaunchState();
@@ -243,7 +246,8 @@ void Session::play_stream(const ::Stream &st, bool transcode, bool trailer)
         if (!v.size.empty())
             launch.quality += "  \xC2\xB7  " + v.size;
     }
-    launch.stages = {"Finding sources", "Connecting to peers", "Filling the buffer", "Starting"};
+    launch.stages = {"Finding peers", "Getting file information", "Buffering video", "Starting"};
+    if(!torrent)launch.stages={"Opening source","Connecting","Buffering video","Starting"};
     if(w_item_.type == "tv") launch.stages = {"Choosing channel", "Connecting", "Buffering live video", "Starting"};
     if(iptv::library_type(w_item_.type))launch.stages={"Opening IPTV title","Connecting to provider","Buffering video","Starting"};
     if (resolving) launch.stages = {"Checking service cache", "Resolving original file", "Filling the buffer", "Starting"};
@@ -263,7 +267,7 @@ void Session::play_stream(const ::Stream &st, bool transcode, bool trailer)
     w_episode_ = episode_playback::Flow();
     watch_reset_anime();
     w_eof_recorded_ = false;
-    nuvio_diagnostics::record({{"outputFailed",false},{"playerFailed",false}});
+    nuvio_diagnostics::record({{"engine",builtin?"native":prefs_.vlc_player?"vlc":prefs_.evo_player?"evo":"native"},{"bufferedSeconds",0},{"outputFailed",false},{"playerFailed",false},{"errorCode","none"},{"videoCodec","unknown"},{"audioCodec","unknown"}});
     w_next_.reset();
     w_next_streams_.clear();
     w_next_requested_ = false;
@@ -282,6 +286,7 @@ void Session::play_stream(const ::Stream &st, bool transcode, bool trailer)
         std::string url, error;
         std::vector<std::string> headers;
         int file_idx = -1;
+        std::string file_name;
     };
     if (builtin)
         torrent_stats_start(TorrentStream::make_url(st.info_hash, -1), st.info_hash);
@@ -338,6 +343,7 @@ void Session::play_stream(const ::Stream &st, bool transcode, bool trailer)
                 eng.select_file(s.info_hash, idx);
                 r.url = TorrentStream::make_url(s.info_hash, idx);
                 r.file_idx = idx;
+                r.file_name = files[size_t(idx)].path;
                 return r;
             }
             if (torrent)
@@ -434,7 +440,7 @@ void Session::play_stream(const ::Stream &st, bool transcode, bool trailer)
             }
             return r;
         },
-        [this, gen, start, title, subtitle, srv, s, builtin, resolving, services_gen](Res &r) {
+        [this, gen, start, force_start, title, subtitle, srv, s, builtin, resolving, services_gen](Res &r) {
             if (gen != w_gen_ || !launch_open)
                 return;
             if (resolving && services_gen != services_generation_) {
@@ -442,9 +448,8 @@ void Session::play_stream(const ::Stream &st, bool transcode, bool trailer)
             }
             if (!r.error.empty())
             {
-                watch_stop(false);
-                if (r.error != "cancelled")
-                    say(r.error, 8.0, true);
+                if(r.error=="cancelled")watch_stop(false);
+                else watch_fail(r.error);
                 return;
             }
             if (builtin)
@@ -461,7 +466,10 @@ void Session::play_stream(const ::Stream &st, bool transcode, bool trailer)
                 // another file's progress to the temporary index-zero placeholder.
                 w_item_.id = "torrent:" + s.info_hash + ":" + std::to_string(r.file_idx);
                 w_video_id_ = w_item_.id;
-                actual_start = torrent_resume(w_item_.id);
+                w_stream_.file_idx=r.file_idx;
+                const auto slash=r.file_name.find_last_of("/\\");
+                w_item_.name=r.file_name.empty()?w_item_.name:r.file_name.substr(slash==std::string::npos?0:slash+1);
+                actual_start = force_start?0:torrent_resume(w_item_.id);
             }
             watch_start(r.url, r.headers, actual_start, title, subtitle, par);
         });
@@ -525,7 +533,7 @@ void Session::torrent_stats_start(const std::string &url, const std::string &inf
     t_known_ = -1;
     t_speed_ = 0;
     t_progress_ = -1;
-    t_has_meta_ = false;
+    t_has_meta_ = false; t_cached_bytes_=t_ready_bytes_=t_file_bytes_=0;
     t_visible_ = true;
     t_next_poll_ = 0;
     t_polling_ = false;
@@ -545,6 +553,7 @@ void Session::torrent_stats_poll()
         double peers = 0, speed = 0, progress = -1;
         int known = -1; // the app's own engine only
         bool has_meta = false;
+        int64_t cached=0,ready=0,size=0;
     };
     bg<Stats>(
         [url]() {
@@ -557,7 +566,7 @@ void Session::torrent_stats_poll()
                 s.speed = es.download_rate;
                 s.progress = es.file_progress;
                 s.known = es.known_peers;
-                s.has_meta = es.has_metadata;
+                s.has_meta = es.has_metadata; s.cached=es.cached_bytes;s.ready=es.ready_bytes;s.size=es.file_size;
                 return s;
             }
             const HttpResponse h = http_get(url, 5);
@@ -574,14 +583,14 @@ void Session::torrent_stats_poll()
             return s;
         },
         [this, gen](Stats &s) {
-            t_polling_ = false;
-            t_next_poll_ = now_seconds() + 1;
-            if (gen != t_gen_ || !s.ok)
-                return;
-            t_peers_ = static_cast<int>(s.peers);
-            t_speed_ = s.speed;
+            if(gen!=t_gen_)return;
+            t_polling_=false;t_next_poll_=now_seconds()+1;
+            if(!s.ok)return;
+            t_peers_=std::isfinite(s.peers)?int(std::clamp(s.peers,0.0,100000.0)):0;
+            t_speed_=std::isfinite(s.speed)?std::clamp(s.speed,0.0,16.0*1024*1024*1024):0;
+            t_cached_bytes_=std::max<int64_t>(0,s.cached);t_ready_bytes_=std::max<int64_t>(0,s.ready);t_file_bytes_=std::max<int64_t>(0,s.size);
             if (s.progress >= 0)
-                t_progress_ = s.progress;
+                t_progress_ = std::isfinite(s.progress)?std::clamp(s.progress,0.0,1.0):0;
             t_known_ = s.known;
             t_has_meta_ = s.has_meta;
         });
@@ -617,16 +626,8 @@ void Session::watch_update()
 
     if (st == Player::State::Failed)
     {
-        const std::string err = player_.error();
         nuvio_diagnostics::record(player_.diagnostic_snapshot());
-        watch_stop(false);
-        nuvio_diagnostics::record({{"playerFailed",true}});
-        say(iptv::library_type(w_item_.type)
-                ? iptv::failure_message(err)
-                : w_item_.type=="media-video" ? "Media server playback failed: "+err+". Select the title again and try Compatible playback (server HLS), or reconnect in Settings if access was denied."
-                : "Playback failed: " + err +
-                      (w_stream_.torrent() ? ". The torrent may have no seeders; try another stream." : ""),
-            iptv::library_type(w_item_.type) ? 14.0 : 8.0, true);
+        watch_fail(player_.error());
         return;
     }
     if (st == Player::State::Ended)
@@ -652,11 +653,11 @@ void Session::watch_update()
         // knows how far it has got; then the player opens it and fills its buffer.
         if (st == Player::State::Idle)
         {
-            launch.stage = t_known_ <= 0 ? 0 : (t_has_meta_ ? 2 : 1);
+            launch.stage = t_has_meta_ && (t_cached_bytes_>0 || t_speed_>0)?2:t_known_>0?1:0;
         }
         else if (st == Player::State::Opening)
         {
-            launch.stage = t_visible_ && t_has_meta_ && t_progress_ > 0 ? 2 : 1;
+            launch.stage = t_visible_ && TorrentStream::is_url(t_stats_url_)?(t_has_meta_ && (t_cached_bytes_>0 || t_speed_>0)?2:t_known_>0?1:0):1;
         }
         else if (buffering)
         {
@@ -670,6 +671,7 @@ void Session::watch_update()
             w_started_ = true;
         }
     }
+    launch.ready=TorrentStream::is_url(t_stats_url_)?bt::buffer_summary(t_ready_bytes_,player_.playable_buffered_seconds()):"";
     launch.peers = std::to_string(t_peers_);
     {
         char buf[32];
@@ -678,7 +680,7 @@ void Session::watch_update()
         if (t_progress_ >= 0)
         {
             std::snprintf(buf, sizeof(buf), "%d%%", static_cast<int>(t_progress_ * 100.0 + 0.5));
-            launch.done = buf;
+            launch.done = t_file_bytes_>0?bt::readable_bytes(t_cached_bytes_)+" cached of "+bt::readable_bytes(t_file_bytes_)+" file":std::string(buf)+" of file fetched";
         }
     }
 
@@ -769,10 +771,11 @@ void Session::watch_update()
         {
             std::snprintf(buf, sizeof(buf), "%.1f MB/s  \xC2\xB7  %d peers", t_speed_ / (1024.0 * 1024.0), t_peers_);
             playing.net = buf;
+            playing.buffer_info=TorrentStream::is_url(t_stats_url_)?bt::buffer_summary(t_ready_bytes_,player_.playable_buffered_seconds()):"";
         }
         else
         {
-            playing.net.clear();
+            playing.net.clear();playing.buffer_info.clear();
         }
     }
     std::string audio_label;
@@ -952,9 +955,8 @@ void Session::fail_video_output(const std::string& error) {
     dlog("player: output failed: %s",error.c_str());
     dlog("player: HDR evidence %s",HdrOutput::status().c_str());
     nuvio_diagnostics::record(player_.diagnostic_snapshot());
-    watch_stop(false);
-    nuvio_diagnostics::record({{"phase","output-rejected"},{"outputFailed",true},{"hdrResult",unsigned(HdrOutput::result())}});
-    say(error,14.0,true);
+    watch_fail(error);
+    nuvio_diagnostics::record({{"phase","output-rejected"},{"outputFailed",true},{"errorCode","output-failed"},{"hdrResult",unsigned(HdrOutput::result())}});
 }
 
 void Session::watch_save_progress(bool final, bool force_finished)

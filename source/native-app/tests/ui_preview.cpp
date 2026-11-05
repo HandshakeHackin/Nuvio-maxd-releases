@@ -121,6 +121,22 @@ int main(int argc, char** argv) {
         for(int i=0;i<120;++i)page.update(idle,1.f/60);
         hui::gfx::BackdropSpec bg;page.draw(list,bg);
     }
+    else if(mode=="torrent-resume" || mode=="torrent-settings" || mode=="playback-recovery") {
+        std::ifstream input(root+"/test-output/torrent-streaming/ui-scenes.json");nlohmann::json scenes;input>>scenes;
+        const auto& scene=scenes.at(mode);sx::DropdownState d;d.title=scene.at("title");d.message=scene.at("message");d.options=scene.at("options").get<std::vector<std::string>>();d.selected=0;
+        sx::draw_dropdown(list,env,d,1);
+    }
+    else if(mode=="diagnostic-summary") {
+        std::ifstream input(root+"/test-output/torrent-streaming/ui-scenes.json");nlohmann::json scenes;input>>scenes;
+        const auto& scene=scenes.at(mode);state.link_only=true;state.text_payload=true;state.title="Copy diagnostic summary";state.cancel_label="Close";
+        state.link=scene.at("link");state.qr_size=scene.at("qr_size");state.qr_modules=scene.at("modules").get<std::vector<uint8_t>>();
+        sx::draw_sign_in(list,env,state,0,1);
+    }
+    else if(mode=="torrent-buffer") {
+        sx::LaunchState launch;launch.title="Example Episode · 4K";launch.subtitle="Starting the selected torrent file";launch.stage=2;launch.progress=.35;
+        launch.stages={"Finding peers","Getting file information","Buffering video","Starting"};launch.peers="12";launch.speed="8.4 MB/s";launch.done="256 MB cached of 80 GB file";launch.ready="16 MB ready ahead · 3.5 s buffered";
+        sx::draw_launch(list,env,launch,0,1);
+    }
     else if(mode=="donation") {
         state.link_only=true;state.title="Support on Ko-fi";state.link=sx::donation_link;state.cancel_label="Close";
         std::uint8_t temp[qrcodegen_BUFFER_LEN_MAX],donation_qr[qrcodegen_BUFFER_LEN_MAX];

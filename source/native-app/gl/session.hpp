@@ -190,7 +190,7 @@ class Session
     void live_activate(int index, bool favorite = false);
     AddonsContent torrents_content;
     bool torrents_visible = false;
-    void torrent_menu();
+    void torrent_menu(bool settings_only = false);
     void torrent_rescan();
     void torrent_search();
     void torrent_cycle();
@@ -467,6 +467,10 @@ class Session
     unsigned live_generation_ = 0;
     int live_view_ = 0;
     bool live_loading_ = false;
+    void diagnostic_menu();
+    void diagnostic_qr();
+    void watch_fail(const std::string& error);
+    bool start_over_next_=false, w_transcode_=false;
     void torrent_reset();
     void torrent_load();
     void torrent_save();
@@ -763,6 +767,7 @@ class Session
     bool t_polling_ = false, t_visible_ = false;
     int t_peers_ = 0, t_known_ = -1;
     double t_speed_ = 0, t_progress_ = -1;
+    int64_t t_cached_bytes_=0,t_ready_bytes_=0,t_file_bytes_=0;
     bool t_has_meta_ = false;
     // the next episode, picked once its streams are in
     bool autoplay_pending_ = false;

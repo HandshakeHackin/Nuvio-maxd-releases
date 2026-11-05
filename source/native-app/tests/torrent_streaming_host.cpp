@@ -9,6 +9,7 @@ extern "C" {
 #include "../src/torrent/engine.h"
 #include "../src/trailers.h"
 #include "../src/http.h"
+#include "../src/diagnostics.h"
 #include "../src/util.h"
 
 #include <arpa/inet.h>
@@ -32,6 +33,9 @@ double wrapped_now_seconds() asm("__wrap__Z11now_secondsv");
 static std::atomic<double> time_offset{0};
 double wrapped_now_seconds(){return real_now_seconds()+time_offset.load();}
 
+static json ui_scenes=json::object();
+static void scene(const char* key,const sx::Session& sess){ui_scenes[key]={{"title",sess.dropdown_title},{"message",sess.dropdown.message},{"options",sess.choices}};}
+static const std::string verified_seed(262144, 'v');
 static std::atomic<bool> block_seed{false},seed_started{false};
 
 // Minimal POSIX socket HTTP client for testing Web Drop server without libcurl-dev on host VM
@@ -41,8 +45,17 @@ std::string HttpResponse::describe() const {
 }
 
 HttpResponse http_get(const std::string& url, long /*timeout_s*/, const std::atomic<bool>* cancel,
-                      const std::vector<std::string>& /*headers*/) {
+                      const std::vector<std::string>& headers) {
     HttpResponse res;
+    if(url=="http://fixture.invalid/video.mkv") {
+        for(const auto& h:headers)if(starts_with(h,"Range: bytes=")) {
+            long long lo=0,hi=0;
+            if(std::sscanf(h.c_str(),"Range: bytes=%lld-%lld",&lo,&hi)==2 && lo>=0 && hi>=lo && hi<static_cast<long long>(verified_seed.size())) {
+                res.status=206;res.body=verified_seed.substr(size_t(lo),size_t(hi-lo+1));return res;
+            }
+        }
+        res.status=400;return res;
+    }
     if(block_seed && url.find("cdn.example.org")!=std::string::npos){
         seed_started=true;while(cancel && !cancel->load())std::this_thread::sleep_for(std::chrono::milliseconds(10));
         res.error="cancelled";return res;
@@ -334,11 +347,15 @@ int main(int argc, char** argv) {
         assert(wanted[4] == 19);
         assert(wanted[5] == 18);
 
+        const auto empty_stats=eng.stats(expected_hash);
+        assert(empty_stats.file_size==4194304 && empty_stats.cached_bytes==0 && empty_stats.ready_bytes==0);
+
         // Open a reader, seek to piece 12 (offset 8 * 256 KB inside file 1), and verify immediate wanted queue shift
         int reader_id = 0;
         int64_t fsize = 0;
         auto t_handle = eng.open_reader(expected_hash, best, &reader_id, &fsize, &err);
         assert(t_handle != nullptr);
+        assert(!eng.clear_cache(&err) && eng.enabled());
         assert(fsize == 4194304);
 
         eng.seek_reader(t_handle, reader_id, best, 8 * 262144);
@@ -532,8 +549,10 @@ int main(int argc, char** argv) {
         sess.torrent_state_["resume"]["torrent:"+expected_hash+":2147483647"]={{"position",99},{"duration",120},{"updated",9e15}};
         sess.watching=false;
         sess.torrent_activate(3,true);
-        assert(sess.choices[0].find("Resume file 2 from 0:42")!=std::string::npos);
-        assert(sess.choices[1]=="Play this file from beginning");
+        assert(sess.choices[0]=="Resume from 0:42");
+        assert(sess.choices[1]=="Start over");
+        assert(sess.dropdown.message=="File: "+sess.w_item_.name);
+        scene("torrent-resume",sess);
         auto resume=sess.pick;resume(0);
         assert(sess.played.back().file_idx==1 && sess.torrent_resume(episode_id)==42);
         sess.watching=false;
@@ -599,9 +618,72 @@ int main(int argc, char** argv) {
         block_seed=false;
         eng.start(meta.info_hash_hex,{});assert(!eng.stats(meta.info_hash_hex).found);
     }
+    // Verified cached bytes and contiguous data ahead are not the same as lifetime download progress.
+    {
+        eng.set_enabled(true);
+        using namespace bt;
+        unsigned char digest[20];SHA1(reinterpret_cast<const unsigned char*>(verified_seed.data()),verified_seed.size(),digest);
+        BValue info=BValue::dict();info.d["name"]=BValue(std::string("video.mkv"));
+        info.d["length"]=BValue(int64_t(verified_seed.size()));info.d["piece length"]=BValue(int64_t(262144));
+        info.d["pieces"]=BValue(std::string(reinterpret_cast<char*>(digest),20));
+        BValue torrent=BValue::dict();torrent.d["info"]=info;torrent.d["url-list"]=BValue(std::string("http://fixture.invalid/video.mkv"));
+        bt::TorrentMeta meta;std::string error;
+        assert(eng.load_torrent_buffer(bencode(torrent),meta,&error));eng.select_file(meta.info_hash_hex,0);
+        for(int i=0;i<100 && eng.stats(meta.info_hash_hex).cached_bytes!=int64_t(verified_seed.size());++i)
+            std::this_thread::sleep_for(std::chrono::milliseconds(20));
+        auto stat=eng.stats(meta.info_hash_hex);
+        assert(stat.cached_bytes==int64_t(verified_seed.size()) && stat.ready_bytes==int64_t(verified_seed.size()));
+        int reader=0;int64_t size=0;auto handle=eng.open_reader(meta.info_hash_hex,0,&reader,&size,&error);assert(handle);
+        eng.seek_reader(handle,reader,0,131072);stat=eng.stats(meta.info_hash_hex);
+        assert(stat.ready_bytes==131072 && stat.cached_bytes==262144);
+        eng.seek_reader(handle,reader,0,262144);assert(eng.stats(meta.info_hash_hex).ready_bytes==0);
+        assert(!eng.clear_cache(&error));eng.close_reader(handle,reader);handle.reset();
+        assert(eng.clear_cache(&error) && !eng.enabled());
+        assert(!file_exists(test_dir+"/torrent-cache.bin"));
+        assert(file_exists(test_dir+"/torrents/"+meta.info_hash_hex+".torrent"));
+        assert(file_exists(test_dir+"/profile1/torrents.json"));
+        const auto sentinel=test_dir+"/keep-release.bin";assert(write_file(sentinel,"keep"));
+        assert(symlink(sentinel.c_str(),(test_dir+"/torrent-cache.bin").c_str())==0);
+        assert(!eng.clear_cache(&error));std::string content;assert(read_file(sentinel,content)&&content=="keep");
+        unlink((test_dir+"/torrent-cache.bin").c_str());
+        sx::Session settings;settings.data_dir_=test_dir;settings.profile_dir_=test_dir+"/profile1";
+        settings.prefs_.builtin_torrents=false;settings.torrent_menu(true);
+        assert(settings.choices.size()==4 && settings.choices[2]=="Turn off torrents and clear buffered data");
+        scene("torrent-settings",settings);
+        auto menu=settings.pick;menu(2);assert(settings.choices.front()=="Cancel");
+        auto confirm=settings.pick;++settings.profile_generation_;confirm(1);
+        assert(settings.messages.empty());
+    }
+    // Actual recovery/menu/diagnostic methods with a controlled playback boundary.
+    {
+        sx::Session rec;rec.data_dir_=test_dir;rec.d_item_.id="tt-recovery";rec.d_item_.type="movie";
+        rec.w_item_=rec.d_item_;rec.d_video_id_="episode";rec.w_stream_.url="https://user:secret@example.invalid/private?token=secret";
+        rec.d_streams_={rec.w_stream_};rec.watching=true;rec.w_transcode_=true;
+        nuvio_diagnostics::init(test_dir+"/diagnostics","1.0.0.11");
+        nuvio_diagnostics::record({{"engine","native"},{"videoCodec","h264"}});
+        rec.watch_fail("HTTP error https://user:secret@example.invalid/private?token=secret");
+        assert(rec.choices[0]=="Retry playback" && rec.choices[1]=="Play from beginning");
+        auto retry=rec.pick;retry(0);assert(rec.watching && rec.played.back().url==rec.w_stream_.url);
+        rec.watching=false;rec.watch_fail("The source connection timed out.");scene("playback-recovery",rec);auto stale=rec.pick;
+        const auto count=rec.played.size();++rec.services_generation_;stale(0);assert(rec.played.size()==count);
+        rec.watch_fail("network failed");auto beginning=rec.pick;beginning(1);assert(rec.start_over_next_);
+        rec.watching=false;rec.watch_fail("network failed");auto sources=rec.pick;sources(2);
+        assert(rec.d_open_ && rec.requested_video=="episode");
+        rec.watch_fail("The audio output could not be released. Close and reopen the app");
+        assert(rec.choices.size()==2 && rec.choices.front()=="Diagnostic summary");
+        auto diagnostic=rec.pick;diagnostic(0);
+        assert(rec.sign_in_open && rec.sign_in.text_payload && rec.sign_in.qr_size>0);
+        ui_scenes["diagnostic-summary"]={{"link",rec.sign_in.link},{"qr_size",rec.sign_in.qr_size},{"modules",rec.sign_in.qr_modules}};
+        for(const auto& secret:{"https://","secret","example.invalid","private?"})assert(rec.sign_in.link.find(secret)==std::string::npos);
+        assert(!eng.web_drop_url().size()); // Summary copying never starts a network listener.
+        rec.diagnostic_menu();auto save=rec.pick;save(1);
+        std::string text;assert(read_file(test_dir+"/diagnostic-summary.txt",text) && text.find("secret")==std::string::npos);
+        nuvio_diagnostics::shutdown();
+    }
     eng.set_enabled(false);
     assert(eng.start_web_drop(18088).empty());
     eng.shutdown();
+    assert(write_file(test_dir+"/../ui-scenes.json",ui_scenes.dump(2)));
     std::printf("ALL TORRENT STREAMING HOST TESTS PASSED!\n");
     return 0;
 }

@@ -79,6 +79,10 @@ public:
 
 	State state() const { return vlc_ ? State(vlc_->state()) : state_.load(); }
 	std::string error() const;
+    double playable_buffered_seconds() const {
+        const double v=vq_.duration(),a=aq_.duration();
+        return video_stream_>=0 && audio_stream_>=0?(v<a?v:a):video_stream_>=0?v:a;
+    }
     bool take_seek_rejected() { return seek_rejected_.exchange(false); }
 
 	bool paused() const { return vlc_ ? vlc_->paused() : paused_.load(); }
@@ -192,6 +196,7 @@ private:
 	mutable std::mutex err_m_;
 	std::string error_;
     std::atomic<bool> seek_rejected_{false};
+    std::atomic<int> diagnostic_video_codec_{0}, diagnostic_audio_codec_{0};
 
 	std::thread demux_, video_, audio_;
 	std::atomic<bool> abort_{false};
