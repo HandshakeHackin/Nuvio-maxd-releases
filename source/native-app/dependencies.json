@@ -613,9 +613,9 @@
       "target/user/homebrew/include/fribidi/fribidi-deprecated.h": "8839fbc0faaa654dc2f166862962d74ec2c29932373eed1e35809b35eaa352f3",
       "target/user/homebrew/include/fribidi/fribidi-bidi.h": "819ec96d0a479a8516260b1a3b3993a244214ad6c0586d304249a691e1b5b274",
       "target/user/homebrew/lib/libavformat.a": "92a16e39bb9f7840dbe270738cdb1c80e45cf1fb12c627f6b866e8a23e166933",
-      "target/user/homebrew/lib/libswscale.a": "d62f12113af8a5e064d8e84386b831ee099e48933ffa1cfa0918a2c714a1931e",
+      "target/user/homebrew/lib/libswscale.a": "a7ccc4ef84880dd51525d41c4761316ff30356c2cf32b4b1feca20a5fa30d2b6",
       "target/user/homebrew/lib/libpostproc.a": "9ec29ed7be45ad976c0ff1ac3d3e1eeef94200b70d5d2aea6eca09d967d23157",
-      "target/user/homebrew/lib/libavcodec.a": "55f19b2444d6f72d20c302a1a41be81fce32492c090dd337a2f22e2d413499bf",
+      "target/user/homebrew/lib/libavcodec.a": "078621ac1360b6f97d0df67a2613dcbcc5ed2aef60038529512aebb872b6e95a",
       "target/user/homebrew/lib/libavdevice.a": "f38ac9af3f1d0476f051ce579916a1d9891e2cfb9926ac486c5fb58a903fe055",
       "target/user/homebrew/lib/libswresample.a": "0c97f10f6edf2f0b79185e17892f806584f5e617a5caaf47be95d0cb06003461",
       "target/user/homebrew/lib/libavutil.a": "892448a9cd5d754d66c7920bfae0d33422a95c6a690aa87a7e497ae5dfe71ab1",
@@ -809,6 +809,10 @@
     ],
     "extraRecipeSha256": {
       "tools/build_media_maintenance.sh": "3491f47b8fd90533cec65e2c459d7dc3fe1312830e750822c31182bff442bfcb"
+    },
+    "artifactRebuild": {
+      "receipt": "DEPENDENCY_REBUILD_1.0.0.8.json",
+      "receiptSha256": "cdef635b2d4f3a77f420fb33af265934bb7f6bdbf73ba4593e0bbe1a317d0a46"
     }
   },
   "upstreamAdaptations20261102": {

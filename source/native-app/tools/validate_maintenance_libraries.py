@@ -10,6 +10,14 @@ for name,digest in maintenance.get('extraRecipeSha256',{}).items():
     assert hashlib.sha256((root/name).read_bytes()).hexdigest()==digest, 'Maintenance sub-recipe differs: '+name
 for patch in maintenance.get('libassPatches',[]):
     assert hashlib.sha256((root/patch['path']).read_bytes()).hexdigest()==patch['sha256'], 'libass hardening patch differs'
+if rebuild:=maintenance.get('artifactRebuild'):
+    receipt_path=root/rebuild['receipt']
+    assert hashlib.sha256(receipt_path.read_bytes()).hexdigest()==rebuild['receiptSha256'], 'Rebuild receipt differs'
+    receipt=json.loads(receipt_path.read_text())
+    assert receipt['source']==maintenance['sources']['ffmpeg'], 'Rebuild source provenance differs'
+    assert receipt['independentCleanRebuildsIdentical'] is True
+    for name,output in receipt['outputs'].items():
+        assert output['sha256']==output['independentCleanBuildSha256']==maintenance['targetFileSha256'][name], 'Rebuild output pin differs'
 for name,digest in maintenance['targetFileSha256'].items():
     assert hashlib.sha256((sdk/name).read_bytes()).hexdigest()==digest, (
         'Maintenance dependency differs: '+name+

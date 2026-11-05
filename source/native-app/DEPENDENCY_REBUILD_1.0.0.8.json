@@ -1,0 +1,53 @@
+{
+  "version": "1.0.0.8",
+  "reason": "Original binary archives and original build environment were unavailable. The owner authorized new output pins from checksum-verified source builds; upstream source, patch, recipe and other output pins remain unchanged.",
+  "source": {
+    "version": "7.0.3",
+    "archive": "FFmpeg-n7.0.3.tar.gz",
+    "url": "https://github.com/FFmpeg/FFmpeg/archive/refs/tags/n7.0.3.tar.gz",
+    "sha256": "deedcabe339165214a3637df4c86a507aef0d793cf8774ff68735f4737e8ddbc",
+    "verification": "Checksum-pinned official FFmpeg GitHub tag; release server returned HTTP 503"
+  },
+  "sourceDateEpoch": 1793232000,
+  "sdkPrefix": "/workspace/nuvio-maintenance-libs/sdk",
+  "environment": {
+    "CFLAGS": "-O2 -g0",
+    "CXXFLAGS": "-O2 -g0",
+    "CPPFLAGS": "-I/workspace/nuvio-maintenance-libs/sdk/target/user/homebrew/include"
+  },
+  "tools": {
+    "clang": {
+      "path": "/workspace/nuvio-toolchain/sysroot/usr/lib/llvm-19/bin/clang",
+      "sha256": "0a3c55936ac43954fbe4914e6e73b577ca9e35e75d89ef13d3e28c187f41ca1a"
+    },
+    "llvm-ar": {
+      "path": "/workspace/nuvio-toolchain/sysroot/usr/lib/llvm-19/bin/llvm-ar",
+      "sha256": "e15ccf58a2db49c1d9589a515bebc191abee12db35c809f092a70ed8e1ea2f8e"
+    },
+    "llvm-strip": {
+      "path": "/workspace/nuvio-toolchain/sysroot/usr/lib/llvm-19/bin/llvm-objcopy",
+      "sha256": "8723d4539a1c621fbaa2f0bc9f6a5268ccb7cf93bac6b4fc8f1d6aed1b77201e"
+    },
+    "nasm": {
+      "path": "/workspace/nuvio-toolchain/sysroot/usr/bin/nasm",
+      "sha256": "b0e9b463a6f800117de60c0a55507b7880dfa0d4dbf15f47e1350e23c54c0128"
+    }
+  },
+  "outputs": {
+    "target/user/homebrew/lib/libavcodec.a": {
+      "previousSha256": "55f19b2444d6f72d20c302a1a41be81fce32492c090dd337a2f22e2d413499bf",
+      "sha256": "078621ac1360b6f97d0df67a2613dcbcc5ed2aef60038529512aebb872b6e95a",
+      "independentCleanBuildSha256": "078621ac1360b6f97d0df67a2613dcbcc5ed2aef60038529512aebb872b6e95a"
+    },
+    "target/user/homebrew/lib/libswscale.a": {
+      "previousSha256": "d62f12113af8a5e064d8e84386b831ee099e48933ffa1cfa0918a2c714a1931e",
+      "sha256": "a7ccc4ef84880dd51525d41c4761316ff30356c2cf32b4b1feca20a5fa30d2b6",
+      "independentCleanBuildSha256": "a7ccc4ef84880dd51525d41c4761316ff30356c2cf32b4b1feca20a5fa30d2b6"
+    }
+  },
+  "independentCleanRebuildsIdentical": true,
+  "proofLogSha256": "164343fe7a16db369acc95638cc04f3a46106cb8bb6213121b2a16bef092d3d6",
+  "hardwareVerified": false,
+  "llvmVersion": "19.1.7",
+  "nasmVersion": "NASM version 2.16.03"
+}

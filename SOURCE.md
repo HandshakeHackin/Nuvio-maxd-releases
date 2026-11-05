@@ -1,5 +1,5 @@
-# Source for temporary 1.0.0.6 test build
+# Source for Nuvio Max’d 1.0.0.8
 
-Matching development commit: `ac3924630139a53858e2cbcd3de7d2312915319d`. The source tree matches all 864 source archive hashes.
+The matching source commit and file hashes are in the release source archive’s `source-archive.json` and `native-validation.json`. This branch includes the issue #14 fixes from commit `420e7ae09d90261ba8b5acfda0369499a4a1c076`.
 
-This branch delivers manual test downloads for Jellyfin/Emby issue #14. It is not an official release, a latest-release/update-feed change or a store submission.
+Build instructions and the codec/scaler rebuild receipt are under `source/native-app/`. Console acceptance remains pending for this experimental release.

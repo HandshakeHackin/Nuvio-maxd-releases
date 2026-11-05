@@ -262,7 +262,9 @@ directory, and export `CPPFLAGS=-I/workspace/nuvio-maintenance-libs/sdk/target/u
 before running `tools/build_maintenance_libraries.sh BASE_SDK /workspace/nuvio-maintenance-libs`.
 The include path is needed for libass's early iconv header check. Use the resulting
 `/workspace/nuvio-maintenance-libs/sdk` as `PS5_PAYLOAD_SDK`; keep the base SDK unchanged.
-The recipe validates every source and recorded output hash. Other work paths can
+The recipe validates every source and recorded output hash. The codec/scaler archives
+were independently rebuilt for 1.0.0.8; their old and new hashes, tool hashes and
+reproduction result are recorded in `DEPENDENCY_REBUILD_1.0.0.8.json`. Other work paths can
 embed different compiler/configuration paths in FFmpeg archives and pkg-config files.
 
 From the repository root, set the paths to your toolchain and build:
