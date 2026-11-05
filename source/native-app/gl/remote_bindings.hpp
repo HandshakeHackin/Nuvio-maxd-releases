@@ -44,7 +44,8 @@ inline std::vector<RemoteBinding> load_remote_bindings(const nlohmann::json& j){
   if(!x.is_object())continue;
   const auto integer=[&](const char* k,int max)->int{
    auto p=x.find(k);if(p==x.end()||!p->is_number_integer())return -1;
-   if(*p<0||*p>max)return -1;return p->get<int>();
+   if(*p<0||*p>max)return -1;
+   return p->get<int>();
   };
   const int source=integer("source",1),kind=integer("kind",1),code=integer("code",int(remote_pad_mask)),aliases=integer("aliases",int(remote_pad_mask)),action=integer("action",int(RemoteAction::count)-1);
   if(source<0||kind<0||code<0||aliases<0||action<0)continue;

@@ -10,5 +10,5 @@ r,b=map(Path,sys.argv[1:]);s=(r/'gl/session_remote.cpp').read_text();h=(r/'gl/se
 b.joinpath('session.cpp').write_text(s.replace('#include "session.hpp"','#include "remote_session_boundary.hpp"'))
 b.joinpath('remote_learning_method.hpp').write_text(next(line for line in h.splitlines() if 'bool remote_learning()const' in line)+'\n')
 PY
-${HOST_CXX:-g++} -std=c++20 -O1 -Wall -Wextra -Werror -Wno-misleading-indentation -I"$B" -I"$R/tests" -I"$R/gl" -I"$R/third_party" "$B/session.cpp" "$R/tests/remote_session_host.cpp" -o "$B/test"
+${HOST_CXX:-g++} -std=c++20 -O1 -Wall -Wextra -Werror -I"$B" -I"$R/tests" -I"$R/gl" -I"$R/third_party" "$B/session.cpp" "$R/tests/remote_session_host.cpp" -o "$B/test"
 "$B/test" "$B/previews.json"
