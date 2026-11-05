@@ -39,8 +39,8 @@ void Session::remote_menu(){
 }
 void Session::remote_learn(int action){
     remote_capture_action_=action;remote_capture_generation_=profile_generation_;
-    remote_capture_until_=now_seconds()+15;
     open_dropdown(action<0?"Test a remote button":"Press a remote button",{"Cancel"},0,[this](int){remote_capture_until_=0;});
+    remote_capture_until_=now_seconds()+15;
     dropdown.message="Release the remote buttons, then press one button. Waiting up to 15 seconds. If nothing is detected, the PlayStation or TV may be handling that button before Nuvio can see it. Cancel with the controller.";
 }
 void Session::remote_receive(const RemoteButton& button){

@@ -11,6 +11,7 @@ int main(int argc,char** argv){
  s.remote_menu();s.pick(3);s.pick(2);assert(s.prefs_.remote_bindings.empty());
  s.remote_learn(-1);int saves=s.saves;s.remote_receive({0,true,88,0});assert(s.saves==saves&&s.prefs_.remote_bindings.empty());assert(s.dropdown.title.find("88")!=std::string::npos);
  s.pick(0);assert(s.remote_learning());fake_remote_time+=16;s.remote_capture_tick();assert(!s.remote_learning()&&s.dropdown.title=="No remote button received");assert(s.dropdown.message.find("system level")!=std::string::npos);
+ s.remote_learn(0);s.open_dropdown("Another dialog",{"Close"},0,[](int){});s.remote_receive({1,true,99,0});assert(s.saves==saves&&s.dropdown.title=="Another dialog");s.remote_capture_tick();assert(s.remote_capture_until_==0);
  s.remote_learn(0);s.dropdown_open=false;s.remote_capture_tick();assert(s.remote_capture_until_==0);
  s.remote_learn(0);++s.profile_generation_;s.remote_receive({1,true,99,0});assert(s.saves==saves);s.remote_capture_tick();assert(s.remote_capture_until_==0);
  s.remote_learn(0);fake_remote_time+=16;s.remote_receive({1,true,99,0});assert(s.saves==saves);s.remote_capture_tick();

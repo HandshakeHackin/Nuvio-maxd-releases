@@ -1171,6 +1171,7 @@ void Session::say(const std::string &message, double seconds, bool error)
 void Session::open_dropdown(const std::string &title, const std::vector<std::string> &options, int active,
                             std::function<void(int)> chosen)
 {
+    remote_capture_until_=0; // Replacing a dialog cancels button learning.
     update_dialog_ = false;
     install_source_dialog_ = false;
     dropdown.title = title;
