@@ -8,8 +8,8 @@ maintenance=pins['maintenanceLibraries']
 assert hashlib.sha256((root/maintenance['recipe']).read_bytes()).hexdigest()==maintenance['recipeSha256'], 'Maintenance build recipe differs'
 for name,digest in maintenance.get('extraRecipeSha256',{}).items():
     assert hashlib.sha256((root/name).read_bytes()).hexdigest()==digest, 'Maintenance sub-recipe differs: '+name
-for patch in maintenance.get('libassPatches',[]):
-    assert hashlib.sha256((root/patch['path']).read_bytes()).hexdigest()==patch['sha256'], 'libass hardening patch differs'
+for patch in maintenance.get('libassPatches',[])+maintenance.get('libxml2Patches',[]):
+    assert hashlib.sha256((root/patch['path']).read_bytes()).hexdigest()==patch['sha256'], 'Source hardening patch differs'
 if rebuild:=maintenance.get('artifactRebuild'):
     receipt_path=root/rebuild['receipt']
     assert hashlib.sha256(receipt_path.read_bytes()).hexdigest()==rebuild['receiptSha256'], 'Rebuild receipt differs'

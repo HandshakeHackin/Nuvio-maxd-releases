@@ -16,6 +16,17 @@ int main(int argc, char **argv) {
  const cheerio=require('cheerio');const CryptoJS=require('crypto-js');
  module.exports.getStreams=async(id,type,season,episode)=>{
   const $=cheerio.load('<div class="title">Test &amp; text</div>');
+  // Exercise the production browser bundle, including the fixed nth-check chain.
+  for (const alias of ['cheerio-without-node-native','react-native-cheerio'])
+   if(require(alias)!==cheerio)throw Error('cheerio alias');
+  const rows=cheerio.load('<ul><li data-id="a">One</li><li data-id="b">Two</li><li data-id="c">Three</li></ul><script>var source="a&b";</script>');
+  if(rows('li:nth-child(2n+1)').map((i,e)=>rows(e).attr('data-id')).get().join(',')!=='a,c')throw Error('nth selector');
+  if(rows('li').eq(1).text()!=='Two' || rows('script').html()!=='var source="a&b";')throw Error('HTML parser');
+  const xml=cheerio.load('<root><Item id="one"/><Item id="two"/></root>',{xmlMode:true});
+  if(xml('Item[id="two"]').length!==1 || xml('item').length!==0)throw Error('XML parser');
+  let rejected=false;
+  try { rows('li:nth-child('+' '.repeat(50000)+'!)'); } catch(e) { rejected=true; }
+  if(!rejected)throw Error('invalid nth selector');
   await new Promise(resolve=>setTimeout(resolve,5));
   const u=new URL('/video','https://example.com/root');u.searchParams.set('id',id);
   if(CryptoJS.SHA256('abc').toString()!=='ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad')throw Error('crypto');

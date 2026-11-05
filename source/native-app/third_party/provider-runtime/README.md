@@ -1,6 +1,6 @@
 # Provider runtime
 
-QuickJS **2026-06-04**, provided by Payload SDK 0.44, executes each provider in a fresh context. No quickjs-libc, std, os, Node filesystem or process modules are exposed. SDK header matches the official 2026-06-04 source exactly (SHA-256 2165f47772af9faee1798999a599fa9de850d1bf0259502dade1c25d4a588316).
+QuickJS **2026-06-04**, provided by Payload SDK 0.45, executes each provider in a fresh context. No quickjs-libc, std, os, Node filesystem or process modules are exposed. SDK header matches the official 2026-06-04 source exactly (SHA-256 2165f47772af9faee1798999a599fa9de850d1bf0259502dade1c25d4a588316).
 
 `entry.js` is our host API. `runtime.js` is a reproducible browser bundle of pinned npm dependencies: HTML selectors, CryptoJS, URL and Buffer helpers. Run `bash build.sh` with Node/npm to rebuild. `package-lock.json` pins dependency integrity. Third-party notices are in LICENSES.txt and included in the app image.
 
@@ -50,3 +50,18 @@ fixture runs the production QuickJS/download/parse path with simulated metadata
 and website responses, checks returned streams and playback headers, and checks
 rejected metadata authorization. It does not access media sites or prove PS5
 playback availability.
+
+## Selector maintenance (2026-11-05)
+
+The bundle uses Cheerio 1.2.0's `cheerio/slim` entry point (htmlparser2),
+which avoids Node networking/stream loading APIs and removes the legacy
+Cheerio fork's vulnerable nth-check 1.x dependency. All three provider module
+names (`cheerio`, `cheerio-without-node-native`, `react-native-cheerio`) retain
+the same exported object. HTML/XML parsing, nth selectors and malformed
+selectors are exercised in the production QuickJS bundle by tests/providers.sh.
+No forced major-version transitive overrides are used.
+
+Run `npm audit --package-lock-only --ignore-scripts --audit-level=high` to
+check the resolved graph without installing or executing packages. The
+repository adds a weekly security workflow and Dependabot configuration;
+scheduled runs become active only once merged into the default branch.

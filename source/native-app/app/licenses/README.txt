@@ -21,6 +21,7 @@ ps5-homebrew-ui (BlackBearReloaded):       GPL-3.0-or-later                ps5-h
 ps5-opengl SDK (BlackBearReloaded), with   GPL-3.0-or-later; Mesa MIT;     ps5-opengl/ (the SDK's own license
   Mesa and OpenGNM PSBC                    other parts as in the SDK       texts and notices)
 Inigo Quilez's 2D distance functions        MIT                             (in the toolkit's notices)
+libxml2                                    MIT                             libxml2.txt
 libcurl                                    curl                            curl.txt
 OpenSSL                                    Apache-2.0                      OpenSSL.txt
 libpsl                                     MIT                             libpsl.txt

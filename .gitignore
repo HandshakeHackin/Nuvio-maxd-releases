@@ -1,2 +1,3 @@
 /source/native-app/test-output/
 /source/native-app/**/__pycache__/
+/source/native-app/third_party/provider-runtime/node_modules/

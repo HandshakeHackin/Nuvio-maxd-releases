@@ -1,5 +1,9 @@
 # Staged for the next Max’d build
 
+- Dependency security: replace the legacy Cheerio fork with maintained browser-compatible selectors, removing the known nth-check denial-of-service advisory while retaining provider module aliases.
+- Maintenance: HarfBuzz 15.1.0, WebP 1.6.0 and libxml2 2.15.4, including PS5-compatible secure XML randomization. FFmpeg and graphics release lines stay pinned.
+- Add weekly dependency/security checks and reviewable update proposals; activation requires merging the workflow/configuration into the default branch.
+
 - Issue #14 follow-up: authenticated Media Servers posters now reach the artwork worker. Connection loading uses bounded descriptor-based reads; saves are read back and verified, with private diagnostics for load/rejection/save failures. PS5 restart confirmation remains pending.
 - Issue #14 password-keyboard test fix: secret fields now select Basic Latin input while retaining masking and the existing learning/resume protections. Intended to address the firmware 7.00 keyboard-open error; confirmed by the reporter on firmware 7.00.
 - Maintenance updates: FFmpeg 7.0.3, Expat 2.10.0, libpng 1.6.59, FreeType 2.15.0, HarfBuzz 15.0.0 and FriBidi 1.0.18, plus two additional libass drawing-input fixes.

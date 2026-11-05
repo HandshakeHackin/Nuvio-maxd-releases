@@ -1,0 +1,363 @@
+{
+  "baseVersion": "1.0.0.10 experimental",
+  "baseCommit": "dc7b71234461a0baf7d0fb8d14e7d18ca3bdadfc",
+  "updates": {
+    "providerSelectors": "Cheerio 1.2.0 slim replaces cheerio-without-node-native; npm audit has zero known advisories",
+    "harfbuzz": "15.0.0 \u2192 15.1.0",
+    "libwebp": "1.4.0 \u2192 1.6.0",
+    "libxml2": "2.13.5 \u2192 2.15.4"
+  },
+  "ffmpeg": "7.0.3 retained; original verified avcodec/swscale hashes preserved after canonicalizing informational configuration paths",
+  "targetPinChanges": {
+    "target/user/homebrew/include/harfbuzz/hb-buffer.h": {
+      "previous": "c9d608ef2ab9fdcbe3b285418a3662fb075a579fb7fd3010e75cfb1ae8263566",
+      "sha256": "6a5baa80420a7bb89e02ad575609cd3b94cc5f0dcc7a58fbb60be9af9ec2d5f0"
+    },
+    "target/user/homebrew/include/harfbuzz/hb-ot-metrics.h": {
+      "previous": "c65239f100590cf1b1f647bba6ccd1a548a4e89cb80978601ca3050e9884e724",
+      "sha256": "788a493674bd17b8b5995b2e050cb3eedcd3ad812e79033a017487b5ae6fdbb5"
+    },
+    "target/user/homebrew/include/harfbuzz/hb-version.h": {
+      "previous": "60f96ad305a357c1b39db78c5b0a254484ac8ffd1ef09cce0755c9000f8a62e4",
+      "sha256": "559ec7d3e02b9f081af67f685608aaec72d9ef8f0abbff984692a5395a60dc77"
+    },
+    "target/user/homebrew/include/libxml2/libxml/HTMLparser.h": {
+      "previous": null,
+      "sha256": "c4f81e8cbd194fbd4c121db47ff0eadf4b3efa9d0c780300787fb0e08372ffa4"
+    },
+    "target/user/homebrew/include/libxml2/libxml/HTMLtree.h": {
+      "previous": null,
+      "sha256": "d2280b971a031a5ed2f7f8ecff4906a9df6c3f35cb40c588eb05d60e24d8fdcb"
+    },
+    "target/user/homebrew/include/libxml2/libxml/SAX.h": {
+      "previous": null,
+      "sha256": "777fc2057fd2a39a6ca7648ee5f148014a65643e750cc5a2fe2e2fc3b4a0ff79"
+    },
+    "target/user/homebrew/include/libxml2/libxml/SAX2.h": {
+      "previous": null,
+      "sha256": "d3228dc9e18dec65660f7ff43eb5af2cb7a9e6dad00369f76f058300c0cb1b37"
+    },
+    "target/user/homebrew/include/libxml2/libxml/c14n.h": {
+      "previous": null,
+      "sha256": "c9adaf74b4d5c0f5e23e06deb9194e7d595142914a8c36f5e725010a37e6a7c6"
+    },
+    "target/user/homebrew/include/libxml2/libxml/catalog.h": {
+      "previous": null,
+      "sha256": "8418816149bed7463eb13fd6d260354a91f1819d2180685dc8d285181932b9c5"
+    },
+    "target/user/homebrew/include/libxml2/libxml/chvalid.h": {
+      "previous": null,
+      "sha256": "00acfc327dc00dfb2dd640ab4e1156effd8f5fb8311f0c20d2707440456dc7ce"
+    },
+    "target/user/homebrew/include/libxml2/libxml/debugXML.h": {
+      "previous": null,
+      "sha256": "1380bb85a7dccdbfebb1cc9ba9921873e6be11cbd4b0813824754feaa5aa5820"
+    },
+    "target/user/homebrew/include/libxml2/libxml/dict.h": {
+      "previous": null,
+      "sha256": "12302fd488f2b735c791f2b1d9fa5b2008dd5e40f94da12e56da0aebea6e1321"
+    },
+    "target/user/homebrew/include/libxml2/libxml/encoding.h": {
+      "previous": null,
+      "sha256": "0eabe928a57824d52b95daba1ee3e663f004d8622800f8c1f40177ea15a8a74c"
+    },
+    "target/user/homebrew/include/libxml2/libxml/entities.h": {
+      "previous": null,
+      "sha256": "ff61a6eedb81b52ad7e6bd5c005a705c871587c68314d94f7a3511f4afff8739"
+    },
+    "target/user/homebrew/include/libxml2/libxml/globals.h": {
+      "previous": null,
+      "sha256": "4e4a9866916b928b201d0ff4a544d90098c6b639da50ca25cc9c7ce395c26349"
+    },
+    "target/user/homebrew/include/libxml2/libxml/hash.h": {
+      "previous": null,
+      "sha256": "ee8ba2adce87d740581d6763e783828b622ea8da93a5e9ac4ff36436f607bc75"
+    },
+    "target/user/homebrew/include/libxml2/libxml/list.h": {
+      "previous": null,
+      "sha256": "ba1174b44be729cde0eb443180968def8a2879db54199af670e965d331648912"
+    },
+    "target/user/homebrew/include/libxml2/libxml/nanoftp.h": {
+      "previous": null,
+      "sha256": "b902e60279e35a4818cf1834a04e654a9cf51b5136f785e89179047304cc52ef"
+    },
+    "target/user/homebrew/include/libxml2/libxml/nanohttp.h": {
+      "previous": null,
+      "sha256": "8000d0196f6e6defd5e2468118cf3b534b15da7818b7db18167259ed857d4b7e"
+    },
+    "target/user/homebrew/include/libxml2/libxml/parser.h": {
+      "previous": null,
+      "sha256": "3062aaa97d435de0afc34630162c0b3c8a994e76854a92a0e3a217b6297545e2"
+    },
+    "target/user/homebrew/include/libxml2/libxml/parserInternals.h": {
+      "previous": null,
+      "sha256": "543da365c6c72699926ff11c0f4afa6c1990f028d7b8fcaaa30de2f284ae0718"
+    },
+    "target/user/homebrew/include/libxml2/libxml/pattern.h": {
+      "previous": null,
+      "sha256": "169dca568e076cba001c9a445b22fb73ffa64c9699fd785abcfaf31a8e22337a"
+    },
+    "target/user/homebrew/include/libxml2/libxml/relaxng.h": {
+      "previous": null,
+      "sha256": "7d46056b24c572f8a656637cb287fe462e880c7a1fbcd32d5ca7e618f838564c"
+    },
+    "target/user/homebrew/include/libxml2/libxml/schemasInternals.h": {
+      "previous": null,
+      "sha256": "e05a6496f4ca8e5017a94812b25bba7856110d7d85d91590ed50780ea6d98cdf"
+    },
+    "target/user/homebrew/include/libxml2/libxml/schematron.h": {
+      "previous": null,
+      "sha256": "a3d96d68d801f984b0eaab68d2b193b571ec3b27ba50bbc1c66d3f4dca187f0e"
+    },
+    "target/user/homebrew/include/libxml2/libxml/threads.h": {
+      "previous": null,
+      "sha256": "8cee9610d9e3ec2146af6a074a2c6161bd87629e55ab231e61c0fbd8686142d2"
+    },
+    "target/user/homebrew/include/libxml2/libxml/tree.h": {
+      "previous": null,
+      "sha256": "29bb46867633b5da9ac289f72f8667863a14b7105843f8fa2b16df21b26d0496"
+    },
+    "target/user/homebrew/include/libxml2/libxml/uri.h": {
+      "previous": null,
+      "sha256": "f761d9ac289b051ec7bbc73ae723468fa80f96461dc664fe5781bc009a92ac90"
+    },
+    "target/user/homebrew/include/libxml2/libxml/valid.h": {
+      "previous": null,
+      "sha256": "e51b4ca60f3f7921b3be0e78fe750f202b9d0a47fafc0750a806d665239f1fb9"
+    },
+    "target/user/homebrew/include/libxml2/libxml/xinclude.h": {
+      "previous": null,
+      "sha256": "54df174ccb9f272aa5483b9c18c83153ca6bbea93e706453240ad09381fad037"
+    },
+    "target/user/homebrew/include/libxml2/libxml/xlink.h": {
+      "previous": null,
+      "sha256": "6b0495de5f706d571995cde9e41ae6673d906a53899f7cae2061108ddad00d39"
+    },
+    "target/user/homebrew/include/libxml2/libxml/xmlIO.h": {
+      "previous": null,
+      "sha256": "e623b00dcabbf5c559567fcea561cc97f03b9fb3c8642d9edcaf70ade988385d"
+    },
+    "target/user/homebrew/include/libxml2/libxml/xmlautomata.h": {
+      "previous": null,
+      "sha256": "41eeba10a1dc5f727694618a5513ffef4b1dcb0c27169d91b264e54eedad7d08"
+    },
+    "target/user/homebrew/include/libxml2/libxml/xmlerror.h": {
+      "previous": null,
+      "sha256": "ff6fb62996e5478f08ef99258c4f49b1a0830f93565ff3a92f47a316f792202f"
+    },
+    "target/user/homebrew/include/libxml2/libxml/xmlexports.h": {
+      "previous": null,
+      "sha256": "36f6cc28976fed8b6c8587fd521f14ee1f4b96615f10e9b7c35c76ef2876e525"
+    },
+    "target/user/homebrew/include/libxml2/libxml/xmlmemory.h": {
+      "previous": null,
+      "sha256": "b8a8addf9376aa9bee7d3f5b6f8b58d2af4c2c284921bd418da5b27b70fe1085"
+    },
+    "target/user/homebrew/include/libxml2/libxml/xmlmodule.h": {
+      "previous": null,
+      "sha256": "ed0d48e89b3f1aac1618d4f74e87ee64bde0a8b4c7057fa56a03b56703af67cb"
+    },
+    "target/user/homebrew/include/libxml2/libxml/xmlreader.h": {
+      "previous": null,
+      "sha256": "11fd34156675d65c73bfa83c69c8dda3d87a56553df92a5ab713bd95ab525c16"
+    },
+    "target/user/homebrew/include/libxml2/libxml/xmlregexp.h": {
+      "previous": null,
+      "sha256": "7df116616ee4319f0654ce00b467bc165dbaf38ed318b1193d4a474a73ee1298"
+    },
+    "target/user/homebrew/include/libxml2/libxml/xmlsave.h": {
+      "previous": null,
+      "sha256": "fb99635f075e4d1c2fe858b16ef0d8853839c5df971f5dec54dcb29b872ccbbe"
+    },
+    "target/user/homebrew/include/libxml2/libxml/xmlschemas.h": {
+      "previous": null,
+      "sha256": "0e4eeabaa87ede8e7deb65e25078bfd0caa1ddfe5c7c9a98a043f2b870fa10fd"
+    },
+    "target/user/homebrew/include/libxml2/libxml/xmlschemastypes.h": {
+      "previous": null,
+      "sha256": "9c9b26c8badbcbf12e580ad301bc261051a4b861a9cf5801b79585b218886622"
+    },
+    "target/user/homebrew/include/libxml2/libxml/xmlstring.h": {
+      "previous": null,
+      "sha256": "479db08576ff1a61dee723ca0285893e19d806a23c1c287f75be5242f22e8aaa"
+    },
+    "target/user/homebrew/include/libxml2/libxml/xmlunicode.h": {
+      "previous": null,
+      "sha256": "8a5b06d87968144cdb77908a4d6c3f8b04012a26f0cf64b186869d240a696f7e"
+    },
+    "target/user/homebrew/include/libxml2/libxml/xmlversion.h": {
+      "previous": null,
+      "sha256": "7f3391d8be4761742c1d5aa1000f71f5e4b1c0c50c0aef054c84ee16b36b6858"
+    },
+    "target/user/homebrew/include/libxml2/libxml/xmlwriter.h": {
+      "previous": null,
+      "sha256": "9cf89ac9e8485869db835ed25643fe58a0dbb7ee30f9191d6c400ffd7c1405d9"
+    },
+    "target/user/homebrew/include/libxml2/libxml/xpath.h": {
+      "previous": null,
+      "sha256": "5f6392d4a0fa7fe97407738baf692a99be31218cb786cc2225d28ea66c413f9c"
+    },
+    "target/user/homebrew/include/libxml2/libxml/xpathInternals.h": {
+      "previous": null,
+      "sha256": "4daa466e29c75e91e70556911278542c65ac3168c7ce0287ccb566bf0ce58807"
+    },
+    "target/user/homebrew/include/libxml2/libxml/xpointer.h": {
+      "previous": null,
+      "sha256": "f39e26a9380e0035c3f1c26f0a5ae2bc84ec7d1f2a172af809541c74eb1697b6"
+    },
+    "target/user/homebrew/include/webp/decode.h": {
+      "previous": null,
+      "sha256": "e554551d085f234e930f36b5879a77ef58bfea34c48ebfd620426e63b224025c"
+    },
+    "target/user/homebrew/include/webp/demux.h": {
+      "previous": null,
+      "sha256": "9b0d10c0fa1ac2dc750c4d687b038e40a685bb9240cb045759f5b9546017361d"
+    },
+    "target/user/homebrew/include/webp/encode.h": {
+      "previous": null,
+      "sha256": "928e8d3ed502baa0f47ed10913ee018ed6172afcd4f308e0ea005a126b83f27e"
+    },
+    "target/user/homebrew/include/webp/mux.h": {
+      "previous": null,
+      "sha256": "c72cf593f8194c671efcade33f1678294380120d45a337511d612a3acb643f35"
+    },
+    "target/user/homebrew/include/webp/mux_types.h": {
+      "previous": null,
+      "sha256": "ca789c9fe2edc52f759cb3888e9171ee44b5c12f2db21458f96176d578bc897e"
+    },
+    "target/user/homebrew/include/webp/sharpyuv/sharpyuv.h": {
+      "previous": null,
+      "sha256": "4fcb150246232b0e8e605752deb66ca861872f86dd692308d9f854e10ad964ee"
+    },
+    "target/user/homebrew/include/webp/sharpyuv/sharpyuv_csp.h": {
+      "previous": null,
+      "sha256": "80c23c727edb1ce6a42b38f9458c3d75c572856c898f0cd913ba03468afb9d3a"
+    },
+    "target/user/homebrew/include/webp/types.h": {
+      "previous": null,
+      "sha256": "992d2ffe864adb6d80cc91b7a062074d167ed96772f28d104a650148eca31794"
+    },
+    "target/user/homebrew/lib/libass.a": {
+      "previous": "a26f104a1ffa26cce6ba68ad7842e2f2c20db6998d54cd98dda8fcf55e5cbb9d",
+      "sha256": "163fd295ea3c09e28ae31f8953c1074be76b99a585b7b542a1ebd2b42a9ad579"
+    },
+    "target/user/homebrew/lib/libharfbuzz.a": {
+      "previous": "e36f7fe79c075254928db51c6807cb7ac2ab8d0dd609a2a6f66845017114e617",
+      "sha256": "35642f37ca740ab8736fc3370a85754c45be6b944090caed1e6cce6e6b898712"
+    },
+    "target/user/homebrew/lib/libsharpyuv.a": {
+      "previous": null,
+      "sha256": "b05ecefe21400042e9a20088a7e9090024628a374609d9a22ee2832ff182ffd7"
+    },
+    "target/user/homebrew/lib/libwebp.a": {
+      "previous": null,
+      "sha256": "8664523eae8c96ab714d4772282b84b6729918a65560af7c2311f254b2c1316d"
+    },
+    "target/user/homebrew/lib/libwebpdecoder.a": {
+      "previous": null,
+      "sha256": "6bdb24add48369c8c89621bbbc0b4fe65a43ef55a02ed677363306cbbae02a6f"
+    },
+    "target/user/homebrew/lib/libwebpdemux.a": {
+      "previous": null,
+      "sha256": "157093d7211c83833866eef80ea526d9edb2577bcb51d91314c84fa8805ff95c"
+    },
+    "target/user/homebrew/lib/libwebpmux.a": {
+      "previous": null,
+      "sha256": "bd5cf93bd349beb3d1431338d7d24a70f6e0fd172fdbb88e3839372b43463155"
+    },
+    "target/user/homebrew/lib/libxml2.a": {
+      "previous": null,
+      "sha256": "debf03e5dc8eb9bc3c55762702b4e4c816b17600f6e3c5498864034caab729d9"
+    },
+    "target/user/homebrew/lib/pkgconfig/harfbuzz.pc": {
+      "previous": "27ebccb204e499f25340bd6cecf720bbcabfbc172bf29e0e649d41e45e2c521d",
+      "sha256": "0a1ec1823ca3faaf9cf2045ea808d0ce327b4a6fa019185528d05a8b852be088"
+    },
+    "target/user/homebrew/lib/pkgconfig/libass.pc": {
+      "previous": "f57451a15a76c80547dd508c96fce49f37fa3168b4c0ac9c2d9b7e3a07b8d0a3",
+      "sha256": "877aef55f0d9c04bca3ff4998b23b2f482a8d9d729433defbb3ebfe7e074838c"
+    },
+    "target/user/homebrew/lib/pkgconfig/libavcodec.pc": {
+      "previous": "2b9489da510540248aa1cc9cc499989006829bfaa14c59a065cc1f9275e77ce5",
+      "sha256": "6936e3f4c786aeb6f6ef2bc08d7512cdaf77289f03792655540af45a9ad8095f"
+    },
+    "target/user/homebrew/lib/pkgconfig/libavdevice.pc": {
+      "previous": "d0dd6717575efbc1ec95d98dba735679a20c1fcd15c87781733e122846f604f6",
+      "sha256": "f258056585902524fb60dfd823300620cb5aba7b50cad68a203894fd5899261d"
+    },
+    "target/user/homebrew/lib/pkgconfig/libavfilter.pc": {
+      "previous": "1dc087db6760f334d9da5377c1d4de0d2408507a04641e1549857010daaec368",
+      "sha256": "20436b1a29117640f66eeed167536be0716c9b0a3ea1cf9f892e50385a005aa4"
+    },
+    "target/user/homebrew/lib/pkgconfig/libavformat.pc": {
+      "previous": "8c1f31a6e126bd6a300280801ec3ec5e686463ee2f462f8978c81606f500eeef",
+      "sha256": "2c0696d8d1a1d156ff00373dea4fc6a9eb1aff9e5d54a719bfbabcc3ccb92ee3"
+    },
+    "target/user/homebrew/lib/pkgconfig/libavutil.pc": {
+      "previous": "b15a057be317c74ef12f5596f9b83d13a30b0d1d200f4623d30de67683b4501a",
+      "sha256": "4d1793df7f34641c8edb845300d5803ca383491c5f053594961b3001eb75b6ac"
+    },
+    "target/user/homebrew/lib/pkgconfig/libcurl.pc": {
+      "previous": "437805c3be8153d8ba33478ca739b0094e97463605cc77e8d6c3e7ebeeb142e6",
+      "sha256": "e3b9f7d7deb6f748aea052eb7f7cf5b9a02c82b6400b114246f784dc1ec76caa"
+    },
+    "target/user/homebrew/lib/pkgconfig/libsharpyuv.pc": {
+      "previous": null,
+      "sha256": "63c4aec6b132e326478d3efab705ff6c6ddb03227188ee5d33c10236f98c9be0"
+    },
+    "target/user/homebrew/lib/pkgconfig/libwebp.pc": {
+      "previous": null,
+      "sha256": "d4dc5d0edcca5260bd83bbc992a62bfeab7f20a991b9dbf7bbe7eebd1ca7e070"
+    },
+    "target/user/homebrew/lib/pkgconfig/libwebpdecoder.pc": {
+      "previous": null,
+      "sha256": "f0284e085289b52b7965ca557993b1da130955c2e20bbf103f569d454dcf16d7"
+    },
+    "target/user/homebrew/lib/pkgconfig/libwebpdemux.pc": {
+      "previous": null,
+      "sha256": "ac453338a4a7cd2646fd5537eda835de48f4546a64dc363d7495ddbf758db06e"
+    },
+    "target/user/homebrew/lib/pkgconfig/libwebpmux.pc": {
+      "previous": null,
+      "sha256": "06afbb99bcec5db26b4783ca46c4a461275b4046c45d5f55e66b5961ae772d10"
+    },
+    "target/user/homebrew/lib/pkgconfig/libxml-2.0.pc": {
+      "previous": null,
+      "sha256": "798896d502b8ee8aee5d37ea21b9830a331b54cdea7aa1080bbce1d75c5be84b"
+    }
+  },
+  "evo0135Review": {
+    "media/src/evo_vdec_native.c": {
+      "baseSha256": "a883d3a0c0faec9ab06cff92b1279852c7cc30b178a7d457dd1f766ffb31d3c0",
+      "reviewedSha256": "b57168e49f5883c600d05a70905a124e581fe06f0cce86d4dbd0b21e5efc92ed",
+      "unchanged": false
+    },
+    "media/src/evo_vdec_ffmpeg.c": {
+      "baseSha256": "492a567801e48c1bc6f4c8bbd07dea02510b2d3e95c63cc6d160497eccba0cbe",
+      "reviewedSha256": "29f5e9a27fba2a3a5a25d56fb2fcb29ad323e38531734f44fe30223a56183459",
+      "unchanged": false
+    },
+    "pp/src/pp_clock.c": {
+      "baseSha256": "9e177f8fd328e05aa6ab0624fb9ef6067b1a0cc723189c7b694f176d5e911076",
+      "reviewedSha256": "9e177f8fd328e05aa6ab0624fb9ef6067b1a0cc723189c7b694f176d5e911076",
+      "unchanged": true
+    },
+    "pp/src/pp_playback.c": {
+      "baseSha256": "3390473b7822f9ae81379240e886f2e9f94563c0ffbd7c765e8b6b7ff8b74153",
+      "reviewedSha256": "3390473b7822f9ae81379240e886f2e9f94563c0ffbd7c765e8b6b7ff8b74153",
+      "unchanged": true
+    },
+    "media/src/evo_vdec_native.h": {
+      "baseSha256": "4cfcd1b4123452245786d811ec19cbbd1fc291566b25f3a95e8796d61c5e3877",
+      "reviewedSha256": "4cfcd1b4123452245786d811ec19cbbd1fc291566b25f3a95e8796d61c5e3877",
+      "unchanged": true
+    },
+    "media/include/evo_vdec.h": {
+      "baseSha256": "c3e9c8337a4914aa5ddd18608e12350675eb64c933c67adf4e5e3ec0d16c483b",
+      "reviewedSha256": "c3e9c8337a4914aa5ddd18608e12350675eb64c933c67adf4e5e3ec0d16c483b",
+      "unchanged": true
+    }
+  },
+  "hardwareVerified": false,
+  "published": false
+}

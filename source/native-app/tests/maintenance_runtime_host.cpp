@@ -1,6 +1,11 @@
 #include <expat.h>
 #include <ft2build.h>
 #include <png.h>
+#include <libxml/parser.h>
+#include <libxml/xmlreader.h>
+#include <algorithm>
+#include <webp/decode.h>
+#include <webp/encode.h>
 #include FT_FREETYPE_H
 #include <cassert>
 #include <cstring>
@@ -13,8 +18,54 @@ int main(int argc, char **argv) {
   assert(argc == 2);
   assert(std::string(XML_ExpatVersion()) == "expat_2.10.0");
   assert(std::string(png_get_libpng_ver(nullptr)) == "1.6.59");
-  assert(std::string(hb_version_string()) == "15.0.0");
+  assert(std::string(hb_version_string()) == "15.1.0");
   assert(std::strstr(fribidi_version_info, "1.0.18"));
+  assert(std::string(LIBXML_DOTTED_VERSION) == "2.15.4");
+  assert(std::string(xmlParserVersion) == "21504");
+  assert(WebPGetDecoderVersion() == 0x010600);
+  const char playlist[] = "<MPD><Period><AdaptationSet><Representation id='one'/></AdaptationSet></Period></MPD>";
+  auto doc = xmlReadMemory(playlist, sizeof(playlist)-1, "fixture.xml", nullptr, XML_PARSE_NONET);
+  assert(doc && std::string(reinterpret_cast<const char*>(xmlDocGetRootElement(doc)->name)) == "MPD");
+  xmlFreeDoc(doc);
+  // VLC's XML plugin uses this callback reader API, not only tree parsing.
+  struct Input { const char *data; size_t size; size_t offset; } input{playlist,sizeof(playlist)-1,0};
+  auto read = [](void *opaque, char *out, int length) -> int {
+    auto *in=static_cast<Input*>(opaque);
+    const auto count=std::min(in->size-in->offset,static_cast<size_t>(length));
+    std::memcpy(out,in->data+in->offset,count);in->offset+=count;
+    return static_cast<int>(count);
+  };
+  auto reader=xmlReaderForIO(read,nullptr,&input,nullptr,nullptr,0);
+  assert(reader);
+  bool found=false; int status=0;
+  while((status=xmlTextReaderRead(reader))==1) {
+    if(xmlTextReaderNodeType(reader)==XML_READER_TYPE_ELEMENT &&
+       std::string(reinterpret_cast<const char*>(xmlTextReaderConstName(reader)))=="Representation") {
+      assert(xmlTextReaderMoveToNextAttribute(reader)==1);
+      assert(std::string(reinterpret_cast<const char*>(xmlTextReaderConstValue(reader)))=="one");
+      found=true;
+    }
+  }
+  assert(status==0 && found);
+  xmlFreeTextReader(reader);
+  const char malformed[] = "<MPD><Period></MPD>";
+  assert(!xmlReadMemory(malformed, sizeof(malformed)-1, "fixture.xml", nullptr,
+                        XML_PARSE_NONET | XML_PARSE_NOERROR | XML_PARSE_NOWARNING));
+  // Decode exactly the format used by artwork, then reject severely truncated prefixes.
+  const uint8_t rgba[] = {255,0,0,255, 0,255,0,255, 0,0,255,255, 255,255,255,255};
+  uint8_t *encoded = nullptr;
+  const size_t bytes = WebPEncodeLosslessRGBA(rgba, 2, 2, 8, &encoded);
+  assert(bytes > 0 && encoded);
+  int width=0, height=0;
+  auto decoded = WebPDecodeRGBA(encoded, bytes, &width, &height);
+  assert(decoded && width==2 && height==2 && !std::memcmp(decoded,rgba,sizeof(rgba)));
+  WebPFree(decoded);
+  for(size_t n=0; n<bytes/2; ++n) {
+    decoded=WebPDecodeRGBA(encoded,n,&width,&height);
+    assert(!decoded);
+  }
+  WebPFree(encoded);
+  xmlCleanupParser();
   FT_Library library = nullptr;
   assert(FT_Init_FreeType(&library) == 0);
   int major, minor, patch;
@@ -61,6 +112,6 @@ int main(int argc, char **argv) {
   assert(!png_image_begin_read_from_memory(&image, invalid, sizeof(invalid)));
   png_image_free(&image);
   std::cout
-      << "Pinned XML/PNG versions, malformed input rejection and "
+      << "Pinned XML/PNG/WebP versions, image round-trip, malformed input rejection and "
          "Latin/Hebrew/Arabic/Thai/CJK shaping and rasterization passed\n";
 }

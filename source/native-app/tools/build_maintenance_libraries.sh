@@ -20,8 +20,8 @@ root,work,base=map(Path,sys.argv[1:]);pins=json.loads((root/'dependencies.json')
 maintenance=pins['maintenanceLibraries']
 for name,digest in {maintenance['recipe']:maintenance['recipeSha256'],**maintenance.get('extraRecipeSha256',{})}.items():
     assert hashlib.sha256((root/name).read_bytes()).hexdigest()==digest, 'Maintenance recipe mismatch: '+name
-for patch in maintenance.get('libassPatches',[]):
-    assert hashlib.sha256((root/patch['path']).read_bytes()).hexdigest()==patch['sha256'], 'libass patch checksum mismatch'
+for patch in maintenance.get('libassPatches',[])+maintenance.get('libxml2Patches',[]):
+    assert hashlib.sha256((root/patch['path']).read_bytes()).hexdigest()==patch['sha256'], 'Source patch checksum mismatch'
 for name,digest in pins['sdk']['coreFileSha256'].items():
     assert hashlib.sha256((base/name).read_bytes()).hexdigest()==digest, 'Use the unmodified pinned base SDK: '+name
 for item in pins['maintenanceLibraries']['sources'].values():
@@ -78,7 +78,7 @@ from pathlib import Path
 import hashlib,json,sys
 r=Path(sys.argv[1]);patches=json.loads((r/'dependencies.json').read_text())['maintenanceLibraries'].get('libassPatches',[])
 for patch in patches:
-    assert hashlib.sha256((r/patch['path']).read_bytes()).hexdigest()==patch['sha256'], 'libass patch checksum mismatch'
+    assert hashlib.sha256((r/patch['path']).read_bytes()).hexdigest()==patch['sha256'], 'Source patch checksum mismatch'
 print(hashlib.sha256(json.dumps(patches,sort_keys=True).encode()).hexdigest())
 PATCHES
 )

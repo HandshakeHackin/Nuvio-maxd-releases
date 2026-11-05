@@ -5,7 +5,7 @@ globalThis.TextEncoder = class { encode(s='') { return new Uint8Array(Buffer.fro
 globalThis.TextDecoder = class { decode(b) { return Buffer.from(b || []).toString('utf8'); } };
 const { URL, URLSearchParams } = require('whatwg-url');
 globalThis.URL=URL; globalThis.URLSearchParams=URLSearchParams;
-const cheerio=require('cheerio-without-node-native');
+const cheerio=require('cheerio/slim');
 globalThis.crypto={getRandomValues(a){ const b=new Uint8Array(__random(a.byteLength)); new Uint8Array(a.buffer,a.byteOffset,a.byteLength).set(b); return a; }};
 const CryptoJS=require('crypto-js');
 globalThis.global=globalThis; globalThis.self=globalThis;

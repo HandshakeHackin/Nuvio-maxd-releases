@@ -1,0 +1,25 @@
+--- a/dict.c
++++ b/dict.c
+@@ -899,6 +899,10 @@
+  * Pseudo-random generator
+  */
+ 
++#ifdef NUVIO_PS5_RANDOM
++  #include <stdlib.h>
++#endif
++
+ #ifdef _WIN32
+   #define WIN32_LEAN_AND_MEAN
+   #include <windows.h>
+@@ -927,7 +931,10 @@
+     xmlInitMutex(&xmlRngMutex);
+ 
+     {
+-#ifdef _WIN32
++#ifdef NUVIO_PS5_RANDOM
++        /* The pinned PS5 SDK exposes arc4random_buf, not getentropy. */
++        arc4random_buf(globalRngState, sizeof(globalRngState));
++#elif defined(_WIN32)
+         NTSTATUS status;
+ 
+         /*

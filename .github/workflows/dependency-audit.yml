@@ -1,0 +1,24 @@
+name: Dependency security audit
+on:
+  schedule:
+    - cron: '23 9 * * 1'
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'source/native-app/third_party/provider-runtime/package*.json'
+      - '.github/workflows/dependency-audit.yml'
+permissions:
+  contents: read
+jobs:
+  provider-dependencies:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Check stable upstream dependency tags
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 source/native-app/tools/check_dependency_updates.py
+      - name: Check the pinned provider dependency graph
+        working-directory: source/native-app/third_party/provider-runtime
+        run: npm audit --package-lock-only --ignore-scripts --audit-level=high
