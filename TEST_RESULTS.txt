@@ -1,0 +1,13 @@
+Nuvio Max'd 1.0.0.11 official release verification
+
+Source: 795aefdefd0bb4b12d010550d60bd5994bb5a338 (clean)
+GitHub full hosted checks: https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/42055257491 — both jobs passed
+PS5 app and bundled updater: compiled, linked and signed; 414 imports resolved
+Image and ZIP: all 159 packaged files match; zero container errors/warnings; safe ZIP entries and permissions
+Matching source archive: 912 file hashes verified
+
+Local full regression suite passed at maintenance commit da954646; version/updater and release-note behavior rechecked after the 1.0.0.11 bump. The full hosted suite and real VLC checks passed at the current release commit above.
+Current JavaScript security audit: zero known advisories. Updated XML callback-reader APIs, WebP round-trip/truncation checks and multilingual subtitle shaping passed. Upstream XML/Expat/PNG tests: 8/1/37 groups passed.
+All 522 target output pins and SDK/OpenGL/provider pins verified. Previous verified FFmpeg 7.0.3 archive pins preserved. HarfBuzz 15.1.0, WebP 1.6.0 and libxml2 2.15.4 included.
+
+Physical PS5 testing of updated libraries and experimental remote/torrent/HDR/optional-engine features remains pending. This is an official release designation, not a claim of universal hardware acceptance. No full Dolby Vision output or EVO 0.13.5 renderer integration is added.
