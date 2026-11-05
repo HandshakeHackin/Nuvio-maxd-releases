@@ -44,7 +44,7 @@ public:
             const auto name=group(row);
             if(std::find(categories.begin(),categories.end(),name)==categories.end()) categories.push_back(name);
         }
-        constexpr std::array<std::string_view,8> order={"Video","Audio","Subtitles","Playback","Appearance & Lighting","Account & Services","Addons","App & Updates"};
+        constexpr std::array<std::string_view,9> order={"Video","Audio","Subtitles","Playback","Appearance & Lighting","Account & Services","Addons","Controls","App & Updates"};
         const auto rank=[&](const std::string& name) {return std::find(order.begin(),order.end(),name)-order.begin();};
         std::stable_sort(categories.begin(),categories.end(),[&](const auto& a,const auto& b){return rank(a)<rank(b);});
         if(!root() && std::find(categories.begin(),categories.end(),category)==categories.end()) category.clear();

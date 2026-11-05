@@ -43,7 +43,7 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
     param = json.loads((extracted / 'sce_sys/param.json').read_text())
     display_profile = validate_display_metadata(param)
     assert param['titleId'] == 'PPSA99288'
-    assert param['contentVersion'] == '07.000.009'
+    assert param['contentVersion'] == '07.000.010'
     assert param['localizedParameters']['en-US']['titleName'] == "Nuvio Max'd"
     assert param['contentId'] == 'UP9000-PPSA99288_00-NUVIOPS5NAT00001'
     assert param['applicationCategoryType'] == 0
@@ -55,7 +55,7 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
     assert struct.unpack_from('<HH', data, elf + 16) == (0xFE10, 62)
     assert struct.unpack_from('<Q', data, elf + 24)[0] != 0
     info = json.loads((extracted / 'build-info.json').read_text())
-    assert info['version'] == '1.0.0.9-native'
+    assert info['version'] == '1.0.0.10-native'
     assert info['userExperienceUpdates']['optionalDonationQr']
     assert info['userExperienceUpdates']['installSourceSelector'] and info['userExperienceUpdates']['sourceAwareUpdateReminders']
     assert info['experimentalAv']['driverOwnedHdrSwitch'] and info['experimentalAv']['pcmDefault']
@@ -105,6 +105,9 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
     assert info['displayRefresh']['resolutionReducedForRefresh'] is False
     assert info['hdrToSdr']['exposureGain'] == 1
     test_log = args.host_test_log.read_text()
+    assert 'Remote remapping: learning, consumed capture' in test_log
+    assert 'Remote Session: action selection, assign/edit/remove/reset' in test_log
+    assert info['mediaRemote']['buttonRemapping'] and info['mediaRemote']['appLocalOnly']
     assert 'ALL TORRENT STREAMING HOST TESTS PASSED!' in test_log
     assert 'HDR fallback: strict/SDR modes, failed restoration, retained picture, session reset and unchanged preferences passed' in test_log
     assert 'Controller lightbar: throttling, failure suppression, reconnect, reset and logo/reduced-motion envelopes passed' in test_log
@@ -151,6 +154,8 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
         'executable': 'x86-64 ET_SCE_EXEC inside native PS5 SELF',
         'hostHttpsTestsPassed': 80, 'hostUiNavigationTestsPassed': 11,
         'hostTorrentIntegrationTestsPassed': True, 'hostHdrFallbackTestsPassed': True,
+        'hostRemoteRemappingTestsPassed': True, 'hostRemoteSettingsTestsPassed': True,
+        'mediaRemote': info['mediaRemote'],
         'torrentHub': info['torrentHub'],
         'hostConnectedServicesTestsPassed': 19, 'connectedServices': info['connectedServices'],
         'hostInstantPlaybackTestsPassed': 26,

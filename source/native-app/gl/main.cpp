@@ -247,7 +247,9 @@ int main()
 
         const std::size_t count = pad.read(samples);
         InputFrame input = tracker.update(std::span<const PadSample>(samples, count), static_cast<std::uint64_t>(now));
-        const auto remote = media_remote.poll(static_cast<std::uint64_t>(now));
+        media_remote.configure(session.remote_bindings());
+        const auto remote = media_remote.poll(static_cast<std::uint64_t>(now),session.remote_learning());
+        session.remote_receive(remote.observed);
         input = sx::merge_remote(
             input, remote_tracker.update(std::span<const PadSample>(&remote.pad, 1), static_cast<std::uint64_t>(now)));
         session.media_transport(remote.transport, remote.seek);

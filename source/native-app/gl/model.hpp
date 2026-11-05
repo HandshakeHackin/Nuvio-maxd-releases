@@ -6,6 +6,7 @@
 #include "stremio.h"
 #include "experience_preferences.hpp"
 #include "util.h"
+#include "remote_bindings.hpp"
 
 #include <cstdint>
 #include <string>
@@ -44,6 +45,7 @@ struct Progress
 
 struct Prefs : ExperiencePreferences
 {
+    std::vector<RemoteBinding> remote_bindings;
     bool onboarding_done = false;
     std::string server_url;
     bool builtin_torrents = false; // direct/debrid playback by default; raw torrents are opt-in

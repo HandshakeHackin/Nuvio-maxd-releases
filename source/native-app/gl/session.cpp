@@ -81,6 +81,7 @@ enum SettingIndex
     kNightMode,
     kLfeMix,
     kMediaServers,
+    kRemoteButtons,
     kSettingCount
 };
 
@@ -250,6 +251,7 @@ void Session::load_prefs()
     if (load_json(data_dir_ + "/settings.json", j))
     {
         load_experience(j, prefs_);
+        prefs_.remote_bindings=load_remote_bindings(j);
         prefs_.server_url.clear();
         prefs_.builtin_torrents = jbool(j, "allow_torrents", false);
         const double cache=jnum(j,"torrent_cache_gb",6);
@@ -280,6 +282,7 @@ void Session::save_prefs()
 {
     json j;
     save_experience(j, prefs_);
+    save_remote_bindings(j,prefs_.remote_bindings);
     j["onboarding_done"] = prefs_.onboarding_done;
     j["allow_torrents"] = prefs_.builtin_torrents;
     j["torrent_cache_gb"] = prefs_.torrent_cache_gb;
@@ -798,6 +801,7 @@ void Session::refresh_settings()
     set(kUpdates, Kind::value, "App updates", update.phase == AppUpdate::Phase::idle ? "Nuvio Max'd " + std::string(nuvio_update::current_version) + " (experimental)" : update.message,
         update_destination(prefs_.install_source));
     set(kExit, Kind::action, "Exit Nuvio Max'd", "", "Close the app and go back to the home screen.");
+    set(kRemoteButtons,Kind::action,"Remote buttons (experimental)",std::to_string(prefs_.remote_bindings.size())+" mapped","Assign buttons received from your Media Remote or TV remote to Search, Options, navigation, playback or seeking. PS5/TV system buttons may not reach this app. Controller controls are unchanged.");
     set(kConsoleLights, Kind::toggle, "Console light sync", "", "Fade the console lights with the controller while Nuvio is open. Console colours are approximate. Unsupported systems leave their lights unchanged. Turning off restores the previous state.", prefs_.console_light_sync);
     const char* light_status = console_light_status_==ConsoleLights::Status::active ? "Sync active." :
         console_light_status_==ConsoleLights::Status::unavailable ? "Console light access is unavailable on this system." :
@@ -813,6 +817,7 @@ void Session::refresh_settings()
     group("Playback", {kSeek, kShoulderSeek, kCountdown, kAutoplay, kSkipSegments, kReadAhead, kChapterSkip, kTrailerLanguage});
     group("Appearance & Lighting", {kReducedMotion,kHighContrast,kUiSounds,kCalmBackgrounds,kConsoleLights});
     group("Addons", {kTorrents,kAddAddon,kReload});
+    group("Controls",{kRemoteButtons});
     group("App & Updates", {kReleaseNotes,kDiagnostics,kMetadataCredits,kDonation,kInstallSource,kUpdates,kExit});
     changed_ |= kSettings;
 }
@@ -864,6 +869,7 @@ void Session::settings_activate(int row)
             sign_out();
         }
         break;
+    case kRemoteButtons:remote_menu();break;
     case kTorrents:
         prefs_.builtin_torrents = !prefs_.builtin_torrents;
         if(!prefs_.builtin_torrents){
@@ -1360,6 +1366,7 @@ void Session::update(float dt, const Cursor &cursor)
     g_tasks.drain();
     provider_tasks_.drain();
     torrent_poll_drop();
+    remote_capture_tick();
     update_status();
     if (signed_in() && !nuvio_account_saved())
     {

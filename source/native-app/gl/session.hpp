@@ -289,6 +289,9 @@ class Session
     // The buttons while a stream starts or plays.
     void watch_input(const hui::InputFrame &input);
     void media_transport(int action, int seek_direction);
+    const std::vector<RemoteBinding>& remote_bindings()const{return prefs_.remote_bindings;}
+    bool remote_learning()const{return remote_capture_until_>now_seconds()&&dropdown_open&&remote_capture_generation_==profile_generation_;}
+    void remote_receive(const RemoteButton& button);
     // Asks for a search with the console's keyboard.
     void begin_search();
     void start_search(const std::string &query); // searches for a text already typed
@@ -307,6 +310,12 @@ class Session
     void load_profile_settings();
     void save_profile_settings();
     void sync_source(const std::string& url, bool plugin, bool remove, bool automatic = false);
+    void remote_menu();
+    void remote_learn(int action);
+    void remote_capture_tick();
+    double remote_capture_until_=0;
+    unsigned remote_capture_generation_=0;
+    int remote_capture_action_=-1;
     void load_prefs();
     void save_prefs();
     void load_progress();

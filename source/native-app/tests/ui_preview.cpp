@@ -10,6 +10,7 @@
 #include "library.hpp"
 #include "addons.hpp"
 #include <cmath>
+#include <fstream>
 #include "dynamic_font.hpp"
 #include "gfx/renderer.hpp"
 #include "qrcodegen.h"
@@ -136,6 +137,12 @@ int main(int argc, char** argv) {
         d.selected=mode=="providers-last" ? 33 : 18;
         sx::draw_dropdown(list,env,d,1);
     }
+    else if(mode=="remote-remap"||mode=="remote-learn"||mode=="remote-timeout") {
+        std::ifstream input(std::string(argv[1])+"/test-output/remote-session/previews.json");nlohmann::json scenes;
+        input>>scenes;const auto& scene=scenes.at(mode);sx::DropdownState d;
+        d.title=scene.at("title").get<std::string>();d.message=scene.at("message").get<std::string>();d.options=scene.at("options").get<std::vector<std::string>>();
+        sx::draw_dropdown(list,env,d,1);
+    }
     else if(mode=="profile-pin") {
         sx::PinEntry entry;
         hui::InputFrame in;in.pressed=hui::action_bit(hui::Action::confirm);
@@ -173,7 +180,7 @@ int main(int argc, char** argv) {
         if(mode=="subtitle-preview-high-contrast") { content.rows[0].value="Display";content.rows[1].value="Yellow";content.rows[2].value="Shadow";content.rows[3].value="75%"; }
         if(mode=="settings-categories" || mode=="settings-lighting") {
             content.rows.clear();
-            const char* categories[]={"Video","Audio","Subtitles","Playback","Appearance & Lighting","Account & Services","Addons","App & Updates"};
+            const char* categories[]={"Video","Audio","Subtitles","Playback","Appearance & Lighting","Account & Services","Addons","Controls","App & Updates"};
             for(const auto* category:categories) {sx::SettingRow row;row.category=category;row.label="Options";content.rows.push_back(row);}
             auto& row=content.rows[4];row.label="Console light sync";row.kind=sx::SettingRow::Kind::toggle;row.on=true;
             row.help="Fade the console lights with the controller while Nuvio is open. Console colours are approximate. Turning off restores the previous state. Sync active.";

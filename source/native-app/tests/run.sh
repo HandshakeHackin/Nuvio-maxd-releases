@@ -6,6 +6,7 @@ mkdir -p "$ROOT/test-output"
 bash "$ROOT/tests/tracking.sh"
 bash "$ROOT/tests/tasks.sh"
 bash "$ROOT/tests/media_remote.sh"
+bash "$ROOT/tests/remote_session.sh"
 if [ -n "${QUICKJS_DIR:-}" ]; then bash "$ROOT/tests/providers.sh"; fi
 if [ -n "${PS5_PAYLOAD_SDK:-}" ]; then bash "$ROOT/tests/curl_socket.sh"; fi
 bash "$ROOT/tests/maintenance_build.sh"
