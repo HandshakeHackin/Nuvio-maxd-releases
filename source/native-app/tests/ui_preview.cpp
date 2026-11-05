@@ -121,6 +121,11 @@ int main(int argc, char** argv) {
         for(int i=0;i<120;++i)page.update(idle,1.f/60);
         hui::gfx::BackdropSpec bg;page.draw(list,bg);
     }
+    else if(mode=="source-preferences" || mode=="source-preferences-last") {
+        std::ifstream input(root+"/test-output/source-preferences/ui-scenes.json");nlohmann::json scenes;input>>scenes;
+        const auto& scene=scenes.at("source-preferences");sx::DropdownState d;d.title=scene.at("title");d.message=scene.at("message");d.options=scene.at("options").get<std::vector<std::string>>();d.selected=mode=="source-preferences-last"?int(d.options.size())-1:0;
+        sx::draw_dropdown(list,env,d,1);
+    }
     else if(mode=="torrent-resume" || mode=="torrent-settings" || mode=="playback-recovery") {
         std::ifstream input(root+"/test-output/torrent-streaming/ui-scenes.json");nlohmann::json scenes;input>>scenes;
         const auto& scene=scenes.at(mode);sx::DropdownState d;d.title=scene.at("title");d.message=scene.at("message");d.options=scene.at("options").get<std::vector<std::string>>();d.selected=0;
@@ -295,6 +300,16 @@ int main(int argc, char** argv) {
             s.badges = {B::web_dl,B::uhd,B::hdr,B::hevc,B::dolby_plus,B::channels_51};
             if (i == 0) s.badges.insert(s.badges.begin()+2,B::dolby_vision);
             content.streams.push_back(s);
+        }
+        if(mode=="source-ranking") {
+            std::ifstream input(root+"/test-output/source-preferences/ui-scenes.json");nlohmann::json scenes;input>>scenes;
+            const auto& scene=scenes.at("source-ranking");content.title.name="Example Show";content.title.year="2026";
+            content.stream_heading="Season 1 · Episode 2";content.stream_addons={"Example addon"};content.streams.clear();
+            content.streams_status=std::to_string(scene.at("hidden").get<int>())+" filtered. Source options > Show all sources.";
+            for(const auto& row:scene.at("streams")) {
+                sx::Stream s;s.name=row.at("name");s.size=row.at("size");s.language=row.at("language");s.addon="Example addon";
+                s.badges=row.at("badges").get<std::vector<sx::StreamBadge>>();s.assessment=row.at("assessment");s.source_warning=row.at("warning");content.streams.push_back(s);
+            }
         }
         if (mode == "series" || mode == "seasons") {
             content.series=true; content.seasons={"Season 1","Season 2","Season 3","Season 4","Specials"}; content.season=1;

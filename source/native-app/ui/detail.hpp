@@ -37,6 +37,7 @@ class Detail
     {
         return filters_focused_ || stream_ < 0 || stream_ >= static_cast<int>(visible_.size()) ? -1 : visible_[stream_];
     }
+    bool source_options_focused() const { return filters_focused_ && filter_cursor_ == -2; }
     bool reload_focused() const { return filters_focused_ && filter_cursor_ == -1; }
     bool filters_focused() const { return filters_focused_; }
     int addon_filter() const { return filter_; }

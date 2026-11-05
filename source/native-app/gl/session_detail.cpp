@@ -17,15 +17,6 @@ namespace
 {
 
 using stream_display::view_of;
-using stream_display::resolution_of;
-using stream_display::seeds_of;
-
-int resolution_rank(const std::string &r)
-{
-    const char *order[] = {"4K", "1440p", "1080p", "720p", "SD", "Other"};
-    for (int i = 0; i < 6; ++i) if (r == order[i]) return i;
-    return 5;
-}
 
 // "2010-09-14T00:00:00.000Z" -> "Sep 14, 2010"
 std::string date_label(const std::string &released)
@@ -449,6 +440,7 @@ void Session::detail_load_streams(const std::string &video_id, const std::string
     const int gen = ++d_gen_;
     d_video_id_ = video_id;
     d_stream_heading_ = heading;
+    d_show_all_sources_=false;
     d_found_.clear();
     d_streams_.clear();
     detail.streams.clear();
@@ -572,32 +564,21 @@ void Session::detail_reload_streams()
 void Session::detail_refresh_streams()
 {
     detail.streams_loading = d_answered_ < d_pending_;
-    // Direct/debrid streams first. Raw torrents appear only when enabled.
-    std::vector<std::size_t> order;
     std::size_t hidden_torrents = 0;
-    for (std::size_t i = 0; i < d_found_.size(); ++i)
-    {
-        auto& stream = d_found_[i];
-        stream.debrid_resolvable = services_.can_resolve(stream);
-        stream.debrid_service = stream.debrid_resolvable ? (stream.client_resolve.is_object()
-            ? debrid::provider_id(jstr(stream.client_resolve, "service")) : services_.active_provider()) : "";
-        if (stream.allowed(prefs_.builtin_torrents) || stream.debrid_resolvable) order.push_back(i);
-        else if (stream.torrent() && !prefs_.builtin_torrents) ++hidden_torrents;
+    for (auto& stream : d_found_) {
+        stream.debrid_resolvable=services_.can_resolve(stream);
+        stream.debrid_service=stream.debrid_resolvable ? (stream.client_resolve.is_object()
+            ? debrid::provider_id(jstr(stream.client_resolve,"service")) : services_.active_provider()) : "";
+        if(stream.torrent()&&!prefs_.builtin_torrents&&!stream.debrid_resolvable)++hidden_torrents;
     }
-    std::stable_sort(order.begin(), order.end(), [&](std::size_t a, std::size_t b) {
-        if (d_found_[a].direct_http() != d_found_[b].direct_http())
-            return d_found_[a].direct_http();
-        const int ra = resolution_rank(resolution_of(d_found_[a])), rb = resolution_rank(resolution_of(d_found_[b]));
-        if (ra != rb)
-            return ra < rb;
-        return seeds_of(d_found_[a].description) > seeds_of(d_found_[b].description);
-    });
-    d_streams_.clear();
-    detail.streams.clear();
-    for (std::size_t i : order)
-    {
-        d_streams_.push_back(d_found_[i]);
-        detail.streams.push_back(view_of(d_found_[i]));
+    const auto selection=source_policy::select(d_found_,prefs_.source_preferences,source_policy::context(d_meta_,d_video_id_),prefs_.builtin_torrents,d_show_all_sources_);
+    d_streams_.clear();detail.streams.clear();
+    for(size_t i:selection.order) {
+        d_streams_.push_back(d_found_[i]);auto view=view_of(d_found_[i]);
+        const auto& check=selection.assessments[i];
+        view.source_warning=check.hidden||!check.warning.empty();
+        view.assessment=check.hidden?check.reason:!check.warning.empty()?check.warning:check.reason;
+        detail.streams.push_back(std::move(view));
     }
     detail_preparation_labels();
     // Wait for every addon before matching the previous release and quality.
@@ -626,6 +607,8 @@ void Session::detail_refresh_streams()
             "No playable streams returned. Check your addon setup or connect TorBox / Premiumize in Settings > Connected Services.";
     else
         detail.streams_status.clear();
+    if(selection.hidden)detail.streams_status=std::to_string(selection.hidden)+(detail.streams.empty()?" sources filtered. Source options > Show all sources.":" filtered · Source options");
+    else if(d_show_all_sources_)detail.streams_status="Showing all enabled sources, including warnings.";
     changed_ |= kDetail;
 }
 

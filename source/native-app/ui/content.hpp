@@ -139,6 +139,8 @@ struct Stream
     std::string addon;      // provider filter and card heading
     std::string identity;   // keeps the selected source when another addon answers
     std::string language;
+    std::string assessment;
+    bool source_warning=false;
     bool prepared = false;
     std::vector<StreamBadge> badges;
 };

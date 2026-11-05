@@ -181,7 +181,9 @@ void Shell::route_detail(const hui::InputFrame &input, float dt)
     const bool leave = input.is_pressed(Action::back) && !(series && streams);
     if (streams)
     {
-        if (input.is_pressed(Action::north) || (input.is_pressed(Action::confirm) && detail_.reload_focused()))
+        if (input.is_pressed(Action::confirm) && detail_.source_options_focused())
+            s_.source_options();
+        else if (input.is_pressed(Action::north) || (input.is_pressed(Action::confirm) && detail_.reload_focused()))
             s_.detail_reload_streams();
         else if (input.is_pressed(Action::confirm))
             s_.detail_play(detail_.stream_index(), false);

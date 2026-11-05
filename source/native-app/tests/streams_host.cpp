@@ -78,6 +78,13 @@ void pills_never_start_playback() {
     f.move(hui::Direction::up); f.move(hui::Direction::left); f.move(hui::Direction::left);
     expect(f.page.reload_focused() && f.page.stream_index()==-1,"reload button can play a stream");
 }
+void source_options_navigation() {
+    Fixture f; f.move(hui::Direction::up);f.move(hui::Direction::left);
+    expect(f.page.reload_focused(),"reload focus changed");f.move(hui::Direction::left);
+    expect(f.page.source_options_focused()&&f.page.stream_index()==-1,"source options inaccessible");
+    f.move(hui::Direction::left);expect(f.page.source_options_focused(),"source options left boundary lost");
+    f.move(hui::Direction::right);expect(f.page.reload_focused(),"cannot return from source options");
+}
 void empty_filter_and_late_arrival() {
     Fixture f; for (int i=0;i<3;++i) f.press(hui::Action::page_next);
     expect(f.page.filters_focused() && f.page.stream_index()==-1,"empty addon produces playable index");
@@ -173,6 +180,7 @@ void late_episode_art_keeps_focus_and_selection() {
 }
 int main() {
     const struct { const char *name; void (*run)(); } tests[] = {
+        {"source_options_navigation",source_options_navigation},
         {"aio_card_preserves_badges",aio_card_preserves_badges}, {"filename_and_hint_metadata",filename_and_hint_metadata},
         {"no_invented_metadata",no_invented_metadata}, {"flags_and_hdr_plus",flags_and_hdr_plus},
         {"filtered_index_maps_to_source",filtered_index_maps_to_source}, {"pills_never_start_playback",pills_never_start_playback},
@@ -189,6 +197,6 @@ int main() {
         try { t.run(); std::printf("%s: PASS\n",t.name); }
         catch(const std::exception &e) { ++failed; std::printf("%s: FAIL (%s)\n",t.name,e.what()); }
     }
-    std::printf("Stream presentation and navigation: 14 tests, %d failures\n",failed);
+    std::printf("Stream presentation and navigation: %zu tests, %d failures\n",sizeof(tests)/sizeof(tests[0]),failed);
     return failed ? 1 : 0;
 }

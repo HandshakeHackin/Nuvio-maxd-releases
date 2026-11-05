@@ -7,6 +7,7 @@
 #include "experience_preferences.hpp"
 #include "util.h"
 #include "remote_bindings.hpp"
+#include "source_policy.hpp"
 
 #include <cstdint>
 #include <string>
@@ -45,6 +46,7 @@ struct Progress
 
 struct Prefs : ExperiencePreferences
 {
+    source_policy::Preferences source_preferences;
     std::vector<RemoteBinding> remote_bindings;
     bool onboarding_done = false;
     std::string server_url;

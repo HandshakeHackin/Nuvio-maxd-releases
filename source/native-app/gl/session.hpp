@@ -245,6 +245,7 @@ class Session
     void detail_toggle_watched(int index);
     void detail_play(int index, bool with_server);
     void detail_reload_streams();
+    void source_options();
     void detail_trailers();
     void cancel_autoplay()
     {
@@ -714,6 +715,7 @@ class Session
     std::vector<::Stream> d_streams_; // in the order the screen shows them
     std::vector<::Stream> d_found_;   // as the addons sent them
     bool d_cache_warm_=false;
+    bool d_show_all_sources_=false;
     int d_gen_ = 0, d_pending_ = 0, d_answered_ = 0, d_meta_gen_ = 0;
     StreamResultCache stream_result_cache_;
     std::string d_stream_cache_key_;

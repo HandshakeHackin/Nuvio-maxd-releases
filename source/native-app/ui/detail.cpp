@@ -63,6 +63,7 @@ Rect Detail::stream_rect(int index, bool final_position) const
 
 float Detail::filter_width(int index) const
 {
+    if (index == -2) return 190;
     if (index < 0) return 54;
     const float text = env_.fonts.semibold.font ? env_.fonts.semibold.measure(filters_[index],24) : filters_[index].size()*13.0f;
     return std::clamp(text+36,80.0f,220.0f);
@@ -71,7 +72,7 @@ float Detail::filter_width(int index) const
 Rect Detail::filter_rect(int index, bool final_position) const
 {
     float x = kPanel.x+28;
-    for (int i = -1; i < index; ++i) x += filter_width(i)+12;
+    for (int i = -2; i < index; ++i) x += filter_width(i)+12;
     x -= final_position ? filter_scroll_.position.target : filter_scroll_.offset();
     return {x,168,filter_width(index),50};
 }
@@ -232,7 +233,7 @@ void Detail::update(const hui::InputFrame &input, float dt)
         else if (input.is_pressed(Action::page_next)) select_filter(std::min(static_cast<int>(filters_.size())-1,filter_+1));
         if (filters_focused_)
         {
-            if (input.nav == Direction::left) filter_cursor_ = std::max(-1,filter_cursor_-1);
+            if (input.nav == Direction::left) filter_cursor_ = std::max(-2,filter_cursor_-1);
             else if (input.nav == Direction::right) filter_cursor_ = std::min(static_cast<int>(filters_.size())-1,filter_cursor_+1);
             if (input.is_pressed(Action::confirm) && filter_cursor_ >= 0) select_filter(filter_cursor_);
             if (input.nav == Direction::down && !visible_.empty()) filters_focused_ = false;
@@ -488,13 +489,14 @@ void Detail::draw_streams(hui::gfx::DrawList &list) const
     char count[48]; std::snprintf(count,sizeof(count),"%zu streams",visible_.size());
     text(list,env_.fonts.regular,count,kPanel.x+kPanel.w-28,137,22,theme::ink_3,Align::right);
     list.push_clip({hx-4,160,kPanel.w-48,66});
-    for (int i = -1; i < static_cast<int>(filters_.size()); ++i)
+    for (int i = -2; i < static_cast<int>(filters_.size()); ++i)
     {
         const Rect r = filter_rect(i,false);
         const bool active = i == filter_;
         list.rounded_rect(r,24,active ? Color::rgb(0xf0f0f0) : Color::rgb(0x202020));
         const Color ink = active ? Color::rgb(0x111111) : theme::ink;
-        if (i == -1)
+        if (i == -2) text(list,env_.fonts.semibold,"Source options",r.cx(),r.cy()+8,24,ink,Align::center);
+        else if (i == -1)
         {
             list.arc(r.cx(),r.cy(),10,2.2f,0.7f,5.0f,ink);
             list.triangle({r.cx()+5,r.cy()-12,7,8},ink,0,1.3f);
@@ -506,7 +508,7 @@ void Detail::draw_streams(hui::gfx::DrawList &list) const
     list.pop_clip();
     const std::string provider = filter_ > 0 ? filters_[filter_] : "All sources";
     text(list,env_.fonts.semibold,env_.fonts.semibold.font->fit(provider,26,280),hx,268,26,theme::ink_2);
-    if(content_->streams_loading && !visible_.empty())
+    if(!content_->streams_status.empty() && !visible_.empty())
         text(list,env_.fonts.regular,env_.fonts.regular.font->fit(content_->streams_status,20,kPanel.w-350),hx+300,268,20,theme::ink_3);
 
     list.push_clip({kPanel.x,kStreamTop-4,kPanel.w,kStreamViewH+8});
@@ -538,6 +540,8 @@ void Detail::draw_streams(hui::gfx::DrawList &list) const
         draw_stream_badges(list,env_,s,x,r.y+109,room);
         if (s.badges.empty() && s.detail != s.name)
             text(list,env_.fonts.regular,env_.fonts.regular.font->fit(s.detail,22,room),x,r.y+117,22,theme::ink_2);
+        if(!s.assessment.empty())
+            text(list,env_.fonts.regular,env_.fonts.regular.font->fit(s.assessment,20,room),x,r.y+153,20,s.source_warning?Color::rgb(0xffc777):theme::ink_3);
     }
     if (!visible_.empty() && !filters_focused_)
         list.bordered_rect(ring,22,Color::rgb(0xffffff,0),3,Color::rgb(0xffffff));

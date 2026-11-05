@@ -35,6 +35,7 @@ info = {
     'name': "Nuvio Max'd",
     'version': '1.0.0.11-native',
     'releaseChannel': 'development',
+    'sourceSelection': {'metadataChecks': True, 'profilePreferences': True, 'qualityLanguageSizeHdr': True, 'explicitRankedPlay': True, 'showAllOverride': True, 'nextEpisodeFiltering': True, 'hardwareVerified': False},
     'torrentExperience': {'explicitFileResume': True, 'verifiedBufferTelemetry': True, 'recoveryActions': True, 'safeCacheCleanup': True, 'redactedDiagnosticTextQr': True, 'hardwareVerified': False},
     'titleId': sys.argv[2],
     'providerPlugins': {'engine': 'QuickJS 2026-06-04', 'repositories': True, 'perProviderOptIn': True, 'consoleSocketMode': 'direct SO_NBIO via wrapped pinned curlx_nonblock; retains public-address checks', 'hardwareVerified': False},

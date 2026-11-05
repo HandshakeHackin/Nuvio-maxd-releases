@@ -1,3 +1,12 @@
+# Unreleased source selection
+
+- Add per-profile source preferences for minimum resolution, maximum advertised file size, preferred language and HDR. Unknown metadata stays eligible.
+- Check supplied filenames for archives/non-video files, likely samples and clearly different episodes. Handle episode ranges, season packs and mapped anime numbering conservatively. Cinema-recording labels receive a warning, with optional exclusion.
+- Explain source ranking and warnings on stream cards. Open Source options beside the addon filters to play the top-ranked source, adjust preferences or show all enabled sources for the current search.
+- Apply the same filters to next-episode source selection. Never silently relax user filters or enable torrents through Show all.
+
+Inspired by MKCinema’s source-selection features; implemented in native C++ with no new service or dependency. Source metadata remains unverified; physical PS5 testing is pending.
+
 # Unreleased torrent integration
 
 - Show the selected filename separately from Resume, Start over and Choose another file controls.

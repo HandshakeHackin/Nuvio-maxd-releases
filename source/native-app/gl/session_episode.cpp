@@ -131,6 +131,11 @@ void Session::watch_prefetch_next() {
             if (w_next_answered_ == w_next_pending_)
             {
                 w_next_fetched_ = now_seconds();
+                const auto selection=source_policy::select(w_next_streams_,prefs_.source_preferences,
+                    source_policy::context(d_meta_,w_next_->id),prefs_.builtin_torrents);
+                std::vector<::Stream> filtered;
+                for(size_t i:selection.order)filtered.push_back(w_next_streams_[i]);
+                w_next_streams_=std::move(filtered);
                 w_next_pick_ = episode_playback::select_stream(w_next_streams_, w_stream_);
                 dlog("next episode: %zu streams from %d addons", w_next_streams_.size(), w_next_answered_);
             }

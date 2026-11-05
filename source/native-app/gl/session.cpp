@@ -83,6 +83,7 @@ enum SettingIndex
     kLfeMix,
     kMediaServers,
     kRemoteButtons,
+    kSourceOptions,
     kSettingCount
 };
 
@@ -252,6 +253,7 @@ void Session::load_prefs()
     if (load_json(data_dir_ + "/settings.json", j))
     {
         load_experience(j, prefs_);
+        prefs_.source_preferences=source_policy::load(j);
         prefs_.remote_bindings=load_remote_bindings(j);
         prefs_.server_url.clear();
         prefs_.builtin_torrents = jbool(j, "allow_torrents", false);
@@ -283,6 +285,7 @@ void Session::save_prefs()
 {
     json j;
     save_experience(j, prefs_);
+    source_policy::save(j,prefs_.source_preferences);
     save_remote_bindings(j,prefs_.remote_bindings);
     j["onboarding_done"] = prefs_.onboarding_done;
     j["allow_torrents"] = prefs_.builtin_torrents;
@@ -819,7 +822,8 @@ void Session::refresh_settings()
     group("Subtitles", {kSubLangs,kAutoSubs,kSubSize,kSubFont,kSubColour,kSubEffect,kSubBackground,kSubtitleDelay,kSubtitleAutoSync});
     group("Playback", {kSeek, kShoulderSeek, kCountdown, kAutoplay, kSkipSegments, kReadAhead, kChapterSkip, kTrailerLanguage});
     group("Appearance & Lighting", {kReducedMotion,kHighContrast,kUiSounds,kCalmBackgrounds,kConsoleLights});
-    group("Addons", {kAddAddon,kReload});
+    set(kSourceOptions,Kind::action,"Source preferences","Quality, language and checks","Rank sources using advertised metadata. Filter likely samples, wrong episodes, quality, size and HDR. Unknown metadata remains available. Preferences belong to this profile.");
+    group("Addons", {kAddAddon,kReload,kSourceOptions});
     group("Torrents",{kTorrents,kTorrentOptions});
     group("Controls",{kRemoteButtons});
     group("App & Updates", {kReleaseNotes,kDiagnostics,kMetadataCredits,kDonation,kInstallSource,kUpdates,kExit});
@@ -844,7 +848,7 @@ void Session::settings_activate(int row)
         return;
     }
     if (signed_in() && !profile_ready_ &&
-        (row == kMediaServers || row == kTracking || row == kLibrarySource || row == kConnectedServices || row == kServer || row == kAddAddon || row == kReload ||
+        (row == kSourceOptions || row == kMediaServers || row == kTracking || row == kLibrarySource || row == kConnectedServices || row == kServer || row == kAddAddon || row == kReload ||
          row == kSubLangs || row == kAudioLangs || row == kAutoSubs)) {
         say("Choose a profile in Account & Services > Profiles first.", 7.0); return;
     }
@@ -874,6 +878,7 @@ void Session::settings_activate(int row)
         }
         break;
     case kRemoteButtons:remote_menu();break;
+    case kSourceOptions: source_options();break;
     case kTorrentOptions: torrent_menu(true);break;
     case kTorrents:
         prefs_.builtin_torrents = !prefs_.builtin_torrents;
