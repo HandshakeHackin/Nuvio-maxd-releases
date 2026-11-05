@@ -529,6 +529,7 @@ int main(int argc, char** argv) {
         const auto episode_id=sess.w_item_.id;
         const auto other_id="torrent:"+expected_hash+":0";
         sess.torrent_state_["resume"][other_id]={{"position",25},{"duration",120},{"updated",1}};
+        sess.torrent_state_["resume"]["torrent:"+expected_hash+":2147483647"]={{"position",99},{"duration",120},{"updated",9e15}};
         sess.watching=false;
         sess.torrent_activate(3,true);
         assert(sess.choices[0].find("Resume file 2 from 0:42")!=std::string::npos);

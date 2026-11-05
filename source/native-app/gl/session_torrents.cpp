@@ -55,7 +55,8 @@ TorrentResume latest_resume(const json &state, const std::string &hash)
         const auto suffix = it.key().substr(prefix.size());
         int file = -1;
         const auto parsed = std::from_chars(suffix.data(), suffix.data()+suffix.size(), file);
-        if (parsed.ec != std::errc{} || parsed.ptr != suffix.data()+suffix.size() || file < 0) continue;
+        // Match the metadata parser's 10,000-file bound before formatting file+1.
+        if (parsed.ec != std::errc{} || parsed.ptr != suffix.data()+suffix.size() || file < 0 || file >= 10000) continue;
         const double pos = valid_resume_position(it.value());
         double updated = jnum(it.value(), "updated", 0);
         if (!std::isfinite(updated) || updated < 0) updated = 0;
