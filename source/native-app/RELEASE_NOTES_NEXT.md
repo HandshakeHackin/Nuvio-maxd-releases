@@ -1,4 +1,4 @@
-# Staged for the next Max’d build
+# Included in 1.0.0.11
 
 - Dependency security: replace the legacy Cheerio fork with maintained browser-compatible selectors, removing the known nth-check denial-of-service advisory while retaining provider module aliases.
 - Maintenance: HarfBuzz 15.1.0, WebP 1.6.0 and libxml2 2.15.4, including PS5-compatible secure XML randomization. FFmpeg and graphics release lines stay pinned.

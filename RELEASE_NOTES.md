@@ -1,17 +1,20 @@
-# Nuvio Max'd 1.0.0.10 experimental — remote remapping attempt
+# Nuvio Max'd 1.0.0.11
 
-## Remote buttons
-- Add Settings > Controls > Remote buttons (experimental) with Test remote buttons and press-to-assign mapping.
-- Assign detected Media Remote or TV/HDMI-CEC buttons to Search, Options, Select/Back, navigation, play/pause, playback or seeking. Search uses the same app action as Triangle on the controller.
-- Save up to 16 mappings. Change or remove individual mappings, or reset all app remote mappings. Controller controls stay unchanged as a way back.
-- Ignore assignment presses, held buttons when switching modes, idle/release sentinels and inputs intercepted by system overlays. A 15-second timeout explains when no button reaches the app.
+## Security and maintenance
+- Replace the legacy provider HTML-selector fork with maintained Cheerio 1.2.0 slim. This removes the known nth-check denial-of-service advisory while preserving existing provider module names.
+- Update subtitle shaping to HarfBuzz 15.1.0, artwork handling to WebP 1.6.0 and XML parsing to libxml2 2.15.4.
+- Use the PS5 SDK's secure random API for XML hash randomization. Keep the verified FFmpeg 7.0.3 archive pins and existing Native/EVO/VLC playback integration.
+- Add weekly dependency/security monitoring and reviewable update proposals. No automatic app upgrades or publishing.
 
-## This is only an attempt
-This is not a confirmed fix for issue #16. PlayStation itself, or your TV, may handle Mute, volume, microphone, PS/Home and branded app buttons before Nuvio receives them. If the app never receives a button press, a setting inside Nuvio cannot remap it. This build does not change controls on the PlayStation home screen or in other apps.
+## Included from recent test builds
+- Optional on-console torrent and magnet streaming with sequential buffering, plus paired phone/PC Web Drop. Torrent streaming is off by default and requires console confirmation.
+- Automatic HDR-to-SDR fallback when native HDR output is rejected. Strict native HDR and explicit SDR conversion remain available.
+- Experimental app-local Media Remote/CEC button testing and remapping under Settings > Controls > Remote buttons. PlayStation or the TV can intercept system buttons; Nuvio cannot remap presses it never receives. DualSense controls are unchanged.
+- Plex, Jellyfin and Emby browsing/playback, authenticated artwork and saved connection fixes remain included, along with profiles, Live TV/IPTV and watch progress.
 
-## Testing and installation
-Install PPSA99288.zip as an app folder, or use the FFPFSC image. Keep saved user data and the previous installer. Content version: 07.000.010.
+## Installation and verification
+Use PPSA99288.zip for a folder install or NuvioMaxd-1.0.0.11-native.ffpfsc for an image install. Preserve saved user data and keep the previous installer. Content version: 07.000.011.
 
-Use Test remote buttons first, then assign Search to a detected button and test from Home. Please report the firmware, remote type, physical button, button name/number shown and what happened. Close/reopen to check persistence. Automated host and package checks do not establish PS5 hardware compatibility.
+The full PS5 app and updater compile/link, host regression tests, updated-library fixtures, matching source and package integrity are verified. npm reports zero known advisories for the pinned JavaScript graph at the time of verification; this is not a blanket native-library security clearance.
 
-Existing media-server, torrent/Web Drop, HDR and playback features are retained. See TESTING.txt for the full checklist.
+Physical PS5 acceptance of the updated libraries remains pending. Torrent networking, remote buttons, HDR output and optional EVO/VLC playback retain their documented experimental limits. EVO remains the integrated 0.13.0 decoder with our existing HEVC base-layer fix; this release does not add full Dolby Vision output.

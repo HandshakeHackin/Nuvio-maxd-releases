@@ -10,15 +10,25 @@ Sign in with a QR code to load your addons and saved library from your selected
 Nuvio profile. **Watch Progress now uses Nuvio Sync**, so you can pause on the
 PS5 and pick up where you left off on another Nuvio device.
 
-**Current release: [1.0.0.5](https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/tag/v1.0.0.5-native-experimental).**
-Download `PPSA99288.zip` or `NuvioMaxd-1.0.0.5-native.ffpfsc`. Matching source,
+**Current official release: [1.0.0.11](https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/tag/v1.0.0.11-native).**
+Download `PPSA99288.zip` or `NuvioMaxd-1.0.0.11-native.ffpfsc`. Matching source,
 checksums and validation are included. Physical-console testing remains pending.
 
 Nuvio Max'd is also available in the
 [ProsperoStore homebrew shop](https://prosperostore.net/app/PPSA99288/).
 Find **Nuvio Max'd** in the store to install it, or use the GitHub downloads.
 
-## New in 1.0.0.5
+## New in 1.0.0.11
+
+Provider selectors now use maintained Cheerio. WebP 1.6.0 updates artwork handling,
+HarfBuzz 15.1.0 updates subtitle shaping, and libxml2 2.15.4 updates XML parsing.
+Plex/Jellyfin/Emby, opt-in console torrent streaming and paired Web Drop,
+HDR-to-SDR fallback, and experimental app-local remote remapping are included.
+See the [current release notes](RELEASE_NOTES.md) and
+[testing checklist](source/native-app/TESTING-1.0.0.11.md). Store approval/deployment
+may lag GitHub; check the listing version. Full Dolby Vision output is not added.
+
+## Previously added in 1.0.0.5
 
 **Library:** Press Triangle/Options or choose Search to search loaded titles from
 this profile’s selected Library source. Existing type and sort choices apply.
@@ -59,7 +69,7 @@ do not show chapter controls.
 VLC-owned HTTP failures/cancellations stay within the authenticated Nuvio access path.
 Audio/subtitle reopen recovery, missing HEVC colour metadata, artwork memory
 limits and subtitle/network libraries have also been updated. See
-[release notes](RELEASE_NOTES.md) and [testing instructions](native-app/TESTING-1.0.0.3.md).
+[release notes](RELEASE_NOTES.md) and [testing instructions](source/native-app/TESTING-1.0.0.3.md).
 
 ## New in 1.0.0.2: IPTV Library
 
@@ -73,7 +83,7 @@ completed markers stay local to that profile; saved catalogs remain during outag
 EVO is updated to 0.13.0. Native adds 10-bit VP9 hardware selection and the GPU
 upload path is optimized. Try ordinary playback, pause/seek, colour and subtitles
 and report console results in [issue #10](https://github.com/HandshakeHackin/Nuvio-maxd-releases/issues/10).
-See [test instructions](native-app/TESTING-1.0.0.2.md).
+See [test instructions](source/native-app/TESTING-1.0.0.2.md).
 
 ## New in 1.0.0.1
 
@@ -89,7 +99,7 @@ captions later relative to the picture. In the playback track menu, Left/Right
 chooses Audio/Subtitles, L2/R2 adjusts sync, L1/R1 changes Audio volume and Triangle
 resets the selected column. Boost can clip loud peaks and requires PCM.
 
-See [test instructions](native-app/TESTING-1.0.0.1.md) for installation and reporting.
+See [test instructions](source/native-app/TESTING-1.0.0.1.md) for installation and reporting.
 
 ## New in 0.5.34: playback, profiles and watch history
 
@@ -101,7 +111,7 @@ one playback. Hebrew fonts and redirected-stream fixes are included.
 Native HLS keeps audio in the selected video's rendition group. Optional VLC has
 new decoder/recovery/memory improvements; enable it in **Settings → Video →
 Playback engine** before opening the next stream. Native remains the default.
-Physical PS5 testing is still required. See the [testing guide](native-app/TESTING-0.5.34.md).
+Physical PS5 testing is still required. See the [testing guide](source/native-app/TESTING-0.5.34.md).
 
 
 ## Included installation reminders from 0.5.20

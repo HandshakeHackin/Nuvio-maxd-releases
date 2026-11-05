@@ -7,9 +7,9 @@ inline bool should_show_release_notes(std::string_view seen, std::string_view cu
     return !current.empty() && seen != current;
 }
 inline constexpr std::array<const char*,4> release_note_items = {
-    "1.0.0.10 experimental: Settings > Controls > Remote buttons can test and assign buttons that reach Nuvio to Search, Options, navigation, playback or seeking. This only changes controls inside Nuvio; PlayStation/TV system buttons may not reach the app. Controller controls stay unchanged.",
-    "Optional PCM Night Mode and stereo bass levels, provider guide-clock correction, chapter skip buttons, trailer language preference and Native/EVO subtitle auto-sync are included.",
-    "Updated FFmpeg 7.0.3 and XML/image/font libraries, with additional subtitle safety fixes. Native/EVO now omit Dolby Vision enhancement pictures while preserving compatible HDR10 base video.",
-    "Auto HDR attempts native HDR10 and converts to SDR if output is rejected. Require native HDR10 and Convert HDR to SDR remain available. Plex, Jellyfin, Emby and previous media artwork/persistence fixes remain included. Real-console testing is still required."
+    "1.0.0.11: provider HTML selectors now use maintained Cheerio, fixing the known nth-check denial-of-service advisory while preserving provider module names.",
+    "Updated subtitle shaping with HarfBuzz 15.1.0, artwork handling with WebP 1.6.0 and XML parsing with libxml2 2.15.4. Existing FFmpeg, EVO and graphics release lines are retained.",
+    "Includes Plex, Jellyfin and Emby, authenticated library artwork and saved connection fixes, optional torrent streaming and paired Web Drop, plus HDR-to-SDR fallback.",
+    "Remote button mapping remains experimental and app-local: PlayStation or your TV may intercept buttons before Nuvio receives them. Controller controls stay unchanged. Console testing is still required for updated libraries and experimental playback features."
 };
 }

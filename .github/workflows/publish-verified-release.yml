@@ -31,7 +31,7 @@ jobs:
       - name: Validate version inputs
         shell: bash
         run: |
-          [[ "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(\.[0-9]+)?-native-experimental$ ]]
+          [[ "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(\.[0-9]+)?-native(-experimental)?$ ]]
           [[ "$ASSET_REF" == "release-assets/$RELEASE_TAG" ]]
       - uses: actions/checkout@v4
         with:
@@ -42,7 +42,8 @@ jobs:
         run: |
           sha256sum --check SHA256SUMS
           version=${RELEASE_TAG#v}
-          version=${version%-native-experimental}
+          version=${version%-experimental}
+          version=${version%-native}
           python3 - "$version" <<'PY'
           import hashlib,json,sys,tarfile,zipfile
           from pathlib import Path
@@ -91,11 +92,14 @@ jobs:
           print('All nine GitHub asset digests and sizes match.')
           PY
           version=${RELEASE_TAG#v}
-          version=${version%-native-experimental}
+          version=${version%-experimental}
+          version=${version%-native}
           latest=(--latest)
           if [ "$RELEASE_PRERELEASE" = true ]; then latest=(--latest=false); fi
+          title="Nuvio Max'd $version"
+          if [ "$RELEASE_PRERELEASE" = true ]; then title="$title experimental"; fi
           gh release edit "$RELEASE_TAG" --draft=false --prerelease="$RELEASE_PRERELEASE" "${latest[@]}" \
-            --title "Nuvio Max'd $version experimental" --notes-file RELEASE_NOTES.md
+            --title "$title" --notes-file RELEASE_NOTES.md
   notify-issue-16-tester:
     if: ${{ inputs.tag == 'v1.0.0.10-native-experimental' }}
     needs: publish
