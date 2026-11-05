@@ -116,11 +116,11 @@ jobs:
         shell: bash
         run: |
           test "$(gh release view v1.0.0.10-native-experimental --json isDraft --jq .isDraft)" = false
-          gh api repos/"$GH_REPO"/issues/16/comments --paginate > issue-comments.json
+          gh api repos/"$GH_REPO"/issues/16/comments --paginate --slurp > issue-comments.json
           python3 - <<'PY'
           import json
           from pathlib import Path
-          comments=json.loads(Path('issue-comments.json').read_text())
+          comments=[c for page in json.loads(Path('issue-comments.json').read_text()) for c in page]
           body=Path('ISSUE_COMMENT.md').read_text().strip()
           if any(c.get('body','').strip()==body for c in comments):
               Path('.test-comment-already-posted').touch()
