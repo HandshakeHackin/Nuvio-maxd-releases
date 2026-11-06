@@ -7,7 +7,7 @@ python3 - "$ROOT" "$B" <<'PY'
 from pathlib import Path
 import sys
 root=Path(sys.argv[1]);out=Path(sys.argv[2]);header=(root/'gl/session.hpp').read_text()
-out.joinpath('iptv_session_fields.hpp').write_text(header[header.index('    void iptv_reset();'):header.index('    void live_load();')])
+out.joinpath('iptv_session_fields.hpp').write_text(header[header.index('    void iptv_reset();'):header.index('    bool sports_valid(')])
 out.joinpath('session_iptv.cpp').write_text((root/'gl/session_iptv.cpp').read_text().replace('#include "session.hpp"','#include "iptv_session_boundary.hpp"'))
 # Isolation checks supplement the production Session tests: normal playback must
 # bypass addon subtitles, parallel service connections, episode lookup and history.
