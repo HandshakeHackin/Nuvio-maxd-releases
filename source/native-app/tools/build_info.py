@@ -35,6 +35,7 @@ info = {
     'name': "Nuvio Max'd",
     'version': '1.0.0.11-native',
     'releaseChannel': 'development',
+    'sportsHub': {'optional': True, 'profileSelections': True, 'sportLeagueTeamPicker': True, 'regions': True, 'scoreSpoilers': True, 'guideChannelCandidates': True, 'boundedPublicCatalogue': True, 'referenceCommit': 'd46b29a47487919057819602b614d5f7fbde7cba', 'hardwareVerified': False},
     'sourceSelection': {'metadataChecks': True, 'profilePreferences': True, 'qualityLanguageSizeHdr': True, 'explicitRankedPlay': True, 'showAllOverride': True, 'nextEpisodeFiltering': True, 'hardwareVerified': False},
     'torrentExperience': {'explicitFileResume': True, 'verifiedBufferTelemetry': True, 'recoveryActions': True, 'safeCacheCleanup': True, 'redactedDiagnosticTextQr': True, 'hardwareVerified': False},
     'titleId': sys.argv[2],

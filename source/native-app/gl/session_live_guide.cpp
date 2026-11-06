@@ -87,9 +87,11 @@ void Session::live_guide_configure() {
       "XMLTV guide URL (empty uses the provider default)");
 }
 void Session::live_guide_update(int focus) {
-  if (page_ != Page::livetv || watching || multiview_active || live_loading_ ||
+  if ((page_ != Page::livetv && page_ != Page::sports) || watching || multiview_active || live_loading_ ||
       live_channels_.empty() || !jbool(live_state_, "guide_enabled", true))
     return;
+  const auto& guide_indices=page_==Page::sports?sports_guide_indices_:live_indices_;
+  if(page_==Page::sports){if(!sports_visible||guide_indices.empty())return;focus=sports_guide_cursor_;}
   const double time = now_seconds();
   if (time < live_guide_tick_)
     return;
@@ -107,7 +109,9 @@ void Session::live_guide_update(int focus) {
                        ? live_guide_auto_url_
                        : jstr(source, "epg_url");
   if (!url.empty()) {
-    const auto window = live_filter_ + ":" + std::to_string(live_page_);
+    std::string sports_window;
+    if(page_==Page::sports)for(auto index:guide_indices)sports_window+=std::to_string(index)+",";
+    const auto window = page_==Page::sports?"sports:"+live_source_+":"+std::to_string(fnv1a(sports_window)):live_filter_ + ":" + std::to_string(live_page_);
     if (window != live_guide_window_) {
       // Keep one capped document while changing pages; do not re-download it
       // for every group or search.
@@ -125,7 +129,7 @@ void Session::live_guide_update(int focus) {
       std::set<std::string> ids;
       // XML parsing keeps a bounded near-future snapshot; channel IDs, never
       // name guesses.
-      for (auto index : live_indices_) {
+      for (auto index : guide_indices) {
         const auto &c = live_channels_[index];
         ids.insert(c.epg_id.empty() ? c.id : c.epg_id);
       }
@@ -163,10 +167,10 @@ void Session::live_guide_update(int focus) {
     const auto generation = live_guide_generation_,
                profile = profile_generation_;
     for (int at = std::max(0, focus - 4);
-         at < std::min<int>(live_indices_.size(), focus + 6) &&
+         at < std::min<int>(guide_indices.size(), focus + 6) &&
          live_guide_inflight_ < 2;
          ++at) {
-      const auto channel = live_channels_[live_indices_[at]].id;
+      const auto channel = live_channels_[guide_indices[at]].id;
       auto cached = live_guide_channels_.find(channel);
       if (live_guide_pending_.count(channel) ||
           (cached != live_guide_channels_.end() &&

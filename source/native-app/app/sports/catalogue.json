@@ -1,0 +1,2092 @@
+{
+  "schema": 1,
+  "sports": [
+    {
+      "id": "american_football",
+      "name": "American Football"
+    },
+    {
+      "id": "basketball",
+      "name": "Basketball"
+    },
+    {
+      "id": "hockey",
+      "name": "Ice Hockey"
+    },
+    {
+      "id": "baseball",
+      "name": "Baseball"
+    },
+    {
+      "id": "football",
+      "name": "Football"
+    },
+    {
+      "id": "rugby",
+      "name": "Rugby Union"
+    },
+    {
+      "id": "fighting",
+      "name": "Fighting"
+    },
+    {
+      "id": "racing",
+      "name": "Motorsport"
+    },
+    {
+      "id": "golf",
+      "name": "Golf"
+    },
+    {
+      "id": "tennis",
+      "name": "Tennis"
+    },
+    {
+      "id": "cricket",
+      "name": "Cricket"
+    },
+    {
+      "id": "darts",
+      "name": "Darts"
+    },
+    {
+      "id": "snooker",
+      "name": "Cue Sports"
+    },
+    {
+      "id": "wrestling",
+      "name": "Wrestling"
+    },
+    {
+      "id": "aussie_rules",
+      "name": "Aussie Rules"
+    },
+    {
+      "id": "volleyball",
+      "name": "Volleyball"
+    },
+    {
+      "id": "lacrosse",
+      "name": "Lacrosse"
+    },
+    {
+      "id": "gaelic",
+      "name": "Gaelic Games"
+    },
+    {
+      "id": "netball",
+      "name": "Netball"
+    },
+    {
+      "id": "rugby_league",
+      "name": "Rugby League"
+    },
+    {
+      "id": "swimming",
+      "name": "Swimming"
+    },
+    {
+      "id": "athletics",
+      "name": "Athletics"
+    },
+    {
+      "id": "gymnastics",
+      "name": "Gymnastics"
+    },
+    {
+      "id": "cycling",
+      "name": "Cycling"
+    },
+    {
+      "id": "horse_racing",
+      "name": "Horse Racing"
+    },
+    {
+      "id": "other",
+      "name": "More Sports"
+    }
+  ],
+  "leagues": [
+    {
+      "id": "football/nfl",
+      "sport": "american_football",
+      "name": "NFL",
+      "path": "football/nfl",
+      "words": [
+        "NFL"
+      ],
+      "regions": []
+    },
+    {
+      "id": "football/college-football",
+      "sport": "american_football",
+      "name": "College Football",
+      "path": "football/college-football",
+      "words": [
+        "College Football",
+        "NCAAF",
+        "NCAA Football",
+        "CFB"
+      ],
+      "regions": [
+        "US",
+        "CA"
+      ]
+    },
+    {
+      "id": "basketball/nba",
+      "sport": "basketball",
+      "name": "NBA",
+      "path": "basketball/nba",
+      "words": [
+        "NBA"
+      ],
+      "regions": []
+    },
+    {
+      "id": "basketball/wnba",
+      "sport": "basketball",
+      "name": "WNBA",
+      "path": "basketball/wnba",
+      "words": [
+        "WNBA"
+      ],
+      "regions": [
+        "US",
+        "CA"
+      ]
+    },
+    {
+      "id": "basketball/mens-college-basketball",
+      "sport": "basketball",
+      "name": "Men's College Basketball",
+      "path": "basketball/mens-college-basketball",
+      "words": [
+        "Men's College Basketball",
+        "NCAAM",
+        "College Basketball",
+        "NCAA Basketball"
+      ],
+      "regions": [
+        "US"
+      ]
+    },
+    {
+      "id": "basketball/womens-college-basketball",
+      "sport": "basketball",
+      "name": "Women's College Basketball",
+      "path": "basketball/womens-college-basketball",
+      "words": [
+        "Women's College Basketball",
+        "NCAAW"
+      ],
+      "regions": [
+        "US"
+      ]
+    },
+    {
+      "id": "hockey/nhl",
+      "sport": "hockey",
+      "name": "NHL",
+      "path": "hockey/nhl",
+      "words": [
+        "NHL"
+      ],
+      "regions": [
+        "US",
+        "CA",
+        "OTHER"
+      ]
+    },
+    {
+      "id": "baseball/mlb",
+      "sport": "baseball",
+      "name": "MLB",
+      "path": "baseball/mlb",
+      "words": [
+        "MLB",
+        "Baseball"
+      ],
+      "regions": [
+        "US",
+        "CA",
+        "OTHER"
+      ]
+    },
+    {
+      "id": "soccer/eng.1",
+      "sport": "football",
+      "name": "Premier League",
+      "path": "soccer/eng.1",
+      "words": [
+        "Premier League",
+        "EPL"
+      ],
+      "regions": []
+    },
+    {
+      "id": "soccer/eng.2",
+      "sport": "football",
+      "name": "Championship",
+      "path": "soccer/eng.2",
+      "words": [
+        "Championship",
+        "EFL"
+      ],
+      "regions": [
+        "UK",
+        "IE"
+      ]
+    },
+    {
+      "id": "soccer/eng.3",
+      "sport": "football",
+      "name": "League One",
+      "path": "soccer/eng.3",
+      "words": [
+        "League One",
+        "L1",
+        "EFL"
+      ],
+      "regions": [
+        "UK",
+        "IE"
+      ]
+    },
+    {
+      "id": "soccer/eng.4",
+      "sport": "football",
+      "name": "League Two",
+      "path": "soccer/eng.4",
+      "words": [
+        "League Two",
+        "L2",
+        "EFL"
+      ],
+      "regions": [
+        "UK",
+        "IE"
+      ]
+    },
+    {
+      "id": "soccer/eng.fa",
+      "sport": "football",
+      "name": "FA Cup",
+      "path": "soccer/eng.fa",
+      "words": [
+        "FA Cup",
+        "FA CUP"
+      ],
+      "regions": [
+        "UK",
+        "IE"
+      ]
+    },
+    {
+      "id": "soccer/eng.league_cup",
+      "sport": "football",
+      "name": "Carabao Cup",
+      "path": "soccer/eng.league_cup",
+      "words": [
+        "Carabao Cup",
+        "EFL CUP",
+        "EFL Cup",
+        "League Cup"
+      ],
+      "regions": [
+        "UK",
+        "IE"
+      ]
+    },
+    {
+      "id": "soccer/sco.1",
+      "sport": "football",
+      "name": "Scottish Premiership",
+      "path": "soccer/sco.1",
+      "words": [
+        "Scottish Premiership",
+        "SPFL"
+      ],
+      "regions": [
+        "UK",
+        "IE"
+      ]
+    },
+    {
+      "id": "soccer/eng.w.1",
+      "sport": "football",
+      "name": "Women's Super League",
+      "path": "soccer/eng.w.1",
+      "words": [
+        "Women's Super League",
+        "WSL"
+      ],
+      "regions": [
+        "UK",
+        "IE"
+      ]
+    },
+    {
+      "id": "soccer/uefa.champions",
+      "sport": "football",
+      "name": "Champions League",
+      "path": "soccer/uefa.champions",
+      "words": [
+        "Champions League",
+        "UCL"
+      ],
+      "regions": []
+    },
+    {
+      "id": "soccer/uefa.europa",
+      "sport": "football",
+      "name": "Europa League",
+      "path": "soccer/uefa.europa",
+      "words": [
+        "Europa League",
+        "UEL"
+      ],
+      "regions": [
+        "UK",
+        "IE",
+        "US",
+        "OTHER"
+      ]
+    },
+    {
+      "id": "soccer/uefa.europa.conf",
+      "sport": "football",
+      "name": "Conference League",
+      "path": "soccer/uefa.europa.conf",
+      "words": [
+        "Conference League",
+        "UECL"
+      ],
+      "regions": [
+        "UK",
+        "IE"
+      ]
+    },
+    {
+      "id": "soccer/esp.1",
+      "sport": "football",
+      "name": "LaLiga",
+      "path": "soccer/esp.1",
+      "words": [
+        "LaLiga",
+        "LALIGA",
+        "La Liga"
+      ],
+      "regions": []
+    },
+    {
+      "id": "soccer/ita.1",
+      "sport": "football",
+      "name": "Serie A",
+      "path": "soccer/ita.1",
+      "words": [
+        "Serie A",
+        "SERIE A"
+      ],
+      "regions": [
+        "UK",
+        "IE",
+        "US",
+        "AU",
+        "OTHER"
+      ]
+    },
+    {
+      "id": "soccer/ger.1",
+      "sport": "football",
+      "name": "Bundesliga",
+      "path": "soccer/ger.1",
+      "words": [
+        "Bundesliga",
+        "BUNDES"
+      ],
+      "regions": [
+        "UK",
+        "IE",
+        "US",
+        "AU",
+        "OTHER"
+      ]
+    },
+    {
+      "id": "soccer/fra.1",
+      "sport": "football",
+      "name": "Ligue 1",
+      "path": "soccer/fra.1",
+      "words": [
+        "Ligue 1",
+        "LIGUE 1"
+      ],
+      "regions": [
+        "UK",
+        "IE",
+        "OTHER"
+      ]
+    },
+    {
+      "id": "soccer/usa.1",
+      "sport": "football",
+      "name": "MLS",
+      "path": "soccer/usa.1",
+      "words": [
+        "MLS"
+      ],
+      "regions": [
+        "US",
+        "CA"
+      ]
+    },
+    {
+      "id": "soccer/usa.nwsl",
+      "sport": "football",
+      "name": "NWSL",
+      "path": "soccer/usa.nwsl",
+      "words": [
+        "NWSL"
+      ],
+      "regions": [
+        "US"
+      ]
+    },
+    {
+      "id": "soccer/mex.1",
+      "sport": "football",
+      "name": "Liga MX",
+      "path": "soccer/mex.1",
+      "words": [
+        "Liga MX",
+        "LIGA MX"
+      ],
+      "regions": [
+        "US"
+      ]
+    },
+    {
+      "id": "soccer/fifa.world",
+      "sport": "football",
+      "name": "World Cup",
+      "path": "soccer/fifa.world",
+      "words": [
+        "World Cup",
+        "WORLD CUP",
+        "FIFA World Cup"
+      ],
+      "regions": []
+    },
+    {
+      "id": "soccer/uefa.euro",
+      "sport": "football",
+      "name": "European Championship",
+      "path": "soccer/uefa.euro",
+      "words": [
+        "European Championship",
+        "EURO",
+        "UEFA Euro"
+      ],
+      "regions": [
+        "UK",
+        "IE",
+        "OTHER"
+      ]
+    },
+    {
+      "id": "soccer/uefa.nations",
+      "sport": "football",
+      "name": "Nations League",
+      "path": "soccer/uefa.nations",
+      "words": [
+        "Nations League",
+        "UNL"
+      ],
+      "regions": [
+        "UK",
+        "IE",
+        "OTHER"
+      ]
+    },
+    {
+      "id": "soccer/fifa.worldq.uefa",
+      "sport": "football",
+      "name": "World Cup Qualifying (Europe)",
+      "path": "soccer/fifa.worldq.uefa",
+      "words": [
+        "World Cup Qualifying (Europe)",
+        "WCQ",
+        "World Cup Qualifier",
+        "World Cup Qualifying"
+      ],
+      "regions": [
+        "UK",
+        "IE",
+        "OTHER"
+      ]
+    },
+    {
+      "id": "soccer/uefa.euroq",
+      "sport": "football",
+      "name": "Euro Qualifying",
+      "path": "soccer/uefa.euroq",
+      "words": [
+        "Euro Qualifying",
+        "EURO Q",
+        "Euro Qualifier",
+        "European Qualifier"
+      ],
+      "regions": [
+        "UK",
+        "IE",
+        "OTHER"
+      ]
+    },
+    {
+      "id": "soccer/fifa.friendly",
+      "sport": "football",
+      "name": "International Friendlies",
+      "path": "soccer/fifa.friendly",
+      "words": [
+        "International Friendlies",
+        "FRIENDLY",
+        "International Friendly"
+      ],
+      "regions": []
+    },
+    {
+      "id": "soccer/fifa.worldq.concacaf",
+      "sport": "football",
+      "name": "World Cup Qualifying (CONCACAF)",
+      "path": "soccer/fifa.worldq.concacaf",
+      "words": [
+        "World Cup Qualifying (CONCACAF)",
+        "WCQ",
+        "World Cup Qualifier",
+        "World Cup Qualifying"
+      ],
+      "regions": [
+        "US",
+        "CA"
+      ]
+    },
+    {
+      "id": "soccer/concacaf.nations.league",
+      "sport": "football",
+      "name": "CONCACAF Nations League",
+      "path": "soccer/concacaf.nations.league",
+      "words": [
+        "CONCACAF Nations League",
+        "CNL",
+        "Nations League"
+      ],
+      "regions": [
+        "US",
+        "CA"
+      ]
+    },
+    {
+      "id": "soccer/concacaf.gold",
+      "sport": "football",
+      "name": "Gold Cup",
+      "path": "soccer/concacaf.gold",
+      "words": [
+        "Gold Cup",
+        "GOLD CUP"
+      ],
+      "regions": [
+        "US",
+        "CA"
+      ]
+    },
+    {
+      "id": "soccer/conmebol.america",
+      "sport": "football",
+      "name": "Copa América",
+      "path": "soccer/conmebol.america",
+      "words": [
+        "Copa América",
+        "COPA",
+        "Copa America"
+      ],
+      "regions": [
+        "US",
+        "OTHER"
+      ]
+    },
+    {
+      "id": "rugby-league/3",
+      "sport": "rugby_league",
+      "name": "NRL",
+      "path": "rugby-league/3",
+      "words": [
+        "NRL",
+        "Australian National Rugby League",
+        "National Rugby League"
+      ],
+      "regions": []
+    },
+    {
+      "id": "rugby/180659",
+      "sport": "rugby",
+      "name": "Six Nations",
+      "path": "rugby/180659",
+      "words": [
+        "Six Nations",
+        "6N",
+        "6 Nations"
+      ],
+      "regions": [
+        "UK",
+        "IE",
+        "OTHER"
+      ]
+    },
+    {
+      "id": "rugby/289234",
+      "sport": "rugby",
+      "name": "Rugby Test Matches",
+      "path": "rugby/289234",
+      "words": [
+        "Rugby Test Matches",
+        "TESTS",
+        "Summer Tour",
+        "Rugby Union",
+        "Test Match",
+        "Lions Tour"
+      ],
+      "regions": [
+        "UK",
+        "IE",
+        "AU",
+        "OTHER"
+      ]
+    },
+    {
+      "id": "rugby/244293",
+      "sport": "rugby",
+      "name": "The Rugby Championship",
+      "path": "rugby/244293",
+      "words": [
+        "The Rugby Championship",
+        "TRC",
+        "Rugby Championship"
+      ],
+      "regions": [
+        "AU",
+        "OTHER"
+      ]
+    },
+    {
+      "id": "rugby/164205",
+      "sport": "rugby",
+      "name": "Rugby World Cup",
+      "path": "rugby/164205",
+      "words": [
+        "Rugby World Cup",
+        "RWC"
+      ],
+      "regions": [
+        "UK",
+        "IE",
+        "AU",
+        "US",
+        "OTHER"
+      ]
+    },
+    {
+      "id": "rugby/17567",
+      "sport": "rugby",
+      "name": "Nations Championship",
+      "path": "rugby/17567",
+      "words": [
+        "Nations Championship",
+        "NATIONS",
+        "Autumn Nations",
+        "Autumn Internationals"
+      ],
+      "regions": [
+        "UK",
+        "IE",
+        "AU",
+        "OTHER"
+      ]
+    },
+    {
+      "id": "australian-football/afl",
+      "sport": "aussie_rules",
+      "name": "AFL",
+      "path": "australian-football/afl",
+      "words": [
+        "AFL",
+        "Aussie Rules"
+      ],
+      "regions": [
+        "AU"
+      ]
+    },
+    {
+      "id": "soccer/eng.5",
+      "sport": "football",
+      "name": "National League",
+      "path": "soccer/eng.5",
+      "words": [
+        "National League",
+        "NL",
+        "Vanarama National League"
+      ],
+      "regions": []
+    },
+    {
+      "id": "soccer/eng.trophy",
+      "sport": "football",
+      "name": "EFL Trophy",
+      "path": "soccer/eng.trophy",
+      "words": [
+        "EFL Trophy",
+        "EFL TR",
+        "Vertu Trophy"
+      ],
+      "regions": []
+    },
+    {
+      "id": "soccer/eng.w.fa",
+      "sport": "football",
+      "name": "Women's FA Cup",
+      "path": "soccer/eng.w.fa",
+      "words": [
+        "Women's FA Cup",
+        "WFA"
+      ],
+      "regions": []
+    },
+    {
+      "id": "soccer/eng.w.league_cup",
+      "sport": "football",
+      "name": "Women's League Cup",
+      "path": "soccer/eng.w.league_cup",
+      "words": [
+        "Women's League Cup",
+        "WLC",
+        "Subway Cup"
+      ],
+      "regions": []
+    },
+    {
+      "id": "soccer/sco.2",
+      "sport": "football",
+      "name": "Scottish Championship",
+      "path": "soccer/sco.2",
+      "words": [
+        "Scottish Championship",
+        "SCO 2"
+      ],
+      "regions": []
+    },
+    {
+      "id": "soccer/sco.tennents",
+      "sport": "football",
+      "name": "Scottish Cup",
+      "path": "soccer/sco.tennents",
+      "words": [
+        "Scottish Cup",
+        "SCO CUP"
+      ],
+      "regions": []
+    },
+    {
+      "id": "soccer/sco.cis",
+      "sport": "football",
+      "name": "Scottish League Cup",
+      "path": "soccer/sco.cis",
+      "words": [
+        "Scottish League Cup",
+        "SCO LC",
+        "Premier Sports Cup"
+      ],
+      "regions": []
+    },
+    {
+      "id": "soccer/uefa.wchampions",
+      "sport": "football",
+      "name": "Women's Champions League",
+      "path": "soccer/uefa.wchampions",
+      "words": [
+        "Women's Champions League",
+        "UWCL"
+      ],
+      "regions": []
+    },
+    {
+      "id": "soccer/esp.2",
+      "sport": "football",
+      "name": "LaLiga 2",
+      "path": "soccer/esp.2",
+      "words": [
+        "LaLiga 2",
+        "LALIGA2",
+        "LaLiga Hypermotion",
+        "Segunda"
+      ],
+      "regions": []
+    },
+    {
+      "id": "soccer/ita.2",
+      "sport": "football",
+      "name": "Serie B",
+      "path": "soccer/ita.2",
+      "words": [
+        "Serie B",
+        "SERIE B"
+      ],
+      "regions": []
+    },
+    {
+      "id": "soccer/ger.2",
+      "sport": "football",
+      "name": "2. Bundesliga",
+      "path": "soccer/ger.2",
+      "words": [
+        "2. Bundesliga",
+        "BUNDES2",
+        "Bundesliga 2"
+      ],
+      "regions": []
+    },
+    {
+      "id": "soccer/fra.2",
+      "sport": "football",
+      "name": "Ligue 2",
+      "path": "soccer/fra.2",
+      "words": [
+        "Ligue 2",
+        "LIGUE 2"
+      ],
+      "regions": []
+    },
+    {
+      "id": "soccer/ned.1",
+      "sport": "football",
+      "name": "Eredivisie",
+      "path": "soccer/ned.1",
+      "words": [
+        "Eredivisie",
+        "ERE"
+      ],
+      "regions": []
+    },
+    {
+      "id": "soccer/por.1",
+      "sport": "football",
+      "name": "Primeira Liga",
+      "path": "soccer/por.1",
+      "words": [
+        "Primeira Liga",
+        "POR",
+        "Liga Portugal"
+      ],
+      "regions": []
+    },
+    {
+      "id": "soccer/bel.1",
+      "sport": "football",
+      "name": "Belgian Pro League",
+      "path": "soccer/bel.1",
+      "words": [
+        "Belgian Pro League",
+        "BEL",
+        "Pro League",
+        "Jupiler Pro League"
+      ],
+      "regions": []
+    },
+    {
+      "id": "soccer/tur.1",
+      "sport": "football",
+      "name": "Süper Lig",
+      "path": "soccer/tur.1",
+      "words": [
+        "Süper Lig",
+        "TUR",
+        "Super Lig"
+      ],
+      "regions": []
+    },
+    {
+      "id": "soccer/gre.1",
+      "sport": "football",
+      "name": "Greek Super League",
+      "path": "soccer/gre.1",
+      "words": [
+        "Greek Super League",
+        "GRE"
+      ],
+      "regions": []
+    },
+    {
+      "id": "soccer/aut.1",
+      "sport": "football",
+      "name": "Austrian Bundesliga",
+      "path": "soccer/aut.1",
+      "words": [
+        "Austrian Bundesliga",
+        "AUT"
+      ],
+      "regions": []
+    },
+    {
+      "id": "soccer/den.1",
+      "sport": "football",
+      "name": "Danish Superliga",
+      "path": "soccer/den.1",
+      "words": [
+        "Danish Superliga",
+        "DEN",
+        "Superliga"
+      ],
+      "regions": []
+    },
+    {
+      "id": "soccer/swe.1",
+      "sport": "football",
+      "name": "Allsvenskan",
+      "path": "soccer/swe.1",
+      "words": [
+        "Allsvenskan",
+        "SWE"
+      ],
+      "regions": []
+    },
+    {
+      "id": "soccer/nor.1",
+      "sport": "football",
+      "name": "Eliteserien",
+      "path": "soccer/nor.1",
+      "words": [
+        "Eliteserien",
+        "NOR"
+      ],
+      "regions": []
+    },
+    {
+      "id": "soccer/rus.1",
+      "sport": "football",
+      "name": "Russian Premier League",
+      "path": "soccer/rus.1",
+      "words": [
+        "Russian Premier League",
+        "RUS"
+      ],
+      "regions": []
+    },
+    {
+      "id": "soccer/ksa.1",
+      "sport": "football",
+      "name": "Saudi Pro League",
+      "path": "soccer/ksa.1",
+      "words": [
+        "Saudi Pro League",
+        "SPL",
+        "Roshn Saudi League"
+      ],
+      "regions": []
+    },
+    {
+      "id": "soccer/esp.copa_del_rey",
+      "sport": "football",
+      "name": "Copa del Rey",
+      "path": "soccer/esp.copa_del_rey",
+      "words": [
+        "Copa del Rey",
+        "CDR"
+      ],
+      "regions": []
+    },
+    {
+      "id": "soccer/ger.dfb_pokal",
+      "sport": "football",
+      "name": "DFB-Pokal",
+      "path": "soccer/ger.dfb_pokal",
+      "words": [
+        "DFB-Pokal",
+        "POKAL",
+        "DFB Pokal",
+        "German Cup"
+      ],
+      "regions": []
+    },
+    {
+      "id": "soccer/ita.coppa_italia",
+      "sport": "football",
+      "name": "Coppa Italia",
+      "path": "soccer/ita.coppa_italia",
+      "words": [
+        "Coppa Italia",
+        "COPPA"
+      ],
+      "regions": []
+    },
+    {
+      "id": "soccer/fra.coupe_de_france",
+      "sport": "football",
+      "name": "Coupe de France",
+      "path": "soccer/fra.coupe_de_france",
+      "words": [
+        "Coupe de France",
+        "CDF"
+      ],
+      "regions": []
+    },
+    {
+      "id": "soccer/ned.cup",
+      "sport": "football",
+      "name": "KNVB Cup",
+      "path": "soccer/ned.cup",
+      "words": [
+        "KNVB Cup",
+        "KNVB",
+        "KNVB Beker"
+      ],
+      "regions": []
+    },
+    {
+      "id": "soccer/por.taca.portugal",
+      "sport": "football",
+      "name": "Taça de Portugal",
+      "path": "soccer/por.taca.portugal",
+      "words": [
+        "Taça de Portugal",
+        "TACA",
+        "Taca de Portugal"
+      ],
+      "regions": []
+    },
+    {
+      "id": "soccer/uefa.super_cup",
+      "sport": "football",
+      "name": "UEFA Super Cup",
+      "path": "soccer/uefa.super_cup",
+      "words": [
+        "UEFA Super Cup",
+        "SUPER C",
+        "Super Cup"
+      ],
+      "regions": []
+    },
+    {
+      "id": "soccer/eng.charity",
+      "sport": "football",
+      "name": "Community Shield",
+      "path": "soccer/eng.charity",
+      "words": [
+        "Community Shield",
+        "SHIELD"
+      ],
+      "regions": []
+    },
+    {
+      "id": "soccer/fifa.cwc",
+      "sport": "football",
+      "name": "Club World Cup",
+      "path": "soccer/fifa.cwc",
+      "words": [
+        "Club World Cup",
+        "CWC"
+      ],
+      "regions": []
+    },
+    {
+      "id": "soccer/bra.1",
+      "sport": "football",
+      "name": "Brasileirão",
+      "path": "soccer/bra.1",
+      "words": [
+        "Brasileirão",
+        "BRA",
+        "Brasileirao",
+        "Serie A Brazil"
+      ],
+      "regions": []
+    },
+    {
+      "id": "soccer/arg.1",
+      "sport": "football",
+      "name": "Liga Profesional (Argentina)",
+      "path": "soccer/arg.1",
+      "words": [
+        "Liga Profesional (Argentina)",
+        "ARG",
+        "Liga Profesional",
+        "Argentine"
+      ],
+      "regions": []
+    },
+    {
+      "id": "soccer/col.1",
+      "sport": "football",
+      "name": "Colombian Primera A",
+      "path": "soccer/col.1",
+      "words": [
+        "Colombian Primera A",
+        "COL",
+        "Primera A",
+        "Liga BetPlay"
+      ],
+      "regions": []
+    },
+    {
+      "id": "soccer/chi.1",
+      "sport": "football",
+      "name": "Chilean Primera",
+      "path": "soccer/chi.1",
+      "words": [
+        "Chilean Primera",
+        "CHI"
+      ],
+      "regions": []
+    },
+    {
+      "id": "soccer/conmebol.libertadores",
+      "sport": "football",
+      "name": "Copa Libertadores",
+      "path": "soccer/conmebol.libertadores",
+      "words": [
+        "Copa Libertadores",
+        "LIBERT",
+        "Libertadores"
+      ],
+      "regions": []
+    },
+    {
+      "id": "soccer/conmebol.sudamericana",
+      "sport": "football",
+      "name": "Copa Sudamericana",
+      "path": "soccer/conmebol.sudamericana",
+      "words": [
+        "Copa Sudamericana",
+        "SUDAM",
+        "Sudamericana"
+      ],
+      "regions": []
+    },
+    {
+      "id": "soccer/usa.usl.1",
+      "sport": "football",
+      "name": "USL Championship",
+      "path": "soccer/usa.usl.1",
+      "words": [
+        "USL Championship",
+        "USL"
+      ],
+      "regions": []
+    },
+    {
+      "id": "soccer/usa.usl.l1",
+      "sport": "football",
+      "name": "USL League One",
+      "path": "soccer/usa.usl.l1",
+      "words": [
+        "USL League One",
+        "USL1"
+      ],
+      "regions": []
+    },
+    {
+      "id": "soccer/usa.w.usl.1",
+      "sport": "football",
+      "name": "USL Super League",
+      "path": "soccer/usa.w.usl.1",
+      "words": [
+        "USL Super League",
+        "USLS"
+      ],
+      "regions": []
+    },
+    {
+      "id": "soccer/usa.open",
+      "sport": "football",
+      "name": "U.S. Open Cup",
+      "path": "soccer/usa.open",
+      "words": [
+        "U.S. Open Cup",
+        "USOC",
+        "US Open Cup"
+      ],
+      "regions": []
+    },
+    {
+      "id": "soccer/concacaf.champions",
+      "sport": "football",
+      "name": "CONCACAF Champions Cup",
+      "path": "soccer/concacaf.champions",
+      "words": [
+        "CONCACAF Champions Cup",
+        "CCC",
+        "Champions Cup",
+        "Concacaf Champions"
+      ],
+      "regions": []
+    },
+    {
+      "id": "soccer/concacaf.leagues.cup",
+      "sport": "football",
+      "name": "Leagues Cup",
+      "path": "soccer/concacaf.leagues.cup",
+      "words": [
+        "Leagues Cup",
+        "LGS CUP"
+      ],
+      "regions": []
+    },
+    {
+      "id": "soccer/mex.w.1",
+      "sport": "football",
+      "name": "Liga MX Femenil",
+      "path": "soccer/mex.w.1",
+      "words": [
+        "Liga MX Femenil",
+        "MX FEM"
+      ],
+      "regions": []
+    },
+    {
+      "id": "soccer/jpn.1",
+      "sport": "football",
+      "name": "J1 League",
+      "path": "soccer/jpn.1",
+      "words": [
+        "J1 League",
+        "J1",
+        "J.League"
+      ],
+      "regions": []
+    },
+    {
+      "id": "soccer/chn.1",
+      "sport": "football",
+      "name": "Chinese Super League",
+      "path": "soccer/chn.1",
+      "words": [
+        "Chinese Super League",
+        "CSL"
+      ],
+      "regions": []
+    },
+    {
+      "id": "soccer/ind.1",
+      "sport": "football",
+      "name": "Indian Super League",
+      "path": "soccer/ind.1",
+      "words": [
+        "Indian Super League",
+        "ISL"
+      ],
+      "regions": []
+    },
+    {
+      "id": "soccer/aus.1",
+      "sport": "football",
+      "name": "A-League Men",
+      "path": "soccer/aus.1",
+      "words": [
+        "A-League Men",
+        "ALM",
+        "A-League"
+      ],
+      "regions": []
+    },
+    {
+      "id": "soccer/aus.w.1",
+      "sport": "football",
+      "name": "A-League Women",
+      "path": "soccer/aus.w.1",
+      "words": [
+        "A-League Women",
+        "ALW"
+      ],
+      "regions": []
+    },
+    {
+      "id": "soccer/afc.champions",
+      "sport": "football",
+      "name": "AFC Champions League Elite",
+      "path": "soccer/afc.champions",
+      "words": [
+        "AFC Champions League Elite",
+        "ACL",
+        "AFC Champions League"
+      ],
+      "regions": []
+    },
+    {
+      "id": "soccer/caf.champions",
+      "sport": "football",
+      "name": "CAF Champions League",
+      "path": "soccer/caf.champions",
+      "words": [
+        "CAF Champions League",
+        "CAF CL"
+      ],
+      "regions": []
+    },
+    {
+      "id": "soccer/rsa.1",
+      "sport": "football",
+      "name": "South African Premiership",
+      "path": "soccer/rsa.1",
+      "words": [
+        "South African Premiership",
+        "PSL",
+        "Betway Premiership"
+      ],
+      "regions": []
+    },
+    {
+      "id": "soccer/fifa.wwc",
+      "sport": "football",
+      "name": "Women's World Cup",
+      "path": "soccer/fifa.wwc",
+      "words": [
+        "Women's World Cup",
+        "WWC"
+      ],
+      "regions": []
+    },
+    {
+      "id": "soccer/uefa.weuro",
+      "sport": "football",
+      "name": "Women's Euro",
+      "path": "soccer/uefa.weuro",
+      "words": [
+        "Women's Euro",
+        "WEURO",
+        "Women's European Championship"
+      ],
+      "regions": []
+    },
+    {
+      "id": "soccer/uefa.w.nations",
+      "sport": "football",
+      "name": "Women's Nations League",
+      "path": "soccer/uefa.w.nations",
+      "words": [
+        "Women's Nations League",
+        "WUNL"
+      ],
+      "regions": []
+    },
+    {
+      "id": "soccer/fifa.friendly.w",
+      "sport": "football",
+      "name": "Women's International Friendlies",
+      "path": "soccer/fifa.friendly.w",
+      "words": [
+        "Women's International Friendlies",
+        "W FRIEND",
+        "Women's International",
+        "Women's Friendly"
+      ],
+      "regions": []
+    },
+    {
+      "id": "basketball/nba-development",
+      "sport": "basketball",
+      "name": "NBA G League",
+      "path": "basketball/nba-development",
+      "words": [
+        "NBA G League",
+        "G LEAGUE",
+        "G League"
+      ],
+      "regions": []
+    },
+    {
+      "id": "basketball/nbl",
+      "sport": "basketball",
+      "name": "NBL (Australia)",
+      "path": "basketball/nbl",
+      "words": [
+        "NBL (Australia)",
+        "NBL"
+      ],
+      "regions": [
+        "AU"
+      ]
+    },
+    {
+      "id": "hockey/mens-college-hockey",
+      "sport": "hockey",
+      "name": "Men's College Hockey",
+      "path": "hockey/mens-college-hockey",
+      "words": [
+        "Men's College Hockey",
+        "NCAAH",
+        "College Hockey",
+        "NCAA Hockey"
+      ],
+      "regions": []
+    },
+    {
+      "id": "football/cfl",
+      "sport": "american_football",
+      "name": "CFL",
+      "path": "football/cfl",
+      "words": [
+        "CFL",
+        "Grey Cup"
+      ],
+      "regions": [
+        "CA"
+      ]
+    },
+    {
+      "id": "football/ufl",
+      "sport": "american_football",
+      "name": "UFL",
+      "path": "football/ufl",
+      "words": [
+        "UFL"
+      ],
+      "regions": []
+    },
+    {
+      "id": "baseball/college-baseball",
+      "sport": "baseball",
+      "name": "College Baseball",
+      "path": "baseball/college-baseball",
+      "words": [
+        "College Baseball",
+        "NCAAB",
+        "NCAA Baseball"
+      ],
+      "regions": []
+    },
+    {
+      "id": "volleyball/womens-college-volleyball",
+      "sport": "volleyball",
+      "name": "Women's College Volleyball",
+      "path": "volleyball/womens-college-volleyball",
+      "words": [
+        "Women's College Volleyball",
+        "NCAAV",
+        "College Volleyball",
+        "NCAA Volleyball"
+      ],
+      "regions": []
+    },
+    {
+      "id": "lacrosse/pll",
+      "sport": "lacrosse",
+      "name": "Premier Lacrosse League",
+      "path": "lacrosse/pll",
+      "words": [
+        "Premier Lacrosse League",
+        "PLL",
+        "Premier Lacrosse"
+      ],
+      "regions": []
+    },
+    {
+      "id": "lacrosse/nll",
+      "sport": "lacrosse",
+      "name": "National Lacrosse League",
+      "path": "lacrosse/nll",
+      "words": [
+        "National Lacrosse League",
+        "NLL"
+      ],
+      "regions": []
+    },
+    {
+      "id": "mma/pfl",
+      "sport": "fighting",
+      "name": "PFL",
+      "path": "mma/pfl",
+      "words": [
+        "PFL",
+        "Professional Fighters League"
+      ],
+      "regions": []
+    },
+    {
+      "id": "racing/nascar-secondary",
+      "sport": "racing",
+      "name": "NASCAR O'Reilly Series",
+      "path": "racing/nascar-secondary",
+      "words": [
+        "NASCAR O'Reilly Series",
+        "NXS",
+        "O'Reilly Auto Parts Series",
+        "Xfinity Series"
+      ],
+      "regions": []
+    },
+    {
+      "id": "racing/nascar-truck",
+      "sport": "racing",
+      "name": "NASCAR Truck Series",
+      "path": "racing/nascar-truck",
+      "words": [
+        "NASCAR Truck Series",
+        "TRUCKS",
+        "Truck Series"
+      ],
+      "regions": []
+    },
+    {
+      "id": "golf/liv",
+      "sport": "golf",
+      "name": "LIV Golf",
+      "path": "golf/liv",
+      "words": [
+        "LIV Golf",
+        "LIV"
+      ],
+      "regions": []
+    },
+    {
+      "id": "golf/champions-tour",
+      "sport": "golf",
+      "name": "PGA Tour Champions",
+      "path": "golf/champions-tour",
+      "words": [
+        "PGA Tour Champions",
+        "CHAMPS"
+      ],
+      "regions": []
+    },
+    {
+      "id": "mma/ufc",
+      "sport": "fighting",
+      "name": "UFC",
+      "path": "mma/ufc",
+      "words": [
+        "UFC"
+      ],
+      "regions": []
+    },
+    {
+      "id": "guide/boxing",
+      "sport": "fighting",
+      "name": "Boxing",
+      "path": "",
+      "words": [
+        "Boxing",
+        "BOXING"
+      ],
+      "regions": []
+    },
+    {
+      "id": "guide/wwe",
+      "sport": "wrestling",
+      "name": "WWE",
+      "path": "",
+      "words": [
+        "WWE",
+        "SmackDown",
+        "Monday Night Raw",
+        "WWE Raw",
+        "NXT",
+        "WrestleMania",
+        "Royal Rumble",
+        "SummerSlam",
+        "Survivor Series"
+      ],
+      "regions": []
+    },
+    {
+      "id": "guide/aew",
+      "sport": "wrestling",
+      "name": "AEW",
+      "path": "",
+      "words": [
+        "AEW",
+        "AEW Dynamite",
+        "AEW Collision",
+        "AEW Rampage",
+        "All Elite Wrestling"
+      ],
+      "regions": []
+    },
+    {
+      "id": "guide/wrestling",
+      "sport": "wrestling",
+      "name": "Wrestling",
+      "path": "",
+      "words": [
+        "Wrestling",
+        "WRESTLING",
+        "TNA Wrestling",
+        "TNA iMPACT",
+        "NJPW"
+      ],
+      "regions": [
+        "US",
+        "CA",
+        "UK",
+        "OTHER"
+      ]
+    },
+    {
+      "id": "racing/f1",
+      "sport": "racing",
+      "name": "Formula 1",
+      "path": "racing/f1",
+      "words": [
+        "Formula 1",
+        "F1",
+        "Formula One"
+      ],
+      "regions": []
+    },
+    {
+      "id": "racing/nascar-premier",
+      "sport": "racing",
+      "name": "NASCAR Cup",
+      "path": "racing/nascar-premier",
+      "words": [
+        "NASCAR Cup",
+        "NASCAR"
+      ],
+      "regions": [
+        "US"
+      ]
+    },
+    {
+      "id": "racing/irl",
+      "sport": "racing",
+      "name": "IndyCar",
+      "path": "racing/irl",
+      "words": [
+        "IndyCar",
+        "INDY"
+      ],
+      "regions": [
+        "US"
+      ]
+    },
+    {
+      "id": "guide/motogp",
+      "sport": "racing",
+      "name": "MotoGP",
+      "path": "",
+      "words": [
+        "MotoGP",
+        "MOTOGP"
+      ],
+      "regions": [
+        "UK",
+        "IE",
+        "AU",
+        "OTHER"
+      ]
+    },
+    {
+      "id": "golf/pga",
+      "sport": "golf",
+      "name": "PGA Tour",
+      "path": "golf/pga",
+      "words": [
+        "PGA Tour",
+        "PGA",
+        "Golf"
+      ],
+      "regions": []
+    },
+    {
+      "id": "golf/eur",
+      "sport": "golf",
+      "name": "DP World Tour",
+      "path": "golf/eur",
+      "words": [
+        "DP World Tour",
+        "DPWT",
+        "Golf"
+      ],
+      "regions": [
+        "UK",
+        "IE",
+        "OTHER"
+      ]
+    },
+    {
+      "id": "golf/lpga",
+      "sport": "golf",
+      "name": "LPGA Tour",
+      "path": "golf/lpga",
+      "words": [
+        "LPGA Tour",
+        "LPGA"
+      ],
+      "regions": [
+        "US"
+      ]
+    },
+    {
+      "id": "tennis/atp",
+      "sport": "tennis",
+      "name": "ATP Tour",
+      "path": "tennis/atp",
+      "words": [
+        "ATP Tour",
+        "ATP",
+        "Tennis"
+      ],
+      "regions": []
+    },
+    {
+      "id": "tennis/wta",
+      "sport": "tennis",
+      "name": "WTA Tour",
+      "path": "tennis/wta",
+      "words": [
+        "WTA Tour",
+        "WTA",
+        "Tennis"
+      ],
+      "regions": []
+    },
+    {
+      "id": "guide/rugby-union",
+      "sport": "rugby",
+      "name": "Rugby Union",
+      "path": "",
+      "words": [
+        "Rugby Union",
+        "RUGBY"
+      ],
+      "regions": [
+        "UK",
+        "IE",
+        "AU",
+        "OTHER"
+      ]
+    },
+    {
+      "id": "guide/rugby-league",
+      "sport": "rugby_league",
+      "name": "Rugby League",
+      "path": "",
+      "words": [
+        "Rugby League",
+        "RL",
+        "Super League",
+        "NRL",
+        "Challenge Cup",
+        "State of Origin"
+      ],
+      "regions": [
+        "UK",
+        "AU",
+        "OTHER"
+      ]
+    },
+    {
+      "id": "guide/cricket",
+      "sport": "cricket",
+      "name": "Cricket",
+      "path": "",
+      "words": [
+        "Cricket",
+        "CRICKET",
+        "Test Match",
+        "The Ashes",
+        "IPL",
+        "T20",
+        "The Hundred",
+        "ODI"
+      ],
+      "regions": [
+        "UK",
+        "IE",
+        "AU",
+        "OTHER"
+      ]
+    },
+    {
+      "id": "guide/darts",
+      "sport": "darts",
+      "name": "Darts",
+      "path": "",
+      "words": [
+        "Darts",
+        "DARTS"
+      ],
+      "regions": [
+        "UK",
+        "IE",
+        "AU",
+        "OTHER"
+      ]
+    },
+    {
+      "id": "guide/snooker",
+      "sport": "snooker",
+      "name": "Snooker",
+      "path": "",
+      "words": [
+        "Snooker",
+        "SNOOKER"
+      ],
+      "regions": [
+        "UK",
+        "IE",
+        "OTHER"
+      ]
+    },
+    {
+      "id": "guide/horse-racing",
+      "sport": "horse_racing",
+      "name": "Horse Racing",
+      "path": "",
+      "words": [
+        "Horse Racing",
+        "RACING",
+        "ITV Racing",
+        "Racing TV",
+        "Live Racing"
+      ],
+      "regions": [
+        "UK",
+        "IE",
+        "AU",
+        "OTHER"
+      ]
+    },
+    {
+      "id": "guide/cycling",
+      "sport": "cycling",
+      "name": "Cycling",
+      "path": "",
+      "words": [
+        "Cycling",
+        "CYCLING",
+        "Tour de France",
+        "Giro",
+        "Vuelta"
+      ],
+      "regions": [
+        "UK",
+        "IE",
+        "OTHER"
+      ]
+    },
+    {
+      "id": "guide/american_football",
+      "sport": "american_football",
+      "name": "American Football — TV guide",
+      "path": "",
+      "words": [
+        "American Football"
+      ],
+      "regions": []
+    },
+    {
+      "id": "guide/basketball",
+      "sport": "basketball",
+      "name": "Basketball — TV guide",
+      "path": "",
+      "words": [
+        "Basketball"
+      ],
+      "regions": []
+    },
+    {
+      "id": "guide/hockey",
+      "sport": "hockey",
+      "name": "Ice Hockey — TV guide",
+      "path": "",
+      "words": [
+        "Ice Hockey"
+      ],
+      "regions": []
+    },
+    {
+      "id": "guide/baseball",
+      "sport": "baseball",
+      "name": "Baseball — TV guide",
+      "path": "",
+      "words": [
+        "Baseball"
+      ],
+      "regions": []
+    },
+    {
+      "id": "guide/football",
+      "sport": "football",
+      "name": "Football — TV guide",
+      "path": "",
+      "words": [],
+      "regions": []
+    },
+    {
+      "id": "guide/golf",
+      "sport": "golf",
+      "name": "Golf — TV guide",
+      "path": "",
+      "words": [
+        "Golf"
+      ],
+      "regions": []
+    },
+    {
+      "id": "guide/tennis",
+      "sport": "tennis",
+      "name": "Tennis — TV guide",
+      "path": "",
+      "words": [
+        "Tennis"
+      ],
+      "regions": []
+    },
+    {
+      "id": "guide/aussie_rules",
+      "sport": "aussie_rules",
+      "name": "Aussie Rules — TV guide",
+      "path": "",
+      "words": [
+        "Aussie Rules"
+      ],
+      "regions": []
+    },
+    {
+      "id": "guide/volleyball",
+      "sport": "volleyball",
+      "name": "Volleyball — TV guide",
+      "path": "",
+      "words": [
+        "Volleyball"
+      ],
+      "regions": []
+    },
+    {
+      "id": "guide/lacrosse",
+      "sport": "lacrosse",
+      "name": "Lacrosse — TV guide",
+      "path": "",
+      "words": [
+        "Lacrosse"
+      ],
+      "regions": []
+    },
+    {
+      "id": "guide/gaelic",
+      "sport": "gaelic",
+      "name": "Gaelic Games — TV guide",
+      "path": "",
+      "words": [
+        "Gaelic Games"
+      ],
+      "regions": []
+    },
+    {
+      "id": "guide/netball",
+      "sport": "netball",
+      "name": "Netball — TV guide",
+      "path": "",
+      "words": [
+        "Netball"
+      ],
+      "regions": []
+    },
+    {
+      "id": "guide/swimming",
+      "sport": "swimming",
+      "name": "Swimming — TV guide",
+      "path": "",
+      "words": [
+        "Swimming"
+      ],
+      "regions": []
+    },
+    {
+      "id": "guide/athletics",
+      "sport": "athletics",
+      "name": "Athletics — TV guide",
+      "path": "",
+      "words": [
+        "Athletics"
+      ],
+      "regions": []
+    },
+    {
+      "id": "guide/gymnastics",
+      "sport": "gymnastics",
+      "name": "Gymnastics — TV guide",
+      "path": "",
+      "words": [
+        "Gymnastics"
+      ],
+      "regions": []
+    },
+    {
+      "id": "guide/other",
+      "sport": "other",
+      "name": "More Sports — TV guide",
+      "path": "",
+      "words": [],
+      "regions": []
+    },
+    {
+      "id": "tsdb/4416",
+      "sport": "rugby_league",
+      "name": "Australian National Rugby League",
+      "path": "",
+      "words": [
+        "Australian National Rugby League"
+      ],
+      "regions": []
+    },
+    {
+      "id": "tsdb/4415",
+      "sport": "rugby_league",
+      "name": "English Rugby League Super League",
+      "path": "",
+      "words": [
+        "English Rugby League Super League"
+      ],
+      "regions": []
+    },
+    {
+      "id": "tsdb/4461",
+      "sport": "cricket",
+      "name": "Australian Big Bash League",
+      "path": "",
+      "words": [
+        "Australian Big Bash League"
+      ],
+      "regions": []
+    },
+    {
+      "id": "tsdb/5806",
+      "sport": "rugby_league",
+      "name": "Rugby League World Cup",
+      "path": "",
+      "words": [
+        "Rugby League World Cup"
+      ],
+      "regions": []
+    },
+    {
+      "id": "tsdb/5282",
+      "sport": "athletics",
+      "name": "Diamond League",
+      "path": "",
+      "words": [
+        "Diamond League"
+      ],
+      "regions": []
+    },
+    {
+      "id": "tsdb/4405",
+      "sport": "american_football",
+      "name": "CFL",
+      "path": "",
+      "words": [
+        "CFL"
+      ],
+      "regions": []
+    }
+  ]
+}

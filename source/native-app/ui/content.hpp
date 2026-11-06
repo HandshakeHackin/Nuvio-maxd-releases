@@ -77,6 +77,7 @@ struct Addon
     std::uint32_t logo = 0;  // GL texture, 0 until it has arrived
     std::uint32_t colour = 0x7b5bf5; // the tile's colour while there is no logo
     bool local = false;      // runs on this console, not on a server
+    std::string identity{};
 };
 
 struct AddonsContent
@@ -246,6 +247,7 @@ enum class Page
     iptv,
     servers,
     torrents,
+    sports,
 };
 
 } // namespace sx

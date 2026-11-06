@@ -35,6 +35,7 @@ struct Env
     const bool* iptv_visible = nullptr;
     const bool* media_servers_visible = nullptr;
     const bool* torrents_visible = nullptr;
+    const bool* sports_visible = nullptr;
 };
 
 // The left navigation: five pages. When it holds the focus a
@@ -58,12 +59,12 @@ class Rail
     // A page opened: the rail lets go of the focus and rests on that page, with no glide.
     void reset(Page page);
     void set_iptv_visible(bool visible);
-    void update(float dt, bool iptv_visible=false, bool servers_visible=false, bool torrents_visible=false);
+    void update(float dt, bool iptv_visible=false, bool servers_visible=false, bool torrents_visible=false, bool sports_visible=false);
     void draw(hui::gfx::DrawList &list, const Env &env, float age) const;
 
   private:
     hui::gfx::Rect item_rect(int index) const;
-    bool iptv_visible_=false, servers_visible_=false, torrents_visible_=false;
+    bool iptv_visible_=false, servers_visible_=false, torrents_visible_=false, sports_visible_=false;
 
     int page_ = 0;
     int cursor_ = 0;

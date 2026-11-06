@@ -205,6 +205,7 @@ cp "$ROOT"/app/fonts/*.txt "$APP/fonts/" 2>/dev/null || true
 cp "$HUI"/assets/fonts/*.huifont "$HUI"/assets/fonts/*LICENSE*.txt "$APP/hui-fonts/"
 cp "$ROOT"/app/assets/icons_4k/*.png "$APP/icons/"
 cp -r "$ROOT/app/sounds" "$APP/sounds"
+cp -r "$ROOT/app/sports" "$APP/sports"
 cp "$ROOT/app/ca-bundle.crt" "$APP/"
 echo ">> building bundled image update helper"
 make -C "$ROOT/update" PS5_PAYLOAD_SDK="$SDK" OUTPUT="$B/nuvio-updater.elf"

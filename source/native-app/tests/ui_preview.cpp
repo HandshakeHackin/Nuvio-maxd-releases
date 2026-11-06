@@ -51,8 +51,10 @@ int main(int argc, char** argv) {
     bool iptv_visible=argc==4 && (std::string(argv[3])=="iptv"||std::string(argv[3])=="iptv-search");
     bool torrents_visible=argc==4 && std::string(argv[3]).starts_with("torrents");
     bool media_visible=argc==4 && std::string(argv[3])=="torrents-all";
+    bool sports_visible=argc==4 && std::string(argv[3]).starts_with("sports-") && std::string(argv[3])!="sports-settings-off";
+    if(argc==4 && std::string(argv[3])=="sports-all-nav"){media_visible=true;torrents_visible=true;iptv_visible=true;}
     iptv_visible=iptv_visible||media_visible;
-    const sx::Env env{fonts,icons,"21:45",&iptv_visible,&media_visible,&torrents_visible};
+    const sx::Env env{fonts,icons,"21:45",&iptv_visible,&media_visible,&torrents_visible,&sports_visible};
     const std::string mode = argc == 4 ? argv[3] : "login";
     const auto artwork = [&](int w, int h, float tint) {
         std::vector<std::uint8_t> px(static_cast<std::size_t>(w)*h*4);
@@ -120,6 +122,21 @@ int main(int argc, char** argv) {
         sx::Library page(env,sx::Page::iptv);page.set_content(&catalog);page.enter();hui::InputFrame idle;
         for(int i=0;i<120;++i)page.update(idle,1.f/60);
         hui::gfx::BackdropSpec bg;page.draw(list,bg);
+    }
+    else if(mode=="sports-settings" || mode=="sports-settings-off") {
+        std::ifstream input(root+"/test-output/sports-hub/scenes.json");nlohmann::json scenes;input>>scenes;
+        sx::SettingsContent content;for(const auto& row:scenes.at(mode)){sx::SettingRow r;r.label=row.at("label");r.value=row.at("value");r.help=row.at("help");r.category=row.at("category");r.kind=sx::SettingRow::Kind(row.at("kind").get<int>());r.on=row.at("on");content.rows.push_back(r);}
+        sx::Settings page(env);page.set_content(&content);page.enter();hui::InputFrame input_frame;input_frame.nav=hui::Direction::down;page.update(input_frame,1.f/60);input_frame={};input_frame.pressed=1u<<unsigned(hui::Action::confirm);page.update(input_frame,1.f/60);input_frame={};for(int i=0;i<120;++i)page.update(input_frame,1.f/60);hui::gfx::BackdropSpec bg;page.draw(list,bg);
+    }
+    else if(mode=="sports-hub" || mode=="sports-all-nav") {
+        std::ifstream input(root+"/test-output/sports-hub/scenes.json");nlohmann::json scenes;input>>scenes;
+        sx::AddonsContent content;for(const auto& row:scenes.at("sports-hub")) {sx::Addon a;a.name=row.at("name");a.version=row.at("version");a.description=row.at("description");a.types=row.at("types");a.initial=row.at("initial");content.items.push_back(a);}
+        sx::Addons page(env,sx::Page::sports);page.set_content(&content);page.enter();hui::InputFrame idle;for(int i=0;i<120;++i)page.update(idle,1.f/60);hui::gfx::BackdropSpec bg;page.draw(list,bg);
+    }
+    else if(mode=="sports-menu" || mode=="sports-picker" || mode=="sports-teams" || mode=="sports-channels") {
+        std::ifstream input(root+"/test-output/sports-hub/scenes.json");nlohmann::json scenes;input>>scenes;
+        const auto& scene=scenes.at(mode);sx::DropdownState d;d.title=scene.at("title");d.message=scene.at("message");d.options=scene.at("options").get<std::vector<std::string>>();d.selected=0;
+        sx::draw_dropdown(list,env,d,1);
     }
     else if(mode=="source-preferences" || mode=="source-preferences-last") {
         std::ifstream input(root+"/test-output/source-preferences/ui-scenes.json");nlohmann::json scenes;input>>scenes;

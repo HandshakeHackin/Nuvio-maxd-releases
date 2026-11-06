@@ -211,6 +211,7 @@ int main()
     env.iptv_visible=&session.iptv_visible;
     env.media_servers_visible=&session.media_visible;
     env.torrents_visible=&session.torrents_visible;
+    env.sports_visible=&session.sports_visible;
     static sx::Shell shell(env, session);
     shell.start_sound(root + "/sounds"); // the interface's sounds
     shell.start_boot_at(boot_seconds()); // the animation goes on from where the frames above left it

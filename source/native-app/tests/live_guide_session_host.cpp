@@ -100,6 +100,21 @@ int main(int argc, char **argv) {
   clock.live_guide_channels_["test"].programmes={{stamp-3600-10,stamp-3600+100,"shifted now"},{stamp-3600+100,stamp-3600+200,"shifted next"}};
   live_tv::Channel corrected;corrected.id="test";
   auto corrected_labels=clock.live_guide_labels(corrected);assert(corrected_labels.first.find("shifted now")!=std::string::npos && corrected_labels.second.find("shifted next")!=std::string::npos);
+  sx::Session sports;
+  sports.page_=sx::Page::sports;
+  sports.live_state_={{"sources",json::array({{{"id","source"},{"type","m3u"},{"epg_url",base+"/unused"}}})}};
+  live_tv::Channel general, sport;general.id="general";sport.id="sports";
+  sports.live_channels_={general,sport};sports.live_indices_={0};sports.sports_guide_indices_={1};
+  const time_t before=time(nullptr)-30,after=time(nullptr)+300;std::tm tm{};char from[40],until[40];
+  gmtime_r(&before,&tm);std::strftime(from,sizeof(from),"%Y%m%d%H%M%S +0000",&tm);
+  gmtime_r(&after,&tm);std::strftime(until,sizeof(until),"%Y%m%d%H%M%S +0000",&tm);
+  std::string xml="<tv>";for(const auto& id:{"general","sports"})xml+="<programme channel=\""+std::string(id)+"\" start=\""+from+"\" stop=\""+until+"\"><title>NBA fixture</title></programme>";xml+="</tv>";
+  sports.live_guide_document_=std::make_shared<const std::string>(xml);sports.live_guide_document_expires_=now_seconds()+300;
+  sports.live_guide_update(0);assert(g_tasks.work.empty());
+  sports.sports_visible=true;sports.live_guide_update(0);assert(g_tasks.work.size()==1);g_tasks.drain();
+  assert(sports.live_guide_xml_.channels.count("sports")==1&&sports.live_guide_xml_.channels.count("general")==0);
+  sports.sports_guide_indices_={0};sports.live_guide_tick_=0;sports.live_guide_update(0);g_tasks.drain();
+  assert(sports.live_guide_xml_.channels.count("general")==1&&sports.live_guide_xml_.channels.count("sports")==0);
   std::cout
       << "PASS: guide background bounds, profile/source cancellation, "
          "disabled/playback states, XMLTV override and failure cooldown\n";

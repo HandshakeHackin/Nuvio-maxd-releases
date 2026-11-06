@@ -84,6 +84,7 @@ enum SettingIndex
     kMediaServers,
     kRemoteButtons,
     kSourceOptions,
+    kSportsEnable,kSportsOpen,kSportsRegion,kSportsBrowse,kSportsFollowing,kSportsScores,kSportsChannels,kSportsClock,
     kSettingCount
 };
 
@@ -219,6 +220,7 @@ bool Session::init(const std::string &base_dir, const std::string &data_dir, hui
 
 void Session::shutdown()
 {
+    sports_reset();
     profile_pin_cancel();
     if (device_cancel_) *device_cancel_ = true;
     prepared_->shutdown();
@@ -824,6 +826,16 @@ void Session::refresh_settings()
     group("Appearance & Lighting", {kReducedMotion,kHighContrast,kUiSounds,kCalmBackgrounds,kConsoleLights});
     set(kSourceOptions,Kind::action,"Source preferences","Quality, language and checks","Rank sources using advertised metadata. Filter likely samples, wrong episodes, quality, size and HDR. Unknown metadata remains available. Preferences belong to this profile.");
     group("Addons", {kAddAddon,kReload,kSourceOptions});
+    set(kSportsEnable,Kind::toggle,"Sports Hub","","Show Sports Hub in navigation for this profile. Off stops sports requests and keeps your selections.",sports_prefs_.enabled);
+    const auto sports_state=sports_prefs_.enabled?"":"Enable Sports Hub first";
+    set(kSportsOpen,Kind::action,"Open Sports Hub",sports_state,"Browse schedules, results and matching channels from your own Live TV sources.");
+    set(kSportsRegion,Kind::action,"Sports coverage region",sports_prefs_.enabled?sports_prefs_.region:sports_state,"Choose broadcaster coverage preferences; competitions remain selectable in every region.");
+    set(kSportsBrowse,Kind::action,"Choose sports and competitions",sports_state,"Sport → league → teams. Include or exclude whole sports and individual competitions.");
+    set(kSportsFollowing,Kind::action,"Follow teams, leagues and names",sports_state,"Manage My Sports. Follow teams across supported competitions or add an athlete/name to find in your guide.");
+    set(kSportsScores,Kind::toggle,"Hide sports scores","","Hide scores and live score details to avoid spoilers.",sports_prefs_.hide_scores);
+    set(kSportsChannels,Kind::toggle,"Only events with channel matches","","Limit the hub to events with guide or broadcaster candidates in your loaded Live TV source. A broadcaster alone does not confirm the programme.",sports_prefs_.only_channels);
+    set(kSportsClock,Kind::action,"Sports time display",sports_prefs_.enabled?std::string("UTC ")+(sports_prefs_.utc_offset>=0?"+":"")+std::to_string(sports_prefs_.utc_offset)+" min":sports_state,"Fixed UTC offset in 15-minute steps. Adjust when daylight-saving time changes.");
+    group("Sports Hub",{kSportsEnable,kSportsOpen,kSportsRegion,kSportsBrowse,kSportsFollowing,kSportsScores,kSportsChannels,kSportsClock});
     group("Torrents",{kTorrents,kTorrentOptions});
     group("Controls",{kRemoteButtons});
     group("App & Updates", {kReleaseNotes,kDiagnostics,kMetadataCredits,kDonation,kInstallSource,kUpdates,kExit});
@@ -855,6 +867,15 @@ void Session::settings_activate(int row)
 
     if (row != kAccount && confirm_sign_out_)
         confirm_sign_out_ = false;
+    if(row>=kSportsEnable&&row<=kSportsClock) {
+        if(!profile_ready_){say("Choose a profile first.",6);return;}
+        if(row==kSportsEnable){sports_toggle();return;}
+        if(!sports_prefs_.enabled){say("Enable Sports Hub in this section first.",6);return;}
+        if(row==kSportsOpen){goto_=Page::sports;return;}
+        if(row==kSportsRegion)sports_region();else if(row==kSportsBrowse)sports_browse();
+        else if(row==kSportsFollowing)sports_following();else if(row==kSportsScores)sports_scores();
+        else if(row==kSportsChannels)sports_channel_filter();else if(row==kSportsClock)sports_clock();return;
+    }
     switch (row)
     {
     case kConsoleLights:
@@ -1425,6 +1446,7 @@ void Session::update(float dt, const Cursor &cursor)
     poll_typing();
     media_flush_auth();
     live_guide_update(cursor.live);
+    sports_tick(cursor.sports);
     if(page_==Page::library && now>=series_updates_tick_){series_updates_tick_=now+60;refresh_library();}
     if (watching)
     {

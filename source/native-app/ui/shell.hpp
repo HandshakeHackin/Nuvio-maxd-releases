@@ -72,6 +72,7 @@ class Shell
     Addons addons_;
     Addons live_tv_;
     Addons torrents_page_;
+    Addons sports_page_;
     Settings settings_;
     Detail detail_;
     PlayerUi player_ui_;

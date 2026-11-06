@@ -17,7 +17,7 @@ using hui::ui::text;
 namespace
 {
 
-constexpr const char *kPageNames[9] = {"Board", "Discover", "Library", "Addons", "Settings", "Live TV", "IPTV Library", "Media Servers", "Torrents"};
+constexpr const char *kPageNames[10] = {"Board", "Discover", "Library", "Addons", "Settings", "Live TV", "IPTV Library", "Media Servers", "Torrents", "Sports Hub"};
 constexpr float kItemW = 100.0f;
 constexpr float kItemH = 108.0f;
 constexpr float kItemGap = 12.0f;
@@ -31,13 +31,15 @@ Rail::Rail()
 
 Rect Rail::item_rect(int index) const
 {
-    const float count=6.0f+float(iptv_visible_)+float(servers_visible_)+float(torrents_visible_);
-    const float height=count>=8? (count==9?82.0f:94.0f):kItemH;
-    if(index>=8&&!servers_visible_)--index;
-    if(index>=6&&!iptv_visible_)--index;
+    const float count=6.0f+float(iptv_visible_)+float(servers_visible_)+float(torrents_visible_)+float(sports_visible_);
+    const float height=count>=10?74.0f:count>=8? (count==9?82.0f:94.0f):kItemH;
+    int position=index;
+    if(index>6&&!iptv_visible_)--position;
+    if(index>7&&!servers_visible_)--position;
+    if(index>8&&!torrents_visible_)--position;
     const float total = count * height + (count-1) * kItemGap;
     const float top = (theme::kScreenH - total) * 0.5f;
-    return {(theme::kRailWidth - kItemW) * 0.5f, top + static_cast<float>(index) * (height + kItemGap),
+    return {(theme::kRailWidth - kItemW) * 0.5f, top + static_cast<float>(position) * (height + kItemGap),
             kItemW, height};
 }
 
@@ -59,8 +61,8 @@ void Rail::move(int delta)
 {
     int next=cursor_;
     do { next+=delta>0?1:-1; }
-    while(next>=0 && next<9 && ((next==6&&!iptv_visible_)||(next==7&&!servers_visible_)||(next==8&&!torrents_visible_)));
-    if(next>=0 && next<9)cursor_=next;
+    while(next>=0 && next<10 && ((next==6&&!iptv_visible_)||(next==7&&!servers_visible_)||(next==8&&!torrents_visible_)||(next==9&&!sports_visible_)));
+    if(next>=0 && next<10)cursor_=next;
 }
 
 void Rail::reset(Page page)
@@ -77,8 +79,11 @@ void Rail::set_iptv_visible(bool visible) {
     if(!iptv_visible_&&cursor_==6)cursor_=0;
     if(!iptv_visible_&&page_==6)page_=0;
 }
-void Rail::update(float dt, bool iptv_visible, bool servers_visible, bool torrents_visible)
+void Rail::update(float dt, bool iptv_visible, bool servers_visible, bool torrents_visible, bool sports_visible)
 {
+    sports_visible_=sports_visible;
+    if(!sports_visible_&&cursor_==9)cursor_=0;
+    if(!sports_visible_&&page_==9)page_=0;
     torrents_visible_=torrents_visible;
     if(!torrents_visible_ && cursor_==8)cursor_=0;
     if(!torrents_visible_ && page_==8)page_=0;
@@ -103,11 +108,11 @@ void Rail::draw(hui::gfx::DrawList &list, const Env &env, float age) const
         list.bordered_rect(p, 26, theme::accent, 3.0f, Color::rgb(0xffffff));
         list.pop_opacity();
     }
-    for (int i = 0; i < 9; ++i)
+    for (int i = 0; i < 10; ++i)
     {
-        if((i==6&&!iptv_visible_)||(i==7&&!servers_visible_)||(i==8&&!torrents_visible_))continue;
+        if((i==6&&!iptv_visible_)||(i==7&&!servers_visible_)||(i==8&&!torrents_visible_)||(i==9&&!sports_visible_))continue;
         const Rect r = item_rect(i);
-        const bool compact=int(iptv_visible_)+int(servers_visible_)+int(torrents_visible_)>=2;
+        const bool compact=int(iptv_visible_)+int(servers_visible_)+int(torrents_visible_)+int(sports_visible_)>=2;
         const bool active = i == page_;
         const bool under_cursor = focused_ && i == cursor_;
         // Items arrive one after the other when a page opens.
@@ -117,19 +122,26 @@ void Rail::draw(hui::gfx::DrawList &list, const Env &env, float age) const
             list.rounded_rect(r, 26, theme::surface);
         const Color tint = (active || under_cursor) ? Color::rgb(0xffffff) : theme::ink_3;
         const std::uint32_t icon = (active || under_cursor) ? env.icons.nav_solid[i>=6?2:i] : env.icons.nav_line[i>=6?2:i];
-        if(i==5){
-            const Rect tv{r.cx()-(compact?17.0f:24.0f),r.y+(compact?12.0f:19.0f),compact?34.0f:48.0f,compact?24.0f:34.0f};
+        if(i==9){
+            const float cy=r.y+(compact?(r.h<80?18:22):37);const float radius=compact?(r.h<80?11:13):23;
+            list.circle(r.cx(),cy,radius,tint);list.circle(r.cx(),cy,radius-3,theme::ground);
+            list.line(r.cx()-radius+4,cy,r.cx()+radius-4,cy,2,tint);
+            list.line(r.cx(),cy-radius+3,r.cx(),cy+radius-3,2,tint);
+        }
+        else if(i==5){
+            const bool tiny=r.h<80;
+            const Rect tv{r.cx()-(compact?(tiny?13.0f:17.0f):24.0f),r.y+(compact?(tiny?10.0f:12.0f):19.0f),compact?(tiny?26.0f:34.0f):48.0f,compact?(tiny?18.0f:24.0f):34.0f};
             list.bordered_rect(tv,6,Color::rgb(0xffffff,0),3,tint);
-            list.rounded_rect({r.cx()-10,r.y+(compact?40:57),20,3},1,tint);
+            list.rounded_rect({r.cx()-10,r.y+(compact?(tiny?32:40):57),20,3},1,tint);
         }
         else if (icon != 0)
         {
-            const float size=compact?32.0f:48.0f;
+            const float size=compact?(r.h<80?24.0f:32.0f):48.0f;
             list.image(icon, {r.cx() - size/2, r.y + (compact?8.0f:14.0f) + 6.0f * (1.0f - in), size, size}, kFullUv, tint);
         }
         if(i>=6){
-            text(list,env.fonts.regular,(i==6?"IPTV":i==7?"Media":"Torrent"),r.cx(),r.y+r.h-27,theme::kLabel,tint,Align::center);
-            text(list,env.fonts.regular,(i==6?"Library":i==7?"Servers":"Streams"),r.cx(),r.y+r.h-7,theme::kLabel,tint,Align::center);
+            text(list,env.fonts.regular,(i==6?"IPTV":i==7?"Media":i==8?"Torrent":"Sports"),r.cx(),r.y+r.h-27,theme::kLabel,tint,Align::center);
+            text(list,env.fonts.regular,(i==6?"Library":i==7?"Servers":i==8?"Streams":"Hub"),r.cx(),r.y+r.h-7,theme::kLabel,tint,Align::center);
         } else text(list, env.fonts.regular, kPageNames[i], r.cx(), r.y + r.h-18.0f, theme::kLabel, tint, Align::center);
         list.pop_opacity();
     }

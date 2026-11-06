@@ -1,3 +1,13 @@
+# Unreleased Sports Hub
+
+- Add an optional per-profile Sports Hub, disabled by default, with a dedicated Settings section. Enable/disable, choose sports and competitions, follow teams/leagues/names, choose a coverage region, hide scores, restrict to channel candidates and adjust the display time offset.
+- Adapt ReSeq’s sport → league → team selection flow to the native controller UI. Retain search and focus while following multiple teams. Disabling retains selections and cancels sports work.
+- Browse schedules, My Sports, started/upcoming events and results. Use the shared public ReSeq catalogue and limited focused-event score requests; stale snapshots never present live scores as current. Date-only fixtures show time TBD.
+- Match programme titles and broadcasters against the selected Live TV source, label uncertain broadcaster candidates, and offer manual channel search. Playback still requires the user’s own configured source.
+- Keep sports matching bounded and index channel names for large playlists. Include catalogue provenance, GPL notice and public-data attribution.
+
+This is an unpublished native adaptation of Nuvio-ReSeq at d46b29a. Public sports coverage varies; physical PS5 and provider testing remain pending.
+
 # Unreleased source selection
 
 - Add per-profile source preferences for minimum resolution, maximum advertised file size, preferred language and HDR. Unknown metadata stays eligible.

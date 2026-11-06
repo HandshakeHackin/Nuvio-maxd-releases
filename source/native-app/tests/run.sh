@@ -39,6 +39,7 @@ ${HOST_CXX:-g++} -std=c++20 -O1 -g -Wall -Wextra -Werror -pthread \
     $(pkg-config --cflags --libs openssl libcurl) -o "$ROOT/test-output/account-host"
 python3 "$ROOT/tests/account_test.py"
 bash "$ROOT/tests/navigation.sh"
+bash "$ROOT/tests/sports_hub.sh"
 bash "$ROOT/tests/continue_watching.sh"
 bash "$ROOT/tests/library_artwork.sh"
 bash "$ROOT/tests/streams.sh"

@@ -33,10 +33,16 @@ Rect Addons::tile_rect(int index, bool final_position) const
             kTop + static_cast<float>(row) * (kTileH + kGapY) - scroll, kTileW, kTileH};
 }
 
+void Addons::refresh() {
+    if(!content_)return;
+    if(!selected_identity_.empty())for(size_t i=0;i<content_->items.size();++i)if(content_->items[i].identity==selected_identity_){index_=int(i);return;}
+    index_=std::clamp(index_,0,std::max(0,int(content_->items.size())-1));
+}
 void Addons::set_content(const AddonsContent *content)
 {
     content_ = content;
     index_ = 0;
+    selected_identity_=content&&!content->items.empty()?content->items.front().identity:"";
     scroll_.position.snap(0.0f);
     ring_.snap(tile_rect(0, true));
     focus_on_.snap(1.0f);
@@ -85,6 +91,7 @@ void Addons::update(const hui::InputFrame &input, float dt)
             break;
         }
     }
+    if(index_>=0&&size_t(index_)<content_->items.size())selected_identity_=content_->items[size_t(index_)].identity;
     const float top = static_cast<float>(index_ / kCols) * (kTileH + kGapY);
     scroll_.reveal(top, top + kTileH, 1080.0f - kTop - 30.0f, 12.0f);
     scroll_.update(dt, 18.0f);
@@ -99,6 +106,13 @@ void Addons::draw_tile(hui::gfx::DrawList &list, const Addon &a, const Rect &r, 
     list.push_opacity(enter);
     list.push_transform(1.0f, 0.0f, 0.0f, 0.0f, 16.0f * (1.0f - enter));
     list.rounded_rect(r, 28.0f, focused ? theme::surface_hi : theme::surface);
+    if(page_==Page::sports) {
+        hui::ui::paragraph(list,env_.fonts.semibold,a.name,r.x+28,r.y+46,28,r.w-56,34,theme::ink,2);
+        text(list,env_.fonts.regular,env_.fonts.regular.font->fit(a.version,21,r.w-56),r.x+28,r.y+112,21,theme::ink_3);
+        if(!a.types.empty())draw_tag(list,env_,a.types,r.x+28,r.y+146,theme::accent.with_alpha(.22f),theme::accent_soft);
+        hui::ui::paragraph(list,env_.fonts.regular,a.description,r.x+28,r.y+192,21,r.w-56,28,theme::ink_2,2);
+        list.pop_transform();list.pop_opacity();return;
+    }
     // The addon's logo, or its initial on its own colour.
     const Rect icon{r.x + 30.0f, r.y + 30.0f, 88.0f, 88.0f};
     if (a.logo != 0)
@@ -168,6 +182,7 @@ void Addons::draw(hui::gfx::DrawList &list, hui::gfx::BackdropSpec &backdrop) co
     list.push_opacity(in);
     char count[96];
     if(page_ == Page::livetv)std::snprintf(count,sizeof(count),"Live TV · %zu channels shown",content_->items.empty()?0:content_->items.size()-1);
+    else if(page_ == Page::sports)std::snprintf(count,sizeof(count),"Sports Hub · %zu events shown",content_->items.size()>3?content_->items.size()-3:0);
     else if(page_ == Page::torrents)std::snprintf(count,sizeof(count),"Torrents · %zu items",content_->items.size());
     else std::snprintf(count, sizeof(count), "%zu addons installed", content_->items.size());
     text(list, env_.fonts.semibold, count, theme::kLeft, 158.0f, theme::kSubtitle, theme::ink_2);
@@ -199,10 +214,11 @@ void Addons::draw(hui::gfx::DrawList &list, hui::gfx::BackdropSpec &backdrop) co
 
     fade_down(list, theme::kRailWidth, 0.0f, theme::kScreenW, 118.0f, 0.62f);
     fade_up(list, theme::kRailWidth, 1000.0f, theme::kScreenW, 80.0f, 0.94f);
-    draw_topbar(list, env_, false, age_);
+    draw_topbar(list, env_, false, age_,nullptr,0,page_==Page::sports?"Search Sports Hub":nullptr);
     // The only action here, where it can be seen.
     if(page_ == Page::livetv)draw_chip(list,env_,hui::ui::Button::square,"Favorite",theme::kRight-252.0f,148.0f);
     else if(page_ == Page::torrents)draw_chip(list,env_,hui::ui::Button::square,"Files / Options",theme::kRight-268.0f,148.0f);
+    else if(page_ == Page::sports)draw_chip(list,env_,hui::ui::Button::square,"Selections",theme::kRight-252.0f,148.0f);
     else draw_chip(list, env_, hui::ui::Button::square, "Reload addons", theme::kRight - 252.0f, 148.0f);
     rail_.draw(list, env_, age_);
 }

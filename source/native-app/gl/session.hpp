@@ -15,6 +15,7 @@
 #include "content.hpp"
 #include "ime.hpp"
 #include "model.hpp"
+#include "sports_hub.hpp"
 #include "connected_services.h"
 #include "connected_preparer.h"
 #include "overlays.hpp"
@@ -64,6 +65,7 @@ class Session
         int iptv = 0;
         int media = 0;
         int torrents = 0;
+        int sports = 0;
         int live = 0;
         int episode = 0;
         int search_row = 0, search_col = 0;
@@ -84,7 +86,7 @@ class Session
         kLive = 2048,
         kIptv = 4096,
         kIptvNew = 8192,
-        kMedia = 16384, kMediaNew = 32768, kTorrentPage = 65536,
+        kMedia = 16384, kMediaNew = 32768, kTorrentPage = 65536, kSports = 131072,
         kDetail = 32,
         kDiscoverNew = 64,
         kLibraryNew = 128,
@@ -156,6 +158,19 @@ class Session
     void release_notes_dismiss();
 
     // ---- what the screens draw ----
+    AddonsContent sports_content;
+    bool sports_visible=false;
+    void sports_toggle();
+    void sports_menu(int selected=0);
+    void sports_region();
+    void sports_browse(const std::string& sport="");
+    void sports_following();
+    void sports_scores();
+    void sports_channel_filter();
+    void sports_clock();
+    void sports_activate(int index);
+    void sports_search();
+    void sports_reload(bool force=false);
     LibraryContent media_content;
     bool media_visible=false;
     void media_menu();
@@ -437,6 +452,33 @@ class Session
     unsigned iptv_generation_=0,iptv_probe_generation_=0;
     std::shared_ptr<std::atomic<bool>> iptv_cancel_;
     std::shared_ptr<std::atomic<bool>> iptv_probe_cancel_;
+    bool sports_valid(unsigned p,unsigned g,unsigned d=0)const{return p==profile_generation_&&g==sports_generation_&&(!d||d==sports_dialog_)&&profile_ready_&&sports_visible&&!watching&&!resuming_;}
+    void sports_load(const json&);
+    void sports_reset();
+    void sports_save();
+    void sports_build();
+    void sports_tick(int focus);
+    void sports_league(const std::string&);
+    void sports_teams(const std::string&,const std::string& query="",int selected=0);
+    void sports_channel_search(const sports::Event&);
+    void sports_event(const sports::Event&);
+    std::vector<sports::Guide> sports_guide() const;
+    sports::Preferences sports_prefs_;
+    sports::Catalogue sports_catalogue_;
+    sports::Snapshot sports_snapshot_;
+    std::vector<sports::Event> sports_rows_;
+    std::map<std::string,std::vector<sports::Team>> sports_teams_;
+    std::map<std::string,double> sports_team_expiry_,sports_score_expiry_;
+    std::shared_ptr<std::atomic<bool>> sports_cancel_;
+    unsigned sports_generation_=0,sports_dialog_=0;
+    bool sports_loading_=false,sports_score_loading_=false,sports_team_loading_=false;
+    int sports_view_=0;
+    std::vector<size_t> sports_guide_indices_;
+    int sports_guide_cursor_=0;
+    double sports_last_feed_=-1000;
+    size_t sports_page_=0,sports_total_=0;
+    std::string sports_query_,sports_notice_;
+    double sports_next_feed_=0,sports_next_tick_=0,sports_next_score_=0;
     void live_load();
     void live_save();
     void live_build();

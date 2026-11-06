@@ -19,6 +19,7 @@ void Session::load_profile_settings() {
     if (jobj(j, "provider_enabled").is_object()) prefs_.provider_enabled = j["provider_enabled"];
     if (jobj(j,"provider_settings").is_object()) prefs_.provider_settings=j["provider_settings"];
     prefs_.source_preferences=source_policy::load(j);
+    sports_load(j);
     prefs_.subtitle_langs = jstr(j, "subtitle_languages", "eng");
     prefs_.audio_langs = jstr(j, "audio_languages"); prefs_.auto_subtitles = jbool(j, "auto_subtitles", true);
     if (inherit_plugins_) {
@@ -36,6 +37,7 @@ void Session::save_profile_settings() {
     json j;
     load_json(profile_dir_ + "/profile-settings.json", j);
     source_policy::save(j,prefs_.source_preferences);
+    sports::save(j,sports_prefs_);
     j["extra_addons"] = prefs_.extra_addons;
     if (!inherit_plugins_) {j["provider_enabled"] = prefs_.provider_enabled;j["provider_settings"]=prefs_.provider_settings;}
     j["subtitle_languages"] = prefs_.subtitle_langs;
@@ -44,6 +46,7 @@ void Session::save_profile_settings() {
     if (!save_json(profile_dir_ + "/profile-settings.json", j)) say("Could not save profile preferences", 8.0, true);
 }
 void Session::clear_profile_views() {
+    sports_reset();
     media_reset();
     torrent_reset();
     reset_library_search();

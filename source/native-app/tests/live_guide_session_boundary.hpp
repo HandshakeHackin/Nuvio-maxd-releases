@@ -38,6 +38,9 @@ inline GuideTasks g_tasks;
 namespace sx {
 struct Session {
   Page page_ = Page::livetv;
+  bool sports_visible=false;
+  std::vector<size_t> sports_guide_indices_;
+  int sports_guide_cursor_=0;
   bool watching = false, multiview_active = false, live_loading_ = false;
   unsigned profile_generation_ = 1;
   json live_state_;

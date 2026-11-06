@@ -18,11 +18,7 @@ class Addons : public PageBase
     }
 
     void set_content(const AddonsContent *content);
-    void refresh() // addons arrived or changed: the cursor stays
-    {
-        if (content_)
-            index_ = index_ < static_cast<int>(content_->items.size()) ? index_ : std::max(0, static_cast<int>(content_->items.size()) - 1);
-    }
+    void refresh();
     int cursor_index() const
     {
         return index_;
@@ -37,6 +33,7 @@ class Addons : public PageBase
 
     const AddonsContent *content_ = nullptr;
     int index_ = 0;
+    std::string selected_identity_;
     hui::ui::Scroller scroll_;
     hui::ui::SpringRect ring_;
     hui::tween::Spring focus_on_;

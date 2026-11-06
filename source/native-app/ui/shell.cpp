@@ -11,11 +11,11 @@ using hui::Direction;
 
 namespace
 {
-constexpr int kPageCount = 9;
+constexpr int kPageCount = 10;
 }
 
 Shell::Shell(const Env &env, Session &session)
-    : env_(env), s_(session), board_(env), search_board_(env), discover_(env), library_(env), iptv_library_(env,Page::iptv), media_library_(env,Page::servers), addons_(env), live_tv_(env,Page::livetv), torrents_page_(env,Page::torrents), settings_(env),
+    : env_(env), s_(session), board_(env), search_board_(env), discover_(env), library_(env), iptv_library_(env,Page::iptv), media_library_(env,Page::servers), addons_(env), live_tv_(env,Page::livetv), torrents_page_(env,Page::torrents), sports_page_(env,Page::sports), settings_(env),
       detail_(env), player_ui_(env)
 {
     board_.set_content(&s_.board);
@@ -28,6 +28,7 @@ Shell::Shell(const Env &env, Session &session)
     addons_.set_content(&s_.addons);
     live_tv_.set_content(&s_.live_content);
     torrents_page_.set_content(&s_.torrents_content);
+    sports_page_.set_content(&s_.sports_content);
     settings_.set_content(&s_.settings);
     go_page(0);
 }
@@ -41,6 +42,7 @@ Session::Cursor Shell::cursor() const
     c.library = library_.cursor_index();
     c.media=media_library_.cursor_index();
     c.torrents=torrents_page_.cursor_index();
+    c.sports=sports_page_.cursor_index();
     c.iptv=iptv_library_.cursor_index();
     c.live=live_tv_.cursor_index();
     c.episode = detail_.episode_index();
@@ -58,6 +60,7 @@ void Shell::go_page(int page)
     if(page_==6 && !s_.iptv_visible)page_=0;
     if(page_==7 && !s_.media_visible)page_=0;
     if(page_==8 && !s_.torrents_visible)page_=0;
+    if(page_==9 && !s_.sports_visible)page_=0;
     screen_ = Screen::page;
     switch (page_)
     {
@@ -72,6 +75,9 @@ void Shell::go_page(int page)
         break;
     case 3:
         addons_.enter();
+        break;
+    case 9:
+        sports_page_.enter();
         break;
     case 8:
         torrents_page_.enter();
@@ -134,6 +140,8 @@ void Shell::apply_changes()
         addons_.refresh();
     if(c & Session::kLive)live_tv_.refresh();
     if(c & Session::kTorrentPage)torrents_page_.refresh();
+    if(c & Session::kSports)sports_page_.refresh();
+    if(page_==9&&!s_.sports_visible)go_page(0);
     if(page_==8&&!s_.torrents_visible)go_page(0);
     if(c & Session::kMediaNew)media_library_.set_content(&s_.media_content);
     else if(c & Session::kMedia)media_library_.refresh();
@@ -293,6 +301,15 @@ void Shell::route_page(const hui::InputFrame &input, float dt)
         if (!on_rail && input.is_pressed(Action::west))
             s_.addons_reload();
         break;
+    case 9:
+        sports_page_.update(input,dt);on_rail=sports_page_.rail_focused();cursor=sports_page_.rail_cursor();
+        if(!on_rail){
+            if(confirm)s_.sports_activate(sports_page_.cursor_index());
+            else if(input.is_pressed(Action::north))s_.sports_search();
+            else if(input.is_pressed(Action::menu)||input.is_pressed(Action::west))s_.sports_menu();
+            if(!input.is_pressed(Action::back))return;
+        }
+        break;
     case 8:
         torrents_page_.update(input,dt);on_rail=torrents_page_.rail_focused();cursor=torrents_page_.rail_cursor();
         if(!on_rail){
@@ -411,6 +428,7 @@ unsigned Shell::focus_signature()
     mix(addons_.rail_focused());
     mix(addons_.rail_cursor());
     mix(addons_.cursor_index());
+    mix(sports_page_.rail_focused());mix(sports_page_.rail_cursor());mix(sports_page_.cursor_index());
     mix(torrents_page_.rail_focused());mix(torrents_page_.rail_cursor());mix(torrents_page_.cursor_index());
     mix(live_tv_.rail_focused());mix(live_tv_.rail_cursor());mix(live_tv_.cursor_index());
     mix(settings_.rail_focused());
@@ -611,6 +629,9 @@ void Shell::draw(hui::gfx::DrawList &list, hui::gfx::BackdropSpec &backdrop) con
             break;
         case 3:
             addons_.draw(list, backdrop);
+            break;
+        case 9:
+            sports_page_.draw(list,backdrop);
             break;
         case 8:
             torrents_page_.draw(list,backdrop);
