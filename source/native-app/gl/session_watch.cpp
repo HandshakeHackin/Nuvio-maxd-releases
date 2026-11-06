@@ -33,6 +33,14 @@ std::string badge_metadata(const ::Stream& stream) {
     return stream_display::plain(stream.name.substr(0,2048)+" "+stream.description.substr(0,4096)+" "+stream.filename.substr(0,2048));
 }
 
+bool playable_torrent_file(const std::string& path) {
+    const auto name=lower(path);
+    for(const char* extension:{".mkv",".mp4",".avi",".m4v",".mov",".ts",
+                               ".m2ts",".webm",".wmv",".mpg",".mpeg",".flv"})
+        if(ends_with(name,extension))return true;
+    return false;
+}
+
 constexpr double kInfoSeconds = 5.0;
 constexpr double kSaveEvery = 30.0;
 
@@ -231,6 +239,7 @@ void Session::play_stream(const ::Stream &st, bool transcode, bool trailer)
     if(w_item_.type=="torrent")start=torrent_resume(w_item_.id);
     if(w_item_.type=="media-video")start=media_resume_;
     if(iptv::library_type(w_item_.type))start=iptv_resume(w_item_.id);
+    if(source_switch_position_>=0){start=source_switch_position_;source_switch_position_=-1;}
     if(force_start)start=0;
     if(w_trailer_)subtitle="Trailer";
     const int gen = ++w_gen_;
@@ -1106,6 +1115,7 @@ void Session::watch_input(const hui::InputFrame &in)
 
     if (playing.menu)
     {
+        if(in.is_pressed(Action::west)){watch_options();return;}
         const std::size_t audio_count = playing.audio_tracks.size(), sub_count = playing.subtitle_tracks.size();
         const int columns=playing.chapters.empty()?2:3;
         if (in.nav == Direction::left)
@@ -1263,6 +1273,83 @@ void Session::watch_input(const hui::InputFrame &in)
     }
 }
 
+void Session::watch_options(int selected) {
+    if(!watching || launch_open)return;
+    playing.menu=false;
+    const auto profile=profile_generation_;const int generation=w_gen_;
+    open_dropdown("Playback options",{"Choose another source","Choose another torrent file","Subtitle appearance","Audio sync: -0.10 s","Audio sync: +0.10 s","Audio sync: -0.20 s","Audio sync: +0.20 s","Reset audio sync"},selected,
+        [this,profile,generation](int pick){
+        if(profile!=profile_generation_ || generation!=w_gen_ || !watching)return;
+        if(pick==0){watch_sources();return;}
+        if(pick==1){
+            if(!prefs_.builtin_torrents || w_stream_.info_hash.empty() || !TorrentStream::is_url(t_stats_url_)){
+                say("File selection needs an active built-in torrent stream.",6);return;
+            }
+            const auto stream=w_stream_;const auto request=++playback_file_request_;
+            open_dropdown("Loading torrent files",{"Cancel"},0,[](int){});
+            const auto cancel=launch_cancel_;
+            bg<std::vector<bt::FileInfo>>([stream,cancel]{
+                std::vector<bt::FileInfo> files;
+                bt::Engine::get().wait_metadata(stream.info_hash,files,cancel.get(),10,nullptr);
+                return files;
+            },[this,profile,generation,stream,request](auto& files){
+                if(profile!=profile_generation_ || generation!=w_gen_ || !watching || request!=playback_file_request_ || !dropdown_open || dropdown.title!="Loading torrent files")return;
+                std::vector<std::string> labels;std::vector<int> indices;
+                for(size_t i=0;i<files.size() && labels.size()<200;++i)
+                    if(playable_torrent_file(files[i].path)){labels.push_back(stream_display::plain(files[i].path));indices.push_back(int(i));}
+                if(labels.empty()){dropdown_cancel();say("No video files are available yet.",5);return;}
+                open_dropdown("Torrent files",labels,0,[this,profile,generation,stream,labels,indices](int i){
+                    if(profile!=profile_generation_ || generation!=w_gen_ || !watching || i<0 || i>=int(indices.size()))return;
+                    watch_stop(false);
+                    torrent_play_hash(stream.info_hash,labels[size_t(i)],stream.sources,{},indices[size_t(i)]);
+                });
+                dropdown.message="Each file uses its own saved progress. Choosing a file closes the current stream.";
+            });return;
+        }
+        if(pick==2){watch_style();return;}
+        if(pick<3 || pick>7)return;
+        const int steps[]={-100,100,-200,200};
+        prefs_.audio_delay_ms=pick==7?0:std::clamp(prefs_.audio_delay_ms+steps[pick-3],-2000,2000);
+        player_.set_audio_delay(prefs_.audio_delay_ms/1000.0);save_prefs();refresh_settings();watch_build_menu();watch_options(pick);
+    });
+    char delay[48];std::snprintf(delay,sizeof(delay),"%+.2f s",prefs_.audio_delay_ms/1000.0);
+    dropdown.message=std::string("Audio delay: ")+delay+". Positive plays sound later. L2/R2 in the track menu adjusts by 0.05 s.";
+}
+
+void Session::watch_sources() {
+    if(!watching || w_trailer_ || w_item_.type=="tv" || d_item_.id!=w_item_.id || d_video_id_!=w_video_id_ || d_streams_.empty()){
+        say("Open this title's sources to choose another stream. Live channels use Live TV.",7);return;
+    }
+    const auto profile=profile_generation_;const int generation=w_gen_;
+    const auto streams=d_streams_;std::vector<std::string> labels;
+    for(const auto& stream:streams)labels.push_back(stream_display::plain(stream.addon+" · "+stream.name+" · "+stream.description).substr(0,240));
+    open_dropdown("Choose another source",labels,0,[this,profile,generation,streams](int i){
+        if(profile!=profile_generation_ || generation!=w_gen_ || !watching || i<0 || i>=int(streams.size()))return;
+        const auto stream=streams[size_t(i)];
+        if(!stream.allowed(prefs_.builtin_torrents) && !services_.can_resolve(stream)){say("This source is unavailable with your current torrent settings.",7);return;}
+        const double position=std::max(0.0,player_.position());
+        watch_stop(false);source_switch_position_=position;
+        play_stream(stream,false);source_switch_position_=-1;
+    });
+    dropdown.message="Closes the current source and resumes this title at the saved position. Different releases may have different timings.";
+}
+
+void Session::watch_style() {
+    if(!watching)return;
+    const auto profile=profile_generation_;const int generation=w_gen_;
+    const auto valid=[this,profile,generation]{return watching && profile==profile_generation_ && generation==w_gen_;};
+    const auto changed=[this,valid]{if(!valid())return;save_prefs();refresh_settings();playing.subtitle_style=prefs_.subtitle_style;playing.sub_size=subtitle_size::index(prefs_.sub_size);watch_style();};
+    open_dropdown("Subtitle appearance",{"Size: "+prefs_.sub_size,"Font","Colour","Effect","Background"},0,[this,valid,changed](int pick){
+        if(!valid())return;
+        if(pick==0)open_dropdown("Subtitle size",std::vector<std::string>(subtitle_size::labels.begin(),subtitle_size::labels.end()),subtitle_size::index(prefs_.sub_size),[this,valid,changed](int i){if(valid()&&i>=0&&i<int(subtitle_size::ids.size())){prefs_.sub_size=subtitle_size::ids[size_t(i)];changed();}});
+        else if(pick==1)open_dropdown("Subtitle font",{"Regular","Bold","Display"},prefs_.subtitle_style.font,[this,valid,changed](int i){if(valid()&&i>=0&&i<3){prefs_.subtitle_style.font=i;changed();}});
+        else if(pick==2)open_dropdown("Subtitle colour",{"White","Yellow","Cyan"},prefs_.subtitle_style.colour,[this,valid,changed](int i){if(valid()&&i>=0&&i<3){prefs_.subtitle_style.colour=i;changed();}});
+        else if(pick==3)open_dropdown("Subtitle effect",{"Plain","Outline","Shadow"},prefs_.subtitle_style.effect,[this,valid,changed](int i){if(valid()&&i>=0&&i<3){prefs_.subtitle_style.effect=i;changed();}});
+        else if(pick==4)open_dropdown("Subtitle background",{"Off","25%","50%","75%","100%"},prefs_.subtitle_style.background/25,[this,valid,changed](int i){if(valid()&&i>=0&&i<5){prefs_.subtitle_style.background=i*25;changed();}});
+    });
+    dropdown.message="Changes apply live and are saved for this profile. Image subtitles cannot be restyled; authored ASS/VLC rendering may retain its own styling.";
+}
+
 void Session::watch_refresh_tracks()
 {
     const bool reopened=w_menu_built_;
@@ -1336,7 +1423,9 @@ void Session::watch_build_menu()
     char delay[48];
     std::snprintf(delay, sizeof(delay), "%+.2f s", w_sub_delay_);
     playing.subtitle_delay = delay;
-    playing.audio_adjustments=std::to_string(prefs_.audio_gain_percent)+"% · "+std::to_string(prefs_.audio_delay_ms)+" ms";
+    char audio_delay[64];
+    std::snprintf(audio_delay,sizeof(audio_delay),"%+.2f s (%+d ms)",prefs_.audio_delay_ms/1000.0,prefs_.audio_delay_ms);
+    playing.audio_adjustments=std::to_string(prefs_.audio_gain_percent)+"% · "+audio_delay;
 }
 
 // ---------------------------------------------------------------------------

@@ -162,6 +162,7 @@ void Player::open(const Options& opts) {
         const auto safe=playback_log::redact_urls(line);std::fputs(safe.c_str(),stderr);
     });});
 	close();
+    container_bitrate_=0;
     ++revision_;
 	if(opts.vlc) {
         subtitle_renderer_.clear();
@@ -418,6 +419,7 @@ void Player::demux_run() {
 		avformat_close_input(&fmt_);
 		return;
 	}
+	container_bitrate_=std::max<int64_t>(0,fmt_->bit_rate);
 	if (fmt_->start_time != AV_NOPTS_VALUE) start_offset_ = double(fmt_->start_time) / AV_TIME_BASE;
 	if (fmt_->duration != AV_NOPTS_VALUE && fmt_->duration > 0) duration_ = double(fmt_->duration) / AV_TIME_BASE;
 
@@ -1777,5 +1779,9 @@ std::string Player::stats() {
 	snprintf(buf, sizeof(buf), "%s · %.3g fps · buffered %.1fs · dropped %d of %d%s", codec_summary().c_str(), fps_,
 	         std::max(vq_.duration(), aq_.duration()), dropped_.load(), decoded_.load(),
 	         paused_ ? " · paused" : buffering_ ? " · buffering" : "");
-	return buf;
+	const auto bitrate=container_bitrate_.load();
+	char rate[64];
+	if(bitrate>0)std::snprintf(rate,sizeof(rate)," · container %.2f Mb/s",bitrate/1e6);
+	else std::snprintf(rate,sizeof(rate)," · container bitrate unavailable");
+	return std::string(buf)+rate;
 }

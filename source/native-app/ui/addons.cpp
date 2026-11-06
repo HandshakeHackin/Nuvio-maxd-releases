@@ -1,6 +1,8 @@
 #include "addons.hpp"
 
 #include <algorithm>
+#include <ctime>
+#include "../src/guide_grid.hpp"
 
 namespace sx
 {
@@ -26,6 +28,10 @@ constexpr float kTop = 214.0f;
 
 Rect Addons::tile_rect(int index, bool final_position) const
 {
+    if(content_ && content_->guide_grid){
+        const float scroll=final_position?scroll_.position.target:scroll_.offset();
+        return {theme::kLeft,260.0f+index*86.0f-scroll,1670.0f,78.0f};
+    }
     const int row = index / kCols;
     const int col = index % kCols;
     const float scroll = final_position ? scroll_.position.target : scroll_.offset();
@@ -62,6 +68,19 @@ void Addons::update(const hui::InputFrame &input, float dt)
         return;
     }
     const int count = static_cast<int>(content_->items.size());
+    if(content_->guide_grid){
+        if(!rail_input(input)){
+            if(input.nav==Direction::up)index_=std::max(0,index_-1);
+            else if(input.nav==Direction::down)index_=std::min(count-1,index_+1);
+            else if(input.nav==Direction::right)guide_slot_=std::min(44,guide_slot_+1);
+            else if(input.nav==Direction::left){if(guide_slot_>0)--guide_slot_;else to_rail();}
+        }
+        selected_identity_=content_->items[size_t(index_)].identity;
+        scroll_.reveal(index_*86.0f,index_*86.0f+78,660,8);scroll_.update(dt,18);
+        ring_.target(tile_rect(index_,true));ring_.update(dt,20);
+        focus_on_.target=rail_.focused()?0.0f:1.0f;focus_on_.update(dt,16);
+        return;
+    }
     if (!rail_input(input))
     {
         const int col = index_ % kCols;
@@ -99,6 +118,53 @@ void Addons::update(const hui::InputFrame &input, float dt)
     ring_.update(dt, 20.0f);
     focus_on_.target = rail_.focused() ? 0.0f : 1.0f;
     focus_on_.update(dt, 16.0f);
+}
+
+
+void Addons::draw_guide(hui::gfx::DrawList& list) const {
+    const auto clock=[](int64_t epoch){
+        const time_t t=time_t(epoch);tm parts{};localtime_r(&t,&parts);char out[48];
+        std::strftime(out,sizeof(out),"%a %H:%M",&parts);return std::string(out);
+    };
+    const int64_t start=content_->guide_now/1800*1800+int64_t(guide_slot_)*1800;
+    constexpr float channel_width=330,time_width=1340;
+    const float x=theme::kLeft+channel_width;
+    text(list,env_.fonts.semibold,"Live TV programme guide",theme::kLeft,158,32,theme::ink);
+    text(list,env_.fonts.regular,"Left/Right: time · Up/Down: channel · X: watch live · Square: favorite",theme::kLeft,198,23,theme::ink_2);
+    for(int i=0;i<4;++i)text(list,env_.fonts.semibold,clock(start+i*1800),x+i*time_width/4,242,22,theme::ink_2);
+    list.push_clip({theme::kLeft,254,1670,666});
+    for(size_t i=0;i<content_->items.size();++i){
+        const auto row=tile_rect(int(i),false);if(row.y>920 || row.y+row.h<254)continue;
+        const auto& channel=content_->items[i];const bool selected=int(i)==index_&&!rail_.focused();
+        list.rounded_rect(row,10,selected?theme::surface_hi:theme::surface);
+        text(list,env_.fonts.semibold,env_.fonts.semibold.font->fit(channel.name,24,channel_width-26),row.x+12,row.cy()+8,24,theme::ink);
+        list.push_clip({x,row.y,time_width,row.h});
+        bool available=false;
+        for(const auto& programme:channel.programmes){
+            const auto span=guide_grid::clip(programme.start,programme.end,start,7200);
+            if(!span.visible)continue;
+            available=true;const Rect cell{x+float(span.left)*time_width,row.y+3,std::max(1.0f,float(span.width)*time_width-3),row.h-6};
+            const bool current=programme.start<=content_->guide_now&&programme.end>content_->guide_now;
+            list.bordered_rect(cell,8,current?theme::accent.with_alpha(.24f):Color::rgb(0xffffff,.06f),1,theme::hairline);
+            list.push_clip(cell);
+            text(list,env_.fonts.regular,env_.fonts.regular.font->fit(programme.title,23,std::max(0.0f,cell.w-16)),cell.x+8,cell.cy()+8,23,theme::ink);
+            list.pop_clip();
+        }
+        if(!available)text(list,env_.fonts.regular,i==0?"X: sources and filters · Options: layout and guide settings":"No listings supplied for this time — channel still playable",x+12,row.cy()+8,22,theme::ink_3);
+        list.pop_clip();
+        if(selected)list.bordered_rect(row,10,Color::rgb(0xffffff,0),3,theme::ink);
+    }
+    const auto now=content_->guide_now;
+    if(now>=start&&now<start+7200){const float at=x+float(now-start)/7200*time_width;list.line(at,254,at,920,2,theme::accent_soft);}
+    list.pop_clip();
+    if(index_>0&&size_t(index_)<content_->items.size()){
+        std::string selected="X tunes the live channel; future programmes are listings only.";
+        for(const auto& programme:content_->items[size_t(index_)].programmes)
+            if(programme.start<=start&&programme.end>start){selected=clock(programme.start)+" – "+clock(programme.end)+" · "+programme.title;break;}
+        text(list,env_.fonts.regular,env_.fonts.regular.font->fit(selected,24,1660),theme::kLeft,965,24,theme::ink_2);
+    }
+    text(list,env_.fonts.regular,"Options: sources, groups, guide layout and channel pages · L1: groups · R1: All / Favorites / Recent",theme::kLeft,1010,21,theme::ink_3);
+    draw_topbar(list,env_,false,age_);rail_.draw(list,env_,age_);
 }
 
 void Addons::draw_tile(hui::gfx::DrawList &list, const Addon &a, const Rect &r, float enter, bool focused) const
@@ -178,6 +244,7 @@ void Addons::draw(hui::gfx::DrawList &list, hui::gfx::BackdropSpec &backdrop) co
     apply_page_backdrop(backdrop, clock_);
     if (!content_)
         return;
+    if(content_->guide_grid){draw_guide(list);return;}
     const float in = tween::stagger(age_, 0, 0.0f, 0.45f);
     list.push_opacity(in);
     char count[96];

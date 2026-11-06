@@ -613,6 +613,11 @@ class Session
     void watch_save_progress(bool final, bool force_finished = false);
     void watch_show_info();
     void watch_build_menu();
+    void watch_options(int selected=0);
+    void watch_style();
+    void watch_sources();
+    double source_switch_position_ = -1;
+    unsigned playback_file_request_=0;
     void watch_refresh_tracks();
     void watch_select_sub(int index);
     void watch_sync_subtitles();

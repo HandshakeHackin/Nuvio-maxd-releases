@@ -91,6 +91,8 @@ void Session::live_save() {
 }
 void Session::live_build() {
   live_content.items.clear();
+  live_content.guide_grid=jbool(live_state_,"guide_grid",false);
+  live_content.guide_now=now_epoch_ms()/1000;
   live_indices_.clear();
   const auto filter = live_source_ + "\n" + live_group_ + "\n" + live_query_ +
                       "\n" + std::to_string(live_view_);
@@ -166,6 +168,16 @@ void Session::live_build() {
     row.initial = std::to_string(live_indices_.size() + 1);
     row.colour = 0x0ea5a4;
     row.description = "X: watch channel · Square: toggle favorite";
+    if(live_content.guide_grid && jbool(live_state_,"guide_enabled",true)) {
+      const live_guide::Listings* listings=nullptr;
+      auto xml=live_guide_xml_.channels.find(c.epg_id.empty()?c.id:c.epg_id);
+      if(xml!=live_guide_xml_.channels.end())listings=&xml->second;
+      auto short_epg=live_guide_channels_.find(c.id);
+      if(short_epg!=live_guide_channels_.end())listings=&short_epg->second.programmes;
+      if(listings)for(const auto& programme:*listings)
+        row.programmes.push_back({programme.start+int64_t(live_guide_offset())*60,programme.end+int64_t(live_guide_offset())*60,programme.title});
+    }
+    row.identity=key;
     auto guide=live_guide_labels(c);row.programme_now=std::move(guide.first);row.programme_next=std::move(guide.second);
     live_content.items.push_back(std::move(row));
     live_indices_.push_back(i);
@@ -379,10 +391,11 @@ void Session::live_menu() {
       "Channel groups",    "Search channels",
       "All channels",      "Favorites",
       "Recent channels",   "Remove current source",
-      "Next channel page", "Previous channel page", "Four-screen TV (experimental)", "Check IPTV Library availability", "Set XMLTV guide URL", "Refresh programme guide", jbool(live_state_,"guide_enabled",true)?"Programme guide: On":"Programme guide: Off", "Correct provider guide clock"};
+      "Next channel page", "Previous channel page", "Four-screen TV (experimental)", "Check IPTV Library availability", "Set XMLTV guide URL", "Refresh programme guide", jbool(live_state_,"guide_enabled",true)?"Programme guide: On":"Programme guide: Off", "Correct provider guide clock", jbool(live_state_,"guide_grid",false)?"Guide layout: Time grid":"Guide layout: Channel tiles"};
   open_dropdown("Live TV", options, 0, [this, generation](int i) {
     if (generation != profile_generation_)
       return;
+    if(i==18){live_state_["guide_grid"]=!jbool(live_state_,"guide_grid",false);live_save();live_build();return;}
     if (i == 17) {live_guide_clock();return;}
     if (i == 14) {live_guide_configure();return;}
     if (i == 15) {live_guide_reset();live_build();say("Programme guide will refresh in the background",5);return;}

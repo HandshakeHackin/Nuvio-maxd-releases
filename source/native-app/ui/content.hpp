@@ -66,12 +66,15 @@ struct LibraryContent
     std::string status; // while there are no items
 };
 
+struct GuideProgramme { int64_t start=0,end=0; std::string title; };
+
 struct Addon
 {
     std::string name;
     std::string version;     // "v2.4.1"
     std::string types;       // "movie  series  tv"
     std::string description;
+    std::vector<GuideProgramme> programmes;
     std::string programme_now, programme_next; // Live TV guide only
     std::string initial;     // shown when the addon has no logo
     std::uint32_t logo = 0;  // GL texture, 0 until it has arrived
@@ -82,6 +85,8 @@ struct Addon
 
 struct AddonsContent
 {
+    bool guide_grid=false;
+    int64_t guide_now=0;
     std::vector<Addon> items;
 };
 

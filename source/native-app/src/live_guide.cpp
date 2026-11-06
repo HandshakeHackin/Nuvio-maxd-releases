@@ -10,7 +10,7 @@
 namespace live_guide {
 namespace {
 constexpr size_t max_programmes = 1000000, max_kept = 50000,
-                 max_per_channel = 8;
+                 max_per_channel = 96;
 std::string clean(std::string text) {
   for (char &c : text)
     if (static_cast<unsigned char>(c) < 32 || c == 127)
@@ -321,7 +321,7 @@ Result fetch_xtream(const std::string &server, const std::string &user,
   auto response = live_tv::download(
       root + "/player_api.php?username=" + url_encode(user) +
           "&password=" + url_encode(pass) +
-          "&action=get_short_epg&stream_id=" + channel + "&limit=8",
+          "&action=get_short_epg&stream_id=" + channel + "&limit=96",
       cancel, false, live_tv::max_metadata_bytes);
   return response.ok() ? parse_xtream(response.body, channel, now) : failure();
 }

@@ -12,13 +12,24 @@ Keep #10 open for its remaining requests and acceptance checks.
 
 | Request | Current development build | Remaining work |
 | --- | --- | --- |
-| Select another file/source during playback | Existing source-selection flow | Add a clear player entry point; distinguish another provider source from another file in a torrent. Preserve position for the same title and isolate late callbacks after switching. |
-| Stream details including bitrate and resolution | Picture resolution and decoder/playback information are displayed | Add clearly labeled bitrate when available; distinguish container bitrate, measured download rate and torrent throughput. Do not invent missing values. |
-| Subtitle size, colour and font while watching | Styling exists in Settings | Expose live style controls from the player, retain profile preferences and preview changes. Explain limits for image subtitles and authored ASS styling. |
-| Audio delay in 0.1/0.2-second steps | Player menu already supports 50 ms steps (two/four presses yield 100/200 ms) | Improve discovery and show seconds alongside milliseconds. Retain signed delay and reset. |
-| TiviMate-style EPG | Bounded XMLTV/Xtream Now/Next listings, refresh, enable/disable and clock correction | Build a channel/time grid; retain playback when listings are missing, bound large-guide memory use and test navigation/timezones. Now/Next alone does not fulfill this request. |
+| Select another file/source during playback | Playback options can select a snapshot of the current title's loaded sources and resume at the current position | Console acceptance pending; other-title/live-channel navigation still uses its own page. Built-in torrent files have a separate cancellable picker and per-file progress. |
+| Stream details including bitrate and resolution | Existing resolution/decoder details now include reported container Mb/s for Native, or measured input Mb/s for VLC | Missing rates are labeled unavailable; measured input is not the encoded bitrate or torrent peer speed. |
+| Subtitle size, colour and font while watching | Playback options expose size, font, colour, effect and background with profile persistence | Bitmap subtitles cannot be restyled; authored ASS and VLC may retain their own styling. |
+| Audio delay in 0.1/0.2-second steps | Playback options offer signed 100/200 ms adjustments and reset, alongside the existing 50 ms track-menu controls | Console/Bluetooth acceptance pending. |
+| TiviMate-style EPG | Optional channel/time grid with a two-hour window, half-hour browsing through the next day, channel filters/pages and live tuning | Uses available XMLTV/Xtream data; no catch-up, recording or future playback. Missing listings do not disable tuning. Tile layout remains available. |
 
-These remaining UI features are tracked here, not implemented by this sync.
+Access playback options with **Up / Options**, then **Square**. Enable the grid
+in **Live TV → Sources & filters → Guide layout: Channel tiles**. EPG downloads
+remain capped at 32 MiB, with at most 96 listings per channel and 50,000 retained
+listings overall. Xtream fetch concurrency and cache bounds are unchanged.
+
+Validation: guide parsing/timezone/network/cancellation tests and clipped grid
+interval tests pass. Native playback lifecycle tests pass on an isolated rerun
+(the first run failed the existing tight seek-timing assertion under concurrent
+build/test load). Production VLC authenticated HTTP/HLS, seek and cancellation
+fixtures pass. The console app compiles, and the grid plus track-menu previews
+render without GL errors. Physical PS5 acceptance remains pending.
+
 The separate multilingual search keyboard and optional top-navigation request
 remains [#19](https://github.com/HandshakeHackin/Nuvio-maxd-releases/issues/19).
 

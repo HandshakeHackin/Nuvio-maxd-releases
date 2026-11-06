@@ -1,8 +1,10 @@
 #include "live_guide.h"
+#include "guide_grid.hpp"
 #include "airtime.hpp"
 #include "util.h"
 #include <cassert>
 #include <iostream>
+#include <ctime>
 const char* kUserAgent="Maxd-Guide-Fixture";
 void http_setup_handle(void*){}
 const std::string& http_ca_bundle(){static std::string empty;return empty;}
@@ -11,6 +13,15 @@ int main(int argc,char** argv) {
     assert(airtime::xmltv("20261101143000 +0200")==now);
     assert(airtime::iso("2026-11-01T07:30:00-05:00")==now);
     assert(!airtime::iso("2026-02-30T10:00:00Z")&&!airtime::xmltv("20261101126000 +0000"));
+    // Grid boundaries: adjacent events never overlap; spanning programmes clip.
+    auto span=guide_grid::clip(now-3600,now+3600,now,7200);
+    assert(span.visible && span.left==0 && span.width==0.5);
+    span=guide_grid::clip(now+3600,now+10800,now,7200);
+    assert(span.visible && span.left==0.5 && span.width==0.5);
+    assert(!guide_grid::clip(now-60,now,now,7200).visible);
+    assert(!guide_grid::clip(now+7200,now+7300,now,7200).visible);
+    assert(!guide_grid::clip(now,now,now,7200).visible);
+    assert(!guide_grid::clip(now,now+10,now,0).visible);
     std::string xml="<?xml version='1.0'?><tv><programme channel='one' start='20261101120000 +0000' stop='20261101130000 +0000'><title>News &amp; weather</title></programme><programme channel='one' start='20261101130000 +0000' stop='20261101140000 +0000'><title><![CDATA[Next <show>]]></title></programme><programme channel='other' start='20261101120000 +0000' stop='20261101130000 +0000'><title>Wrong channel</title></programme></tv>";
     auto r=live_guide::parse_xmltv(xml,{"one"},now);assert(r.error.empty()&&r.channels.size()==1&&r.channels["one"].size()==2);
     auto pair=live_guide::current(r.channels["one"],now);assert(pair.now&&pair.now->title=="News & weather"&&pair.next&&pair.next->title=="Next <show>");
@@ -31,6 +42,15 @@ int main(int argc,char** argv) {
     assert(!live_guide::fetch_xtream(base,"u","p","42&action=bad",now,nullptr).error.empty());
     assert(!live_guide::parse_xtream("not JSON","42",now).error.empty());
     assert(live_guide::parse_xtream("{\"epg_listings\":[]}","42",now).error.empty());
+    // Keep a useful day of listings, with a strict per-channel cap.
+    std::string many="<tv>";
+    for(int i=0;i<120;++i){
+        const auto at=time_t(now+i*900);tm a{},b{};gmtime_r(&at,&a);const auto end=at+900;gmtime_r(&end,&b);
+        char begin[48],finish[48];strftime(begin,sizeof(begin),"%Y%m%d%H%M%S +0000",&a);strftime(finish,sizeof(finish),"%Y%m%d%H%M%S +0000",&b);
+        many+="<programme channel='one' start='"+std::string(begin)+"' stop='"+finish+"'><title>Show</title></programme>";
+    }
+    many+="</tv>";r=live_guide::parse_xmltv(many,{"one"},now);
+    assert(r.error.empty()&&r.channels["one"].size()==96);
     // Guide failure leaves the channel playlist and playback URL intact.
     assert(playlist.channels.size()==1&&playlist.channels[0].url=="https://video.example/live.ts");
     std::cout<<"PASS: provider now/next, XMLTV timezone/entities/cancellation, gzip limits, Xtream contract and playback independence\n";

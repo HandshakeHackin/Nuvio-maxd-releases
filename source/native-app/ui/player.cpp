@@ -273,6 +273,7 @@ void PlayerUi::draw_menu(hui::gfx::DrawList &list, float amount) const
     text(list, env_.fonts.regular, "Subtitle delay  " + (state.subtitle_delay.empty() ? std::string("0.00 s") : state.subtitle_delay) + "   (L2 / R2 · Triangle reset)",
          panel.x + 710.0f, panel.y + panel.h - 44.0f, 24.0f, theme::ink_3);
     }
+    draw_chip(list,env_,hui::ui::Button::square,"Playback options",panel.x+50,panel.y+30);
     draw_chip(list, env_, hui::ui::Button::circle, "Close", panel.x + panel.w - 200.0f, panel.y + 30.0f);
     list.pop_transform();
     list.pop_opacity();

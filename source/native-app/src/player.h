@@ -196,6 +196,7 @@ private:
 	mutable std::mutex err_m_;
 	std::string error_;
     std::atomic<bool> seek_rejected_{false};
+    std::atomic<int64_t> container_bitrate_{0};
     std::atomic<int> diagnostic_video_codec_{0}, diagnostic_audio_codec_{0};
 
 	std::thread demux_, video_, audio_;

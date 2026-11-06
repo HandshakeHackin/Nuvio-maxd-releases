@@ -80,11 +80,22 @@ int main(int argc, char** argv) {
         sx::Addons page(env,sx::Page::torrents);page.set_content(&content);page.enter();hui::InputFrame input;
         for(int i=0;i<120;++i)page.update(input,1.f/60);hui::gfx::BackdropSpec bg;page.draw(list,bg);
     }
-    else if(mode=="live-guide") {
+    else if(mode=="live-guide" || mode=="live-grid" || mode=="live-grid-future") {
         sx::AddonsContent content;
         sx::Addon manage;manage.name="Live TV sources & filters";manage.version="Programme guide enabled";manage.description="Options: guide settings and XMLTV URL";manage.types="Live TV";content.items.push_back(manage);
         for(int i=0;i<3;++i){sx::Addon c;c.name=i==0?"News HD":i==1?"Sports":"Documentaries";c.version="Live TV";c.types="Live";c.initial="TV";c.programme_now=i==2?"Programme guide unavailable":"Now: 20:00 · Evening news and weather";c.programme_next=i==2?"X: watch channel":"Next: 20:30 · World headlines and a long programme title";content.items.push_back(c);}
+        if(mode!="live-guide"){
+            content.guide_grid=true;content.guide_now=1793536200;
+            const auto start=content.guide_now/1800*1800;
+            for(size_t i=1;i<content.items.size();++i)if(i!=3){
+                auto& channel=content.items[i];channel.programmes={{start-600,start+1800,"News and weather around the world"},{start+1800,start+5400,"Live sports — championship coverage"},{start+5400,start+9000,"Documentary special"}};
+            }
+        }
         sx::Addons page(env,sx::Page::livetv);page.set_content(&content);page.enter();hui::InputFrame input;
+        input.nav=hui::Direction::right;page.update(input,1.f/60);input.nav=hui::Direction::down;page.update(input,1.f/60);
+        if(mode!="live-guide")assert(page.cursor_index()==1);
+        if(mode=="live-grid-future"){input.nav=hui::Direction::right;for(int i=0;i<8;++i)page.update(input,1.f/60);}
+        input.nav=hui::Direction::none;
         for(int i=0;i<120;++i)page.update(input,1.f/60);hui::gfx::BackdropSpec bg;page.draw(list,bg);
     }
     else if(mode=="series-updates") {

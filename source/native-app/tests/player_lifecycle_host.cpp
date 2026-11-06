@@ -104,6 +104,7 @@ int main(int argc,char** argv) try {
     require(argc>=3,"fixtures missing");
     Player p; Player::Options o;o.url=argv[1];o.surround=true;
     p.open(o); run_until(p,[&]{return p.position()>.25 && !p.buffering();});
+    require(p.stats().find("container ")!=std::string::npos && p.stats().find("Mb/s")!=std::string::npos,"reported container bitrate missing from player details");
     const auto subs=p.subtitle_tracks();
     require(subs.size()==1 && subs[0].lang=="eng" && subs[0].is_default && !subs[0].forced,"embedded track metadata/default disposition lost");
     require(p.audio_output().find("7.1")!=std::string::npos,"surround output missing");

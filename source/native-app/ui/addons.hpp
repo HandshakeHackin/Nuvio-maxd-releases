@@ -27,6 +27,8 @@ class Addons : public PageBase
     void draw(hui::gfx::DrawList &list, hui::gfx::BackdropSpec &backdrop) const;
 
   private:
+    void draw_guide(hui::gfx::DrawList&) const;
+    int guide_slot_=0;
     hui::gfx::Rect tile_rect(int index, bool final_position) const;
     void draw_tile(hui::gfx::DrawList &list, const Addon &addon, const hui::gfx::Rect &rect, float enter,
                    bool focused) const;

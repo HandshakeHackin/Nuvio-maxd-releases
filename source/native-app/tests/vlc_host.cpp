@@ -130,6 +130,7 @@ int main(int argc, char **argv) try {
         }
         require(!b.tracks(true).empty() || o.url.find(".m3u8") != std::string::npos,
                 "embedded subtitle metadata missing");
+        require(b.stats().find("measured input")!=std::string::npos,"VLC details must distinguish measured input from container bitrate");
         std::cerr << "opened " << b.position() << " dur " << b.duration() << "\n";
         b.set_paused(true);
         std::this_thread::sleep_for(std::chrono::milliseconds(100));

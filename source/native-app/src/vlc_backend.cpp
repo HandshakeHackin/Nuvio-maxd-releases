@@ -819,8 +819,21 @@ std::string VlcBackend::codec_summary() const {
     return result + " · " + audio_output();
 }
 std::string VlcBackend::stats() const {
+    std::string rate=" · measured input rate unavailable";
+    if(d_->player){
+        auto* media=libvlc_media_player_get_media(d_->player);
+        if(media){
+            libvlc_media_stats_t stats{};
+            // VLC 3 records bytes per microsecond; multiply by eight for Mb/s.
+            if(libvlc_media_get_stats(media,&stats) && std::isfinite(stats.f_input_bitrate) && stats.f_input_bitrate>0){
+                char text[80];std::snprintf(text,sizeof(text)," · measured input %.2f Mb/s",stats.f_input_bitrate*8.0);
+                rate=text;
+            }
+            libvlc_media_release(media);
+        }
+    }
     return codec_summary() + " · shown " + std::to_string(d_->shown.load()) + " · UI skipped " +
-           std::to_string(d_->dropped.load());
+           std::to_string(d_->dropped.load())+rate;
 }
 void VlcBackend::log_stats() {
     const double now = now_seconds();

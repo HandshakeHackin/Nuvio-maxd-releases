@@ -18,7 +18,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
   elif url.path=='/player_api.php':
    q=parse_qs(url.query)
    assert q['username']==['fixture user'] and q['password']==['fixture&pass']
-   assert q['action']==['get_short_epg'] and q['stream_id'][0].isdigit() and q['limit']==['8']
+   assert q['action']==['get_short_epg'] and q['stream_id'][0].isdigit() and q['limit']==['96']
    body=json.dumps({'epg_listings':[{'title':'TmV3cyAmIHdlYXRoZXI=','start_timestamp':1793534400,'stop_timestamp':1793538000},{'title':'Test','start_timestamp':1793538000,'stop_timestamp':1793541600}]}).encode()
    if session:
     import time
