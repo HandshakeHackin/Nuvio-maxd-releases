@@ -199,8 +199,8 @@
     "source": "https://bellard.org/quickjs/quickjs-2026-06-04.tar.xz",
     "sourceSha256": "b376e839b322978313d929fd20663b11ba58b75df5a46c126dd19ea2fa70ad2a",
     "sdkProvided": true,
-    "bundleSha256": "55f3d7b3fdc03ebc9537e94bf0ba44f5c3a51b24dc7fee0c4f7a6dbe7e75fa59",
-    "packageLockSha256": "efd280e3d4aa7e4c423e660b63ff65b920f34d59fb60e091cf7c58e7db755411"
+    "bundleSha256": "1ba6e35eadc82befc7a6a7a845433f7063774026bc1299c3413c88c01ade7e4b",
+    "packageLockSha256": "28c8a24207fe5553245b1f1a959b2fd16eab336aadcdef61f8296b7c787c559f"
   },
   "playbackRecoveryReference": {
     "repository": "https://github.com/LoZazaMastro/Stremio-Plus",

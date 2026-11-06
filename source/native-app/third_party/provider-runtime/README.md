@@ -2,7 +2,7 @@
 
 QuickJS **2026-06-04**, provided by Payload SDK 0.45, executes each provider in a fresh context. No quickjs-libc, std, os, Node filesystem or process modules are exposed. SDK header matches the official 2026-06-04 source exactly (SHA-256 2165f47772af9faee1798999a599fa9de850d1bf0259502dade1c25d4a588316).
 
-`entry.js` is our host API. `runtime.js` is a reproducible browser bundle of pinned npm dependencies: HTML selectors, CryptoJS, URL and Buffer helpers. Run `bash build.sh` with Node/npm to rebuild. `package-lock.json` pins dependency integrity. Third-party notices are in LICENSES.txt and included in the app image.
+`entry.js` is our host API. `runtime.js` is a reproducible browser bundle of pinned npm dependencies: HTML selectors, CryptoJS, URL and Buffer helpers. Run `bash build.sh` with Node.js 24+ (or the 22.x LTS line at 22.14+) and npm to rebuild. `package-lock.json` pins dependency integrity. Third-party notices are in LICENSES.txt and included in the app image.
 
 Provider scripts are downloaded only when their explicitly enabled provider runs. They receive title IDs and provider settings, never Nuvio account or connected-service credentials. Limits: 64 MB JS heap, 1 MB script, 4 MB response/result, 32 requests, 40 seconds per provider, cancellation on title changes/exit. Network requests validate public resolved destinations and TLS, reject HTTPS downgrades, and strip credentials on cross-origin redirects. Providers needing browser challenges, arbitrary native modules, or private network access are unsupported.
 
@@ -65,3 +65,14 @@ Run `npm audit --package-lock-only --ignore-scripts --audit-level=high` to
 check the resolved graph without installing or executing packages. The
 repository adds a weekly security workflow and Dependabot configuration;
 scheduled runs become active only once merged into the default branch.
+
+## URL library maintenance (2026-11-06)
+
+The shipped bundle uses whatwg-url 17.3.0. A package/lockfile change alone does
+not update the console's checked-in `runtime.js`. Rebuild the browser bundle and
+production dependency notices, then record the reviewed bundle and lockfile
+SHA-256 values under `providerRuntime` in `dependencies.json`. `tests/providers.sh`
+verifies both pins before exercising the real QuickJS sandbox. Regression cases
+cover query/searchParams synchronization, non-special schemes, international
+host names and astral Unicode in URL credentials. Network destination and
+credential protections are unchanged.
