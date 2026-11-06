@@ -133,3 +133,9 @@ struct Session {
 };
 
 } // namespace sx
+
+// IPTV is outside this torrent-only fixture; its real guidance is tested separately.
+namespace iptv {
+inline bool library_type(const std::string&) { return false; }
+inline std::string failure_message(const std::string& error) { return error; }
+}
