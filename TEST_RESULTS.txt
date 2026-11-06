@@ -1,0 +1,13 @@
+Nuvio Max'd 1.0.0.12 experimental verification
+
+Clean source: af8f4f16dcc214bd5e1000115bbbe4b26d2c9724
+Full hosted account/transport/native suite: https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/42237098989/job/127963075306 — success
+Real VLC authenticated HTTP/HLS, playback, seek and cancellation: https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/42237098989/job/127963078804 — success
+PS5 app and bundled updater compiled, linked and signed. SDK/OpenGL/provider pins validated by the build.
+Image: zero container errors/warnings; all 162 extracted files match staging.
+ZIP: all file paths and contents match the native image and staging.
+Matching source archive: 937 file hashes verified.
+Local guide interval/timezone/cancellation tests and 1080p UI previews passed.
+Catalog scan: no errors; sandbox/loader/device notices and new updater helper review remain documented in catalog-scan.log.
+
+Initial hosted runs exposed missing Sports Hub/playback-options fixture boundaries; corrected and rerun. Physical PS5, Bluetooth, provider and display acceptance remains pending. This is a prerelease for testing, not a hardware verification claim.

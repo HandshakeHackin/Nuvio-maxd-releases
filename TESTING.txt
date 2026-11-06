@@ -1,0 +1,14 @@
+Nuvio Max'd 1.0.0.12 experimental — issue #10 console checklist
+
+Close the app and install the matching ZIP folder or native image. Preserve user data and keep the previous working installer. Do not replace a mounted image.
+
+1. Confirm App updates shows 1.0.0.12. Check profile, saved IPTV source, artwork and resume survived the update.
+2. While watching a title with several loaded sources, press Up / Options, then Square. Choose another source. Verify the same title resumes near the prior position; repeat, cancel and stop during loading.
+3. With built-in torrents enabled and an active multi-video torrent, choose another torrent file. Check per-file progress and cancel the lookup/picker. This is separate from changing providers for the same title.
+4. Open Subtitle appearance in playback options. Change size, font, colour, effect and background, close the menu, then restart the app and check persistence. Bitmap subtitles cannot be restyled; authored ASS/VLC may retain their own styling.
+5. With Bluetooth headphones, try -/+0.10 s and -/+0.20 s audio delay, then reset. Positive delays sound; confirm direction and saved settings. Existing L2/R2 adjustments in the track menu are 0.05 s.
+6. Show stream controls. Check resolution, decoder and rate details with Native and VLC. Native reports container bitrate when provided; VLC reports measured input rate, not encoded file bitrate or peer download speed. Missing data should say unavailable.
+7. Live TV > Sources & filters > Guide layout enables the time grid. Try channel up/down, time left/right, groups, search, favorites and channel pages. Cross tunes live, including channels with no listings. Future cells are listings, not recording or catch-up. Switch back to channel tiles and restart to check the preference.
+8. Optional: Settings > Sports Hub is off by default. Enable it, choose sports/leagues/teams/region, then check schedules and available channel candidates against your own Live TV source. Disable and confirm selections are retained.
+
+Report version, PS5 firmware, player (Native/EVO/VLC), folder/image install, what passed and exact steps/errors. Remove provider credentials, tokens and private stream URLs from logs. Console acceptance remains pending.
