@@ -33,7 +33,7 @@ jobs:
         run: |
           [[ "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(\.[0-9]+)?-native(-experimental)?$ ]]
           [[ "$ASSET_REF" == "release-assets/$RELEASE_TAG" ]]
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ inputs.asset_ref }}
           persist-credentials: false
@@ -112,7 +112,7 @@ jobs:
       GH_TOKEN: ${{ github.token }}
       GH_REPO: ${{ github.repository }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ inputs.asset_ref }}
           persist-credentials: false
