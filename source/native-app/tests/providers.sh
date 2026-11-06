@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
+python3 "$ROOT/tools/verify_provider_bundle.py"
 : "${QUICKJS_DIR:?Set QUICKJS_DIR to QuickJS 2026-06-04 built with make libquickjs.a}"
 BUILD="$ROOT/test-output/provider-objects"
 mkdir -p "$BUILD"

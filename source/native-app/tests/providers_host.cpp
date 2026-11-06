@@ -29,6 +29,16 @@ int main(int argc, char **argv) {
   if(!rejected)throw Error('invalid nth selector');
   await new Promise(resolve=>setTimeout(resolve,5));
   const u=new URL('/video','https://example.com/root');u.searchParams.set('id',id);
+  const query=new URL('https://example.com/?old=1'),held=query.searchParams;
+  query.search='\t\n';
+  if(held.toString()!=='' || query.href!=='https://example.com/?')throw Error('URL query clearing');
+  query.search='?a=\tb\nc';
+  if(held.get('a')!=='bc' || held!==query.searchParams)throw Error('URL query synchronization');
+  if(new URL('constructor:example').href!=='constructor:example' ||
+     new URL('constructor://HOST:80/').hostname!=='HOST')throw Error('non-special URL scheme');
+  if(new URL('https://💩:pass@example.com/').username!=='%F0%9F%92%A9')throw Error('astral URL userinfo');
+  if(new URL('https://bücher.example/').hostname!=='xn--bcher-kva.example')throw Error('international URL host');
+
   if(CryptoJS.SHA256('abc').toString()!=='ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad')throw Error('crypto');
   const data=CryptoJS.AES.encrypt('hello','secret').toString();
   if(CryptoJS.AES.decrypt(data,'secret').toString(CryptoJS.enc.Utf8)!=='hello')throw Error('aes');
