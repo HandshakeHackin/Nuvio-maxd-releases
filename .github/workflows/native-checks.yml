@@ -19,7 +19,7 @@ jobs:
         working-directory: source
     timeout-minutes: 25
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Install host dependencies
         run: |
           if ! pkg-config --exists libcurl openssl libavcodec libavutil libavformat libswscale libswresample libass expat zlib egl gl || ! command -v ffmpeg >/dev/null; then
@@ -67,7 +67,7 @@ jobs:
         run: |
           apt-get update -qq
           apt-get install -y git ca-certificates python3 g++ gdb pkg-config ffmpeg libcurl4-openssl-dev libavformat-dev libavcodec-dev libavutil-dev libswresample-dev libvlc-dev libvlccore-dev vlc-plugin-base
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Test VLC file playback, authenticated HTTP/HLS, seeking and cancellation
         run: |
           bash native-app/tests/vlc_host.sh
