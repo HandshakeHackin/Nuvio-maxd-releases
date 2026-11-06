@@ -41,6 +41,8 @@ struct Session {
     void watch_select_sub(int index){w_sub_active_=index;}
     void watch_show_info(){}
     void watch_manual_subtitle_timing(){++manual_timing;}
+    int options_opened=0;
+    void watch_options(){++options_opened;playing.menu=false;}
     void watch_build_menu(){}
     void save_prefs(){}
     void say(const char*,int){}
@@ -79,5 +81,7 @@ int main() {
     assert(s.prefs_.subtitle_delay_ms==50 && s.manual_timing==1);
     in={};in.pressed=hui::action_bit(hui::Action::north);s.menu_input(in);
     assert(s.prefs_.subtitle_delay_ms==0 && s.manual_timing==2);
+    in={};in.pressed=hui::action_bit(hui::Action::west);s.menu_input(in);
+    assert(s.options_opened==1 && !s.playing.menu && s.prefs_.subtitle_delay_ms==0);
     std::cout<<"Production Session: renumbered subtitles, explicit Off, external cues, missing/ambiguous tracks and chapter controller navigation passed\n";
 }
