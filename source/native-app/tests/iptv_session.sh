@@ -12,7 +12,9 @@ out.joinpath('session_iptv.cpp').write_text((root/'gl/session_iptv.cpp').read_te
 # Isolation checks supplement the production Session tests: normal playback must
 # bypass addon subtitles, parallel service connections, episode lookup and history.
 watch=(root/'gl/session_watch.cpp').read_text()
-assert '? iptv::failure_message(err)' in watch
+recovery=(root/'gl/session_recovery.cpp').read_text()
+assert 'iptv::library_type(item.type) ? iptv::failure_message(error) : error' in recovery
+assert 'dropdown.message=message+' in recovery
 assert 'if(iptv::library_type(w_item_.type)){iptv_progress(force_finished);return;}' in watch
 assert '!iptv::library_type(w_item_.type)) watch_load_addon_subtitles()' in watch
 assert '!iptv::library_type(w_item_.type)) watch_load_segments' in watch

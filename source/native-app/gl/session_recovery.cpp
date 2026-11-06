@@ -37,6 +37,7 @@ void Session::watch_fail(const std::string& error) {
             start_over_next_=action==1;
             play_stream(source,transcode,trailer);
         });
-    dropdown.message=error+" Saved progress is retained unless you explicitly restart a file.";
+    const auto message=iptv::library_type(item.type) ? iptv::failure_message(error) : error;
+    dropdown.message=message+" Saved progress is retained unless you explicitly restart a file.";
 }
 }
