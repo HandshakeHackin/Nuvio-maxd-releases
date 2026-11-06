@@ -40,6 +40,7 @@ struct Session {
     Updater updater_;
     std::unique_ptr<Reporter> media_reporter_=std::make_unique<Reporter>();
     void torrent_reset() {}
+    void sports_reset() { events.push_back("sports reset"); }
     void media_reset(){if(media_cancel_)*media_cancel_=true;if(media_play_cancel_)*media_play_cancel_=true;events.push_back("media reset");}
     bool watching = false;
     Boundary player_{"player"}, provider_tasks_{"providers"}, tex_{"textures"};
@@ -59,7 +60,7 @@ int main() {
         assert(!session.w_episode_cancel_);
         session.updater_.closing = updating;
         session.shutdown();
-        assert(sx::events.front()=="pin cleared");
+        assert(sx::events.size()>1 && sx::events[0]=="sports reset" && sx::events[1]=="pin cleared");
         assert(sx::events.back() == "progress saved");
         assert(!session.updater_.handed_off);
         assert(!session.media_reporter_);
