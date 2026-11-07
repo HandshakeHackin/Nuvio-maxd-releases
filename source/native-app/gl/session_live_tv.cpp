@@ -1,4 +1,5 @@
 #include "live_tv.h"
+#include "live_usb.hpp"
 #include "session.hpp"
 #include <algorithm>
 #include <cstdio>
@@ -218,7 +219,8 @@ void Session::live_reload() {
   live_loading_ = true;
   live_build();
   g_tasks.run<live_tv::Result>(
-      [source, cancel] {
+      [source, cancel, directory=profile_dir_] {
+        if(jstr(source,"type")=="usb")return live_usb::load(directory,jstr(source,"id"),cancel.get());
         if (jstr(source, "type") == "xtream")
           return live_tv::fetch_xtream(jstr(source, "url"),
                                        jstr(source, "username"),
@@ -391,10 +393,11 @@ void Session::live_menu() {
       "Channel groups",    "Search channels",
       "All channels",      "Favorites",
       "Recent channels",   "Remove current source",
-      "Next channel page", "Previous channel page", "Four-screen TV (experimental)", "Check IPTV Library availability", "Set XMLTV guide URL", "Refresh programme guide", jbool(live_state_,"guide_enabled",true)?"Programme guide: On":"Programme guide: Off", "Correct provider guide clock", jbool(live_state_,"guide_grid",false)?"Guide layout: Time grid":"Guide layout: Channel tiles"};
+      "Next channel page", "Previous channel page", "Four-screen TV (experimental)", "Check IPTV Library availability", "Set XMLTV guide URL", "Refresh programme guide", jbool(live_state_,"guide_enabled",true)?"Programme guide: On":"Programme guide: Off", "Correct provider guide clock", jbool(live_state_,"guide_grid",false)?"Guide layout: Time grid":"Guide layout: Channel tiles", "Import playlist from USB", "Replace current USB playlist"};
   open_dropdown("Live TV", options, 0, [this, generation](int i) {
     if (generation != profile_generation_)
       return;
+    if(i==19||i==20){live_usb_import(i==20);return;}
     if(i==18){live_state_["guide_grid"]=!jbool(live_state_,"guide_grid",false);live_save();live_build();return;}
     if (i == 17) {live_guide_clock();return;}
     if (i == 14) {live_guide_configure();return;}
@@ -478,6 +481,9 @@ void Session::live_menu() {
                            list.end());
               }
             }
+            for(const auto& row:live_state_["sources"])if(jstr(row,"id")==source && jstr(row,"type")=="usb"){
+              const auto path=live_usb::cache_path(profile_dir_,source);if(!path.empty())unlink(path.c_str());
+            }
             auto &sources = live_state_["sources"];
             sources.erase(std::remove_if(sources.begin(), sources.end(),
                                          [&](const json &s) {
@@ -501,3 +507,40 @@ void Session::live_menu() {
       "favorites and recent channels are saved locally for this profile. IPTV Library appears separately when the service provides movies or series.";
 }
 } // namespace sx
+
+namespace sx {
+void Session::live_usb_import(bool replace) {
+  if(!profile_ready_ || watching || resuming_)return;
+  const auto profile=profile_generation_;const auto directory=profile_dir_;
+  std::string id=std::to_string(now_epoch_ms());
+  if(replace){bool found=false;for(const auto& row:live_state_["sources"])if(jstr(row,"id")==live_source_ && jstr(row,"type")=="usb"){id=live_source_;found=true;}
+    if(!found){say("Choose an imported USB source first.",6);return;}}
+  else {size_t count=0;for(const auto& row:live_state_["sources"])if(jstr(row,"type")=="usb")++count;
+    if(count>=16){say("Up to 16 USB playlists per profile. Replace or remove an existing source.",7);return;}}
+  open_dropdown("Scanning USB playlists",{"Cancel"},0,[](int){});
+  const auto generation=++live_generation_;
+  bg<std::vector<live_usb::File>>([]{std::vector<std::string> roots;for(int i=0;i<8;++i)roots.push_back("/mnt/usb"+std::to_string(i));return live_usb::scan(roots);},
+    [this,profile,directory,id,replace,generation](auto& files){
+      if(profile!=profile_generation_||generation!=live_generation_||!dropdown_open||dropdown.title!="Scanning USB playlists")return;
+      if(files.empty()){dropdown_cancel();say("No M3U/M3U8 files found. Connect a USB drive and place playlists within four folder levels.",8);return;}
+      std::vector<std::string> rows;for(const auto& file:files)rows.push_back(file.root+"/"+file.path);
+      open_dropdown("Import USB playlist",rows,0,[this,profile,directory,id,replace,generation,files](int pick){
+        if(profile!=profile_generation_||generation!=live_generation_||pick<0||pick>=int(files.size()))return;
+        if(live_cancel_)*live_cancel_=true;live_cancel_=std::make_shared<std::atomic<bool>>(false);const auto cancel=live_cancel_;live_usb_cancel_=cancel;
+        const auto file=files[size_t(pick)];
+        open_dropdown("Importing USB playlist",{"Cancel"},0,[cancel](int){*cancel=true;});
+        bg<live_tv::Result>([file,directory,id,cancel]{return live_usb::import_playlist(file,directory,id,cancel.get());},
+          [this,profile,generation,id,replace,file,cancel](auto& result){
+            if(profile!=profile_generation_||generation!=live_generation_)return;
+            if(dropdown_open&&dropdown.title=="Importing USB playlist")dropdown_cancel();
+            if(!result.error.empty()){say(result.error,8,true);return;}
+            if(replace){for(auto& row:live_state_["sources"])if(jstr(row,"id")==id)row["name"]=label(file.path);}
+            else live_state_["sources"].push_back({{"id",id},{"type","usb"},{"name",label(file.path)}});
+            live_source_=id;live_group_.clear();live_query_.clear();live_view_=0;live_save();live_reload();
+            say("Playlist copied to this profile. The USB drive can be removed.",6);
+        });
+      });
+      dropdown.message="Choose a channel playlist. Single-stream HLS manifests and local media paths are not supported. Imports keep a private copy; online channels still need network access.";
+  });
+}
+}

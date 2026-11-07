@@ -1235,6 +1235,7 @@ void Session::release_notes_dismiss() {
 
 void Session::dropdown_cancel()
 {
+    if(dropdown.title=="Importing USB playlist" && live_usb_cancel_)*live_usb_cancel_=true;
     if(install_source_dialog_ && install_source_first_) {
         dropdown_open=false; dropdown_chosen_=nullptr;
         install_source_choose(2);
