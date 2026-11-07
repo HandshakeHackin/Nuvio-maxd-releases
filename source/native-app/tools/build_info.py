@@ -34,7 +34,7 @@ display_profile = validate_display_metadata(json.loads(
 info = {
     'name': "Nuvio Max'd",
     'version': '1.0.0.13-native-experimental',
-    'releaseChannel': 'development',
+    'releaseChannel': 'experimental',
     'issue10PlaybackControls': {'sourceSwitchPosition': True, 'torrentFilePicker': True, 'liveSubtitleAppearance': True, 'audioDelayStepsMs': [100, 200], 'containerAndMeasuredRatesDistinguished': True, 'hardwareVerified': False},
     'sportsHub': {'optional': True, 'profileSelections': True, 'sportLeagueTeamPicker': True, 'regions': True, 'scoreSpoilers': True, 'guideChannelCandidates': True, 'boundedPublicCatalogue': True, 'referenceCommit': 'd46b29a47487919057819602b614d5f7fbde7cba', 'hardwareVerified': False},
     'sourceSelection': {'metadataChecks': True, 'profilePreferences': True, 'qualityLanguageSizeHdr': True, 'explicitRankedPlay': True, 'showAllOverride': True, 'nextEpisodeFiltering': True, 'hardwareVerified': False},
