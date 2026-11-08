@@ -6,6 +6,11 @@
 const char* kUserAgent="USB-Playlist-Fixture";
 void http_setup_handle(void*){}
 const std::string& http_ca_bundle(){static std::string empty;return empty;}
+// Direct use of these SDK syscall stubs would crash before a file list appears.
+extern "C" int __wrap_dup(int){std::abort();}
+extern "C" DIR* __wrap_fdopendir(int){std::abort();}
+extern "C" int __wrap_fstatat(int,const char*,struct stat*,int){std::abort();}
+extern "C" int __wrap_openat(int,const char*,int,...){std::abort();}
 int main(){
   namespace fs=std::filesystem;char dir[]="/tmp/maxd-usb-XXXXXX";assert(mkdtemp(dir));const fs::path root=dir;
   fs::create_directories(root/"usb/nested");fs::create_directories(root/"profile");fs::create_directories(root/"other");
@@ -29,5 +34,7 @@ int main(){
   error.clear();assert(live_usb::read_file({(root/"usb").string(),"link.m3u"},nullptr,error).empty()&&!error.empty());
   int fd=open((root/"usb/huge.m3u").c_str(),O_CREAT|O_WRONLY,0600);assert(fd>=0);assert(!ftruncate(fd,live_tv::max_bytes+1));close(fd);
   assert(live_usb::scan({(root/"usb").string()}).size()==1);
+  error.clear();assert(live_usb::read_file({(root/"usb").string(),"linked/TV.M3U8"},nullptr,error).empty()&&!error.empty());
+  assert(live_usb::scan({(root/"usb/missing").string()}).empty());
   fs::remove_all(root);std::cout<<"USB playlists: scan, symlink/path rejection, limits, HLS rejection, atomic replacement, cancellation, permissions, profile isolation and unplugged reload passed\n";
 }

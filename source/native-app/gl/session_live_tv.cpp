@@ -519,7 +519,7 @@ void Session::live_usb_import(bool replace) {
     if(count>=16){say("Up to 16 USB playlists per profile. Replace or remove an existing source.",7);return;}}
   open_dropdown("Scanning USB playlists",{"Cancel"},0,[](int){});
   const auto generation=++live_generation_;
-  bg<std::vector<live_usb::File>>([]{std::vector<std::string> roots;for(int i=0;i<8;++i)roots.push_back("/mnt/usb"+std::to_string(i));return live_usb::scan(roots);},
+  bg<std::vector<live_usb::File>>([]{std::vector<std::string> roots;for(int i=0;i<8;++i)roots.push_back("/mnt/usb"+std::to_string(i));dlog("USB playlist scan: native directory imports, 8 roots");auto files=live_usb::scan(roots);dlog("USB playlist scan: completed, %zu candidate(s)",files.size());return files;},
     [this,profile,directory,id,replace,generation](auto& files){
       if(profile!=profile_generation_||generation!=live_generation_||!dropdown_open||dropdown.title!="Scanning USB playlists")return;
       if(files.empty()){dropdown_cancel();say("No M3U/M3U8 files found. Connect a USB drive and place playlists within four folder levels.",8);return;}
@@ -529,7 +529,7 @@ void Session::live_usb_import(bool replace) {
         if(live_cancel_)*live_cancel_=true;live_cancel_=std::make_shared<std::atomic<bool>>(false);const auto cancel=live_cancel_;live_usb_cancel_=cancel;
         const auto file=files[size_t(pick)];
         open_dropdown("Importing USB playlist",{"Cancel"},0,[cancel](int){*cancel=true;});
-        bg<live_tv::Result>([file,directory,id,cancel]{return live_usb::import_playlist(file,directory,id,cancel.get());},
+        bg<live_tv::Result>([file,directory,id,cancel]{dlog("USB playlist import: validating selected file");auto result=live_usb::import_playlist(file,directory,id,cancel.get());dlog("USB playlist import: %s",result.error.empty()?"saved profile copy":"cancelled or rejected");return result;},
           [this,profile,generation,id,replace,file,cancel](auto& result){
             if(profile!=profile_generation_||generation!=live_generation_)return;
             if(dropdown_open&&dropdown.title=="Importing USB playlist")dropdown_cancel();
