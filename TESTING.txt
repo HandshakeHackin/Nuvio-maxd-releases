@@ -1,0 +1,10 @@
+1.0.0.14 experimental: USB crash retest
+
+Keep saved data and the previous installer. Fully close the app before installation. For image installs, do not overwrite a mounted image.
+1. Confirm version 1.0.0.14, connect USB, then open Live TV > Sources & filters > Import playlist from USB. Does the file list appear without a crash?
+2. Import a valid M3U/M3U8 channel playlist from the root and a nested folder. Check groups and playback.
+3. Remove the USB, reload channels and restart; confirm the profile copy remains available.
+4. Try cancellation, USB reconnection and Replace current USB playlist. Invalid replacements should retain the previous copy.
+5. If a crash remains, copy available crash/runtime logs and app.log before repeated restarts. The new log includes USB scan/import stages but omits filenames and URLs. Remove credentials and private URLs before sharing. Report firmware, folder/image install type and the exact step.
+
+This is an unconfirmed candidate fix; no physical-console verification is claimed.

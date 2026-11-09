@@ -1,0 +1,13 @@
+Nuvio Max'd 1.0.0.14 experimental verification
+
+Clean source: b414a41261a5d7d5d87a49aef992fa48ef2d3778
+Full hosted account/transport/native suite: https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/42543067455/job/128922077482 — success
+Real VLC authenticated HTTP/HLS, playback, seek and cancellation: https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/42543067455/job/128922078012 — success
+PS5 app and bundled updater compiled, linked and signed. SDK/OpenGL/provider pins validated by the build.
+Image: zero container errors/warnings; all 162 extracted files match staging.
+ZIP: all file paths and contents match the native image and staging.
+Matching source archive: 942 file hashes verified.
+USB playlist tests cover scanning, symlinks/traversal, limits, HLS rejection, atomic replacement, cancellation, private permissions, profile isolation and unplugged reload; existing large-playlist tests passed.
+Catalog scan: no errors; sandbox/loader/device notices and new updater helper review remain documented in catalog-scan.log.
+
+Physical PS5 USB mount access, unplug/cancel/restart behavior and provider acceptance remain pending. This is a prerelease for testing, not a hardware verification claim.
