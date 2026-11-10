@@ -1,0 +1,28 @@
+1.0.0.16 experimental — unconfirmed USB reader candidate, issue #20
+
+Keep saved data and the previous installer. Fully close Max'd before updating;
+do not overwrite a mounted FFPFSC. Confirm the app shows 1.0.0.16.
+
+1. On the reported Y2JB / ShadowMount 1.7beta12 / firmware 11.20 setup, connect
+   the same USB and open Live TV > Sources & filters > Import playlist from USB.
+2. If direct access is denied, choose Use USB reader helper. This runs the
+   bundled reader through the existing local payload loader (127.0.0.1:9021).
+   Does the picker now show the root .m3u? Does Cancel leave everything unchanged?
+   If the loader is unavailable or the reader is denied, report the exact message;
+   don't change permissions, install another jailbreak or run an unknown payload.
+3. Select the playlist and check channels/playback. Remove USB, reload and restart
+   to check the private saved copy. Online channels still need network access.
+4. If convenient test a nested folder (four levels maximum), rescan, unplug during
+   import, invalid/HLS replacement and cancellation. The working copy must survive
+   failed replacement. A second profile must not see the first profile's sources.
+5. If unsuccessful, share only USB scan/reader/import and mount diagnostic lines
+   from app.log. State the exact failing stage and firmware/loader/install type.
+   Typical FTP path while running is
+   /mnt/sandbox/PPSA99288_000/download0/hui/dev/app.log (suffix may differ).
+   Review shared text and remove credentials/private URLs. Do not upload playlists
+   or account files. Diagnostic lines omit filenames and playlist contents.
+
+Limits remain 128 MiB, 100000 channels, 16 USB sources/profile, 8192 visited entries,
+512 candidates, four folder levels. The reader does not elevate Max'd or write
+files; the app validates and saves only the selected playlist privately. Physical
+PS5 behavior is unconfirmed. Keep issue #20 open until results are confirmed.

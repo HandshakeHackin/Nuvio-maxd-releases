@@ -1,0 +1,41 @@
+Nuvio Max'd 1.0.0.16 experimental — verification evidence
+
+Source: bf24f6bc4ee069ef78d0581fdc800c4492a23fb9, clean builds/v1.0.0.16.
+Content version: 07.000.016. Title: PPSA99288.
+Full app and bundled updater/USB reader compiled using the restored pinned SDK.
+All 522 maintenance output hashes, SDK/OpenGL pins and provider inputs verified.
+Pinned host-tool unit/integration tests passed; dependency pins unchanged.
+
+Exact-source full host suite, Plex/media servers, IME and 56 GL previews passed:
+https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/42889875977/job/130087865100
+VLC real file/HTTP/HLS/seek/cancellation suite passed:
+https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/42889875977/job/130087864546
+CI log normalization removes timestamps and exactly two HTTPS fixture peer-reset
+tracebacks inside the passing untrusted-certificate rejection test. The original
+raw CI log is retained and hashed in native-validation.json. No test failures or
+assertion failures were removed.
+
+USB regressions cover per-mount denied/missing/metadata/enumeration/empty states,
+bounds/privacy, the real helper over pipes, fragmented/coalesced client traffic,
+request/reply rejection, traversal/symlinks, 512/513 candidates, payload size
+compatibility, cancellation/disconnection, playlist validation, 0600 atomic copies,
+old-copy retention and profile isolation. Existing updater 46 tests passed.
+
+Image: zero container errors/warnings; 163 extracted file hashes match.
+ZIP: complete integrity check; every file matches image/staged app.
+Source archive: 952 verified file hashes; exact source commit above.
+Native USB objects: no raw syscall instructions or dup/fdopendir/fstatat/openat imports.
+USB reader final payload does not define those raw filesystem stubs.
+
+Catalog static scan: 0 errors, 6 warnings, 1 notice. Both bundled payloads need
+maintainer helper approval; no approval records were changed. See catalog-scan.log.
+This is not evidence of catalog acceptance, submission or live store deployment.
+
+UNCONFIRMED on PS5. The standard pinned payload SDK startup prepares the reader
+process's own capabilities/attributes and syscall-address range using kernel
+access. Max'd remains sandboxed. Host tests cannot validate that runtime on
+firmware 11.20 or establish loader availability and USB access under Y2JB /
+ShadowMount 1.7beta12. The optional reader needs the existing loopback loader on port 9021.
+Only explicit user selection invokes it; the request handler reads fixed USB
+roots, creates no listener, changes no mounts and writes no files. Max'd validates
+and saves selected content privately. Keep issue #20 open for tester confirmation.
