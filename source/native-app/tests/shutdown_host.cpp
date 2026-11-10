@@ -73,6 +73,7 @@ int main() {
     session.media_play_cancel_ = std::make_shared<std::atomic<bool>>(false);
     session.device_cancel_ = std::make_shared<std::atomic<bool>>(false);
     session.live_cancel_ = std::make_shared<std::atomic<bool>>(false);
+    session.live_usb_cancel_ = std::make_shared<std::atomic<bool>>(false);
     session.live_guide_cancel_ = std::make_shared<std::atomic<bool>>(false);
     session.series_updates_cancel_ = std::make_shared<std::atomic<bool>>(false);
     session.iptv_cancel_ = std::make_shared<std::atomic<bool>>(false);
@@ -82,7 +83,7 @@ int main() {
     session.watching = true;
     session.updater_.closing = true;
     session.shutdown();
-    assert(*session.live_guide_cancel_ && *session.series_updates_cancel_ && *session.iptv_cancel_ && *session.iptv_probe_cancel_ && *session.live_cancel_ && *episode_cancel && *session.device_cancel_ && *session.d_cancel_ && *session.d_stream_cancel_);
+    assert(*session.live_usb_cancel_ && *session.live_guide_cancel_ && *session.series_updates_cancel_ && *session.iptv_cancel_ && *session.iptv_probe_cancel_ && *session.live_cancel_ && *episode_cancel && *session.device_cancel_ && *session.d_cancel_ && *session.d_stream_cancel_);
     assert(!session.watching && *session.media_cancel_ && *session.media_play_cancel_ && !session.media_reporter_);
     session.updater_.finish_exit();
     assert(session.updater_.handed_off);
