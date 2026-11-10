@@ -1,0 +1,15 @@
+Nuvio Max'd 1.0.0.15 experimental verification
+
+Clean source: 8fdff63820f755755ec27f978412dc7fd5b5b636
+Full hosted account/transport/native suite: https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/42864927131/job/130000592352 — success
+Real VLC authenticated HTTP/HLS, playback, seek and cancellation: https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/42864927131/job/130000592123 — success
+Complete local host suite, production UI previews and dedicated Plex/media-server/IME checks: success.
+PS5 app and bundled updater compiled, linked and signed. All 522 maintenance outputs, SDK/OpenGL/provider pins match; no pins changed.
+Image: zero container errors/warnings; all 162 extracted files match staging.
+ZIP: all paths, file contents and permissions verified against the image and staging.
+Matching source archive: 943 file hashes verified.
+USB regressions: missing/denied/empty mounts, metadata failures, known/unknown directory types, enumeration errors/EOF, privacy, in-flight cancellation, depth/count/size limits, symlink/traversal rejection, playlist validation, atomic replacement, permissions, profile isolation and unplugged reload.
+USB scanner object has no direct dup/fdopendir/fstatat/openat references.
+Catalog static scan: zero errors, four maintainer-review warnings and one notice for existing sandbox/loader/device/updater behavior. The updater matches 1.0.0.14 byte-for-byte; helper approvals were not changed.
+
+Unconfirmed fix: physical PS5 USB visibility/access/import, firmware compatibility and remove/reconnect/restart behavior require tester confirmation. This build does not diagnose exFAT as the cause or bypass import metadata checks.

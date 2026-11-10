@@ -1,0 +1,27 @@
+1.0.0.15 experimental — unconfirmed USB visibility fix, issue #20
+
+Keep saved data and your previous installer. Fully close the app before updating.
+For FFPFSC installs, do not replace a mounted image.
+
+1. Confirm version 1.0.0.15. On the same PS5 Slim/FW 11.20, connect the same USB
+   with a root .m3u, then Live TV > Sources & filters > Import playlist from USB.
+   Report whether scanning crashes, the exact on-screen message and whether the
+   file appears. Please confirm firmware, install type, filesystem and port.
+2. If found, select the playlist. Report whether import, channels and playback
+   work. A listed hint may still be rejected if sandbox metadata access fails.
+3. Remove USB, reload and restart; the active profile's saved list should remain.
+4. If convenient test a nested folder (up to four levels), cancel/rescan,
+   reconnect, replacement and an invalid playlist. Invalid/cancelled replacement
+   must retain the working copy. Check isolation with a second profile.
+5. If detection/import fails, copy ONLY the new "USB playlist mount" and scan/
+   import stage lines from the app log. Mount 0..7 means /mnt/usb0..7. These
+   lines contain counts/error codes and no filenames, contents or stream URLs.
+   Typical sandbox app-log path while running:
+   /mnt/sandbox/PPSA99288_000/download0/hui/dev/app.log (suffix may differ).
+   Settings > Playback diagnostics > Detailed log location confirms app paths.
+   Review anything shared; do not upload real playlists/account files or private
+   URLs. Do not change system permissions just to collect diagnostics.
+
+Limits: 128 MiB, 100000 channels, 16 USB sources/profile, four folder levels,
+8192 visited entries and 512 scan candidates. HLS media manifests/local media
+paths are rejected; online channels need network access. Hardware unconfirmed.
