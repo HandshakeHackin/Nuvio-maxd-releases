@@ -517,12 +517,23 @@ void Session::live_usb_import(bool replace) {
     if(!found){say("Choose an imported USB source first.",6);return;}}
   else {size_t count=0;for(const auto& row:live_state_["sources"])if(jstr(row,"type")=="usb")++count;
     if(count>=16){say("Up to 16 USB playlists per profile. Replace or remove an existing source.",7);return;}}
-  open_dropdown("Scanning USB playlists",{"Cancel"},0,[](int){});
+  const auto scan_cancel=std::make_shared<std::atomic<bool>>(false);live_usb_cancel_=scan_cancel;
+  open_dropdown("Scanning USB playlists",{"Cancel"},0,[scan_cancel](int){*scan_cancel=true;});
   const auto generation=++live_generation_;
-  bg<std::vector<live_usb::File>>([]{std::vector<std::string> roots;for(int i=0;i<8;++i)roots.push_back("/mnt/usb"+std::to_string(i));dlog("USB playlist scan: native directory imports, 8 roots");auto files=live_usb::scan(roots);dlog("USB playlist scan: completed, %zu candidate(s)",files.size());return files;},
-    [this,profile,directory,id,replace,generation](auto& files){
+  struct ScanResult {std::vector<live_usb::File> files;std::vector<live_usb::MountDiagnostics> mounts;};
+  bg<ScanResult>([scan_cancel]{std::vector<std::string> roots;for(int i=0;i<8;++i)roots.push_back("/mnt/usb"+std::to_string(i));
+    dlog("USB playlist scan: native directory imports, 8 roots");ScanResult result;
+    result.files=live_usb::scan(roots,&result.mounts,scan_cancel.get());
+    for(size_t i=0;i<result.mounts.size();++i)dlog("%s",result.mounts[i].summary(i).c_str());
+    dlog("USB playlist scan: completed, %zu candidate(s)",result.files.size());return result;},
+    [this,profile,directory,id,replace,generation](auto& scan){
+      auto& files=scan.files;
       if(profile!=profile_generation_||generation!=live_generation_||!dropdown_open||dropdown.title!="Scanning USB playlists")return;
-      if(files.empty()){dropdown_cancel();say("No M3U/M3U8 files found. Connect a USB drive and place playlists within four folder levels.",8);return;}
+      if(files.empty()){dropdown_cancel();
+        bool opened=false,errors=false;for(const auto& d:scan.mounts){opened|=d.directories>0;errors|=!d.missing&&(d.access_denied||d.non_directory||d.metadata_failures||d.directory_failures||d.read_errno||d.open_errno);}
+        say(errors?"USB scan could not fully read the drive. Scan diagnostics were saved to the app log.":
+          opened?"USB directories opened, but no M3U/M3U8 playlists found within four folder levels.":
+          "No USB mount visible to this app at /mnt/usb0 through /mnt/usb7. Reconnect the drive and scan again.",10);return;}
       std::vector<std::string> rows;for(const auto& file:files)rows.push_back(file.root+"/"+file.path);
       open_dropdown("Import USB playlist",rows,0,[this,profile,directory,id,replace,generation,files](int pick){
         if(profile!=profile_generation_||generation!=live_generation_||pick<0||pick>=int(files.size()))return;

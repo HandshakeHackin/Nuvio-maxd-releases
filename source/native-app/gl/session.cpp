@@ -236,6 +236,7 @@ void Session::shutdown()
     *d_stream_cancel_ = true;
     if (w_episode_cancel_) *w_episode_cancel_ = true;
     if(live_cancel_)*live_cancel_=true;
+    if(live_usb_cancel_)*live_usb_cancel_=true;
     if(live_guide_cancel_)*live_guide_cancel_=true;
     if(series_updates_cancel_)*series_updates_cancel_=true;
     if(iptv_cancel_)*iptv_cancel_=true;
@@ -1235,7 +1236,7 @@ void Session::release_notes_dismiss() {
 
 void Session::dropdown_cancel()
 {
-    if(dropdown.title=="Importing USB playlist" && live_usb_cancel_)*live_usb_cancel_=true;
+    if((dropdown.title=="Importing USB playlist" || dropdown.title=="Scanning USB playlists") && live_usb_cancel_)*live_usb_cancel_=true;
     if(install_source_dialog_ && install_source_first_) {
         dropdown_open=false; dropdown_chosen_=nullptr;
         install_source_choose(2);

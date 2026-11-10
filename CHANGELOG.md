@@ -1,3 +1,7 @@
+## 1.0.0.15 experimental
+
+Unconfirmed issue #20 USB detection candidate: enumerate mounts despite metadata failure, use known entry-type hints, add private per-mount diagnostics and cancellable scanning. Import security checks and profile-local atomic copies are retained. PS5 confirmation pending.
+
 # Nuvio Max'd 1.0.0.10 experimental — remote remapping attempt
 
 ## Remote buttons

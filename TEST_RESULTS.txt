@@ -1,13 +1,6 @@
-Nuvio Max'd 1.0.0.8 experimental validation
+Nuvio Max'd 1.0.0.15 experimental
 
-Source: 8a7b7d2e8f951c9ff8dfec9caac7ff847c50c94e (clean)
-GitHub CI: https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/41945656033 — both jobs passed
-PS5 app and bundled updater: compiled, linked and signed
-Image: fully verified and deeply extracted; 156 files match; zero container errors/warnings
-ZIP: all 156 files match the image; safe entries; 0777 permissions
-Matching source archive: 886 file hashes verified
-Local full host suite, 33 UI preview scenes, dedicated issue #14 and curl socket checks: passed
-FFmpeg 7.0.3 EVO, authenticated HLS, MP4/Matroska seek and subtitle fixtures: passed
-Two codec/scaler output pins intentionally refreshed with owner approval after independent clean source builds produced identical outputs; all upstream source pins and other 454 maintenance outputs preserved.
-
-PS5 hardware, HDR output, real accounts/servers and console-restart persistence remain unverified. This is an experimental prerelease.
+USB fault-injection regressions passed locally. Full host suite, pinned dependency
+recovery, complete PS5 build and package verification are being performed for
+this revision. The release asset TEST_RESULTS.txt records the final verified
+results and source commit. PS5 USB detection/import remains unconfirmed.

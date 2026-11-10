@@ -1,14 +1,27 @@
-# Experimental Media Remote remapping attempt — issue #16
+1.0.0.15 experimental — unconfirmed USB visibility fix, issue #20
 
-This build is an attempt, not a confirmed PS5 remote fix. Nuvio can only change buttons that PlayStation delivers to the app while it is open. PlayStation or your TV may handle Mute, volume, PS/Home, microphone and branded app buttons before the app receives anything. Nuvio cannot override those system controls or change what the remote does in other apps.
+Keep saved data and your previous installer. Fully close the app before updating.
+For FFPFSC installs, do not replace a mounted image.
 
-1. Install the 1.0.0.10 experimental PPSA99288 ZIP or FFPFSC, keeping saved user data. Keep the prior installer and a controller available.
-2. Open **Settings > Controls > Remote buttons (experimental)**.
-3. Choose **Test remote buttons**, release the remote buttons, then press one button. If it arrives, the app shows its name or a number. If nothing arrives within 15 seconds, try another button; that button may belong to PlayStation/your TV, or the firmware may not expose it to this app.
-4. Choose **Add button mapping**, choose an action (for example **Search**), then press and release the remote button. Search uses the same app action as Triangle on the controller. The assignment press is consumed, so press again to test the new action.
-5. Select a saved mapping to change its action or remove it. **Reset all remote mappings** restores normal app remote handling. The controller retains its normal controls as a way back.
-6. Close and reopen the app to check the mapping was saved. Try navigation, playback and seeking; open/close the PS5 overlay and check held buttons do not fire unexpectedly on return.
+1. Confirm version 1.0.0.15. On the same PS5 Slim/FW 11.20, connect the same USB
+   with a root .m3u, then Live TV > Sources & filters > Import playlist from USB.
+   Report whether scanning crashes, the exact on-screen message and whether the
+   file appears. Please confirm firmware, install type, filesystem and port.
+2. If found, select the playlist. Report whether import, channels and playback
+   work. A listed hint may still be rejected if sandbox metadata access fails.
+3. Remove USB, reload and restart; the active profile's saved list should remain.
+4. If convenient test a nested folder (up to four levels), cancel/rescan,
+   reconnect, replacement and an invalid playlist. Invalid/cancelled replacement
+   must retain the working copy. Check isolation with a second profile.
+5. If detection/import fails, copy ONLY the new "USB playlist mount" and scan/
+   import stage lines from the app log. Mount 0..7 means /mnt/usb0..7. These
+   lines contain counts/error codes and no filenames, contents or stream URLs.
+   Typical sandbox app-log path while running:
+   /mnt/sandbox/PPSA99288_000/download0/hui/dev/app.log (suffix may differ).
+   Settings > Playback diagnostics > Detailed log location confirms app paths.
+   Review anything shared; do not upload real playlists/account files or private
+   URLs. Do not change system permissions just to collect diagnostics.
 
-Mappings apply to Nuvio on this console and are separate for the Media Remote and TV/HDMI-CEC input. There are at most 16 mappings. They do not remap the DualSense or PlayStation OS. Please report your PS5 firmware, whether you used the PS5 Media Remote or a TV remote, which physical buttons you tried, any button name/number shown, and what happened. Do not include account tokens or stream URLs.
-
-Existing Plex/Jellyfin/Emby, torrent/Web Drop and HDR features remain included. Console testing is pending; host tests use simulated PS5 input samples.
+Limits: 128 MiB, 100000 channels, 16 USB sources/profile, four folder levels,
+8192 visited entries and 512 scan candidates. HLS media manifests/local media
+paths are rejected; online channels need network access. Hardware unconfirmed.
