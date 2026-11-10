@@ -1,3 +1,7 @@
+## 1.0.0.16 experimental
+
+Unconfirmed USB access candidate: an explicit, bounded reader helper uses the existing local payload loader while Max'd remains sandboxed. Strict playlist validation, private atomic profile copies and diagnostics remain. Physical-console confirmation is pending.
+
 ## 1.0.0.15 experimental
 
 Unconfirmed issue #20 USB detection candidate: enumerate mounts despite metadata failure, use known entry-type hints, add private per-mount diagnostics and cancellable scanning. Import security checks and profile-local atomic copies are retained. PS5 confirmation pending.

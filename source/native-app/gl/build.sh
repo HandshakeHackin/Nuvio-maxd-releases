@@ -210,6 +210,9 @@ cp "$ROOT/app/ca-bundle.crt" "$APP/"
 echo ">> building bundled image update helper"
 make -C "$ROOT/update" PS5_PAYLOAD_SDK="$SDK" OUTPUT="$B/nuvio-updater.elf"
 cp "$B/nuvio-updater.elf" "$APP/"
+echo ">> building bounded USB reader helper"
+make -C "$ROOT/usb" PS5_PAYLOAD_SDK="$SDK" OUTPUT="$B/nuvio-usb-reader.elf"
+cp "$B/nuvio-usb-reader.elf" "$APP/"
 cp "$ROOT/../ps5/account-config.json" "$APP/"
 # Public owner registrations enable pairing without developer setup on each
 # console. Overrides are validated too; secrets/account backups are forbidden.

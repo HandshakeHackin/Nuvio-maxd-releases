@@ -12,7 +12,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 namespace live_usb {
-struct File { std::string root, path; };
+struct File { std::string root, path; bool reader=false; };
 inline bool playlist(std::string name) {
   std::transform(name.begin(),name.end(),name.begin(),[](unsigned char c){return std::tolower(c);});
   return name.ends_with(".m3u") || name.ends_with(".m3u8");
@@ -129,8 +129,8 @@ inline live_tv::Result load(const std::string& profile,const std::string& id,con
   int fd=open(path.c_str(),O_RDONLY|O_NOFOLLOW|O_NONBLOCK);if(fd<0)return {{},"Imported playlist is missing. Import it again from USB."};
   auto body=read_fd(fd,cancel,error);close(fd);if(!error.empty())return {{},error};return live_tv::parse(body,"",cancel);
 }
-inline live_tv::Result import_playlist(const File& file,const std::string& profile,const std::string& id,const std::atomic<bool>* cancel){
-  std::string error;auto body=read_file(file,cancel,error);if(!error.empty())return {{},error};
+inline live_tv::Result save_body(const std::string& body,const std::string& profile,const std::string& id,const std::atomic<bool>* cancel){
+  if(body.empty()||body.size()>live_tv::max_bytes)return {{},"Playlist is empty or exceeds 128 MiB."};
   auto result=live_tv::parse(body,"",cancel);if(!result.error.empty())return result;
   const auto path=cache_path(profile,id);if(path.empty())return {{},"Invalid imported playlist."};
   static std::atomic<unsigned> sequence{0};
@@ -141,4 +141,8 @@ inline live_tv::Result import_playlist(const File& file,const std::string& profi
   if(ok)ok=fsync(fd)==0;if(close(fd))ok=false;if(cancel&&*cancel)ok=false;if(ok)ok=rename(temp.c_str(),path.c_str())==0;
   if(!ok){unlink(temp.c_str());return {{},"Could not save imported playlist; previous copy was kept."};}return result;
 }
+inline live_tv::Result import_playlist(const File& file,const std::string& profile,const std::string& id,const std::atomic<bool>* cancel){
+  std::string error;auto body=read_file(file,cancel,error);if(!error.empty())return {{},error};return save_body(body,profile,id,cancel);
+}
+
 }

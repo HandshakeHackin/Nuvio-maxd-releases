@@ -198,7 +198,7 @@ class Session
     int multiview_focus=0,multiview_audio=0;
     std::array<MultiTileView,4> multiview_tiles;
     void live_menu();
-    void live_usb_import(bool replace=false);
+    void live_usb_import(bool replace=false,bool reader=false);
     std::shared_ptr<std::atomic<bool>> live_usb_cancel_;
     void live_reload();
     void live_groups();

@@ -1,5 +1,6 @@
 #include "live_tv.h"
 #include "live_usb.hpp"
+#include "usb_reader.hpp"
 #include "session.hpp"
 #include <algorithm>
 #include <cstdio>
@@ -510,7 +511,7 @@ void Session::live_menu() {
 } // namespace sx
 
 namespace sx {
-void Session::live_usb_import(bool replace) {
+void Session::live_usb_import(bool replace,bool reader) {
   if(!profile_ready_ || watching || resuming_)return;
   const auto profile=profile_generation_;const auto directory=profile_dir_;
   std::string id=std::to_string(now_epoch_ms());
@@ -521,16 +522,23 @@ void Session::live_usb_import(bool replace) {
   const auto scan_cancel=std::make_shared<std::atomic<bool>>(false);live_usb_cancel_=scan_cancel;
   open_dropdown("Scanning USB playlists",{"Cancel"},0,[scan_cancel](int){*scan_cancel=true;});
   const auto generation=++live_generation_;
-  struct ScanResult {std::vector<live_usb::File> files;std::vector<live_usb::MountDiagnostics> mounts;};
-  bg<ScanResult>([scan_cancel]{std::vector<std::string> roots;for(int i=0;i<8;++i)roots.push_back("/mnt/usb"+std::to_string(i));
-    dlog("USB playlist scan: native directory imports, 8 roots");ScanResult result;
-    result.files=live_usb::scan(roots,&result.mounts,scan_cancel.get());
-    for(size_t i=0;i<result.mounts.size();++i)dlog("%s",result.mounts[i].summary(i).c_str());
+  struct ScanResult {std::vector<live_usb::File> files;std::vector<live_usb::MountDiagnostics> mounts;std::string error;};
+  bg<ScanResult>([scan_cancel,reader]{std::vector<std::string> roots;for(int i=0;i<8;++i)roots.push_back("/mnt/usb"+std::to_string(i));
+    dlog("%s",reader?"USB reader scan: existing loader, 8 roots":"USB playlist scan: native directory imports, 8 roots");ScanResult result;
+    if(reader){dlog("USB reader scan: explicit helper request");auto scan=usb_reader_client::scan(*scan_cancel);result.files=std::move(scan.files);result.mounts=std::move(scan.mounts);result.error=std::move(scan.error);}
+    else result.files=live_usb::scan(roots,&result.mounts,scan_cancel.get());
+    for(size_t i=0;i<result.mounts.size();++i)dlog("%s%s",reader?"USB reader ":"",result.mounts[i].summary(i).c_str());
     dlog("USB playlist scan: completed, %zu candidate(s)",result.files.size());return result;},
-    [this,profile,directory,id,replace,generation](auto& scan){
+    [this,profile,directory,id,replace,generation,reader](auto& scan){
       auto& files=scan.files;
       if(profile!=profile_generation_||generation!=live_generation_||!dropdown_open||dropdown.title!="Scanning USB playlists")return;
+      if(!scan.error.empty()){dropdown_cancel();say(scan.error,10,true);return;}
       if(files.empty()){dropdown_cancel();
+        bool denied=false;for(const auto& d:scan.mounts)denied|=d.access_denied;
+        if(denied&&!reader){
+          open_dropdown("USB access is restricted",{"Cancel","Use USB reader helper"},0,[this,profile,generation,replace](int choice){if(choice==1&&profile==profile_generation_&&generation==live_generation_)live_usb_import(replace,true);});
+          dropdown.message="The reader uses the existing local payload loader to read USB playlists. Max'd stays sandboxed; the helper does not change system permissions. Only a selected, validated playlist is saved privately to this profile.";return;
+        }
         bool opened=false,errors=false;for(const auto& d:scan.mounts){opened|=d.directories>0;errors|=!d.missing&&(d.access_denied||d.non_directory||d.metadata_failures||d.directory_failures||d.read_errno||d.open_errno);}
         say(errors?"USB scan could not fully read the drive. Scan diagnostics were saved to the app log.":
           opened?"USB directories opened, but no M3U/M3U8 playlists found within four folder levels.":
@@ -541,7 +549,7 @@ void Session::live_usb_import(bool replace) {
         if(live_cancel_)*live_cancel_=true;live_cancel_=std::make_shared<std::atomic<bool>>(false);const auto cancel=live_cancel_;live_usb_cancel_=cancel;
         const auto file=files[size_t(pick)];
         open_dropdown("Importing USB playlist",{"Cancel"},0,[cancel](int){*cancel=true;});
-        bg<live_tv::Result>([file,directory,id,cancel]{dlog("USB playlist import: validating selected file");auto result=live_usb::import_playlist(file,directory,id,cancel.get());dlog("USB playlist import: %s",result.error.empty()?"saved profile copy":"cancelled or rejected");return result;},
+        bg<live_tv::Result>([file,directory,id,cancel]{dlog("USB playlist import: validating selected file");auto result=file.reader?usb_reader_client::import_playlist(file,directory,id,*cancel):live_usb::import_playlist(file,directory,id,cancel.get());dlog("USB playlist import: %s",result.error.empty()?"saved profile copy":"cancelled or rejected");return result;},
           [this,profile,generation,id,replace,file,cancel](auto& result){
             if(profile!=profile_generation_||generation!=live_generation_)return;
             if(dropdown_open&&dropdown.title=="Importing USB playlist")dropdown_cancel();

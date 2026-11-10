@@ -1,6 +1,3 @@
-Nuvio Max'd 1.0.0.15 experimental
+Nuvio Max'd 1.0.0.16 experimental
 
-USB fault-injection regressions passed locally. Full host suite, pinned dependency
-recovery, complete PS5 build and package verification are being performed for
-this revision. The release asset TEST_RESULTS.txt records the final verified
-results and source commit. PS5 USB detection/import remains unconfirmed.
+New reader and existing USB regressions passed locally. Native helper compilation passed. Final exact-source CI, complete app build and package/source checks are required before publication; release TEST_RESULTS.txt records their final results. PS5 access remains unconfirmed.

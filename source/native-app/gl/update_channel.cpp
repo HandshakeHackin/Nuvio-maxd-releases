@@ -3,8 +3,11 @@
 // Loader handoff adapted from BlackBearReloaded's native app kit / ProsperoEden.
 #include "update_channel.hpp"
 #include <array>
+#include <algorithm>
 #include <cstdint>
 #include <fcntl.h>
+#include <cstring>
+#include <sys/stat.h>
 #include <unistd.h>
 extern "C" {
 int sceNetSocket(const char*,int,int,int);
@@ -16,17 +19,30 @@ int sceNetSocketClose(int);
 }
 namespace sx {
 UpdateChannel::~UpdateChannel(){close();}
-void UpdateChannel::close(){if(socket_>=0)sceNetSocketClose(socket_);socket_=-1;}
+void UpdateChannel::close(){if(socket_>=0)sceNetSocketClose(socket_);socket_=-1;at_=end_=0;}
 bool UpdateChannel::send(const void* data,std::size_t size,const std::atomic<bool>& cancel) {
     auto p=static_cast<const char*>(data);
-    while(size && !cancel) {auto n=sceNetSend(socket_,p,size,0);if(n<=0)return false;p+=n;size-=n;}
+    while(size && active(cancel)) {auto n=sceNetSend(socket_,p,size,0);if(n<=0||std::size_t(n)>size)return false;p+=n;size-=n;}
     return size==0;
 }
-bool UpdateChannel::line(std::string& out,const std::atomic<bool>& cancel) {
-    out.clear();while(out.size()<8192 && !cancel) {char c;auto n=sceNetRecv(socket_,&c,1,0);if(n!=1)return false;if(c=='\n')return true;out+=c;}return false;
+bool UpdateChannel::active(const std::atomic<bool>& cancel) const {return !cancel&&std::chrono::steady_clock::now()<deadline_;}
+bool UpdateChannel::receive(void* data,std::size_t size,const std::atomic<bool>& cancel) {
+    auto* p=static_cast<char*>(data);
+    while(size&&active(cancel)){
+        if(at_<end_){auto n=std::min(size,end_-at_);std::memcpy(p,input_.data()+at_,n);at_+=n;p+=n;size-=n;continue;}
+        auto n=sceNetRecv(socket_,p,std::min<std::size_t>(size,65536),0);if(n<=0||std::size_t(n)>size)return false;p+=n;size-=n;
+    }return size==0&&active(cancel);
 }
-bool UpdateChannel::open(const std::string& helper,const std::atomic<bool>& cancel,std::string& error) {
-    int fd=::open(helper.c_str(),O_RDONLY);if(fd<0){error="The bundled update helper is missing";return false;}
+bool UpdateChannel::line(std::string& out,const std::atomic<bool>& cancel) {
+    out.clear();while(out.size()<8192&&active(cancel)){
+        if(at_==end_){auto n=sceNetRecv(socket_,input_.data(),input_.size(),0);if(n<=0||std::size_t(n)>input_.size())return false;at_=0;end_=std::size_t(n);}
+        char c=input_[at_++];if(c=='\n')return true;out+=c;
+    }return false;
+}
+bool UpdateChannel::open(const std::string& helper,const std::atomic<bool>& cancel,std::string& error,unsigned deadline_seconds) {
+    close();deadline_=deadline_seconds?std::chrono::steady_clock::now()+std::chrono::seconds(deadline_seconds):std::chrono::steady_clock::time_point::max();
+    int fd=::open(helper.c_str(),O_RDONLY);if(fd<0){error="The bundled helper is missing";return false;}
+    struct stat st{};if(fstat(fd,&st)||!S_ISREG(st.st_mode)||st.st_size<=0||st.st_size>8*1024*1024){::close(fd);error="Invalid bundled helper";return false;}
     struct Address {std::uint8_t len,family;std::uint16_t port;std::uint32_t address;std::uint16_t vport;std::uint8_t pad[6];};
     static_assert(sizeof(Address)==16);
     const Address a{16,2,std::uint16_t((9021<<8)|(9021>>8)),0x0100007f,0,{}};

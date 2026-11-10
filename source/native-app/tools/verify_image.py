@@ -33,6 +33,9 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
     expected = {str(f.relative_to(args.app)): sha(f) for f in args.app.rglob('*') if f.is_file()}
     actual = {str(f.relative_to(extracted)): sha(f) for f in extracted.rglob('*') if f.is_file()}
     assert expected == actual, 'extracted files differ from staged app'
+    assert 'nuvio-usb-reader.elf' in actual
+    reader=(extracted/'nuvio-usb-reader.elf').read_bytes()
+    assert reader[:6]==b'\x7fELF\x02\x01' and struct.unpack_from('<H',reader,18)[0]==62
     assert 'nuvio-updater.elf' in actual
     helper = (extracted / 'nuvio-updater.elf').read_bytes()
     assert helper[:6] == b'\x7fELF\x02\x01'
@@ -43,7 +46,7 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
     param = json.loads((extracted / 'sce_sys/param.json').read_text())
     display_profile = validate_display_metadata(param)
     assert param['titleId'] == 'PPSA99288'
-    assert param['contentVersion'] == '07.000.015'
+    assert param['contentVersion'] == '07.000.016'
     assert param['localizedParameters']['en-US']['titleName'] == "Nuvio Max'd"
     assert param['contentId'] == 'UP9000-PPSA99288_00-NUVIOPS5NAT00001'
     assert param['applicationCategoryType'] == 0
@@ -55,7 +58,7 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
     assert struct.unpack_from('<HH', data, elf + 16) == (0xFE10, 62)
     assert struct.unpack_from('<Q', data, elf + 24)[0] != 0
     info = json.loads((extracted / 'build-info.json').read_text())
-    assert info['version'] == '1.0.0.15-native-experimental'
+    assert info['version'] == '1.0.0.16-native-experimental'
     assert info['userExperienceUpdates']['optionalDonationQr']
     assert info['userExperienceUpdates']['installSourceSelector'] and info['userExperienceUpdates']['sourceAwareUpdateReminders']
     assert info['experimentalAv']['driverOwnedHdrSwitch'] and info['experimentalAv']['pcmDefault']
@@ -109,6 +112,7 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
     assert 'Remote Session: action selection, assign/edit/remove/reset' in test_log
     assert info['mediaRemote']['buttonRemapping'] and info['mediaRemote']['appLocalOnly']
     assert 'USB diagnostics: missing/access/empty mounts, metadata fallback, unknown types, enumeration errors, privacy, cancellation and global count/depth limits passed' in test_log
+    assert 'USB reader: bounded protocol, loopback loader, fragmented/buffered transfers, invalid replies, cancellation, validation, private atomic copies and profile isolation passed' in test_log
     assert 'ALL TORRENT STREAMING HOST TESTS PASSED!' in test_log
     assert 'HDR fallback: strict/SDR modes, failed restoration, retained picture, session reset and unchanged preferences passed' in test_log
     assert 'Controller lightbar: throttling, failure suppression, reconnect, reset and logo/reduced-motion envelopes passed' in test_log
@@ -154,7 +158,7 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
         'extractedFileCount': len(actual), 'allExtractedFileHashesMatch': True,
         'executable': 'x86-64 ET_SCE_EXEC inside native PS5 SELF',
         'hostHttpsTestsPassed': 80, 'hostUiNavigationTestsPassed': 12,
-        'hostUsbMountDiagnosticsTestsPassed': True, 'usbPlaylistHardwareVerified': False,
+        'hostUsbReaderTestsPassed': True, 'hostUsbMountDiagnosticsTestsPassed': True, 'usbPlaylistHardwareVerified': False,
         'hostTorrentIntegrationTestsPassed': True, 'hostHdrFallbackTestsPassed': True,
         'hostRemoteRemappingTestsPassed': True, 'hostRemoteSettingsTestsPassed': True,
         'mediaRemote': info['mediaRemote'],
