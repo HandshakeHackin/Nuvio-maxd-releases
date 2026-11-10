@@ -108,6 +108,7 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
     assert 'Remote remapping: learning, consumed capture' in test_log
     assert 'Remote Session: action selection, assign/edit/remove/reset' in test_log
     assert info['mediaRemote']['buttonRemapping'] and info['mediaRemote']['appLocalOnly']
+    assert 'USB diagnostics: missing/access/empty mounts, metadata fallback, unknown types, enumeration errors, privacy, cancellation and global count/depth limits passed' in test_log
     assert 'ALL TORRENT STREAMING HOST TESTS PASSED!' in test_log
     assert 'HDR fallback: strict/SDR modes, failed restoration, retained picture, session reset and unchanged preferences passed' in test_log
     assert 'Controller lightbar: throttling, failure suppression, reconnect, reset and logo/reduced-motion envelopes passed' in test_log
@@ -124,8 +125,8 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
     assert 'FAILED' not in test_log and 'FAIL (' not in test_log
     assert 'Traceback (most recent call last)' not in test_log
     assert 'AssertionError' not in test_log
-    assert 'UI navigation: 11 tests, 0 failures' in test_log
-    assert 'Stream presentation and navigation: 14 tests, 0 failures' in test_log
+    assert 'UI navigation: 12 tests, 0 failures' in test_log
+    assert 'Stream presentation and navigation: 15 tests, 0 failures' in test_log
     assert 'Hardware decoder setup and HEVC base-layer filtering: 11 tests, 0 failures' in test_log
     assert 'Video packing and GPU presentation: 24 tests, 0 failures' in test_log
     assert 'Display refresh lifecycle: 6 tests, 0 failures' in test_log
@@ -152,7 +153,8 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
         'containerErrors': 0, 'containerWarnings': 0,
         'extractedFileCount': len(actual), 'allExtractedFileHashesMatch': True,
         'executable': 'x86-64 ET_SCE_EXEC inside native PS5 SELF',
-        'hostHttpsTestsPassed': 80, 'hostUiNavigationTestsPassed': 11,
+        'hostHttpsTestsPassed': 80, 'hostUiNavigationTestsPassed': 12,
+        'hostUsbMountDiagnosticsTestsPassed': True, 'usbPlaylistHardwareVerified': False,
         'hostTorrentIntegrationTestsPassed': True, 'hostHdrFallbackTestsPassed': True,
         'hostRemoteRemappingTestsPassed': True, 'hostRemoteSettingsTestsPassed': True,
         'mediaRemote': info['mediaRemote'],
@@ -160,7 +162,7 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
         'hostConnectedServicesTestsPassed': 19, 'connectedServices': info['connectedServices'],
         'hostInstantPlaybackTestsPassed': 26,
         'hostDecoderSetupTestsPassed': 11,
-        'hostStreamPresentationTestsPassed': 14,
+        'hostStreamPresentationTestsPassed': 15,
         'hostVideoPackingAndGpuTestsPassed': 24, 'hostNetworkTestsPassed': 8,
         'hostHdrOutputTestsPassed': 10, 'hostEpisodePlaybackTestsPassed': 61,
         'hostDisplaySelectionAssertionsPassed': 27,
