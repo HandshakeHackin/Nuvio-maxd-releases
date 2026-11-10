@@ -13,6 +13,7 @@ extern "C" int __wrap_fstatat(int,const char*,struct stat*,int){std::abort();}
 extern "C" int __wrap_openat(int,const char*,int,...){std::abort();}
 // Fault injection exercises title-sandbox failures on the real scanner.
 static std::string fault_root;
+static std::atomic<bool>* cancel_during_read=nullptr;
 static bool fail_root_meta=false,fail_entry_meta=false,deny_open=false,fail_read=false,unknown_type=false;
 extern "C" int __real_lstat(const char*,struct stat*);
 extern "C" DIR* __real_opendir(const char*);
@@ -23,7 +24,7 @@ extern "C" int __wrap_lstat(const char* path,struct stat* st){
   return __real_lstat(path,st);
 }
 extern "C" DIR* __wrap_opendir(const char* path){if(deny_open&&path==fault_root){errno=EACCES;return nullptr;}return __real_opendir(path);}
-extern "C" struct dirent* __wrap_readdir(DIR* d){if(fail_read){errno=EIO;return nullptr;}auto* e=__real_readdir(d);if(e&&unknown_type)e->d_type=DT_UNKNOWN;return e;}
+extern "C" struct dirent* __wrap_readdir(DIR* d){if(fail_read){errno=EIO;return nullptr;}auto* e=__real_readdir(d);if(cancel_during_read)*cancel_during_read=true;if(e&&unknown_type)e->d_type=DT_UNKNOWN;return e;}
 int main(){
   namespace fs=std::filesystem;char dir[]="/tmp/maxd-usb-XXXXXX";assert(mkdtemp(dir));const fs::path root=dir;
   fs::create_directories(root/"usb/nested");fs::create_directories(root/"profile");fs::create_directories(root/"other");
@@ -61,7 +62,7 @@ int main(){
   fail_root_meta=true;files=live_usb::scan({fault_root},&diagnostics);fail_root_meta=false;
   assert(files.size()==1&&diagnostics[0].metadata_errno==EPERM&&diagnostics[0].directories==2);
   fail_entry_meta=true;files=live_usb::scan({fault_root},&diagnostics);
-  assert(files.size()==2&&diagnostics[0].metadata_failures>0&&diagnostics[0].type_fallbacks>0); // includes huge file as unverified candidate
+  assert(files.size()==2&&diagnostics[0].metadata_failures>0&&diagnostics[0].type_fallbacks>0&&diagnostics[0].read_errno==0); // includes huge file as unverified candidate
   error.clear();assert(live_usb::read_file({fault_root,"nested/TV.M3U8"},nullptr,error).empty()&&!error.empty());
   unknown_type=true;assert(live_usb::scan({fault_root},&diagnostics).empty());
   unknown_type=false;fail_entry_meta=false;
@@ -70,6 +71,9 @@ int main(){
   assert(diagnostics[0].read_errno==EIO&&diagnostics[0].summary(0).find("enumeration-error")!=std::string::npos);
   assert(live_usb::scan({fault_root},&diagnostics).size()==1&&diagnostics[0].read_errno==0); // lstat errno must not become readdir error
   assert(live_usb::scan({fault_root},&diagnostics,&cancelled).empty()&&diagnostics[0].cancelled);
+  std::atomic<bool> active_cancel=false;cancel_during_read=&active_cancel;
+  live_usb::scan({fault_root},&diagnostics,&active_cancel);cancel_during_read=nullptr;
+  assert(diagnostics[0].cancelled&&active_cancel);
   auto diagnostic=diagnostics[0].summary(0);assert(diagnostic.find(root.string())==std::string::npos&&diagnostic.find("TV.M3U8")==std::string::npos);
   fs::create_directories(root/"deep/a/b/c/d/e");
   std::ofstream(root/"deep/a/b/c/d/allowed.m3u")<<body;
