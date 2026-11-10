@@ -22,7 +22,7 @@ int run(){
     auto start=std::chrono::steady_clock::now();
     std::thread monitor([&]{while(!finished){pollfd p{STDIN_FILENO,POLLIN,0};auto r=poll(&p,1,100);
         if((r<0&&errno!=EINTR)||(r>0&&(p.revents&(POLLERR|POLLHUP|POLLNVAL)))){cancel=true;break;}
-        if(r>0&&(p.revents&POLLIN)){char c;(void)read(STDIN_FILENO,&c,1);cancel=true;break;}
+        if(r>0&&(p.revents&POLLIN)){cancel=true;break;}
         if(std::chrono::steady_clock::now()-start>std::chrono::seconds(30)){cancel=true;break;}}});
     struct Join {std::atomic<bool>& done;std::thread& t;~Join(){done=true;t.join();}} join{finished,monitor};
     auto roots=usb_reader::roots();
