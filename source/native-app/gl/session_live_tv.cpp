@@ -34,6 +34,7 @@ void Session::live_reset() {
   if(multiview_active)multi_stop();
   if (live_cancel_)
     *live_cancel_ = true;
+  if(live_usb_cancel_)*live_usb_cancel_=true;
   ++live_generation_;
   live_loading_ = false;
   live_channels_.clear();
