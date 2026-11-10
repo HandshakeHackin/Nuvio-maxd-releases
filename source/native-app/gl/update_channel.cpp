@@ -42,7 +42,7 @@ bool UpdateChannel::line(std::string& out,const std::atomic<bool>& cancel) {
 bool UpdateChannel::open(const std::string& helper,const std::atomic<bool>& cancel,std::string& error,unsigned deadline_seconds) {
     close();deadline_=deadline_seconds?std::chrono::steady_clock::now()+std::chrono::seconds(deadline_seconds):std::chrono::steady_clock::time_point::max();
     int fd=::open(helper.c_str(),O_RDONLY);if(fd<0){error="The bundled helper is missing";return false;}
-    struct stat st{};if(fstat(fd,&st)||!S_ISREG(st.st_mode)||st.st_size<=0||st.st_size>8*1024*1024){::close(fd);error="Invalid bundled helper";return false;}
+    struct stat st{};if(fstat(fd,&st)||!S_ISREG(st.st_mode)||st.st_size<=0||st.st_size>16*1024*1024){::close(fd);error="Invalid bundled helper";return false;}
     struct Address {std::uint8_t len,family;std::uint16_t port;std::uint32_t address;std::uint16_t vport;std::uint8_t pad[6];};
     static_assert(sizeof(Address)==16);
     const Address a{16,2,std::uint16_t((9021<<8)|(9021>>8)),0x0100007f,0,{}};

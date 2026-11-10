@@ -44,7 +44,8 @@ Neither the title's USB code nor the reader references raw dup/*at stubs.
 
 The app rejects oversized/truncated/malformed replies and duplicate or excessive
 manifest entries. Buffered reads preserve binary data arriving with a JSON
-header. Payload size is capped at 8 MiB; USB operations use a 30-second channel
+header. Payload size is capped at 16 MiB (including the existing larger updater);
+USB operations use a 30-second channel
 deadline with existing bounded socket waits. Cancellation is checked between
 I/O calls; a blocked platform call can defer cancellation until its socket wait
 expires. The helper also watches disconnects and requests cancellation after

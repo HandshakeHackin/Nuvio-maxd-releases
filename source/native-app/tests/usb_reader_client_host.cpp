@@ -1,4 +1,5 @@
 #include "../gl/usb_reader.hpp"
+#include "../gl/update_channel.hpp"
 #include "../usb/protocol.hpp"
 #include <cassert>
 #include <cstring>
@@ -45,5 +46,11 @@ int main(){
  setup(many+row({{"kind","file"},{"mount",0},{"path","overflow.m3u"}})+row({{"kind","done"},{"files",513}}),4096);assert(!sx::usb_reader_client::scan(cancel).error.empty());
  setup(prefix+row({{"kind","file"},{"mount",0},{"path","../private.m3u"}})+row({{"kind","done"},{"files",1}}));assert(!sx::usb_reader_client::scan(cancel).error.empty());
  const std::string hls="#EXTM3U\n#EXT-X-TARGETDURATION:6\nsegment.ts\n";setup(hello()+row({{"kind","body"},{"bytes",hls.size()}})+hls);assert(!sx::usb_reader_client::import_playlist(scan.files[0],(root/"profile").string(),"123",cancel).error.empty());assert(live_usb::load((root/"profile").string(),"123",nullptr).channels.size()==1);
+ // The real updater exceeds 8 MiB. Shared transport must still accept it,
+ // while rejecting an excessive bundled payload before contacting the loader.
+ const auto large=root/"updater.elf";std::ofstream(large)<<"payload";fs::resize_file(large,9u<<20);
+ setup("",65536);{sx::UpdateChannel channel;std::string error;assert(channel.open(large.string(),cancel,error));assert(sent.size()==(9u<<20));}assert(opens==closes);
+ fs::resize_file(large,(16u<<20)+1);const auto opened=opens;
+ {sx::UpdateChannel channel;std::string error;assert(!channel.open(large.string(),cancel,error));assert(!error.empty()&&opens==opened);}
  assert(opens==closes);fs::remove_all(root);std::cout<<"USB reader: bounded protocol, loopback loader, fragmented/buffered transfers, invalid replies, cancellation, validation, private atomic copies and profile isolation passed\n";
 }
