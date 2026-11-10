@@ -19,8 +19,11 @@ Direct scanning remains first. When a root is denied and no files are found,
 the app offers Cancel / Use USB reader helper. Only the user's explicit choice
 starts the bundled /app0/nuvio-usb-reader.elf via the existing loopback payload
 loader on 127.0.0.1:9021. No payload is downloaded and no external listener is
-created. The title is not elevated; the reader has no credential/kernel-memory
-or mount-changing code and never writes files. If the loader is unavailable or
+created. The title is not elevated. USB request handlers never change credentials or
+mounts and never write files. The standard SDK payload startup does prepare
+the helper process's own capability/attribute bits and syscall-address range
+through kernel access before main; this is a privileged payload, not ordinary
+sandboxed code. It uses the same pinned SDK runtime as the existing updater. If the loader is unavailable or
 the reader is also denied, it fails with a message and retains existing data.
 The code does not start a new jailbreak or change ShadowMount configuration.
 
@@ -67,3 +70,10 @@ review; helper approval files are outside this app's catalog submission scope.
 
 This is an unconfirmed candidate. Host tests cannot establish loader availability,
 payload USB access or correct operation on the tester's firmware 11.20 setup.
+
+Runtime audit: SDK v0.45 crt/crt.c invokes __kernel_init and __patch_init before
+main. crt/patch.c sets the current helper process's capability/attribute bits
+and syscall-address range. It does not change Max'd's credentials. Those SDK
+functions remain linked into the payload. Host protocol tests do not validate
+these kernel operations on the tester's firmware. See
+https://github.com/ps5-payload-dev/sdk/blob/v0.45/crt/patch.c

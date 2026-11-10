@@ -5,8 +5,9 @@
 - When direct USB scanning is denied, offer an optional bundled USB reader
   through the existing local payload loader. Max'd stays sandboxed.
 - Restrict the reader to bounded USB playlist discovery and reading the selected
-  file. It makes no file writes, opens no extra listener and changes no system
-  permissions, credentials or mounts.
+  file. It makes no file writes, opens no extra listener and changes no mounts
+  or Max'd credentials. It is a privileged payload: the standard SDK startup
+  prepares the helper process's own capabilities and syscall permissions.
 - Keep validation, 0600 private atomic copies and profile isolation inside Max'd.
   Retain privacy-safe per-mount diagnostics and cancellation.
 

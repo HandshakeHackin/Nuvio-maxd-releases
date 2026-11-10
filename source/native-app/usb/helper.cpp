@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // One request over the payload loader's inherited stdin/stdout connection.
 // Reads only USB playlists. No listener, network requests, filesystem writes,
-// title credential changes, mount changes or kernel memory operations.
+// title credential or mount changes. Standard SDK startup prepares the helper
+// process itself; see USB_READER_HELPER.md for the runtime privilege boundary.
 #include "protocol.hpp"
 #include <chrono>
 #include <csignal>

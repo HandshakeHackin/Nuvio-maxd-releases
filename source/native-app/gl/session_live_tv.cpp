@@ -537,7 +537,7 @@ void Session::live_usb_import(bool replace,bool reader) {
         bool denied=false;for(const auto& d:scan.mounts)denied|=d.access_denied;
         if(denied&&!reader){
           open_dropdown("USB access is restricted",{"Cancel","Use USB reader helper"},0,[this,profile,generation,replace](int choice){if(choice==1&&profile==profile_generation_&&generation==live_generation_)live_usb_import(replace,true);});
-          dropdown.message="The reader uses the existing local payload loader to read USB playlists. Max'd stays sandboxed; the helper does not change system permissions. Only a selected, validated playlist is saved privately to this profile.";return;
+          dropdown.message="The reader runs with the existing payload loader's privileges to read USB playlists. Max'd stays sandboxed. Only a selected, validated playlist is saved privately to this profile.";return;
         }
         bool opened=false,errors=false;for(const auto& d:scan.mounts){opened|=d.directories>0;errors|=!d.missing&&(d.access_denied||d.non_directory||d.metadata_failures||d.directory_failures||d.read_errno||d.open_errno);}
         say(errors?"USB scan could not fully read the drive. Scan diagnostics were saved to the app log.":
