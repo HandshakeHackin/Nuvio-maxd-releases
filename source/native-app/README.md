@@ -1,5 +1,15 @@
 # Native Nuvio Max'd for PS5
 
+## 1.0.0.18: more menu languages
+
+Choose English, German, Spanish, French, Arabic, Simplified Chinese, Japanese or
+Korean in Settings > App & Updates > Language, then restart Max'd. The six new
+catalogs cover 425 core menu/control messages, with English fallback for remaining
+help and status text. Arabic text is shaped/reordered; CJK fonts are bundled.
+Audio/subtitle preferences and addon content remain independent. See
+[coverage, contributing and checks](MENU_LANGUAGES.md).
+
+
 ## 1.0.0.17: interface language and people browsing
 
 Choose **Settings → App & Updates → Language → Deutsch**, then restart the app

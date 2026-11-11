@@ -2,22 +2,11 @@
 
 ## Interface language
 
-The local settings.json stores ui_language as en or de. Unknown/malformed values
-fall back to English. The selector verifies saved readback and asks for a restart;
-there is no partially switched set of cached screens. Profiles and audio,
-subtitle, trailer and provider language settings remain separate.
-
-ui/locales/de.json is the translation source. tools/build_locales.py validates
-placeholders and produces the reproducible de.inc compiled into the app. The
-build checks that the generated table is current. Explicit lookups cover app-owned
-text; user names, filenames, URLs, addon metadata, JSON fields and protocol IDs
-are not translated. A missing translation returns English. German settings search
-folds case, umlauts, sharp S and combining accents without changing process locale
-or protocol/numeric parsing.
-
-Dialog purposes and the Continue Watching row flag carry behavior independently
-of labels. This preserves USB cancellation and resume-card rendering in German.
-Secret/PIN input paths and their masking remain unchanged.
+Version 1.0.0.18 extends the original English/German menu support to eight choices.
+The registry, per-language core coverage, generated UTF-8 table, fallback,
+persistence, search and rendering checks are documented in
+[MENU_LANGUAGES.md](MENU_LANGUAGES.md). User/addon strings and stable protocol,
+category and dialog IDs remain separate from display translations.
 
 ## People browsing
 
@@ -37,7 +26,7 @@ these requests. Error messages do not expose response bodies or API credentials.
 Movie credits, TV aggregate roles/directors and TV creators produce at most 80
 unique people. A director who also acts retains the character label. Person
 requests append combined credits, select cast or crew according to the entry,
-and fall back to the other list when absent. German biography lookup can fall
+and fall back to the other list when absent. Non-English biography lookup can fall
 back to English. Each movie/TV list is deduplicated, bounded to 256 and sorted by
 year. Names and supplied original titles remain metadata, not UI translation keys.
 Metadata replies are capped at 2 MiB; each fetch allows at most four requests and
@@ -70,7 +59,7 @@ views, bounded history and production Session methods with task/network boundari
 It covers identity mismatch, movie/TV roles, duplicate people, bounds, traversal/
 image rejection, English fallback, cancellation, stale completions, profile
 switches and configured-addon opening. localization.sh checks persistence, invalid
-settings, fallback, German search/fonts and production dialog/language callbacks,
+settings, fallback, multilingual search/fonts and production dialog/language callbacks,
 including failed-save readback and stable USB cancellation purposes.
 
 The renderer preview suite includes both languages, sign-in/PIN, USB, cast/person

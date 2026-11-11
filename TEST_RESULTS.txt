@@ -1,6 +1,4 @@
-Nuvio Max'd 1.0.0.17
-
-The published release assets TEST_RESULTS.txt and native-validation.json contain
-the final exact-source CI, complete app build, image/ZIP, source archive and
-published-asset digest evidence. This source-tree file is the release checklist
-pointer; it does not substitute for those final verification records.
+Nuvio Max'd 1.0.0.18 verification evidence is generated from the final clean
+source, complete app build, exact-source CI and package checks. See the candidate
+build's native-validation.json and accompanying TEST_RESULTS.txt for actual
+results. Source-tree documentation is not evidence of a published release.

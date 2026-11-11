@@ -37,7 +37,7 @@ public:
     bool root() const { return category.empty(); }
     int count() const { return int(root()?(categories.empty()?0:categories.size()+1):rows.size()); }
     int source_row() const { return !root() && index>=0 && index<int(rows.size()) ? rows[index] : -1; }
-    static std::string group(const SettingRow& row) { return row.category.empty()?sx::i18n::tr("General"):row.category; }
+    static std::string group(const SettingRow& row) { return row.category.empty()?"General":row.category; }
     void refresh(const SettingsContent& content) {
         const int selected=source_row();
         categories.clear(); rows.clear();

@@ -8,7 +8,7 @@ namespace {
 std::string text(const json& j,const char* key,size_t limit=240){auto s=jstr(j,key);if(s.size()>limit){s.resize(limit);while(!s.empty()&&(static_cast<unsigned char>(s.back())&0xc0)==0x80)s.pop_back();if(!s.empty()&&static_cast<unsigned char>(s.back())>=0xc0)s.pop_back();}return s;}
 std::string id(const json& j){auto n=jobj(j,"id");if(n.is_number_unsigned()){auto s=std::to_string(n.get<uint64_t>());return valid_id(s)?s:"";}if(n.is_number_integer()){auto s=std::to_string(n.get<int64_t>());return valid_id(s)?s:"";}return {};}
 bool imdb(const std::string& s){return s.size()>=3&&s.size()<=20&&s.starts_with("tt")&&s.find_first_not_of("0123456789",2)==std::string::npos;}
-std::string lang(const std::string& s){return s=="de"?"de":"en";}
+std::string lang(const std::string& s){for(const char* allowed:{"en","de","es","fr","ar","zh-CN","ja","ko"})if(s==allowed)return s;return "en";}
 struct Fetch {
  const std::string& key;const std::atomic<bool>* cancel;const Request& request;
  std::chrono::steady_clock::time_point end=std::chrono::steady_clock::now()+std::chrono::seconds(25);

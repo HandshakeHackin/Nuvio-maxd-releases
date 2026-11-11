@@ -31,11 +31,13 @@ except (subprocess.CalledProcessError, ValueError):
 
 display_profile = validate_display_metadata(json.loads(
     (Path(sys.argv[1]).parent / 'sce_sys/param.json').read_text()))
+language_registry=json.loads((root/'ui/locales/languages.json').read_text())
+language_counts={item['code']:len(json.loads((root/'ui/locales'/(item['code']+'.json')).read_text())['strings']) for item in language_registry}
 info = {
     'name': "Nuvio Max'd",
-    'version': '1.0.0.17-native',
+    'version': '1.0.0.18-native',
     'releaseChannel': 'stable',
-    'interfaceLanguages': {'available': ['en','de'], 'default': 'en', 'savedLocally': True, 'restartToApply': True, 'englishFallback': True, 'catalogEntries': len(json.loads((root/'ui/locales/de.json').read_text())['strings']), 'changesPlaybackLanguages': False, 'hardwareVerified': False},
+    'interfaceLanguages': {'available': [item['code'] for item in language_registry], 'default': 'en', 'savedLocally': True, 'restartToApply': True, 'englishFallback': True, 'catalogEntries': language_counts['en'], 'translationsPerLanguage': language_counts, 'coreMenuEntries': len(json.loads((root/'ui/locales/core.json').read_text())['strings']), 'advancedHelpMayUseEnglish': True, 'arabicTextShaping': True, 'rtlTextLanguages': ['ar'], 'mirrorsScreenLayout': False, 'changesPlaybackLanguages': False, 'hardwareVerified': False},
     'peopleBrowsing': {'castAndCrewPhotos': True, 'personBiography': True, 'movieAndTvCredits': True, 'configuredAddonPlayback': True, 'titleIdMapping': 'TMDB external IDs to IMDb, supported TMDB IDs otherwise', 'maxCastMembers': 80, 'maxCreditsPerKind': 256, 'historyDepth': 8, 'profileScopedCancellation': True, 'metadataProvider': 'TMDB', 'hardwareVerified': False},
     'issue10PlaybackControls': {'sourceSwitchPosition': True, 'torrentFilePicker': True, 'liveSubtitleAppearance': True, 'audioDelayStepsMs': [100, 200], 'containerAndMeasuredRatesDistinguished': True, 'hardwareVerified': False},
     'sportsHub': {'optional': True, 'profileSelections': True, 'sportLeagueTeamPicker': True, 'regions': True, 'scoreSpoilers': True, 'guideChannelCandidates': True, 'boundedPublicCatalogue': True, 'referenceCommit': 'd46b29a47487919057819602b614d5f7fbde7cba', 'hardwareVerified': False},
@@ -66,7 +68,7 @@ info = {
     'experimentalAv': {'driverOwnedHdrSwitch': True, 'pcmDefault': True, 'audioModes': ['pcm','auto','bitstream'], 'bitstreamCodecs': ['AC3','EAC3','DTS core'], 'trueHdDtsHd': 'decoded PCM; S16 output preferred for compatibility', 'autoHonorsStereo': True, 'hardwareVerified': False, 'driverPatchSha256': hashlib.sha256((root/'gl/scanout_driver_extension.inc').read_bytes()).hexdigest(), 'driverObjectSha256': hashlib.sha256(Path(sys.argv[3]).read_bytes()).hexdigest()},
     'consoleLightSync': {'default': True, 'setting': 'Appearance & Lighting', 'channels': ['blue','white','amber'], 'approximateLogoColours': True, 'backgroundWorker': True, 'maxUpdatesPerSecond': 5, 'restoreOnDisableAndExit': True, 'respectSystemOwnership': True, 'hardwareVerified': False},
     'settingsCategories': True,
-    'localTestBuild': {'revision': '1.0.0.17', 'multiviewExperimental': True, 'hardwareVerified': False},
+    'localTestBuild': {'revision': '1.0.0.18', 'multiviewExperimental': True, 'hardwareVerified': False},
     'playbackBadges': {'sourceResolution': True, 'sourceHdr': True, 'selectedAudioChannels': True, 'releaseType': True, 'codecs': True, 'decodedFactsOverrideFilename': True, 'hardwareVerified': False},
     'settingsSearch': {'allCategories': True, 'caseInsensitive': True, 'hardwareVerified': False},
     'liveTv': {'sources': ['M3U', 'Xtream Codes'], 'groups': True, 'search': True, 'favorites': True, 'profileLocal': True, 'usbPlaylistNativeIoFix': True, 'usbMountDiagnostics': True, 'usbReaderHelper': {'explicitChoice': True, 'roots': 8, 'readOnly': True, 'changesAppCredentials': False, 'payloadRuntimePreparesOwnCapabilities': True, 'extraListener': False, 'loader': '127.0.0.1:9021', 'oneRequestPerLaunch': True, 'profileWritesInApp': True, 'hardwareVerified': False}, 'usbDirectoryTypeFallback': 'picker hints only; import metadata required', 'usbPlaylistImport': True, 'usbImportedCopyProfileLocal': True, 'usbPlaylistHardwareVerified': False, 'nowNextGuide': True, 'optionalTimeGrid': True, 'maxListingsPerChannel': 96, 'xmltv': True, 'xtreamShortEpg': True, 'profileLocalGuideToggle': True, 'guideDocumentMaxBytes': 33554432, 'recording': False, 'catchup': False, 'hardwareVerified': False},

@@ -17,12 +17,15 @@ struct LocaleCancelSession {
 namespace sx {
 inline constexpr int kUiLanguage=1;
 struct LanguageSession {
+ DropdownState dropdown;
+ std::vector<std::string> choices;
+ int active=-1;
  ExperiencePreferences prefs_;
  std::string data_dir_,message;
  bool write_allowed=true,error=false;
  std::function<void(int)> choice;
  void settings_activate(int);
- void open_dropdown(const std::string&,const std::vector<std::string>&,int,std::function<void(int)> fn){choice=std::move(fn);}
+ void open_dropdown(const std::string&,const std::vector<std::string>& names,int selected,std::function<void(int)> fn){choices=names;active=selected;choice=std::move(fn);}
  void save_prefs(){if(write_allowed){json j;save_experience(j,prefs_);save_json(data_dir_+"/settings.json",j);}}
  void refresh_settings(){}
  void say(const std::string& s,double,bool e=false){message=s;error=e;}

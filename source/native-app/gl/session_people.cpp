@@ -11,7 +11,7 @@ void Session::cast_load(){
  if(meta.imdb_id.empty()&&meta.id.starts_with("tt"))meta.imdb_id=meta.id;
  if(meta.tmdb_id.empty()&&meta.id.starts_with("tmdb:"))meta.tmdb_id=meta.id.substr(5);
  detail.people_loading=true;detail.people_status=i18n::tr("Loading cast & crew...");changed_|=kDetail;
- const std::string language=i18n::code();
+ const std::string language=i18n::metadata_language();
  const bool had_tmdb=!meta.tmdb_id.empty();
  bg<people::Cast>([meta,cancel,language]{return providers::title_people(meta,cancel.get(),language);},[this,cancel,generation,meta_generation,had_tmdb](auto& result){
   if(*cancel||generation!=cast_generation_||meta_generation!=d_meta_gen_||!d_open_)return;
@@ -28,7 +28,7 @@ void Session::person_retry(){
  if(!person_open||!people::valid_id(selected_person_.id))return;
  if(person.loading&&!*person_cancel_)return;
  *person_cancel_=true;person_cancel_=std::make_shared<std::atomic<bool>>(false);person_target_.reset();
- const auto cancel=person_cancel_;const auto generation=++person_generation_;const auto member=selected_person_;const std::string language=i18n::code();
+ const auto cancel=person_cancel_;const auto generation=++person_generation_;const auto member=selected_person_;const std::string language=i18n::metadata_language();
  person={};person.loading=true;person.data.id=member.id;person.data.name=member.name;person.data.photo=member.photo;person.data.crew=member.crew;person.status=i18n::tr("Loading person details...");changed_|=kPerson;art_dirty_=true;
  bg<people::Person>([member,cancel,language]{return providers::person_details(member,cancel.get(),language);},[this,cancel,generation](auto& result){
   if(*cancel||generation!=person_generation_||!person_open)return;

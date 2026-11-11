@@ -1,3 +1,7 @@
+# 1.0.0.18 — menu languages
+
+Add Spanish, French, Arabic, Simplified Chinese, Japanese and Korean menus, a registry-driven language picker, 425-message core coverage, English fallback, accent/Arabic/CJK menu search and catalog/font/persistence regressions. Keep audio/subtitle and profile/source settings independent.
+
 # 1.0.0.17
 
 - Add saved English/German menus, bundled translations, German-aware settings search and language-independent dialog identities.

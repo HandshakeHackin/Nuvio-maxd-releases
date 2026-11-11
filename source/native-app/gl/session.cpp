@@ -723,7 +723,7 @@ void Session::refresh_settings()
         r.on = on;
     };
     using Kind = SettingRow::Kind;
-    set(kUiLanguage,Kind::value,sx::i18n::tr("Language"),prefs_.ui_language=="de"?"Deutsch":"English",sx::i18n::tr("Choose English or German for the app menus. Restart Max'd to apply. Audio, subtitles and addon content use their own language settings."));
+    set(kUiLanguage,Kind::value,i18n::tr("Language"),i18n::native_name(prefs_.ui_language),i18n::tr("Use the app menus in your preferred language. Restart Max'd to apply.")+std::string(" ")+i18n::tr("Some help and status messages may appear in English."));
     set(kMediaServers, SettingRow::Kind::action, sx::i18n::tr("Media servers (experimental)"), std::to_string(media_accounts_.size())+" connected", sx::i18n::tr("Connect Jellyfin, Emby or Plex. Browse server libraries and resume playback separately from addons."));
     set(kAccount, Kind::value, sx::i18n::tr("Nuvio account"), signed_in() ? prefs_.user_email : sx::i18n::tr("Not signed in"),
         signed_in() ? (confirm_sign_out_ ? sx::i18n::tr("Press Cross again to sign out.") : sx::i18n::tr("Press Cross to sign out."))
@@ -753,9 +753,9 @@ void Session::refresh_settings()
     const char* display_labels[] = {sx::i18n::tr("Follow PS5"), "1080p", "1440p", "4K"};
     set(kDisplay, Kind::value, sx::i18n::tr("Display output"), display_labels[display_output_preference(prefs_.display_output) + 1],
         sx::i18n::tr("Follow the PS5's output resolution, or choose an override. Close and reopen Nuvio Max'd to apply a change."));
-    set(kHdr, Kind::value, "HDR playback", prefs_.native_hdr ? (prefs_.auto_hdr_fallback ? sx::i18n::tr("Auto (HDR or SDR fallback)") : sx::i18n::tr("Require native HDR10")) : sx::i18n::tr("Convert HDR to SDR"),
+    set(kHdr, Kind::value, i18n::tr("HDR playback"), prefs_.native_hdr ? (prefs_.auto_hdr_fallback ? sx::i18n::tr("Auto (HDR or SDR fallback)") : sx::i18n::tr("Require native HDR10")) : sx::i18n::tr("Convert HDR to SDR"),
         sx::i18n::tr("Native HDR10 keeps PQ colour and highlights on a compatible TV. SDR conversion changes the colour range. Applies to the next stream."));
-    set(kPlaybackEngine, Kind::value, sx::i18n::tr("Playback engine"), prefs_.vlc_player ? "VLC 3.0.24 (experimental)" : prefs_.evo_player ? sx::i18n::tr("EVO Player 0.13.0 (experimental)") : sx::i18n::tr("Nuvio native"),
+    set(kPlaybackEngine, Kind::value, sx::i18n::tr("Playback engine"), prefs_.vlc_player ? i18n::tr("VLC 3.0.24 (experimental)") : prefs_.evo_player ? sx::i18n::tr("EVO Player 0.13.0 (experimental)") : sx::i18n::tr("Nuvio native"),
         sx::i18n::tr("Choose the video engine. Applies to the next stream; subtitles and Watch Progress stay available."));
     set(kReadAhead, Kind::value, sx::i18n::tr("Read-ahead (Native/EVO)"), std::to_string(prefs_.read_ahead_seconds) + " s",
         sx::i18n::tr("How far to buffer ahead. Memory limits may shorten the target. Applies to the next Native/EVO stream; VLC manages its own buffer."));
@@ -811,7 +811,7 @@ void Session::refresh_settings()
     set(kDonation, Kind::action, sx::i18n::tr("Support on Ko-fi"), "", sx::i18n::tr("Optional support for development. Scan the QR code with your phone."));
     set(kInstallSource, Kind::value, sx::i18n::tr("Install source"), install_source_label(prefs_.install_source),
         sx::i18n::tr("Where you installed Nuvio Max'd. Update reminders use this choice; change it if you switch install methods."));
-    set(kUpdates, Kind::value, sx::i18n::tr("App updates"), update.phase == AppUpdate::Phase::idle ? "Nuvio Max'd " + std::string(nuvio_update::current_version) + " (experimental)" : update.message,
+    set(kUpdates, Kind::value, sx::i18n::tr("App updates"), update.phase == AppUpdate::Phase::idle ? "Nuvio Max'd " + std::string(nuvio_update::current_version) : update.message,
         update_destination(prefs_.install_source));
     set(kExit, Kind::action, sx::i18n::tr("Exit Nuvio Max'd"), "", sx::i18n::tr("Close the app and go back to the home screen."));
     set(kRemoteButtons,Kind::action,sx::i18n::tr("Remote buttons (experimental)"),std::to_string(prefs_.remote_bindings.size())+" mapped",sx::i18n::tr("Assign buttons received from your Media Remote or TV remote to Search, Options, navigation, playback or seeking. PS5/TV system buttons may not reach this app. Controller controls are unchanged."));
@@ -850,12 +850,13 @@ void Session::refresh_settings()
 void Session::settings_activate(int row)
 {
     if(row==kUiLanguage){
-        open_dropdown(sx::i18n::tr("Language / Sprache"),{"English","Deutsch"},prefs_.ui_language=="de"?1:0,[this](int n){
-            if(n<0||n>1)return;const auto previous=prefs_.ui_language;prefs_.ui_language=n==1?"de":"en";save_prefs();
+        std::vector<std::string> names,codes;for(const auto& locale:i18n::locales()){names.emplace_back(locale.native_name);codes.emplace_back(locale.code);}
+        open_dropdown(i18n::tr("Language"),names,int(i18n::index(prefs_.ui_language)),[this,codes](int n){
+            if(n<0||n>=int(codes.size()))return;const auto previous=prefs_.ui_language;prefs_.ui_language=codes[size_t(n)];save_prefs();
             json stored;const bool saved=load_json(data_dir_+"/settings.json",stored)&&jstr(stored,"ui_language")==prefs_.ui_language;
             if(!saved)prefs_.ui_language=previous;refresh_settings();
             say(saved?sx::i18n::tr("Language saved. Restart Max'd to apply."):sx::i18n::tr("Could not save language. Try again."),8,!saved);
-        });return;
+        });dropdown.message=i18n::tr("Some help and status messages may appear in English.");return;
     }
     if(row==SettingsNavigation::search_action) {
         const auto profile=profile_generation_;

@@ -33,5 +33,8 @@ int main(){
  json many=json::array();for(int i=1;i<=200;++i)many.push_back({{"id",i},{"name","Actor"}});m.type="movie";f.bodies={{{"id",42},{"credits",{{"cast",many}}}}};cast=people::fetch_cast(m,key,"en",nullptr,f.request());assert(cast.members.size()==people::max_members);
  f.bodies={{{"id",999},{"credits",{{"cast",many}}}}};cast=people::fetch_cast(m,key,"en",nullptr,f.request());assert(cast.members.empty()&&!cast.error.empty());
  f.bodies={{{"id",999},{"imdb_id","tt9876"}}};title=people::resolve({"19","movie","Film"},key,nullptr,f.request());assert(title.id.empty()&&!title.error.empty());
+ for(const auto* language:{"en","de","es","fr","ar","zh-CN","ja","ko","ar&private=1"}){f.bodies={{{"id",42},{"credits",{{"cast",many}}}}};people::fetch_cast(m,key,language,nullptr,f.request());assert(f.paths.back().find(std::string("language=")+(std::string(language)=="ar&private=1"?"en":language)+"&")!=std::string::npos);}
+ f.bodies={{{"id",4},{"name","Actor"},{"biography",""}},{{"id",4},{"biography","English fallback"}}};p=people::fetch_person({"4","Actor"},key,"zh-CN",nullptr,f.request());assert(p.biography=="English fallback"&&f.paths.back().find("language=en&")!=std::string::npos);
  std::cout<<"People metadata: movie/TV credits, role deduplication, identity mapping, English fallback, bounded replies/lists, image validation and cancellation passed\n";
+ std::cout<<"People languages: eight fixed metadata language codes, injected-code fallback and Chinese-to-English biography fallback passed\n";
 }

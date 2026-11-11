@@ -4,8 +4,11 @@ R=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 B="$R/test-output/localization"
 mkdir -p "$B"
 python3 "$R/tools/build_locales.py" --check
-flags=(-std=c++20 -O1 -Wall -Wextra -Werror -Wno-misleading-indentation -ffunction-sections -fdata-sections -I"$R/src" -I"$R/gl" -I"$R/ui" -I"$R/tests" -I"$R/third_party" -I"$R/third_party/hui/src" -I"$R/third_party/hui/third_party/stb")
-${HOST_CXX:-g++} "${flags[@]}" "$R/tests/localization_host.cpp" "$R/ui/dynamic_font.cpp" "$R/third_party/hui/src/gfx/font.cpp" "$R/third_party/hui/src/core/save_file.cpp" -Wl,--gc-sections -o "$B/locale"
+python3 "$R/tests/locales_catalog_test.py"
+read -r -a bidi_cflags <<< "$(pkg-config --cflags fribidi)"
+read -r -a bidi_libs <<< "$(pkg-config --libs fribidi)"
+flags=(-DHAVE_FRIBIDI "${bidi_cflags[@]}" -std=c++20 -O1 -Wall -Wextra -Werror -Wno-misleading-indentation -ffunction-sections -fdata-sections -I"$R/src" -I"$R/gl" -I"$R/ui" -I"$R/tests" -I"$R/third_party" -I"$R/third_party/hui/src" -I"$R/third_party/hui/third_party/stb")
+${HOST_CXX:-g++} "${flags[@]}" "$R/tests/localization_host.cpp" "$R/ui/dynamic_font.cpp" "$R/src/bidi.cpp" "$R/third_party/hui/src/gfx/font.cpp" "$R/third_party/hui/src/core/save_file.cpp" -Wl,--gc-sections "${bidi_libs[@]}" -o "$B/locale"
 "$B/locale" "$R/app/fonts"
 python3 - "$R" "$B" <<'PY'
 from pathlib import Path

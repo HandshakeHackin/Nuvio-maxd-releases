@@ -1,4 +1,5 @@
 #pragma once
+#include "../ui/i18n.hpp"
 #include "../ui/subtitle_style.hpp"
 #include "json.hpp"
 #include "install_source.hpp"
@@ -30,7 +31,7 @@ inline int preference_int(const nlohmann::json& j, const char* key, int fallback
 }
 inline void load_experience(const nlohmann::json& j, ExperiencePreferences& p) {
     const auto ui_language=j.find("ui_language");
-    p.ui_language=ui_language!=j.end()&&ui_language->is_string()&&*ui_language=="de"?"de":"en";
+    p.ui_language=ui_language!=j.end()&&ui_language->is_string()?i18n::normalize_code(ui_language->get<std::string>()):"en";
     if(j.contains("trailer_language") && j["trailer_language"].is_string()) {
         const auto value=j["trailer_language"].get<std::string>();
         if(value.empty() || (value.size()==2 && value.find_first_not_of("abcdefghijklmnopqrstuvwxyz")==std::string::npos))p.trailer_language=value;
@@ -66,7 +67,7 @@ inline void load_experience(const nlohmann::json& j, ExperiencePreferences& p) {
     if(j.contains("high_contrast") && j["high_contrast"].is_boolean()) p.high_contrast=j["high_contrast"];
 }
 inline void save_experience(nlohmann::json& j, const ExperiencePreferences& p) {
-    j["ui_language"]=p.ui_language=="de"?"de":"en";
+    j["ui_language"]=i18n::normalize_code(p.ui_language);
     j["subtitle_auto_sync"]=p.subtitle_auto_sync;
     j["trailer_language"]=p.trailer_language;
     j["chapter_skip_segments"]=p.chapter_skip_segments;

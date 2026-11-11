@@ -28,7 +28,7 @@
 int main(int argc, char** argv) {
     if (argc != 3 && argc != 4) return 2;
     std::string mode = argc == 4 ? argv[3] : "login";
-    if(mode.starts_with("de-")){sx::i18n::set_language("de");mode=mode.substr(3);}
+    for(const auto& locale:sx::i18n::locales()){const std::string prefix=std::string(locale.code)+"-";if(mode.starts_with(prefix)){sx::i18n::set_language(locale.code);mode=mode.substr(prefix.size());break;}}
     const std::string preview_name=argc==4?argv[3]:"login";
     auto get_display = reinterpret_cast<PFNEGLGETPLATFORMDISPLAYEXTPROC>(eglGetProcAddress("eglGetPlatformDisplayEXT"));
     EGLDisplay display = get_display(EGL_PLATFORM_SURFACELESS_MESA, EGL_DEFAULT_DISPLAY, nullptr);
@@ -88,8 +88,11 @@ int main(int argc, char** argv) {
         for(int i=0;i<16;++i)content.people.push_back({std::to_string(i+1),i==0?"Alexandra Müller":"Example Person "+std::to_string(i),i==0?"Director":"Character name","",poster_texture,i==0});
         sx::Detail page(env);page.set_content(&content);page.toggle_cast();hui::InputFrame in;in.nav=hui::Direction::right;for(int n=0;n<(mode.ends_with("-last")?40:1);++n)page.update(in,1.f/60);in.nav=hui::Direction::none;for(int i=0;i<120;++i)page.update(in,1.f/60);hui::gfx::BackdropSpec bg;page.draw(list,bg);
     }
+    else if(mode=="language-picker") {
+        sx::DropdownState d;d.title=sx::i18n::tr("Language");for(const auto& locale:sx::i18n::locales())d.options.emplace_back(locale.native_name);d.selected=d.active=int(sx::i18n::index(sx::i18n::code()));d.message=sx::i18n::tr("Some help and status messages may appear in English.");sx::draw_dropdown(list,env,d,1);
+    }
     else if(mode=="language") {
-        sx::SettingsContent content;sx::SettingRow row;row.category="App & Updates";row.label=sx::i18n::tr("Language");row.value=sx::i18n::german()?"Deutsch":"English";row.help=sx::i18n::tr("Choose English or German for the app menus. Restart Max'd to apply. Audio, subtitles and addon content use their own language settings.");content.rows.push_back(row);
+        sx::SettingsContent content;sx::SettingRow row;row.category="App & Updates";row.label=sx::i18n::tr("Language");row.value=sx::i18n::native_name(sx::i18n::code());row.help=std::string(sx::i18n::tr("Use the app menus in your preferred language. Restart Max'd to apply."))+" "+sx::i18n::tr("Some help and status messages may appear in English.");content.rows.push_back(row);
         sx::Settings page(env);page.set_content(&content);page.enter();hui::InputFrame in;in.nav=hui::Direction::down;page.update(in,1.f/60);in.nav=hui::Direction::none;in.pressed=hui::action_bit(hui::Action::confirm);page.update(in,1.f/60);in.pressed=0;for(int i=0;i<120;++i)page.update(in,1.f/60);hui::gfx::BackdropSpec bg;page.draw(list,bg);
     }
     else if(mode=="usb-language") {
