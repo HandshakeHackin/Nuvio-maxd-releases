@@ -1,0 +1,48 @@
+Nuvio Max'd 1.0.0.17 stable — verification evidence
+
+Source: 101685eacf5934754f512c900fbf8a5b03bceb98, clean builds/v1.0.0.17.
+Content version: 07.000.017. Title: PPSA99288.
+Complete app plus bundled updater/USB reader compiled in a fresh object directory.
+All 522 maintenance output hashes, SDK/OpenGL pins and provider inputs verified.
+Pinned host-tool unit/integration evidence retained; dependency pins unchanged.
+
+Exact-source full host suite, Plex/media servers, IME and 71 renderer previews passed:
+https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/42946066297/job/130279054568
+VLC real file/HTTP/HLS/seek/cancellation suite passed:
+https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/42946066297/job/130279054349
+Verifier input removes timestamps and 2 expected HTTPS fixture peer-reset
+tracebacks inside the passing untrusted-certificate rejection test only. Complete
+raw logs are retained and hashed in native-validation.json. No test/assertion
+failures were removed.
+
+German UI: 1207 bundled catalog entries; saved language, malformed settings,
+failed-save readback, English fallback, stable category/dialog IDs, German settings
+search and 24 font rasters passed. Audio/subtitle/provider settings stay separate.
+Cast/person: movie/TV roles, directors/creators, identity checks, duplicate handling,
+bounded lists/replies, image-path validation, English biography fallback, actual
+controller views, long-row scrolling, eight-frame history, stale/profile/cancelled
+Session completions and configured-addon title opening passed.
+Live TMDB smoke: cast metadata, person biography/credits, portrait and IMDb mapping
+passed using existing configuration; no credentials retained in public evidence.
+
+USB regressions retain per-mount errors/counts without filenames/private contents,
+bounded scans/protocol, cancellation, validation, 0600 atomic copies, retention on
+failed replacement and profile isolation. Updater: 46 tests passed.
+Native USB objects: no raw syscall instructions or dup/fdopendir/fstatat/openat
+imports. Bundled reader does not define those raw filesystem stubs.
+
+Image: zero container errors/warnings; 163 extracted file hashes match staged app.
+ZIP: complete integrity check; every file matches image/staged app.
+Source archive: 972 verified file hashes; exact commit above.
+Catalog static scan: 0 errors, 6 warnings, 1 notices. Bundled reader/updater need
+maintainer helper review; no approval records changed. See catalog-scan.log.
+These results do not establish catalog acceptance or live store deployment.
+
+The reporter confirmed USB import, playback, persistence, cancellation, profile
+isolation and valid replacement in 1.0.0.16 on PS5 Slim firmware 11.20 with Y2JB /
+ShadowMount 1.7beta12. Invalid replacement was not tested on that console.
+The two new features and this exact build still need console feedback.
+The optional USB reader uses the existing loopback payload loader. Its standard
+pinned SDK startup prepares its own capabilities and syscall-address range;
+Max'd stays sandboxed. Read requests are bounded; the handler writes no files,
+changes no mounts and creates no listener. Validation/private copies stay in Max'd.

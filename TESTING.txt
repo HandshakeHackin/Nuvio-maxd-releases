@@ -1,0 +1,36 @@
+Nuvio Max'd 1.0.0.17 — language and people browsing
+
+Fully close the app before installing. Keep saved data and the previous installer;
+do not overwrite a mounted FFPFSC. Confirm the app shows 1.0.0.17.
+
+German interface (request in issue #20):
+1. Open Settings > App & Updates > Language, choose Deutsch, then fully close
+   and restart Max'd. Look for Einstellungen > App und Updates > Sprache.
+2. Check navigation, settings, sign-in/profile PIN screens, playback menus and
+   Live TV/USB prompts. Search settings using UNTERTITEL, GRÖSSE or GROSSE.
+3. Switch profiles and restart again. The app language should remain selected;
+   audio/subtitle preferences, addon content and each profile's sources stay
+   independent. Choose English and restart to switch back.
+4. Check USB import/cancellation in German. Existing private playlist copies
+   and the working import behavior from 1.0.0.16 must remain available.
+
+Cast & crew / person pages (issue #21):
+1. Open a movie or series and press R2. Browse cast/director/creator photos with
+   Left/Right and select a person with Cross. R2 or Circle leaves the cast row.
+2. Check the person's photo, biography, birth date/place and known-for field.
+   Missing data uses a placeholder; an empty German biography falls back to English.
+3. Browse Movies and TV shows with Up/Down; use Left/Right within a row, including
+   the last cards. Cross opens a title through this profile's configured addons.
+   A title your addons do not support should give a message rather than a guess.
+4. Use Circle to return through person/title pages. Check the cast/person focus,
+   repeated browsing, offline/error Retry, and leaving while details are loading.
+   Existing playback, source selection and episode navigation must still work.
+5. Switch profiles during loading. Results and navigation from the old profile
+   must not appear in the new one. Browsing alone should not mark titles watched.
+
+Bounds: 80 cast/crew people; 256 movie and 256 TV credits per person; eight
+navigation snapshots; 2 MiB metadata replies. Image requests use the existing
+bounded artwork cache. Some titles have no TMDB mapping/photos or no matching
+configured addon. Private playlists, account files, credentials and stream URLs
+are not needed for feedback. Report the exact screen/action and firmware/install
+type; review any shared logs for private data.
