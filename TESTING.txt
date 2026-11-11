@@ -1,0 +1,26 @@
+Nuvio Max'd 1.0.0.18 — menu languages
+
+Fully close the app before installation. Preserve saved data and your previous
+installer; do not overwrite a mounted FFPFSC. Confirm the version shows 1.0.0.18.
+
+1. In Settings > App & Updates > Language select a language by its native name:
+   English, Deutsch, Español, Français, العربية, 简体中文, 日本語 or 한국어.
+   Fully close and restart. Return to the picker and confirm the saved choice.
+2. Check home navigation, setting categories/values, sign-in, profile PIN,
+   playback tracks/controls, cast/person pages and USB import/cancellation.
+   The six new catalogs cover 425 core messages; remaining text can use English.
+3. Check Arabic connected letters and mixed Latin codes/numbers. Check Chinese,
+   Japanese kana/kanji and Korean Hangul for missing boxes or clipped labels.
+   The screen layout and controller order are unchanged.
+4. Search settings in the selected language. Try accents with/without marks,
+   Arabic with/without vowel marks, and Chinese/Japanese/Korean text.
+5. Switch profiles, restart and switch back. The app's language stays selected;
+   each profile's sources and saved USB copies must stay separate.
+6. Confirm audio/subtitle preferences remain independent. Check playback and
+   USB import, cancellation and replacement. Never share a real playlist.
+7. Switch back to English and restart. Report exact screen/action, firmware,
+   install type, and corrected wording if needed. No account data, credentials,
+   private URLs or playlist contents are needed for translation feedback.
+
+Host checks validate coverage, formatting, persistence, fallback, fonts, shaping
+and rendering. Console behavior and translation quality still need user feedback.

@@ -1,0 +1,47 @@
+Nuvio Max'd 1.0.0.18 — verification evidence
+
+Source: d72fbc063c989cebed64dcb05c0a6e34cfe3ce2d, clean builds/v1.0.0.18. ContentVersion 07.000.018.
+Complete native app plus both helpers compiled in a fresh object directory.
+All 522 maintenance dependency output hashes and SDK/GL/provider inputs verified;
+dependency pins unchanged. Pinned host-tool regression evidence retained.
+
+Exact-source full host CI, sign-in/PIN, Plex/media servers and 125 native renderer
+previews passed: https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/43032189747/job/130561794865
+VLC real file/HTTP/HLS/seek/cancellation suite passed:
+https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/43032189747/job/130561794474
+Verifier input removes timestamps and 2 expected HTTPS-server peer-reset
+tracebacks inside the passing untrusted-certificate rejection test only. Complete
+raw logs are retained and hashed in native-validation.json. No assertion or
+test failures were removed.
+
+Menu languages: English, German, Spanish, French, Arabic, Simplified Chinese,
+Japanese and Korean. English/German: all 1,275 catalog keys. Each new language:
+all 425 required core menu/control/dialog messages. Remaining help, status and
+provider messages can fall back to English; the picker states this.
+
+Twelve catalog-compiler regressions passed: duplicate/malformed JSON, incomplete
+core, unknown keys, stale output and printf type/width/%n validation.
+Real production picker callbacks passed for all eight selections, saved readback,
+failed-save rollback and restart behavior. Invalid/region tags, native names,
+stable category IDs, Latin accent/Arabic/CJK settings search and real USB
+cancellation across all languages passed. Arabic joined-letter/mixed-code shaping
+and 3756 core-text glyph rasters across three UI font roles passed.
+Metadata request fixtures passed all eight fixed language codes, injection
+fallback and Chinese-to-English biography fallback. Existing person/UI/profile,
+bounded metadata, playback, USB validation/private-copy and updater tests passed.
+
+Image: zero container errors/warnings; 163 extracted file hashes
+match the staged app and ZIP. ZIP integrity and safe-entry checks passed.
+Source archive: 983 file hashes verified at the exact source commit.
+Native USB objects: no raw syscall instructions or dup/fdopendir/fstatat/openat
+imports; the reader payload does not define those forbidden filesystem stubs.
+
+Static catalog scan: 0 errors, 6 warnings, 1 notices. The existing bundled
+reader/updater need maintainer helper review; no approval records changed.
+This report does not establish catalog submission, acceptance or deployment.
+
+Console and native-speaker feedback remain pending. Arabic text order is RTL;
+the fixed screen layout and controller order are not mirrored. Audio/subtitle
+preferences, addon content and per-profile sources remain independent. The
+optional USB reader retains its existing privileged SDK startup; Max'd stays
+sandboxed. The reporter confirmed USB behavior in build 1.0.0.16 only.
