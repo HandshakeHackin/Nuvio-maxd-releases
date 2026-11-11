@@ -2,6 +2,7 @@
 // choices, signing in, and short messages. Typing is the console's own keyboard.
 
 #pragma once
+#include "i18n.hpp"
 
 #include "chrome.hpp"
 #include "content.hpp"
@@ -26,6 +27,8 @@ void draw_boot_mark(hui::gfx::DrawList &list, const Env &env, float glow, float 
 
 struct DropdownState
 {
+    enum class Purpose {generic,usb_scan,usb_import,torrent_files};
+    Purpose purpose=Purpose::generic;
     std::string title;
     std::vector<std::string> options;
     std::string message; // under the title, for a question
@@ -44,10 +47,11 @@ void draw_pin_entry(hui::gfx::DrawList&, const Env&, const PinEntry&);
 
 struct SignInState
 {
+    bool donation=false;
     bool text_payload = false; // QR contains safe plain text, not a network address
     bool link_only = false; // informational QR page; no authentication polling
-    std::string title = "Sign in to Nuvio";
-    std::string cancel_label = "Continue as guest";
+    std::string title = i18n::tr("Sign in to Nuvio");
+    std::string cancel_label = i18n::tr("Continue as guest");
     int qr_size = 0;
     std::vector<std::uint8_t> qr_modules;
     std::string link;       // "nuvio.tv/link"

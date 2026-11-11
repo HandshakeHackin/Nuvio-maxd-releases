@@ -1,3 +1,4 @@
+#include "../ui/i18n.hpp"
 #include "session.hpp"
 #include <algorithm>
 namespace sx {
@@ -22,11 +23,11 @@ int Session::live_guide_offset() const {
   return 0;
 }
 void Session::live_guide_clock() {
-  if(live_source_.empty()){say("Choose a Live TV source first",5);return;}
+  if(live_source_.empty()){say(sx::i18n::tr("Choose a Live TV source first"),5);return;}
   const auto source=live_source_;const auto profile=profile_generation_;
   std::vector<std::string> rows;
-  for(int n=-720;n<=720;n+=30)rows.push_back(n==0?"No correction (default)":std::string(n>0?"+":"")+std::to_string(n)+" minutes");
-  open_dropdown("Provider guide clock correction",rows,(live_guide_offset()+720)/30,[this,source,profile](int pick){
+  for(int n=-720;n<=720;n+=30)rows.push_back(n==0?sx::i18n::tr("No correction (default)"):std::string(n>0?"+":"")+std::to_string(n)+" minutes");
+  open_dropdown(sx::i18n::tr("Provider guide clock correction"),rows,(live_guide_offset()+720)/30,[this,source,profile](int pick){
     if(profile!=profile_generation_ || source!=live_source_ || pick<0 || pick>48)return;
     for(auto& row:live_state_["sources"])if(jstr(row,"id")==source)row["guide_offset_minutes"]=-720+pick*30;
     // Keep raw timestamps in the cached XML; a correction never accumulates.
@@ -49,21 +50,21 @@ Session::live_guide_labels(const live_tv::Channel &channel) const {
     list = &short_epg->second.programmes;
   if (!list)
     return {live_guide_loading_ || live_guide_pending_.count(channel.id)
-                ? "Loading programme guide..."
-                : "Programme guide unavailable",
-            "X: watch channel · Square: favorite"};
+                ? sx::i18n::tr("Loading programme guide...")
+                : sx::i18n::tr("Programme guide unavailable"),
+            sx::i18n::tr("X: watch channel · Square: favorite")};
   const int offset=live_guide_offset();
   auto pair = live_guide::current(*list, now_epoch_ms() / 1000-int64_t(offset)*60);
-  return {pair.now ? "Now: " + live_guide::label(*pair.now,offset)
-                   : "Now: No listing supplied",
-          pair.next ? "Next: " + live_guide::label(*pair.next,offset)
-                    : "Next: No listing supplied"};
+  return {pair.now ? sx::i18n::tr("Now: ") + live_guide::label(*pair.now,offset)
+                   : sx::i18n::tr("Now: No listing supplied"),
+          pair.next ? sx::i18n::tr("Next: ") + live_guide::label(*pair.next,offset)
+                    : sx::i18n::tr("Next: No listing supplied")};
 }
 void Session::live_guide_configure() {
   const auto source = live_source_;
   const auto profile = profile_generation_;
   if (source.empty()) {
-    say("Choose a Live TV source first", 5);
+    say(sx::i18n::tr("Choose a Live TV source first"), 5);
     return;
   }
   ask_text(
@@ -72,7 +73,7 @@ void Session::live_guide_configure() {
           return;
         auto url = trim(input);
         if (!url.empty() && !live_tv::http_url(url)) {
-          say("Enter an HTTP or HTTPS XMLTV URL", 6, true);
+          say(sx::i18n::tr("Enter an HTTP or HTTPS XMLTV URL"), 6, true);
           return;
         }
         for (auto &row : live_state_["sources"])
@@ -84,7 +85,7 @@ void Session::live_guide_configure() {
         live_guide_reset();
         live_build();
       },
-      "XMLTV guide URL (empty uses the provider default)");
+      sx::i18n::tr("XMLTV guide URL (empty uses the provider default)"));
 }
 void Session::live_guide_update(int focus) {
   if ((page_ != Page::livetv && page_ != Page::sports) || watching || multiview_active || live_loading_ ||

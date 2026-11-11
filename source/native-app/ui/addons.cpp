@@ -1,3 +1,4 @@
+#include "../ui/i18n.hpp"
 #include "addons.hpp"
 
 #include <algorithm>
@@ -129,8 +130,8 @@ void Addons::draw_guide(hui::gfx::DrawList& list) const {
     const int64_t start=content_->guide_now/1800*1800+int64_t(guide_slot_)*1800;
     constexpr float channel_width=330,time_width=1340;
     const float x=theme::kLeft+channel_width;
-    text(list,env_.fonts.semibold,"Live TV programme guide",theme::kLeft,158,32,theme::ink);
-    text(list,env_.fonts.regular,"Left/Right: time · Up/Down: channel · X: watch live · Square: favorite",theme::kLeft,198,23,theme::ink_2);
+    text(list,env_.fonts.semibold,sx::i18n::tr("Live TV programme guide"),theme::kLeft,158,32,theme::ink);
+    text(list,env_.fonts.regular,sx::i18n::tr("Left/Right: time · Up/Down: channel · X: watch live · Square: favorite"),theme::kLeft,198,23,theme::ink_2);
     for(int i=0;i<4;++i)text(list,env_.fonts.semibold,clock(start+i*1800),x+i*time_width/4,242,22,theme::ink_2);
     list.push_clip({theme::kLeft,254,1670,666});
     for(size_t i=0;i<content_->items.size();++i){
@@ -150,7 +151,7 @@ void Addons::draw_guide(hui::gfx::DrawList& list) const {
             text(list,env_.fonts.regular,env_.fonts.regular.font->fit(programme.title,23,std::max(0.0f,cell.w-16)),cell.x+8,cell.cy()+8,23,theme::ink);
             list.pop_clip();
         }
-        if(!available)text(list,env_.fonts.regular,i==0?"X: sources and filters · Options: layout and guide settings":"No listings supplied for this time — channel still playable",x+12,row.cy()+8,22,theme::ink_3);
+        if(!available)text(list,env_.fonts.regular,i==0?sx::i18n::tr("X: sources and filters · Options: layout and guide settings"):sx::i18n::tr("No listings supplied for this time — channel still playable"),x+12,row.cy()+8,22,theme::ink_3);
         list.pop_clip();
         if(selected)list.bordered_rect(row,10,Color::rgb(0xffffff,0),3,theme::ink);
     }
@@ -158,12 +159,12 @@ void Addons::draw_guide(hui::gfx::DrawList& list) const {
     if(now>=start&&now<start+7200){const float at=x+float(now-start)/7200*time_width;list.line(at,254,at,920,2,theme::accent_soft);}
     list.pop_clip();
     if(index_>0&&size_t(index_)<content_->items.size()){
-        std::string selected="X tunes the live channel; future programmes are listings only.";
+        std::string selected=sx::i18n::tr("X tunes the live channel; future programmes are listings only.");
         for(const auto& programme:content_->items[size_t(index_)].programmes)
             if(programme.start<=start&&programme.end>start){selected=clock(programme.start)+" – "+clock(programme.end)+" · "+programme.title;break;}
         text(list,env_.fonts.regular,env_.fonts.regular.font->fit(selected,24,1660),theme::kLeft,965,24,theme::ink_2);
     }
-    text(list,env_.fonts.regular,"Options: sources, groups, guide layout and channel pages · L1: groups · R1: All / Favorites / Recent",theme::kLeft,1010,21,theme::ink_3);
+    text(list,env_.fonts.regular,sx::i18n::tr("Options: sources, groups, guide layout and channel pages · L1: groups · R1: All / Favorites / Recent"),theme::kLeft,1010,21,theme::ink_3);
     draw_topbar(list,env_,false,age_);rail_.draw(list,env_,age_);
 }
 
@@ -196,11 +197,11 @@ void Addons::draw_tile(hui::gfx::DrawList &list, const Addon &a, const Rect &r, 
     const float w = r.x + r.w - x - 28.0f;
     text(list, env_.fonts.semibold, env_.fonts.semibold.font->fit(a.name, 30.0f, w), x, r.y + 66.0f, 30.0f, theme::ink);
     // The version gives way to the "Local" tag, which keeps its place.
-    const float local_w = a.local ? env_.fonts.semibold.measure("Local", 20.0f) + 28.0f + 16.0f : 0.0f;
+    const float local_w = a.local ? env_.fonts.semibold.measure(sx::i18n::tr("Local"), 20.0f) + 28.0f + 16.0f : 0.0f;
     const std::string version = env_.fonts.regular.font->fit(a.version, 22.0f, w - local_w);
     text(list, env_.fonts.regular, version, x, r.y + 102.0f, 22.0f, theme::ink_3);
     if (a.local)
-        draw_tag(list, env_, "Local", x + env_.fonts.regular.measure(version, 22.0f) + 16.0f, r.y + 94.0f,
+        draw_tag(list, env_, sx::i18n::tr("Local"), x + env_.fonts.regular.measure(version, 22.0f) + 16.0f, r.y + 94.0f,
                  theme::accent.with_alpha(0.28f), theme::accent_soft);
     // What it provides. Tags that would run past the tile are counted instead: "+2".
     std::vector<std::string> kinds;
@@ -281,12 +282,12 @@ void Addons::draw(hui::gfx::DrawList &list, hui::gfx::BackdropSpec &backdrop) co
 
     fade_down(list, theme::kRailWidth, 0.0f, theme::kScreenW, 118.0f, 0.62f);
     fade_up(list, theme::kRailWidth, 1000.0f, theme::kScreenW, 80.0f, 0.94f);
-    draw_topbar(list, env_, false, age_,nullptr,0,page_==Page::sports?"Search Sports Hub":nullptr);
+    draw_topbar(list, env_, false, age_,nullptr,0,page_==Page::sports?sx::i18n::tr("Search Sports Hub"):nullptr);
     // The only action here, where it can be seen.
-    if(page_ == Page::livetv)draw_chip(list,env_,hui::ui::Button::square,"Favorite",theme::kRight-252.0f,148.0f);
-    else if(page_ == Page::torrents)draw_chip(list,env_,hui::ui::Button::square,"Files / Options",theme::kRight-268.0f,148.0f);
-    else if(page_ == Page::sports)draw_chip(list,env_,hui::ui::Button::square,"Selections",theme::kRight-252.0f,148.0f);
-    else draw_chip(list, env_, hui::ui::Button::square, "Reload addons", theme::kRight - 252.0f, 148.0f);
+    if(page_ == Page::livetv)draw_chip(list,env_,hui::ui::Button::square,sx::i18n::tr("Favorite"),theme::kRight-252.0f,148.0f);
+    else if(page_ == Page::torrents)draw_chip(list,env_,hui::ui::Button::square,sx::i18n::tr("Files / Options"),theme::kRight-268.0f,148.0f);
+    else if(page_ == Page::sports)draw_chip(list,env_,hui::ui::Button::square,sx::i18n::tr("Selections"),theme::kRight-252.0f,148.0f);
+    else draw_chip(list, env_, hui::ui::Button::square, sx::i18n::tr("Reload addons"), theme::kRight - 252.0f, 148.0f);
     rail_.draw(list, env_, age_);
 }
 

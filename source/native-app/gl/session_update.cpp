@@ -1,3 +1,4 @@
+#include "../ui/i18n.hpp"
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "session.hpp"
 namespace sx {
@@ -10,9 +11,9 @@ void Session::install_source_choose(int index) {
 }
 void Session::install_source_menu(bool first) {
     const int active=prefs_.install_source=="store"?0:prefs_.install_source=="github"?1:2;
-    open_dropdown("Install source",{"Homebrew Store","GitHub / manual download","Not sure"},
+    open_dropdown(sx::i18n::tr("Install source"),{sx::i18n::tr("Homebrew Store"),sx::i18n::tr("GitHub / manual download"),sx::i18n::tr("Not sure")},
         active,[this](int i){install_source_choose(i);});
-    dropdown.message="We'll point update reminders to the place you chose. This choice stays on your PS5 and can be changed in Settings → Install source.";
+    dropdown.message=sx::i18n::tr("We'll point update reminders to the place you chose. This choice stays on your PS5 and can be changed in Settings → Install source.");
     install_source_dialog_=true; install_source_first_=first;
 }
 void Session::update_menu() {
@@ -20,31 +21,31 @@ void Session::update_menu() {
     const auto s=updater_.status();
     background_update_check_=false;
     if(s.phase==Phase::available && prefs_.install_source=="store") {
-        open_dropdown("New release: "+s.release.version,{"Close","Change install source"},0,[this](int i){if(i==1)install_source_menu();});
-        dropdown.message="Open Homebrew Store, find Nuvio Max'd, and check for an update. The store may publish it later than GitHub.\n\n"+s.release.notes.substr(0,350);
+        open_dropdown(sx::i18n::tr("New release: ")+s.release.version,{sx::i18n::tr("Close"),sx::i18n::tr("Change install source")},0,[this](int i){if(i==1)install_source_menu();});
+        dropdown.message=sx::i18n::tr("Open Homebrew Store, find Nuvio Max'd, and check for an update. The store may publish it later than GitHub.\n\n")+s.release.notes.substr(0,350);
     } else if(s.phase==Phase::available && prefs_.install_source!="github") {
-        open_dropdown("New release: "+s.release.version,{"Choose install source","Later"},0,[this](int i){if(i==0)install_source_menu();});
-        dropdown.message="Choose where you installed the app so we can show the right update instructions.";
+        open_dropdown(sx::i18n::tr("New release: ")+s.release.version,{sx::i18n::tr("Choose install source"),sx::i18n::tr("Later")},0,[this](int i){if(i==0)install_source_menu();});
+        dropdown.message=sx::i18n::tr("Choose where you installed the app so we can show the right update instructions.");
     } else if(s.phase==Phase::available) {
-        open_dropdown("Nuvio Max'd "+s.release.version,{"Download update in app","GitHub update instructions","Later"},0,[this](int i){if(i==0){updater_.download(base_dir_,data_dir_);update_menu();}
-            else if(i==1){open_dropdown("Update from GitHub",{"Close"},0,[](int){});
-                dropdown.message="Open github.com/HandshakeHackin/Nuvio-maxd-releases/releases on your phone or computer. Download the latest ZIP or FFPFSC, close Nuvio Max'd and replace your app using the same install method. Your saved data stays in place.";}});
-        dropdown.message=std::to_string((s.release.size+(1<<20)-1)>>20)+" MB FFPFSC. Matching source is included in the public release.\n\n"+s.release.notes.substr(0,350);
+        open_dropdown("Nuvio Max'd "+s.release.version,{sx::i18n::tr("Download update in app"),sx::i18n::tr("GitHub update instructions"),sx::i18n::tr("Later")},0,[this](int i){if(i==0){updater_.download(base_dir_,data_dir_);update_menu();}
+            else if(i==1){open_dropdown(sx::i18n::tr("Update from GitHub"),{sx::i18n::tr("Close")},0,[](int){});
+                dropdown.message=sx::i18n::tr("Open github.com/HandshakeHackin/Nuvio-maxd-releases/releases on your phone or computer. Download the latest ZIP or FFPFSC, close Nuvio Max'd and replace your app using the same install method. Your saved data stays in place.");}});
+        dropdown.message=std::to_string((s.release.size+(1<<20)-1)>>20)+sx::i18n::tr(" MB FFPFSC. Matching source is included in the public release.\n\n")+s.release.notes.substr(0,350);
     } else if(s.phase==Phase::ready) {
-        open_dropdown("Update ready",{"Install and close Nuvio Max'd","Cancel update"},0,[this](int i){if(i==0){updater_.install();say("Closing Nuvio Max'd after the helper is ready",8);}else updater_.cancel();});
-        dropdown.message="The verified image is staged. Nuvio Max'd will close, retain a backup and request a ShadowMount+ rescan. Reopen it after the update notification. Your saved data stays in place.";
+        open_dropdown(sx::i18n::tr("Update ready"),{sx::i18n::tr("Install and close Nuvio Max'd"),sx::i18n::tr("Cancel update")},0,[this](int i){if(i==0){updater_.install();say(sx::i18n::tr("Closing Nuvio Max'd after the helper is ready"),8);}else updater_.cancel();});
+        dropdown.message=sx::i18n::tr("The verified image is staged. Nuvio Max'd will close, retain a backup and request a ShadowMount+ rescan. Reopen it after the update notification. Your saved data stays in place.");
     } else if(s.phase==Phase::checking || s.phase==Phase::downloading || s.phase==Phase::staging) {
-        open_dropdown("App updates",{"Cancel"},0,[this](int){updater_.cancel();});
+        open_dropdown(sx::i18n::tr("App updates"),{sx::i18n::tr("Cancel")},0,[this](int){updater_.cancel();});
         dropdown.message=s.message;dropdown.progress=s.progress;
     } else {
-        open_dropdown("App updates",{"Check for updates","Test updater handoff (closes app)","Close"},0,[this](int i){
+        open_dropdown(sx::i18n::tr("App updates"),{sx::i18n::tr("Check for updates"),sx::i18n::tr("Test updater handoff (closes app)"),sx::i18n::tr("Close")},0,[this](int i){
             if(i==0){updater_.check();update_menu();}
             else if(i==1){
-                if(watching || resuming_) {say("Stop playback before testing the updater",7);return;}
-                open_dropdown("Test updater handoff?",{"Cancel","Close app and test"},0,[this](int choice){
+                if(watching || resuming_) {say(sx::i18n::tr("Stop playback before testing the updater"),7);return;}
+                open_dropdown(sx::i18n::tr("Test updater handoff?"),{sx::i18n::tr("Cancel"),sx::i18n::tr("Close app and test")},0,[this](int choice){
                     if(choice==1){updater_.probe(base_dir_);update_menu();}
                 });
-                dropdown.message="This test closes the app and asks ShadowMount to release its image. It does not download or replace files. Wait for the PS5 notification before reopening. Diagnostic: /data/nuvio-maxd-updater.log";
+                dropdown.message=sx::i18n::tr("This test closes the app and asks ShadowMount to release its image. It does not download or replace files. Wait for the PS5 notification before reopening. Diagnostic: /data/nuvio-maxd-updater.log");
             }
         });
         dropdown.message=s.message.empty()?"Nuvio Max'd "+std::string(nuvio_update::current_version)+". "+update_destination(prefs_.install_source):s.message;

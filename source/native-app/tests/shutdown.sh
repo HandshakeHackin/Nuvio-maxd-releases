@@ -17,7 +17,7 @@ while depth:
 (out/'shutdown_body.hpp').write_text(source[start:end]+'\n')
 header=(root/'gl/session.hpp').read_text()
 fields=[]
-for name in ['device_cancel_','d_cancel_','d_stream_cancel_','w_episode_cancel_','live_cancel_','live_usb_cancel_','live_guide_cancel_','series_updates_cancel_','iptv_cancel_','iptv_probe_cancel_','media_cancel_']:
+for name in ['device_cancel_','d_cancel_','d_stream_cancel_','w_episode_cancel_','live_cancel_','live_usb_cancel_','live_guide_cancel_','series_updates_cancel_','iptv_cancel_','iptv_probe_cancel_','media_cancel_','person_cancel_','cast_cancel_']:
     match=re.search(r'std::shared_ptr<std::atomic<bool>> '+name+r'\b[^;]*;',header)
     assert match,name
     fields.append(match.group())

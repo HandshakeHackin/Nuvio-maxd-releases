@@ -1,3 +1,4 @@
+#include "../ui/i18n.hpp"
 #include "sports_hub.hpp"
 #include <algorithm>
 #include <cmath>
@@ -157,7 +158,7 @@ std::string norm(const std::string &s) {
       continue;
     }
     if (c == '+') {
-      out += " plus ";
+      out += sx::i18n::tr(" plus ");
       continue;
     }
     if (std::isalnum(c) || c >= 128)
@@ -340,7 +341,7 @@ std::vector<Event> scoreboard(const json &j, const League &l, int64_t at,
       e.score = join(scores, " · ");
     if (e.state == "in" && !fresh) {
       e.state = "pre";
-      e.status = "Score update needed";
+      e.status = sx::i18n::tr("Score update needed");
       e.score.clear();
     }
     for (const auto &b : arr(comp, "geoBroadcasts")) {
@@ -370,14 +371,14 @@ Snapshot parse_feed(const std::string &raw, const Catalogue &c, int64_t now,
     return s;
   };
   if (raw.size() > max_feed_bytes)
-    return fail("Sports catalogue exceeds the size limit");
+    return fail(sx::i18n::tr("Sports catalogue exceeds the size limit"));
   const auto j = json::parse(raw, nullptr, false);
   const auto generated = jnum(j, "generatedAt") / 1000;
   if (jnum(j, "schemaVersion") != 1 || !std::isfinite(generated) ||
       generated < now - max_age || generated > now + 600 ||
       generated < previous || arr(j, "entries").empty() ||
       arr(j, "entries").size() > 512)
-    return fail("Sports catalogue is invalid or expired");
+    return fail(sx::i18n::tr("Sports catalogue is invalid or expired"));
   s.generated = int64_t(generated);
   std::set<std::string> seen;
   for (const auto &entry : arr(j, "entries")) {
@@ -502,25 +503,25 @@ std::string clock(int64_t epoch, int offset) {
 }
 std::string event_time(const Event &e, int offset) {
   return e.has_time ? clock(e.start, offset)
-                    : clock(e.start, 0).substr(0, 10) + " · time TBD";
+                    : clock(e.start, 0).substr(0, 10) + sx::i18n::tr(" · time TBD");
 }
 std::string event_status(const Event &e, bool hidden, int64_t now) {
   if (e.provider == "Guide")
-    return e.start <= now && now < e.end ? "On now in your guide"
-                                         : "In your guide";
+    return e.start <= now && now < e.end ? sx::i18n::tr("On now in your guide")
+                                         : sx::i18n::tr("In your guide");
   if (e.state == "post")
     return hidden
-               ? "Finished · scores hidden"
-               : "Final" + (e.score.empty() ? std::string() : " · " + e.score);
+               ? sx::i18n::tr("Finished · scores hidden")
+               : sx::i18n::tr("Final") + (e.score.empty() ? std::string() : " · " + e.score);
   if (e.state == "in" && e.fresh && now - e.updated <= 120)
-    return hidden ? "Live · scores hidden"
-                  : "Live · " + e.status +
+    return hidden ? sx::i18n::tr("Live · scores hidden")
+                  : sx::i18n::tr("Live · ") + e.status +
                         (e.score.empty() ? std::string() : " · " + e.score);
   if (e.state == "off")
-    return "Postponed / unavailable";
+    return sx::i18n::tr("Postponed / unavailable");
   if (!e.has_time)
-    return "Time to be confirmed";
-  return e.start <= now ? "Started · refresh for score" : "Scheduled";
+    return sx::i18n::tr("Time to be confirmed");
+  return e.start <= now ? sx::i18n::tr("Started · refresh for score") : sx::i18n::tr("Scheduled");
 }
 ChannelIndex index_channels(const std::vector<live_tv::Channel> &channels) {
   ChannelIndex index;
@@ -554,7 +555,7 @@ std::vector<Match> matches(const Event &e,
         ++sides;
     if ((e.provider == "Guide" && g.programme.title == e.title) ||
         (e.teams.size() >= 2 && sides >= 2))
-      found[g.channel] = {g.channel, 300, "Guide title matches event"};
+      found[g.channel] = {g.channel, 300, sx::i18n::tr("Guide title matches event")};
   }
   ChannelIndex local;
   if (!supplied) {
@@ -579,7 +580,7 @@ std::vector<Match> matches(const Event &e,
           norm(channels[i].name).find(" " + lower(region) + " ") !=
               std::string::npos;
       found[i] = {i, preferred ? 120 : 100,
-                  "Broadcaster match; programme unconfirmed"};
+                  sx::i18n::tr("Broadcaster match; programme unconfirmed")};
     }
   }
   std::vector<Match> out;

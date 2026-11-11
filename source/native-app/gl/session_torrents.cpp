@@ -1,3 +1,4 @@
+#include "../ui/i18n.hpp"
 // Torrents & Magnet streaming hub: local .torrent file scanner (USB & PS5 /data),
 // magnet link and .torrent URL input, multi-file picker, and Phone/PC Web Drop QR server.
 
@@ -188,7 +189,7 @@ void Session::torrent_rescan()
     if(!prefs_.builtin_torrents)return;
     torrent_local_files_ = bt::Engine::scan_local_torrents(data_dir_);
     torrent_build();
-    say("Scanned USB & PS5 storage: " + std::to_string(torrent_local_files_.size()) + " .torrent file(s) found", 4.5);
+    say(sx::i18n::tr("Scanned USB & PS5 storage: ") + std::to_string(torrent_local_files_.size()) + sx::i18n::tr(" .torrent file(s) found"), 4.5);
 }
 
 void Session::torrent_cycle()
@@ -207,7 +208,7 @@ void Session::torrent_search()
             torrent_query_ = v;
             torrent_build();
         },
-        "Search .torrent files, or paste a magnet:? link / .torrent URL (empty clears filter)");
+        sx::i18n::tr("Search .torrent files, or paste a magnet:? link / .torrent URL (empty clears filter)"));
 }
 
 void Session::torrent_build()
@@ -216,48 +217,48 @@ void Session::torrent_build()
     torrent_entries_.clear();
 
     const bool drop_active = !bt::Engine::get().web_drop_url().empty();
-    const std::string view_label = torrent_view_ == 1   ? "Local .torrent files"
-                                   : torrent_view_ == 2 ? "Recent streams"
-                                                        : "All sources";
+    const std::string view_label = torrent_view_ == 1   ? sx::i18n::tr("Local .torrent files")
+                                   : torrent_view_ == 2 ? sx::i18n::tr("Recent streams")
+                                                        : sx::i18n::tr("All sources");
 
     // Tile 0: Hub & Filter Management
     {
         sx::Addon hub;
-        hub.name = "Torrents & Magnet Hub";
+        hub.name = sx::i18n::tr("Torrents & Magnet Hub");
         hub.initial = "BT";
         hub.colour = 0x7b5bf5;
         hub.local = true;
-        hub.version = "Cache: " + std::to_string(prefs_.torrent_cache_gb) + " GB · " + view_label;
+        hub.version = sx::i18n::tr("Cache: ") + std::to_string(prefs_.torrent_cache_gb) + " GB · " + view_label;
         if (!torrent_query_.empty())
-            hub.version += " · Filter: " + torrent_query_;
-        hub.types = "Native torrent streaming";
-        hub.description = "X: open Torrents menu · Triangle: search / paste magnet · L1: rescan USB & /data · R1: filter view";
+            hub.version += sx::i18n::tr(" · Filter: ") + torrent_query_;
+        hub.types = sx::i18n::tr("Native torrent streaming");
+        hub.description = sx::i18n::tr("X: open Torrents menu · Triangle: search / paste magnet · L1: rescan USB & /data · R1: filter view");
         torrents_content.items.push_back(std::move(hub));
     }
 
     // Tile 1: Direct Magnet / .torrent URL / Path Input
     {
         sx::Addon add_mag;
-        add_mag.name = "Enter Magnet or .torrent URL";
+        add_mag.name = sx::i18n::tr("Enter Magnet or .torrent URL");
         add_mag.initial = "M";
         add_mag.colour = 0x0ea5a4;
         add_mag.local = true;
-        add_mag.version = "Keyboard input";
-        add_mag.types = "Magnet InfoHash .torrent-URL";
-        add_mag.description = "Press X to type or paste a magnet:?xt=urn:btih:... link, 40-char hash, or http(s):// .torrent URL.";
+        add_mag.version = sx::i18n::tr("Keyboard input");
+        add_mag.types = sx::i18n::tr("Magnet InfoHash .torrent-URL");
+        add_mag.description = sx::i18n::tr("Press X to type or paste a magnet:?xt=urn:btih:... link, 40-char hash, or http(s):// .torrent URL.");
         torrents_content.items.push_back(std::move(add_mag));
     }
 
     // Tile 2: Phone / PC Web Drop QR Code
     {
         sx::Addon drop;
-        drop.name = "Phone / PC Web Drop (QR Code)";
+        drop.name = sx::i18n::tr("Phone / PC Web Drop (QR Code)");
         drop.initial = "QR";
         drop.colour = 0x3b82f6;
         drop.local = true;
-        drop.version = drop_active ? "Pairing active" : "Local Wi-Fi Drop";
-        drop.types = "Upload-.torrent Paste-Magnet";
-        drop.description = "Press X to show a QR code. Scan with your phone or open on your PC to upload a .torrent file or paste a magnet link.";
+        drop.version = drop_active ? sx::i18n::tr("Pairing active") : sx::i18n::tr("Local Wi-Fi Drop");
+        drop.types = sx::i18n::tr("Upload-.torrent Paste-Magnet");
+        drop.description = sx::i18n::tr("Press X to show a QR code. Scan with your phone or open on your PC to upload a .torrent file or paste a magnet link.");
         torrents_content.items.push_back(std::move(drop));
     }
 
@@ -283,7 +284,7 @@ void Session::torrent_build()
                 te.id = id;
                 te.name = name;
                 te.path_or_uri = uri;
-                te.subtitle = jstr(entry, "subtitle", te.is_local_file ? "Saved .torrent" : "Recent Magnet");
+                te.subtitle = jstr(entry, "subtitle", te.is_local_file ? sx::i18n::tr("Saved .torrent") : sx::i18n::tr("Recent Magnet"));
                 const json &tr = jobj(entry, "trackers");
                 if (tr.is_array())
                     for (const auto &v : tr)
@@ -296,16 +297,16 @@ void Session::torrent_build()
                             te.webseeds.push_back(v.get<std::string>());
 
                 const auto saved = latest_resume(torrent_state_, id);
-                if (saved.file >= 0) te.subtitle += " · Resume " + format_resume_time(saved.position);
+                if (saved.file >= 0) te.subtitle += sx::i18n::tr(" · Resume ") + format_resume_time(saved.position);
 
                 sx::Addon row;
                 row.name = te.name;
                 row.version = te.subtitle;
-                row.types = te.is_local_file ? "Recent .torrent" : "Recent Magnet";
+                row.types = te.is_local_file ? sx::i18n::tr("Recent .torrent") : sx::i18n::tr("Recent Magnet");
                 row.initial = first_letter(te.name.empty() ? "T" : te.name);
                 row.colour = 0x6d6ae0;
                 row.local = true;
-                row.description = "X: play/resume · Square: resume, restart, choose file or remove";
+                row.description = sx::i18n::tr("X: play/resume · Square: resume, restart, choose file or remove");
                 torrents_content.items.push_back(std::move(row));
                 torrent_entries_.push_back(std::move(te));
             }
@@ -337,11 +338,11 @@ void Session::torrent_build()
             sx::Addon row;
             row.name = lf.filename;
             row.version = te.subtitle;
-            row.types = "Local .torrent";
+            row.types = sx::i18n::tr("Local .torrent");
             row.initial = "T";
             row.colour = 0xe0568a;
             row.local = true;
-            row.description = lf.path + "\nX: open & stream · Square: choose file in torrent";
+            row.description = lf.path + sx::i18n::tr("\nX: open & stream · Square: choose file in torrent");
             torrents_content.items.push_back(std::move(row));
             torrent_entries_.push_back(std::move(te));
         }
@@ -352,19 +353,19 @@ void Session::torrent_build()
 
 void Session::torrent_show_web_drop_qr()
 {
-    if(!prefs_.builtin_torrents){say("Enable torrent streaming first",5,true);return;}
+    if(!prefs_.builtin_torrents){say(sx::i18n::tr("Enable torrent streaming first"),5,true);return;}
     std::string url = bt::Engine::get().start_web_drop(8088);
     if (url.empty())
     {
-        say("Could not start the local Web Drop listener.", 6.0, true);
+        say(sx::i18n::tr("Could not start the local Web Drop listener."), 6.0, true);
         return;
     }
     sign_in = SignInState{};
     sign_in.link_only = true;
-    sign_in.title = "Phone / PC Torrent Web Drop";
+    sign_in.title = sx::i18n::tr("Phone / PC Torrent Web Drop");
     sign_in.link = url;
-    sign_in.status = "Pair with this QR code. Expires after 10 minutes; confirm received torrents on this console.";
-    sign_in.cancel_label = "Close";
+    sign_in.status = sx::i18n::tr("Pair with this QR code. Expires after 10 minutes; confirm received torrents on this console.");
+    sign_in.cancel_label = sx::i18n::tr("Close");
     std::uint8_t temp[qrcodegen_BUFFER_LEN_MAX], qr[qrcodegen_BUFFER_LEN_MAX];
     if (qrcodegen_encodeText(url.c_str(), temp, qr, qrcodegen_Ecc_MEDIUM, qrcodegen_VERSION_MIN, 20,
                              qrcodegen_Mask_AUTO, true))
@@ -382,24 +383,24 @@ void Session::torrent_show_web_drop_qr()
 
 void Session::torrent_menu(bool settings_only)
 {
-    if(!prefs_.builtin_torrents && !settings_only){say("Enable torrent streaming first",5,true);return;}
+    if(!prefs_.builtin_torrents && !settings_only){say(sx::i18n::tr("Enable torrent streaming first"),5,true);return;}
     std::vector<std::string> options = {
-        "Enter Magnet link, Info-Hash or .torrent URL",
-        "Scan USB & PS5 storage for .torrent files",
-        "Search / filter .torrent files",
-        "Clear search filter",
-        "Phone / PC Web Drop (Show QR Code)",
-        "Rolling cache size (" + std::to_string(prefs_.torrent_cache_gb) + " GB)",
-        "View: All sources",
-        "View: Local .torrent files only",
-        "View: Recent streams only",
-        "Clear recent torrent history",
-        "Cached storage: " + format_bytes(bt::Engine::get().cache_storage_bytes()) + " (limit " + std::to_string(prefs_.torrent_cache_gb) + " GB)",
-        "Turn off torrents and clear buffered data",
-        bt::Engine::get().web_drop_url().empty() ? "Web Drop: inactive" : "Web Drop: pairing active (close pairing)",
+        sx::i18n::tr("Enter Magnet link, Info-Hash or .torrent URL"),
+        sx::i18n::tr("Scan USB & PS5 storage for .torrent files"),
+        sx::i18n::tr("Search / filter .torrent files"),
+        sx::i18n::tr("Clear search filter"),
+        sx::i18n::tr("Phone / PC Web Drop (Show QR Code)"),
+        sx::i18n::tr("Rolling cache size (") + std::to_string(prefs_.torrent_cache_gb) + " GB)",
+        sx::i18n::tr("View: All sources"),
+        sx::i18n::tr("View: Local .torrent files only"),
+        sx::i18n::tr("View: Recent streams only"),
+        sx::i18n::tr("Clear recent torrent history"),
+        sx::i18n::tr("Cached storage: ") + format_bytes(bt::Engine::get().cache_storage_bytes()) + sx::i18n::tr(" (limit ") + std::to_string(prefs_.torrent_cache_gb) + " GB)",
+        sx::i18n::tr("Turn off torrents and clear buffered data"),
+        bt::Engine::get().web_drop_url().empty() ? sx::i18n::tr("Web Drop: inactive") : sx::i18n::tr("Web Drop: pairing active (close pairing)"),
     };
     if(settings_only)options={options[5],options[10],options[11],options[12]};
-    open_dropdown(settings_only?"Torrent settings":"Torrents & Magnet Streaming", options, 0, [this, settings_only, generation=profile_generation_](int pick) {
+    open_dropdown(settings_only?sx::i18n::tr("Torrent settings"):sx::i18n::tr("Torrents & Magnet Streaming"), options, 0, [this, settings_only, generation=profile_generation_](int pick) {
         if(settings_only){if(pick<0 || pick>=4)return;static constexpr int actions[]={5,10,11,12};pick=actions[pick];}
         if(generation!=profile_generation_ || !profile_ready_)return;
         switch (pick)
@@ -408,7 +409,7 @@ void Session::torrent_menu(bool settings_only)
             ask_text([this](const std::string &v) {
                 if (!trim(v).empty())
                     torrent_open_input(trim(v), false);
-            }, "Enter magnet:? link, 40-char info-hash, or .torrent URL / path");
+            }, sx::i18n::tr("Enter magnet:? link, 40-char info-hash, or .torrent URL / path"));
             break;
         case 1:
             torrent_rescan();
@@ -430,14 +431,14 @@ void Session::torrent_menu(bool settings_only)
             for (int i = 0; i < 4; ++i)
                 if (prefs_.torrent_cache_gb == kSizes[i])
                     active = i;
-            open_dropdown("Torrent rolling cache size",
+            open_dropdown(sx::i18n::tr("Torrent rolling cache size"),
                           {"1 GB", "2 GB", "4 GB", "6 GB (default)"}, active,
                           [this](int idx) {
                               static constexpr int kVals[] = {1, 2, 4, 6};
                               if (idx < 0 || idx >= 4)
                                   return;
                               torrent_set_cache(kVals[idx]);
-                              say("Torrent rolling cache set to " + std::to_string(prefs_.torrent_cache_gb) + " GB");
+                              say(sx::i18n::tr("Torrent rolling cache set to ") + std::to_string(prefs_.torrent_cache_gb) + " GB");
                           });
             break;
         }
@@ -448,21 +449,21 @@ void Session::torrent_menu(bool settings_only)
             torrent_build();
             break;
         case 10:
-            say("Buffered torrent pieces use this storage. .torrent files and saved progress are separate. The limit controls rolling storage, not total video size.",12);break;
+            say(sx::i18n::tr("Buffered torrent pieces use this storage. .torrent files and saved progress are separate. The limit controls rolling storage, not total video size."),12);break;
         case 11:
-            open_dropdown("Clear buffered torrent data?",{"Cancel","Turn off torrents and clear buffer"},0,
+            open_dropdown(sx::i18n::tr("Clear buffered torrent data?"),{sx::i18n::tr("Cancel"),sx::i18n::tr("Turn off torrents and clear buffer")},0,
                 [this,generation=profile_generation_](int choice){
                     if(choice!=1 || generation!=profile_generation_ || !profile_ready_)return;
-                    if(watching || resuming_){say("Stop playback before clearing buffered data.",7,true);return;}
+                    if(watching || resuming_){say(sx::i18n::tr("Stop playback before clearing buffered data."),7,true);return;}
                     if(torrent_cancel_)*torrent_cancel_=true;
                     std::string error;const bool ok=bt::Engine::get().clear_cache(&error);
                     prefs_.builtin_torrents=bt::Engine::get().enabled();torrents_visible=prefs_.builtin_torrents;
                     if(!prefs_.builtin_torrents){torrent_reset();torrent_drop_open_=false;sign_in_open=false;}
                     save_prefs();refresh_settings();
-                    say(ok?"Buffered data cleared; torrent streaming is off. Saved progress and .torrent files were kept.":error,9,!ok);
+                    say(ok?sx::i18n::tr("Buffered data cleared; torrent streaming is off. Saved progress and .torrent files were kept."):error,9,!ok);
                 });break;
         case 12:
-            if(!bt::Engine::get().web_drop_url().empty()){bt::Engine::get().stop_web_drop();torrent_drop_open_=false;say("Web Drop pairing closed.",5);}
+            if(!bt::Engine::get().web_drop_url().empty()){bt::Engine::get().stop_web_drop();torrent_drop_open_=false;say(sx::i18n::tr("Web Drop pairing closed."),5);}
             else torrent_show_web_drop_qr();
             break;
         case 9:
@@ -470,14 +471,13 @@ void Session::torrent_menu(bool settings_only)
             torrent_state_["resume"] = json::object();
             torrent_save();
             torrent_build();
-            say("Cleared recent torrent history");
+            say(sx::i18n::tr("Cleared recent torrent history"));
             break;
         default:
             break;
         }
     });
-    dropdown.message = "Place .torrent files on any USB drive (/mnt/usb0..7) or in /data/torrents on your PS5, "
-                       "paste a magnet link, or scan the Web Drop QR code with your phone.";
+    dropdown.message = sx::i18n::tr("Place .torrent files on any USB drive (/mnt/usb0..7) or in /data/torrents on your PS5, paste a magnet link, or scan the Web Drop QR code with your phone.");
 }
 
 void Session::torrent_activate(int index, bool secondary)
@@ -492,7 +492,7 @@ void Session::torrent_activate(int index, bool secondary)
         ask_text([this](const std::string &v) {
             if (!trim(v).empty())
                 torrent_open_input(trim(v), false);
-        }, "Enter magnet:? link, info-hash, or .torrent URL / path");
+        }, sx::i18n::tr("Enter magnet:? link, info-hash, or .torrent URL / path"));
         return;
     }
     if (index == 2)
@@ -527,7 +527,7 @@ void Session::torrent_activate(int index, bool secondary)
         if(bt::Engine::get().wait_metadata(entry.id,files,nullptr,0,&error) && size_t(saved.file)<files.size())
             saved.name=short_filename(files[size_t(saved.file)].path);
     }
-    if(saved.name.empty())saved.name="File "+std::to_string(saved.file+1);
+    if(saved.name.empty())saved.name=sx::i18n::tr("File ")+std::to_string(saved.file+1);
     if (!secondary) {
         if (saved.file >= 0) torrent_play_hash(entry.id, saved.name, entry.trackers, entry.webseeds, saved.file);
         else open_entry(false);
@@ -535,11 +535,11 @@ void Session::torrent_activate(int index, bool secondary)
     }
     std::vector<std::string> actions;
     if (saved.file >= 0) {
-        actions.push_back("Resume from " + format_resume_time(saved.position));
-        actions.push_back("Start over");
-    } else actions.push_back("Stream default video file");
-    actions.push_back("Choose another file");
-    if (!entry.id.empty()) actions.push_back("Remove from recent list");
+        actions.push_back(sx::i18n::tr("Resume from ") + format_resume_time(saved.position));
+        actions.push_back(sx::i18n::tr("Start over"));
+    } else actions.push_back(sx::i18n::tr("Stream default video file"));
+    actions.push_back(sx::i18n::tr("Choose another file"));
+    if (!entry.id.empty()) actions.push_back(sx::i18n::tr("Remove from recent list"));
     const int count = static_cast<int>(actions.size());
     open_dropdown(entry.name, actions, 0, [this, entry, open_entry, saved, count, generation=profile_generation_](int pick) {
         if (generation != profile_generation_ || !profile_ready_ || !prefs_.builtin_torrents ||
@@ -560,7 +560,7 @@ void Session::torrent_activate(int index, bool secondary)
             }
         }
     });
-    if (saved.file >= 0) dropdown.message = "File: " + saved.name;
+    if (saved.file >= 0) dropdown.message = sx::i18n::tr("File: ") + saved.name;
 }
 
 void Session::torrent_play_hash(const std::string &info_hash, const std::string &name,
@@ -587,22 +587,22 @@ void Session::torrent_play_hash(const std::string &info_hash, const std::string 
     }
     d_item_ = Item{};
     d_item_.id = item_id;
-    d_item_.name = name.empty() ? ("Torrent " + info_hash.substr(0, 8)) : name;
+    d_item_.name = name.empty() ? (sx::i18n::tr("Torrent ") + info_hash.substr(0, 8)) : name;
     d_item_.type = "torrent";
     d_meta_ = ::Meta{};
     d_meta_loaded_ = false;
     d_video_id_ = item_id;
     detail = DetailContent{};
-    detail.title.year = "Torrent video";
+    detail.title.year = sx::i18n::tr("Torrent video");
 
     ::Stream st;
     st.info_hash = info_hash;
     st.file_idx = file_idx;
     st.sources = trackers;
-    st.name = "Torrent Stream";
+    st.name = sx::i18n::tr("Torrent Stream");
     st.description = d_item_.name;
     st.filename = d_item_.name;
-    st.addon = "Torrent Engine";
+    st.addon = sx::i18n::tr("Torrent Engine");
     play_stream(st, false);
 }
 
@@ -614,7 +614,7 @@ void Session::torrent_present_files(const std::string &info_hash, const std::str
 {
     if (files.empty())
     {
-        say("This torrent contains no files.", 6.0, true);
+        say(sx::i18n::tr("This torrent contains no files."), 6.0, true);
         return;
     }
     int video_count = 0;
@@ -645,8 +645,8 @@ void Session::torrent_present_files(const std::string &info_hash, const std::str
     std::vector<std::string> options;
     std::vector<int> file_indices;
     const int guessed = bt::Engine::guess_file(files, -1, -1);
-    options.push_back("Auto-pick largest video (" +
-                      (guessed >= 0 ? short_filename(files[static_cast<std::size_t>(guessed)].path) : "best match") + ")");
+    options.push_back(sx::i18n::tr("Auto-pick largest video (") +
+                      (guessed >= 0 ? short_filename(files[static_cast<std::size_t>(guessed)].path) : sx::i18n::tr("best match")) + ")");
     file_indices.push_back(guessed);
 
     for (std::size_t i = 0; i < files.size() && options.size() < 200; ++i)
@@ -661,7 +661,7 @@ void Session::torrent_present_files(const std::string &info_hash, const std::str
     }
 
     const auto generation=profile_generation_;
-    open_dropdown(name.empty() ? "Choose file to stream" : name, options, 0,
+    open_dropdown(name.empty() ? sx::i18n::tr("Choose file to stream") : name, options, 0,
                   [this, generation, info_hash, name, files, trackers, webseeds, file_indices](int pick) {
                       if(generation!=profile_generation_ || !prefs_.builtin_torrents || !profile_ready_)return;
                       if (pick < 0 || static_cast<std::size_t>(pick) >= file_indices.size())
@@ -714,12 +714,12 @@ void Session::torrent_open_input(const std::string &raw_input, bool force_file_p
         bt::Engine::get().set_cache_bytes(static_cast<int64_t>(std::max(1, prefs_.torrent_cache_gb)) << 30);
         if (!bt::Engine::get().load_torrent_file(input, meta, &err))
         {
-            say(err.empty() ? "Could not open .torrent file" : err, 7.0, true);
+            say(err.empty() ? sx::i18n::tr("Could not open .torrent file") : err, 7.0, true);
             return;
         }
         const std::string display = meta.name.empty() ? short_filename(input) : meta.name;
         record_recent(meta.info_hash_hex, display, input,
-                      "Local .torrent · " + format_bytes(meta.total_size) + " · " +
+                      sx::i18n::tr("Local .torrent · ") + format_bytes(meta.total_size) + " · " +
                           std::to_string(meta.files.size()) + " file(s)",
                       meta.trackers, meta.webseeds);
         torrent_present_files(meta.info_hash_hex, display, meta.files, meta.trackers, meta.webseeds, -1,
@@ -732,15 +732,15 @@ void Session::torrent_open_input(const std::string &raw_input, bool force_file_p
     std::string mag_err;
     if (bt::Engine::parse_magnet(input, mi, &mag_err))
     {
-        const std::string display = mi.display_name.empty() ? ("Magnet " + mi.info_hash_hex.substr(0, 10)) : mi.display_name;
-        record_recent(mi.info_hash_hex, display, input, "Magnet Stream", mi.trackers, mi.webseeds);
+        const std::string display = mi.display_name.empty() ? (sx::i18n::tr("Magnet ") + mi.info_hash_hex.substr(0, 10)) : mi.display_name;
+        record_recent(mi.info_hash_hex, display, input, sx::i18n::tr("Magnet Stream"), mi.trackers, mi.webseeds);
         if (!force_file_picker)
         {
             torrent_play_hash(mi.info_hash_hex, display, mi.trackers, mi.webseeds, mi.select_only_file);
             return;
         }
         // User explicitly asked to pick a file from a magnet: wait for metadata in the background
-        say("Fetching file list from peers for " + display + "...", 6.0);
+        say(sx::i18n::tr("Fetching file list from peers for ") + display + "...", 6.0);
         bt::Engine::get().set_cache_bytes(static_cast<int64_t>(std::max(1, prefs_.torrent_cache_gb)) << 30);
         bt::Engine::get().start_with_webseeds(mi.info_hash_hex, mi.trackers, mi.webseeds);
         if (torrent_cancel_)
@@ -769,7 +769,7 @@ void Session::torrent_open_input(const std::string &raw_input, bool force_file_p
                 {
                     if (r.error == "cancelled")
                         return;
-                    say("Could not fetch file list yet (" + r.error + "). Starting stream directly...", 6.0);
+                    say(sx::i18n::tr("Could not fetch file list yet (") + r.error + sx::i18n::tr("). Starting stream directly..."), 6.0);
                     torrent_play_hash(hash, display, trackers, webseeds, -1);
                     return;
                 }
@@ -781,7 +781,7 @@ void Session::torrent_open_input(const std::string &raw_input, bool force_file_p
     // 3. Remote HTTP / HTTPS .torrent URL
     if (starts_with(lower(input), "http://") || starts_with(lower(input), "https://"))
     {
-        say("Downloading .torrent file...", 4.0);
+        say(sx::i18n::tr("Downloading .torrent file..."), 4.0);
         if (torrent_cancel_)
             *torrent_cancel_ = true;
         auto cancel = std::make_shared<std::atomic<bool>>(false);
@@ -801,7 +801,7 @@ void Session::torrent_open_input(const std::string &raw_input, bool force_file_p
                     return;
                 if (!r.http.ok() || r.http.body.empty())
                 {
-                    say("Could not download .torrent URL: " + r.http.describe(), 7.0, true);
+                    say(sx::i18n::tr("Could not download .torrent URL: ") + r.http.describe(), 7.0, true);
                     return;
                 }
                 bt::TorrentMeta meta;
@@ -815,19 +815,19 @@ void Session::torrent_open_input(const std::string &raw_input, bool force_file_p
                         torrent_open_input(trim(r.http.body), force_file_picker);
                         return;
                     }
-                    say(err.empty() ? "Downloaded URL is not a valid .torrent file" : err, 7.0, true);
+                    say(err.empty() ? sx::i18n::tr("Downloaded URL is not a valid .torrent file") : err, 7.0, true);
                     return;
                 }
                 const std::string display = meta.name.empty() ? short_filename(input) : meta.name;
                 record_recent(meta.info_hash_hex, display, input,
-                              "Remote .torrent · " + format_bytes(meta.total_size), meta.trackers, meta.webseeds);
+                              sx::i18n::tr("Remote .torrent · ") + format_bytes(meta.total_size), meta.trackers, meta.webseeds);
                 torrent_present_files(meta.info_hash_hex, display, meta.files, meta.trackers, meta.webseeds, -1,
                                       force_file_picker);
             });
         return;
     }
 
-    say("Enter a valid magnet:? link, 40-char info-hash, .torrent URL, or local .torrent path.", 7.0, true);
+    say(sx::i18n::tr("Enter a valid magnet:? link, 40-char info-hash, .torrent URL, or local .torrent path."), 7.0, true);
 }
 
 bool Session::torrent_try_search_input(const std::string &query)
@@ -847,7 +847,7 @@ bool Session::torrent_try_search_input(const std::string &query)
 
 void Session::torrent_set_cache(int gb) {
     if(gb!=1&&gb!=2&&gb!=4&&gb!=6)return;
-    if(watching||resuming_){say("Stop playback before changing the torrent cache",5,true);return;}
+    if(watching||resuming_){say(sx::i18n::tr("Stop playback before changing the torrent cache"),5,true);return;}
     torrent_reset();bt::Engine::get().shutdown();
     prefs_.torrent_cache_gb=gb;
     bt::Engine::get().set_cache_bytes(int64_t(gb)<<30);
@@ -864,7 +864,7 @@ void Session::torrent_poll_drop() {
     if(bt::Engine::get().take_web_submission(&incoming)){
         bt::Engine::get().stop_web_drop();torrent_drop_open_=false;sign_in_open=false;
         const auto generation=profile_generation_;
-        open_dropdown("Received: "+incoming.title,{"Cancel","Open torrent"},0,
+        open_dropdown(sx::i18n::tr("Received: ")+incoming.title,{sx::i18n::tr("Cancel"),sx::i18n::tr("Open torrent")},0,
             [this,incoming,generation](int choice){
                 if(choice!=1 || generation!=profile_generation_ || !prefs_.builtin_torrents || !profile_ready_)return;
                 if(incoming.kind=="buffer"){
@@ -875,7 +875,7 @@ void Session::torrent_poll_drop() {
             });
     }else if(bt::Engine::get().web_drop_url().empty()){
         bt::Engine::get().stop_web_drop();torrent_drop_open_=false;sign_in_open=false;
-        say("Web Drop pairing expired");
+        say(sx::i18n::tr("Web Drop pairing expired"));
     }
 }
 

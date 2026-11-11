@@ -1,5 +1,7 @@
+#include "../ui/i18n.hpp"
 #include "../src/subtitle_size.hpp"
 #include "settings.hpp"
+#include "i18n.hpp"
 #include "player.hpp"
 
 #include <algorithm>
@@ -129,21 +131,21 @@ void Settings::draw_help(hui::gfx::DrawList &list, const SettingRow &row) const
     // The current value, in the page's violet.
     std::string value = row.value;
     if (row.kind == SettingRow::Kind::toggle)
-        value = row.on ? "On" : "Off";
+        value = row.on ? sx::i18n::tr("On") : sx::i18n::tr("Off");
     text(list, env_.fonts.semibold, env_.fonts.semibold.font->fit(value, 28.0f, w), x, baseline + 6.0f, 28.0f,
          theme::accent_soft);
     hui::ui::paragraph(list, env_.fonts.regular, row.help, x, baseline + 64.0f, 24.0f, w, 36.0f, theme::ink_2, row.subtitle_preview ? 3 : 9);
     if(row.subtitle_preview) {
-        text(list,env_.fonts.regular,"Live subtitle preview",kHelp.cx(),kHelp.y+330,22,theme::ink_2,Align::center);
+        text(list,env_.fonts.regular,sx::i18n::tr("Live subtitle preview"),kHelp.cx(),kHelp.y+330,22,theme::ink_2,Align::center);
         const float size=subtitle_size::height(content_->subtitle_size);
         // Keep the larger preview at its real size without covering the help text.
-        const char* sample=size>60 ? "Subtitles" : "Your subtitles look like this.";
+        const char* sample=size>60 ? sx::i18n::tr("Subtitles") : sx::i18n::tr("Your subtitles look like this.");
         draw_subtitle_block(list,env_.fonts,sample,content_->subtitle_style,size,kHelp.cx(),kHelp.y+510,kHelp.w-90);
     }
-    const char *verb = row.kind == SettingRow::Kind::toggle ? "Switch" : row.kind == SettingRow::Kind::action ? "Open" : "Change";
+    const char *verb = row.kind == SettingRow::Kind::toggle ? sx::i18n::tr("Switch") : row.kind == SettingRow::Kind::action ? sx::i18n::tr("Open") : sx::i18n::tr("Change");
     const float hint_y=kHelp.y+kHelp.h-62.0f;
     const float hint_w=draw_chip(list, env_, hui::ui::Button::cross, verb, x, hint_y, true);
-    draw_chip(list, env_, hui::ui::Button::circle, nav_.root()?"Home":"Categories", x+hint_w+16.0f, hint_y);
+    draw_chip(list, env_, hui::ui::Button::circle, nav_.root()?sx::i18n::tr("Home"):sx::i18n::tr("Categories"), x+hint_w+16.0f, hint_y);
     list.pop_opacity();
     list.pop_opacity();
 }
@@ -155,7 +157,7 @@ void Settings::draw(hui::gfx::DrawList &list, hui::gfx::BackdropSpec &backdrop) 
         return;
     const float in = tween::stagger(age_, 0, 0.0f, 0.45f);
     list.push_opacity(in);
-    text(list, env_.fonts.semibold, (nav_.root()?std::string("Settings"):std::string("Settings / ")+nav_.category), theme::kLeft, 158.0f, theme::kSubtitle + 4.0f, theme::ink_2);
+    text(list, env_.fonts.semibold, (nav_.root()?std::string(i18n::tr("Settings")):std::string(i18n::tr("Settings / "))+i18n::tr(nav_.category)), theme::kLeft, 158.0f, theme::kSubtitle + 4.0f, theme::ink_2);
     list.pop_opacity();
 
     list.push_clip({theme::kLeft - 44.0f, 188.0f, 1130.0f, 1080.0f - 188.0f});

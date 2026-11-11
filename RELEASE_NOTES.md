@@ -1,24 +1,10 @@
-# Nuvio Max'd 1.0.0.16 experimental
+# Nuvio Max'd 1.0.0.17
 
-**Unconfirmed USB access fix for issue #20. PS5 confirmation required.**
+- Add English/German interface selection under **Settings → App & Updates → Language**. Choose **Deutsch**, then fully close and restart Max'd. Menus, settings, dialogs and playback controls use the bundled German catalog, with English fallback. Audio, subtitle and addon-content languages remain separate.
+- Add **Cast & crew** to movie/series detail pages: press **R2**, browse the photo row and select a person. Person pages show biography, birth details, known-for department and movie/TV credits. Select a credit to open its title through your configured addons. Circle returns through the browsing history.
+- Keep metadata and artwork loading bounded and cancellable, with missing-photo/metadata fallbacks and profile-change guards. Back navigation restores cast/person selection. TMDB requests use the existing app configuration.
+- Preserve USB playlist import and private saved copies. The reporter confirmed 1.0.0.16 import/playback, persistence after USB removal/restart, cancellation, profile isolation and valid replacement. Dialog cancellation now uses stable identifiers across translations.
 
-- When direct USB scanning is denied, offer an optional bundled USB reader
-  through the existing local payload loader. Max'd stays sandboxed.
-- Restrict the reader to bounded USB playlist discovery and reading the selected
-  file. It makes no file writes, opens no extra listener and changes no mounts
-  or Max'd credentials. It is a privileged payload: the standard SDK startup
-  prepares the helper process's own capabilities and syscall permissions.
-- Keep validation, 0600 private atomic copies and profile isolation inside Max'd.
-  Retain privacy-safe per-mount diagnostics and cancellation.
+Stable release. Complete app, host/VLC CI, renderer previews, ZIP/native image and matching source verification are required before publication. Console feedback on the two new features is welcome; host verification does not establish every firmware's compatibility.
 
-This addresses the reported access difference between FTP and the home-screen
-app under Y2JB/ShadowMount 1.7beta12. It does not establish an exFAT problem or
-promise the reader can access USB on every setup. The existing payload loader
-must already be available on loopback port 9021. Failure keeps the previous copy.
-The original USB crash avoidance is retained; raw SDK dup/*at calls are not used.
-
-Keep saved user data and the previous installer. Fully close Max'd before updating;
-do not overwrite a mounted FFPFSC. Title PPSA99288, contentVersion 07.000.016.
-Source, package verification and test instructions are included. The new reader
-payload needs catalog-maintainer review; publication is not a store deployment.
-Issue #20 stays open pending console results.
+Fully close Max'd before updating. Keep saved user data and your previous installer; do not overwrite a mounted FFPFSC. Title PPSA99288, contentVersion 07.000.017. The existing optional USB reader remains a privileged payload; Max'd itself stays sandboxed. See the included TESTING.txt and verification report.

@@ -1,3 +1,4 @@
+#include "../ui/i18n.hpp"
 #include "../src/subtitle_size.hpp"
 // The session's core: setup, the account, addons, the library, settings, the
 // pop-ups and the artwork. The Board, Discover and Library are session_browse.cpp,
@@ -7,6 +8,7 @@
 #include "tracking.h"
 #include "release_notes.hpp"
 #include "settings_navigation.hpp"
+#include "i18n.hpp"
 
 #include "http.h"
 #include "providers.h"
@@ -85,12 +87,13 @@ enum SettingIndex
     kRemoteButtons,
     kSourceOptions,
     kSportsEnable,kSportsOpen,kSportsRegion,kSportsBrowse,kSportsFollowing,kSportsScores,kSportsChannels,kSportsClock,
+    kUiLanguage,
     kSettingCount
 };
 
 std::string size_label(const std::string &s)
 {
-    return subtitle_size::labels[subtitle_size::index(s)];
+    return i18n::tr(subtitle_size::labels[subtitle_size::index(s)]);
 }
 
 // The first letter of a name (one UTF-8 character): an addon's mark when it has no logo.
@@ -155,7 +158,7 @@ bool Session::init(const std::string &base_dir, const std::string &data_dir, hui
     boot_start_ = now_seconds();
     media_reporter_=std::make_unique<media_server::Reporter>();
     tex_.private_image=[state=media_art_](const std::string& uri,const std::atomic<bool>* cancel){
-        const auto at=uri.find(':',10); HttpResponse failure;failure.error="Media server image unavailable";
+        const auto at=uri.find(':',10); HttpResponse failure;failure.error=sx::i18n::tr("Media server image unavailable");
         if(at==std::string::npos)return failure;
         const auto id=uri.substr(10,at-10),item=uri.substr(at+1);
         media_server::Connection c;{std::lock_guard<std::mutex> l(state->mutex);for(const auto& a:state->accounts)if(a.id==id)c=a;}
@@ -173,7 +176,7 @@ bool Session::init(const std::string &base_dir, const std::string &data_dir, hui
     release_notes_version=nuvio_update::current_version;
     release_notes_open=should_show_release_notes(prefs_.seen_release,release_notes_version);
     if (!nuvio_account_init(base_dir_ + "/account-config.json", data_dir_))
-        say("Could not load Nuvio account configuration", 8.0, true);
+        say(sx::i18n::tr("Could not load Nuvio account configuration"), 8.0, true);
     prefs_.auth_key = nuvio_profile_key();
     debrid::load(profile_dir_ + "/connected-services.json", services_);
     const auto account_user = nuvio_account_user_id();
@@ -202,13 +205,13 @@ bool Session::init(const std::string &base_dir, const std::string &data_dir, hui
         load_profile_settings(); load_progress();
     }
     clock = format_clock();
-    board.status = "Loading your catalogs...";
+    board.status = sx::i18n::tr("Loading your catalogs...");
     refresh_settings();
     refresh_library();
     refresh_addons();
     profile_ready_ = !signed_in();
     if (signed_in()) {
-        board.status = "Choose your Nuvio profile to load your catalogs and history.";
+        board.status = sx::i18n::tr("Choose your Nuvio profile to load your catalogs and history.");
         profile_prompt_pending_ = true;
     } else load_addons();
     if (!signed_in() && !prefs_.onboarding_done) {
@@ -220,6 +223,7 @@ bool Session::init(const std::string &base_dir, const std::string &data_dir, hui
 
 void Session::shutdown()
 {
+    person_leave();*cast_cancel_=true;
     sports_reset();
     profile_pin_cancel();
     if (device_cancel_) *device_cancel_ = true;
@@ -256,6 +260,7 @@ void Session::load_prefs()
     if (load_json(data_dir_ + "/settings.json", j))
     {
         load_experience(j, prefs_);
+        i18n::set_language(prefs_.ui_language);
         prefs_.source_preferences=source_policy::load(j);
         prefs_.remote_bindings=load_remote_bindings(j);
         prefs_.server_url.clear();
@@ -310,7 +315,7 @@ void Session::save_prefs()
     save_profile_settings();
     j["user_email"] = prefs_.user_email;
     if (!save_json(data_dir_ + "/settings.json", j))
-        say("Could not save settings to " + data_dir_, 5.0, true);
+        say(sx::i18n::tr("Could not save settings to ") + data_dir_, 5.0, true);
 }
 
 void Session::load_progress()
@@ -396,7 +401,7 @@ void Session::load_addons()
                 if (ar.ok)
                 {
                     if (jbool(ar.result, "offline"))
-                        r.errors.push_back("Nuvio sync is unavailable. Using saved addons.");
+                        r.errors.push_back(sx::i18n::tr("Nuvio sync is unavailable. Using saved addons."));
                     if (!jstr(ar.result, "syncError").empty()) r.errors.push_back(jstr(ar.result, "syncError"));
                     const json &list = jobj(ar.result, "addons");
                     if (list.is_array())
@@ -422,7 +427,7 @@ void Session::load_addons()
                 else
                 {
                     r.account_failed = true;
-                    r.errors.push_back("Could not load your addons (" + ar.error + ")");
+                    r.errors.push_back(sx::i18n::tr("Could not load your addons (") + ar.error + ")");
                     const std::string l = lower(ar.error);
                     if (l.find("session") != std::string::npos || l.find("auth") != std::string::npos)
                         r.auth_failed = true;
@@ -446,7 +451,7 @@ void Session::load_addons()
                 }
                 else
                 {
-                    r.errors.push_back("Could not reach an addon (" + err + ")");
+                    r.errors.push_back(sx::i18n::tr("Could not reach an addon (") + err + ")");
                 }
             }
             return r;
@@ -489,7 +494,7 @@ void Session::load_addons()
             if (!r.errors.empty())
                 say(r.errors.front(), 6.0, true);
             if (r.auth_failed)
-                say("Your Nuvio session expired. Sign in again in Settings.", 8.0, true);
+                say(sx::i18n::tr("Your Nuvio session expired. Sign in again in Settings."), 8.0, true);
             dlog("addons: %zu loaded", addons_.size());
             for (const auto &a : addons_)
                 dlog("addons: %s, %zu catalogs", a->name.c_str(), a->catalogs.size());
@@ -528,7 +533,7 @@ void Session::load_library()
                       if (prefs_.auth_key != key || login_gen_ != account_gen || !signed_in()) return;
                       if (!r.ok)
                       {
-                          say("Could not load your library: " + r.error, 5.0, true);
+                          say(sx::i18n::tr("Could not load your library: ") + r.error, 5.0, true);
                           return;
                       }
                       if (!r.error.empty()) say(r.error, 12.0);
@@ -574,7 +579,7 @@ void Session::load_library()
 void Session::addons_reload()
 {
     providers::clear_script_cache();
-    say("Reloading addons...");
+    say(sx::i18n::tr("Reloading addons..."));
     load_addons();
     if (signed_in())
         load_library();
@@ -587,17 +592,17 @@ void Session::addon_activate(int index, int provider_cursor)
     const std::string url = addons_[static_cast<std::size_t>(index)]->transport_url;
     auto &selected = *addons_[static_cast<std::size_t>(index)];
     if (selected.provider_repository ? inherit_plugins_ : inherit_addons_) {
-        say("This profile uses the primary profile's sources. Manage them in that profile.", 7.0); return;
+        say(sx::i18n::tr("This profile uses the primary profile's sources. Manage them in that profile."), 7.0); return;
     }
     if (selected.provider_repository)
     {
         std::vector<std::string> choices;
         for (const auto &p : selected.providers)
-            choices.push_back(std::string(p.enabled ? "On: " : "Off: ") + p.name);
+            choices.push_back(std::string(p.enabled ? "On: " : sx::i18n::tr("Off: ")) + p.name);
         const int count = static_cast<int>(choices.size());
-        choices.push_back("Provider settings");
-        choices.push_back("Remove repository");
-        choices.push_back("Cancel");
+        choices.push_back(sx::i18n::tr("Provider settings"));
+        choices.push_back(sx::i18n::tr("Remove repository"));
+        choices.push_back(sx::i18n::tr("Cancel"));
         open_dropdown(selected.name, choices, -1,
                       [this, url, count](int pick)
                       {
@@ -643,12 +648,11 @@ void Session::addon_activate(int index, int provider_cursor)
     const auto it = std::find(prefs_.extra_addons.begin(), prefs_.extra_addons.end(), url);
     if (it == prefs_.extra_addons.end() && !selected.from_account)
     {
-        say("Install and remove addons in the Nuvio app on your phone or computer; they sync here. "
-            "Press Square to reload them now.",
+        say(sx::i18n::tr("Install and remove addons in the Nuvio app on your phone or computer; they sync here. Press Square to reload them now."),
             7.0);
         return;
     }
-    open_dropdown(addons_[static_cast<std::size_t>(index)]->name, {"Remove addon", "Keep"}, 1, [this, url](int i) {
+    open_dropdown(addons_[static_cast<std::size_t>(index)]->name, {sx::i18n::tr("Remove addon"), sx::i18n::tr("Keep")}, 1, [this, url](int i) {
         if (i != 0)
             return;
         auto &ex = prefs_.extra_addons;
@@ -677,8 +681,8 @@ void Session::refresh_addons()
             size_t enabled = 0;
             for (const auto &p : a->providers)
                 enabled += p.enabled;
-            row.description = "Plugin repository · " + std::to_string(enabled) + " of " +
-                              std::to_string(a->providers.size()) + " providers enabled. Select to manage.";
+            row.description = sx::i18n::tr("Plugin repository · ") + std::to_string(enabled) + " of " +
+                              std::to_string(a->providers.size()) + sx::i18n::tr(" providers enabled. Select to manage.");
         }
         std::vector<std::string> types;
         for (const auto &t : a->types)
@@ -700,7 +704,7 @@ void Session::set_display_configuration(unsigned width, unsigned height, bool fa
     dlog("display: PS5 configured %ux%u at startup; render %dx%d SDR 8-bit; accepted refresh %d Hz; fallback %d",
          width, height, output_w_, output_h_, output_hz_, fallback);
     if (fallback)
-        say("Display fallback active. Check Display output in Settings; reopen Nuvio Max'd after changing it.", 12.0, true);
+        say(sx::i18n::tr("Display fallback active. Check Display output in Settings; reopen Nuvio Max'd after changing it."), 12.0, true);
 }
 
 void Session::refresh_settings()
@@ -719,102 +723,102 @@ void Session::refresh_settings()
         r.on = on;
     };
     using Kind = SettingRow::Kind;
-    set(kMediaServers, SettingRow::Kind::action, "Media servers (experimental)", std::to_string(media_accounts_.size())+" connected", "Connect Jellyfin, Emby or Plex. Browse server libraries and resume playback separately from addons.");
-    set(kAccount, Kind::value, "Nuvio account", signed_in() ? prefs_.user_email : "Not signed in",
-        signed_in() ? (confirm_sign_out_ ? "Press Cross again to sign out." : "Press Cross to sign out.")
-                    : "Sign in with a QR code to choose a profile and load its addons and saved library. Press Cross.");
-    set(kProfiles, Kind::value, "Profiles", signed_in() ? jstr(active_profile_, "name", "Choose profile") : "Sign in first",
-        "Import or switch Nuvio account profiles, or create a profile. Each has separate history and sources.");
-    set(kTorrents, Kind::toggle, "Peer-to-peer torrents", "",
-        "Off uses direct and debrid links from your configured addons. Turn on to also download raw torrents.",
+    set(kUiLanguage,Kind::value,sx::i18n::tr("Language"),prefs_.ui_language=="de"?"Deutsch":"English",sx::i18n::tr("Choose English or German for the app menus. Restart Max'd to apply. Audio, subtitles and addon content use their own language settings."));
+    set(kMediaServers, SettingRow::Kind::action, sx::i18n::tr("Media servers (experimental)"), std::to_string(media_accounts_.size())+" connected", sx::i18n::tr("Connect Jellyfin, Emby or Plex. Browse server libraries and resume playback separately from addons."));
+    set(kAccount, Kind::value, sx::i18n::tr("Nuvio account"), signed_in() ? prefs_.user_email : sx::i18n::tr("Not signed in"),
+        signed_in() ? (confirm_sign_out_ ? sx::i18n::tr("Press Cross again to sign out.") : sx::i18n::tr("Press Cross to sign out."))
+                    : sx::i18n::tr("Sign in with a QR code to choose a profile and load its addons and saved library. Press Cross."));
+    set(kProfiles, Kind::value, sx::i18n::tr("Profiles"), signed_in() ? jstr(active_profile_, "name", sx::i18n::tr("Choose profile")) : sx::i18n::tr("Sign in first"),
+        sx::i18n::tr("Import or switch Nuvio account profiles, or create a profile. Each has separate history and sources."));
+    set(kTorrents, Kind::toggle, sx::i18n::tr("Peer-to-peer torrents"), "",
+        sx::i18n::tr("Off uses direct and debrid links from your configured addons. Turn on to also download raw torrents."),
         prefs_.builtin_torrents);
-    set(kTorrentOptions,Kind::action,"Torrent settings",prefs_.builtin_torrents?"Enabled":"Off",
-        "Cache limit and storage usage, safe buffered-data cleanup, and paired Web Drop. .torrent files and watch progress are kept separately.");
+    set(kTorrentOptions,Kind::action,sx::i18n::tr("Torrent settings"),prefs_.builtin_torrents?sx::i18n::tr("Enabled"):sx::i18n::tr("Off"),
+        sx::i18n::tr("Cache limit and storage usage, safe buffered-data cleanup, and paired Web Drop. .torrent files and watch progress are kept separately."));
     const int connections = int(!services_.torbox.key.empty()) + int(!services_.premiumize.key.empty()) + int(!services_.animeskip.key.empty());
-    set(kConnectedServices, Kind::value, "Connected Services", connections ? std::to_string(connections) + " connected" : "TorBox / Premiumize",
-        "Connect TorBox or Premiumize, import connections from Nuvio Sync, and prepare cached links for faster playback. The selected file keeps its original quality.");
-    set(kTracking, Kind::value, "Tracking accounts", "Trakt / SIMKL / MDBList",
-        "Connect trackers for this profile. Connecting does not change your Library Source or Watch Progress choice.");
+    set(kConnectedServices, Kind::value, sx::i18n::tr("Connected Services"), connections ? std::to_string(connections) + " connected" : "TorBox / Premiumize",
+        sx::i18n::tr("Connect TorBox or Premiumize, import connections from Nuvio Sync, and prepare cached links for faster playback. The selected file keeps its original quality."));
+    set(kTracking, Kind::value, sx::i18n::tr("Tracking accounts"), "Trakt / SIMKL / MDBList",
+        sx::i18n::tr("Connect trackers for this profile. Connecting does not change your Library Source or Watch Progress choice."));
     const auto library_source = jstr(tracking_status_, "library", "nuvio");
     const auto progress_source = jstr(tracking_status_, "progress", "nuvio");
-    set(kLibrarySource, Kind::value, "Library Source", library_source == "nuvio" ? "Nuvio Library" : tracking::name(library_source),
-        "Choose which source Nuvio reads for your Library. Connected trackers become available here. Nuvio Library is the default.");
-    set(kServer, Kind::value, "Watch Progress", progress_source == "nuvio" ? "Nuvio Sync" : tracking::name(progress_source),
-        "Choose which progress source powers resume and Continue Watching. Nuvio Sync is the default; guest progress stays on this PS5.");
+    set(kLibrarySource, Kind::value, sx::i18n::tr("Library Source"), library_source == "nuvio" ? sx::i18n::tr("Nuvio Library") : tracking::name(library_source),
+        sx::i18n::tr("Choose which source Nuvio reads for your Library. Connected trackers become available here. Nuvio Library is the default."));
+    set(kServer, Kind::value, sx::i18n::tr("Watch Progress"), progress_source == "nuvio" ? sx::i18n::tr("Nuvio Sync") : tracking::name(progress_source),
+        sx::i18n::tr("Choose which progress source powers resume and Continue Watching. Nuvio Sync is the default; guest progress stays on this PS5."));
     if (jstr(tracking_status_, "libraryPreferred", "nuvio") != library_source)
-        settings.rows[kLibrarySource].help += " Tracker unavailable. Using Nuvio Library until it reconnects.";
+        settings.rows[kLibrarySource].help += sx::i18n::tr(" Tracker unavailable. Using Nuvio Library until it reconnects.");
     if (jstr(tracking_status_, "progressPreferred", "nuvio") != progress_source)
-        settings.rows[kServer].help += " Tracker unavailable. Using Nuvio Sync until it reconnects.";
-    const char* display_labels[] = {"Follow PS5", "1080p", "1440p", "4K"};
-    set(kDisplay, Kind::value, "Display output", display_labels[display_output_preference(prefs_.display_output) + 1],
-        "Follow the PS5's output resolution, or choose an override. Close and reopen Nuvio Max'd to apply a change.");
-    set(kHdr, Kind::value, "HDR playback", prefs_.native_hdr ? (prefs_.auto_hdr_fallback ? "Auto (HDR or SDR fallback)" : "Require native HDR10") : "Convert HDR to SDR",
-        "Native HDR10 keeps PQ colour and highlights on a compatible TV. SDR conversion changes the colour range. Applies to the next stream.");
-    set(kPlaybackEngine, Kind::value, "Playback engine", prefs_.vlc_player ? "VLC 3.0.24 (experimental)" : prefs_.evo_player ? "EVO Player 0.13.0 (experimental)" : "Nuvio native",
-        "Choose the video engine. Applies to the next stream; subtitles and Watch Progress stay available.");
-    set(kReadAhead, Kind::value, "Read-ahead (Native/EVO)", std::to_string(prefs_.read_ahead_seconds) + " s",
-        "How far to buffer ahead. Memory limits may shorten the target. Applies to the next Native/EVO stream; VLC "
-        "manages its own buffer.");
-    set(kRefresh, Kind::value, "Display refresh", prefs_.display_refresh == 120 ? "Prefer 120 Hz" : "60 Hz",
-        "120 Hz can make 24 fps films feel steadier on a compatible TV. Keeps the selected resolution; uses 60 Hz if unavailable. Close and reopen to apply.");
-    const std::vector<std::string> night_modes{"Off", "Light", "Medium", "Strong"};
-    set(kNightMode, Kind::value, "Night Mode", night_modes[std::clamp(prefs_.night_mode,0,3)], "Lift quiet dialogue with linked-channel compression and peak limiting. Off by default. Uses PCM; applies to the next video on all players.");
-    set(kLfeMix, Kind::value, "Bass in stereo downmix", std::to_string(prefs_.lfe_mix_percent)+"%", "Native/EVO: include the surround LFE channel in stereo, with normalized headroom. Default 50%; Off drops LFE. VLC uses its own downmix. Applies to the next video.");
-    set(kSubtitleAutoSync, Kind::toggle, "Subtitle auto-sync", "", "Native/EVO: align addon subtitles to embedded text timings already read from the file. Off by default. Requires enough matching cues; uncertain matches keep manual timing. No speech or video is uploaded.",prefs_.subtitle_auto_sync);
-    set(kTrailerLanguage, Kind::value, "Trailer language", prefs_.trailer_language.empty()?"Follow preferred languages":language_name(prefs_.trailer_language), "Prefer this language when finding trailers, with English as a fallback. Automatic follows audio then subtitle preferences.");
-    set(kChapterSkip, Kind::toggle, "Skip buttons from chapters", "", "Use explicitly named opening, recap and credits chapters when available. Regular chapters and post-credit scenes are preserved. Requires Skip intro / recap / credits.",prefs_.chapter_skip_segments);
-    set(kAudioGain, Kind::value, "Audio volume / boost", std::to_string(prefs_.audio_gain_percent)+"%", "50–300%; uses PCM. Boost can distort loud peaks. Default 100%.");
-    set(kAudioDelay, Kind::value, "Audio sync delay", std::to_string(prefs_.audio_delay_ms)+" ms", "Positive: sound later relative to picture. Negative: sound earlier. Default 0 ms.");
-    set(kSubtitleDelay, Kind::value, "Subtitle sync delay", std::to_string(prefs_.subtitle_delay_ms)+" ms", "Positive: subtitles later; negative: earlier. Also adjustable during playback.");
-    set(kAudioMode, Kind::value, "Audio output", prefs_.vlc_player?"PCM (VLC)":prefs_.audio_output_mode=="pcm"?"PCM":prefs_.audio_output_mode=="auto"?"Auto (experimental)":"Bitstream (experimental)",
-        prefs_.vlc_player ? "VLC currently uses decoded PCM. Auto and Bitstream apply to Native/EVO playback." : "Auto uses PCM with Surround off; with Surround on it checks HDMI capabilities. Bitstream forces a compressed-format attempt. Applies to the next video.");
-    set(kAudioOutput, Kind::toggle, "Surround audio", "", "Use 7.1 PCM for compatible HDMI surround systems. Keep off for TV speakers or optical stereo. Applies to the next video.", prefs_.surround_audio);
-    set(kSubLangs, Kind::value, "Subtitle languages", prefs_.subtitle_langs.empty() ? "None" : prefs_.subtitle_langs,
-        "Preferred order, for example \"gre, eng\".");
-    set(kAutoSubs, Kind::toggle, "Subtitles on automatically", "", "Prefer matching subtitles inside the video file. Use addon subtitles when the file has no matching track.",
+        settings.rows[kServer].help += sx::i18n::tr(" Tracker unavailable. Using Nuvio Sync until it reconnects.");
+    const char* display_labels[] = {sx::i18n::tr("Follow PS5"), "1080p", "1440p", "4K"};
+    set(kDisplay, Kind::value, sx::i18n::tr("Display output"), display_labels[display_output_preference(prefs_.display_output) + 1],
+        sx::i18n::tr("Follow the PS5's output resolution, or choose an override. Close and reopen Nuvio Max'd to apply a change."));
+    set(kHdr, Kind::value, "HDR playback", prefs_.native_hdr ? (prefs_.auto_hdr_fallback ? sx::i18n::tr("Auto (HDR or SDR fallback)") : sx::i18n::tr("Require native HDR10")) : sx::i18n::tr("Convert HDR to SDR"),
+        sx::i18n::tr("Native HDR10 keeps PQ colour and highlights on a compatible TV. SDR conversion changes the colour range. Applies to the next stream."));
+    set(kPlaybackEngine, Kind::value, sx::i18n::tr("Playback engine"), prefs_.vlc_player ? "VLC 3.0.24 (experimental)" : prefs_.evo_player ? sx::i18n::tr("EVO Player 0.13.0 (experimental)") : sx::i18n::tr("Nuvio native"),
+        sx::i18n::tr("Choose the video engine. Applies to the next stream; subtitles and Watch Progress stay available."));
+    set(kReadAhead, Kind::value, sx::i18n::tr("Read-ahead (Native/EVO)"), std::to_string(prefs_.read_ahead_seconds) + " s",
+        sx::i18n::tr("How far to buffer ahead. Memory limits may shorten the target. Applies to the next Native/EVO stream; VLC manages its own buffer."));
+    set(kRefresh, Kind::value, sx::i18n::tr("Display refresh"), prefs_.display_refresh == 120 ? sx::i18n::tr("Prefer 120 Hz") : "60 Hz",
+        sx::i18n::tr("120 Hz can make 24 fps films feel steadier on a compatible TV. Keeps the selected resolution; uses 60 Hz if unavailable. Close and reopen to apply."));
+    const std::vector<std::string> night_modes{sx::i18n::tr("Off"), sx::i18n::tr("Light"), sx::i18n::tr("Medium"), sx::i18n::tr("Strong")};
+    set(kNightMode, Kind::value, sx::i18n::tr("Night Mode"), night_modes[std::clamp(prefs_.night_mode,0,3)], sx::i18n::tr("Lift quiet dialogue with linked-channel compression and peak limiting. Off by default. Uses PCM; applies to the next video on all players."));
+    set(kLfeMix, Kind::value, sx::i18n::tr("Bass in stereo downmix"), std::to_string(prefs_.lfe_mix_percent)+"%", sx::i18n::tr("Native/EVO: include the surround LFE channel in stereo, with normalized headroom. Default 50%; Off drops LFE. VLC uses its own downmix. Applies to the next video."));
+    set(kSubtitleAutoSync, Kind::toggle, sx::i18n::tr("Subtitle auto-sync"), "", sx::i18n::tr("Native/EVO: align addon subtitles to embedded text timings already read from the file. Off by default. Requires enough matching cues; uncertain matches keep manual timing. No speech or video is uploaded."),prefs_.subtitle_auto_sync);
+    set(kTrailerLanguage, Kind::value, sx::i18n::tr("Trailer language"), prefs_.trailer_language.empty()?sx::i18n::tr("Follow preferred languages"):i18n::tr(language_name(prefs_.trailer_language)), sx::i18n::tr("Prefer this language when finding trailers, with English as a fallback. Automatic follows audio then subtitle preferences."));
+    set(kChapterSkip, Kind::toggle, sx::i18n::tr("Skip buttons from chapters"), "", sx::i18n::tr("Use explicitly named opening, recap and credits chapters when available. Regular chapters and post-credit scenes are preserved. Requires Skip intro / recap / credits."),prefs_.chapter_skip_segments);
+    set(kAudioGain, Kind::value, sx::i18n::tr("Audio volume / boost"), std::to_string(prefs_.audio_gain_percent)+"%", sx::i18n::tr("50–300%; uses PCM. Boost can distort loud peaks. Default 100%."));
+    set(kAudioDelay, Kind::value, sx::i18n::tr("Audio sync delay"), std::to_string(prefs_.audio_delay_ms)+" ms", sx::i18n::tr("Positive: sound later relative to picture. Negative: sound earlier. Default 0 ms."));
+    set(kSubtitleDelay, Kind::value, sx::i18n::tr("Subtitle sync delay"), std::to_string(prefs_.subtitle_delay_ms)+" ms", sx::i18n::tr("Positive: subtitles later; negative: earlier. Also adjustable during playback."));
+    set(kAudioMode, Kind::value, sx::i18n::tr("Audio output"), prefs_.vlc_player?"PCM (VLC)":prefs_.audio_output_mode=="pcm"?"PCM":prefs_.audio_output_mode=="auto"?sx::i18n::tr("Auto (experimental)"):sx::i18n::tr("Bitstream (experimental)"),
+        prefs_.vlc_player ? sx::i18n::tr("VLC currently uses decoded PCM. Auto and Bitstream apply to Native/EVO playback.") : sx::i18n::tr("Auto uses PCM with Surround off; with Surround on it checks HDMI capabilities. Bitstream forces a compressed-format attempt. Applies to the next video."));
+    set(kAudioOutput, Kind::toggle, sx::i18n::tr("Surround audio"), "", sx::i18n::tr("Use 7.1 PCM for compatible HDMI surround systems. Keep off for TV speakers or optical stereo. Applies to the next video."), prefs_.surround_audio);
+    set(kSubLangs, Kind::value, sx::i18n::tr("Subtitle languages"), prefs_.subtitle_langs.empty() ? sx::i18n::tr("None") : prefs_.subtitle_langs,
+        sx::i18n::tr("Preferred order, for example \"gre, eng\"."));
+    set(kAutoSubs, Kind::toggle, sx::i18n::tr("Subtitles on automatically"), "", sx::i18n::tr("Prefer matching subtitles inside the video file. Use addon subtitles when the file has no matching track."),
         prefs_.auto_subtitles);
-    set(kSubSize, Kind::value, "Subtitle size", size_label(prefs_.sub_size), "How large subtitles are drawn over the video.");
-    static const char* fonts[]={"Regular", "Bold", "Display"};
-    static const char* colours[]={"White", "Yellow", "Cyan"};
-    static const char* effects[]={"Plain", "Outline", "Shadow"};
-    set(kSubFont, Kind::value, "Subtitle font", fonts[prefs_.subtitle_style.font], "Choose the subtitle face. Unicode fallbacks remain available.");
-    set(kSubColour, Kind::value, "Subtitle colour", colours[prefs_.subtitle_style.colour], "Choose a colour that is comfortable to read.");
-    set(kSubEffect, Kind::value, "Subtitle effect", effects[prefs_.subtitle_style.effect], "Add an outline or shadow to separate text from the picture.");
-    set(kSubBackground, Kind::value, "Subtitle background", std::to_string(prefs_.subtitle_style.background)+"%", "Choose the opacity behind subtitle text.");
+    set(kSubSize, Kind::value, sx::i18n::tr("Subtitle size"), size_label(prefs_.sub_size), sx::i18n::tr("How large subtitles are drawn over the video."));
+    static const char* fonts[]={sx::i18n::tr("Regular"), sx::i18n::tr("Bold"), sx::i18n::tr("Display")};
+    static const char* colours[]={sx::i18n::tr("White"), sx::i18n::tr("Yellow"), sx::i18n::tr("Cyan")};
+    static const char* effects[]={sx::i18n::tr("Plain"), sx::i18n::tr("Outline"), sx::i18n::tr("Shadow")};
+    set(kSubFont, Kind::value, sx::i18n::tr("Subtitle font"), fonts[prefs_.subtitle_style.font], sx::i18n::tr("Choose the subtitle face. Unicode fallbacks remain available."));
+    set(kSubColour, Kind::value, sx::i18n::tr("Subtitle colour"), colours[prefs_.subtitle_style.colour], sx::i18n::tr("Choose a colour that is comfortable to read."));
+    set(kSubEffect, Kind::value, sx::i18n::tr("Subtitle effect"), effects[prefs_.subtitle_style.effect], sx::i18n::tr("Add an outline or shadow to separate text from the picture."));
+    set(kSubBackground, Kind::value, sx::i18n::tr("Subtitle background"), std::to_string(prefs_.subtitle_style.background)+"%", sx::i18n::tr("Choose the opacity behind subtitle text."));
     for(int i : {kSubSize,kSubFont,kSubColour,kSubEffect,kSubBackground}) settings.rows[i].subtitle_preview=true;
-    set(kSeek, Kind::value, "D-pad seek interval", std::to_string(prefs_.seek_seconds)+" s", "How far Left and Right skip during playback.");
-    set(kShoulderSeek, Kind::value, "L1 / R1 seek interval", std::to_string(prefs_.shoulder_seek_seconds)+" s", "How far the shoulder buttons skip during playback.");
-    set(kCountdown, Kind::value, "Next-episode countdown", std::to_string(prefs_.next_episode_seconds)+" s", "Countdown during credits or when an episode ends, once a matching stream is ready. Pause or buffering holds the countdown; Circle cancels it.");
-    set(kReducedMotion, Kind::toggle, "Reduced motion", "", "Make focus, scrolling and menu transitions immediate; keep decorative backgrounds still.", prefs_.reduced_motion);
-    set(kHighContrast, Kind::toggle, "Higher contrast", "", "Brighter interface text and stronger panel and focus boundaries. The video picture is unchanged.", prefs_.high_contrast);
-    set(kReleaseNotes, Kind::action, "What’s new", "Nuvio Max’d " + std::string(nuvio_update::current_version), "Read the changes in this version again.");
-    set(kDiagnostics, Kind::action, "Playback diagnostics", "", "Show or save a privacy-safe summary; scan its QR code to copy text on your phone. Detailed private logs stay on this console.");
-    set(kAudioLangs, Kind::value, "Audio languages", prefs_.audio_langs.empty() ? "Default" : prefs_.audio_langs,
-        "Preferred audio track language, for example \"eng\". Leave empty for the default.");
-    set(kAutoplay, Kind::toggle, "Play next episode automatically", "", "Show a cancellable countdown during credits or at the end of an episode. Match the selected stream quality.",
+    set(kSeek, Kind::value, sx::i18n::tr("D-pad seek interval"), std::to_string(prefs_.seek_seconds)+" s", sx::i18n::tr("How far Left and Right skip during playback."));
+    set(kShoulderSeek, Kind::value, sx::i18n::tr("L1 / R1 seek interval"), std::to_string(prefs_.shoulder_seek_seconds)+" s", sx::i18n::tr("How far the shoulder buttons skip during playback."));
+    set(kCountdown, Kind::value, sx::i18n::tr("Next-episode countdown"), std::to_string(prefs_.next_episode_seconds)+" s", sx::i18n::tr("Countdown during credits or when an episode ends, once a matching stream is ready. Pause or buffering holds the countdown; Circle cancels it."));
+    set(kReducedMotion, Kind::toggle, sx::i18n::tr("Reduced motion"), "", sx::i18n::tr("Make focus, scrolling and menu transitions immediate; keep decorative backgrounds still."), prefs_.reduced_motion);
+    set(kHighContrast, Kind::toggle, sx::i18n::tr("Higher contrast"), "", sx::i18n::tr("Brighter interface text and stronger panel and focus boundaries. The video picture is unchanged."), prefs_.high_contrast);
+    set(kReleaseNotes, Kind::action, sx::i18n::tr("What’s new"), "Nuvio Max’d " + std::string(nuvio_update::current_version), sx::i18n::tr("Read the changes in this version again."));
+    set(kDiagnostics, Kind::action, sx::i18n::tr("Playback diagnostics"), "", sx::i18n::tr("Show or save a privacy-safe summary; scan its QR code to copy text on your phone. Detailed private logs stay on this console."));
+    set(kAudioLangs, Kind::value, sx::i18n::tr("Audio languages"), prefs_.audio_langs.empty() ? sx::i18n::tr("Default") : prefs_.audio_langs,
+        sx::i18n::tr("Preferred audio track language, for example \"eng\". Leave empty for the default."));
+    set(kAutoplay, Kind::toggle, sx::i18n::tr("Play next episode automatically"), "", sx::i18n::tr("Show a cancellable countdown during credits or at the end of an episode. Match the selected stream quality."),
         prefs_.autoplay_next);
-    set(kSkipSegments, Kind::toggle, "Skip intro and recap buttons", "",
-        "Use IntroDB and anime timing services for intros, recaps and credits. Coverage varies by show and release.", prefs_.skip_segments);
-    set(kCalmBackgrounds, Kind::toggle, "Calmer backgrounds", "", "Keep decorative menu backgrounds still. Video playback stays full quality.", prefs_.calm_backgrounds);
-    set(kUiSounds, Kind::toggle, "Interface sounds", "", "A soft sound when you move around, go back or switch page.", prefs_.ui_sounds);
-    set(kAddAddon, Kind::value, "Add addon or plugin URL", "",
+    set(kSkipSegments, Kind::toggle, sx::i18n::tr("Skip intro and recap buttons"), "",
+        sx::i18n::tr("Use IntroDB and anime timing services for intros, recaps and credits. Coverage varies by show and release."), prefs_.skip_segments);
+    set(kCalmBackgrounds, Kind::toggle, sx::i18n::tr("Calmer backgrounds"), "", sx::i18n::tr("Keep decorative menu backgrounds still. Video playback stays full quality."), prefs_.calm_backgrounds);
+    set(kUiSounds, Kind::toggle, sx::i18n::tr("Interface sounds"), "", sx::i18n::tr("A soft sound when you move around, go back or switch page."), prefs_.ui_sounds);
+    set(kAddAddon, Kind::value, sx::i18n::tr("Add addon or plugin URL"), "",
         prefs_.extra_addons.empty()
-            ? "A Stremio addon or Nuvio provider manifest URL. Manage providers on the Addons page."
-            : std::to_string(prefs_.extra_addons.size()) + " added here.");
-    set(kReload, Kind::action, "Reload addons and catalogs", "", "Fetch every addon and catalog again.");
+            ? sx::i18n::tr("A Stremio addon or Nuvio provider manifest URL. Manage providers on the Addons page.")
+            : std::to_string(prefs_.extra_addons.size()) + sx::i18n::tr(" added here."));
+    set(kReload, Kind::action, sx::i18n::tr("Reload addons and catalogs"), "", sx::i18n::tr("Fetch every addon and catalog again."));
     const auto update = updater_.status();
-    set(kMetadataCredits, Kind::action, "Metadata credits", "TMDB", "This product uses the TMDB API but is not endorsed or certified by TMDB.");
-    set(kDonation, Kind::action, "Support on Ko-fi", "", "Optional support for development. Scan the QR code with your phone.");
-    set(kInstallSource, Kind::value, "Install source", install_source_label(prefs_.install_source),
-        "Where you installed Nuvio Max'd. Update reminders use this choice; change it if you switch install methods.");
-    set(kUpdates, Kind::value, "App updates", update.phase == AppUpdate::Phase::idle ? "Nuvio Max'd " + std::string(nuvio_update::current_version) + " (experimental)" : update.message,
+    set(kMetadataCredits, Kind::action, sx::i18n::tr("Metadata credits"), "TMDB", sx::i18n::tr("This product uses the TMDB API but is not endorsed or certified by TMDB."));
+    set(kDonation, Kind::action, sx::i18n::tr("Support on Ko-fi"), "", sx::i18n::tr("Optional support for development. Scan the QR code with your phone."));
+    set(kInstallSource, Kind::value, sx::i18n::tr("Install source"), install_source_label(prefs_.install_source),
+        sx::i18n::tr("Where you installed Nuvio Max'd. Update reminders use this choice; change it if you switch install methods."));
+    set(kUpdates, Kind::value, sx::i18n::tr("App updates"), update.phase == AppUpdate::Phase::idle ? "Nuvio Max'd " + std::string(nuvio_update::current_version) + " (experimental)" : update.message,
         update_destination(prefs_.install_source));
-    set(kExit, Kind::action, "Exit Nuvio Max'd", "", "Close the app and go back to the home screen.");
-    set(kRemoteButtons,Kind::action,"Remote buttons (experimental)",std::to_string(prefs_.remote_bindings.size())+" mapped","Assign buttons received from your Media Remote or TV remote to Search, Options, navigation, playback or seeking. PS5/TV system buttons may not reach this app. Controller controls are unchanged.");
-    set(kConsoleLights, Kind::toggle, "Console light sync", "", "Fade the console lights with the controller while Nuvio is open. Console colours are approximate. Unsupported systems leave their lights unchanged. Turning off restores the previous state.", prefs_.console_light_sync);
-    const char* light_status = console_light_status_==ConsoleLights::Status::active ? "Sync active." :
-        console_light_status_==ConsoleLights::Status::unavailable ? "Console light access is unavailable on this system." :
-        console_light_status_==ConsoleLights::Status::system_owned ? "System lighting took priority; toggle off and on to retry." : "Waiting for Nuvio to be in front.";
+    set(kExit, Kind::action, sx::i18n::tr("Exit Nuvio Max'd"), "", sx::i18n::tr("Close the app and go back to the home screen."));
+    set(kRemoteButtons,Kind::action,sx::i18n::tr("Remote buttons (experimental)"),std::to_string(prefs_.remote_bindings.size())+" mapped",sx::i18n::tr("Assign buttons received from your Media Remote or TV remote to Search, Options, navigation, playback or seeking. PS5/TV system buttons may not reach this app. Controller controls are unchanged."));
+    set(kConsoleLights, Kind::toggle, sx::i18n::tr("Console light sync"), "", sx::i18n::tr("Fade the console lights with the controller while Nuvio is open. Console colours are approximate. Unsupported systems leave their lights unchanged. Turning off restores the previous state."), prefs_.console_light_sync);
+    const char* light_status = console_light_status_==ConsoleLights::Status::active ? sx::i18n::tr("Sync active.") :
+        console_light_status_==ConsoleLights::Status::unavailable ? sx::i18n::tr("Console light access is unavailable on this system.") :
+        console_light_status_==ConsoleLights::Status::system_owned ? sx::i18n::tr("System lighting took priority; toggle off and on to retry.") : sx::i18n::tr("Waiting for Nuvio to be in front.");
     if(prefs_.console_light_sync) settings.rows[kConsoleLights].help += std::string(" ")+light_status;
     const auto group = [&](const char* name,std::initializer_list<int> ids) {
         for(int id:ids) settings.rows[id].category=name;
@@ -825,53 +829,61 @@ void Session::refresh_settings()
     group("Subtitles", {kSubLangs,kAutoSubs,kSubSize,kSubFont,kSubColour,kSubEffect,kSubBackground,kSubtitleDelay,kSubtitleAutoSync});
     group("Playback", {kSeek, kShoulderSeek, kCountdown, kAutoplay, kSkipSegments, kReadAhead, kChapterSkip, kTrailerLanguage});
     group("Appearance & Lighting", {kReducedMotion,kHighContrast,kUiSounds,kCalmBackgrounds,kConsoleLights});
-    set(kSourceOptions,Kind::action,"Source preferences","Quality, language and checks","Rank sources using advertised metadata. Filter likely samples, wrong episodes, quality, size and HDR. Unknown metadata remains available. Preferences belong to this profile.");
+    set(kSourceOptions,Kind::action,sx::i18n::tr("Source preferences"),sx::i18n::tr("Quality, language and checks"),sx::i18n::tr("Rank sources using advertised metadata. Filter likely samples, wrong episodes, quality, size and HDR. Unknown metadata remains available. Preferences belong to this profile."));
     group("Addons", {kAddAddon,kReload,kSourceOptions});
-    set(kSportsEnable,Kind::toggle,"Sports Hub","","Show Sports Hub in navigation for this profile. Off stops sports requests and keeps your selections.",sports_prefs_.enabled);
-    const auto sports_state=sports_prefs_.enabled?"":"Enable Sports Hub first";
-    set(kSportsOpen,Kind::action,"Open Sports Hub",sports_state,"Browse schedules, results and matching channels from your own Live TV sources.");
-    set(kSportsRegion,Kind::action,"Sports coverage region",sports_prefs_.enabled?sports_prefs_.region:sports_state,"Choose broadcaster coverage preferences; competitions remain selectable in every region.");
-    set(kSportsBrowse,Kind::action,"Choose sports and competitions",sports_state,"Sport → league → teams. Include or exclude whole sports and individual competitions.");
-    set(kSportsFollowing,Kind::action,"Follow teams, leagues and names",sports_state,"Manage My Sports. Follow teams across supported competitions or add an athlete/name to find in your guide.");
-    set(kSportsScores,Kind::toggle,"Hide sports scores","","Hide scores and live score details to avoid spoilers.",sports_prefs_.hide_scores);
-    set(kSportsChannels,Kind::toggle,"Only events with channel matches","","Limit the hub to events with guide or broadcaster candidates in your loaded Live TV source. A broadcaster alone does not confirm the programme.",sports_prefs_.only_channels);
-    set(kSportsClock,Kind::action,"Sports time display",sports_prefs_.enabled?std::string("UTC ")+(sports_prefs_.utc_offset>=0?"+":"")+std::to_string(sports_prefs_.utc_offset)+" min":sports_state,"Fixed UTC offset in 15-minute steps. Adjust when daylight-saving time changes.");
+    set(kSportsEnable,Kind::toggle,sx::i18n::tr("Sports Hub"),"",sx::i18n::tr("Show Sports Hub in navigation for this profile. Off stops sports requests and keeps your selections."),sports_prefs_.enabled);
+    const auto sports_state=sports_prefs_.enabled?"":sx::i18n::tr("Enable Sports Hub first");
+    set(kSportsOpen,Kind::action,sx::i18n::tr("Open Sports Hub"),sports_state,sx::i18n::tr("Browse schedules, results and matching channels from your own Live TV sources."));
+    set(kSportsRegion,Kind::action,sx::i18n::tr("Sports coverage region"),sports_prefs_.enabled?sports_prefs_.region:sports_state,sx::i18n::tr("Choose broadcaster coverage preferences; competitions remain selectable in every region."));
+    set(kSportsBrowse,Kind::action,sx::i18n::tr("Choose sports and competitions"),sports_state,sx::i18n::tr("Sport → league → teams. Include or exclude whole sports and individual competitions."));
+    set(kSportsFollowing,Kind::action,sx::i18n::tr("Follow teams, leagues and names"),sports_state,sx::i18n::tr("Manage My Sports. Follow teams across supported competitions or add an athlete/name to find in your guide."));
+    set(kSportsScores,Kind::toggle,sx::i18n::tr("Hide sports scores"),"",sx::i18n::tr("Hide scores and live score details to avoid spoilers."),sports_prefs_.hide_scores);
+    set(kSportsChannels,Kind::toggle,sx::i18n::tr("Only events with channel matches"),"",sx::i18n::tr("Limit the hub to events with guide or broadcaster candidates in your loaded Live TV source. A broadcaster alone does not confirm the programme."),sports_prefs_.only_channels);
+    set(kSportsClock,Kind::action,sx::i18n::tr("Sports time display"),sports_prefs_.enabled?std::string("UTC ")+(sports_prefs_.utc_offset>=0?"+":"")+std::to_string(sports_prefs_.utc_offset)+" min":sports_state,sx::i18n::tr("Fixed UTC offset in 15-minute steps. Adjust when daylight-saving time changes."));
     group("Sports Hub",{kSportsEnable,kSportsOpen,kSportsRegion,kSportsBrowse,kSportsFollowing,kSportsScores,kSportsChannels,kSportsClock});
     group("Torrents",{kTorrents,kTorrentOptions});
     group("Controls",{kRemoteButtons});
-    group("App & Updates", {kReleaseNotes,kDiagnostics,kMetadataCredits,kDonation,kInstallSource,kUpdates,kExit});
+    group("App & Updates", {kUiLanguage,kReleaseNotes,kDiagnostics,kMetadataCredits,kDonation,kInstallSource,kUpdates,kExit});
     changed_ |= kSettings;
 }
 
 void Session::settings_activate(int row)
 {
+    if(row==kUiLanguage){
+        open_dropdown(sx::i18n::tr("Language / Sprache"),{"English","Deutsch"},prefs_.ui_language=="de"?1:0,[this](int n){
+            if(n<0||n>1)return;const auto previous=prefs_.ui_language;prefs_.ui_language=n==1?"de":"en";save_prefs();
+            json stored;const bool saved=load_json(data_dir_+"/settings.json",stored)&&jstr(stored,"ui_language")==prefs_.ui_language;
+            if(!saved)prefs_.ui_language=previous;refresh_settings();
+            say(saved?sx::i18n::tr("Language saved. Restart Max'd to apply."):sx::i18n::tr("Could not save language. Try again."),8,!saved);
+        });return;
+    }
     if(row==SettingsNavigation::search_action) {
         const auto profile=profile_generation_;
         ask_text([this,profile](const std::string& query) {
             if(profile!=profile_generation_ || trim(query).empty())return;
             const auto matches=SettingsNavigation::search(settings,query);
-            if(matches.empty()){say("No matching settings. Try a shorter name or another word.",7.0);return;}
+            if(matches.empty()){say(sx::i18n::tr("No matching settings. Try a shorter name or another word."),7.0);return;}
             std::vector<std::string> choices;
             for(int id:matches)choices.push_back(settings.rows[id].label+" — "+SettingsNavigation::group(settings.rows[id]));
-            open_dropdown("Matching settings",choices,0,[this,profile,matches](int pick) {
+            open_dropdown(sx::i18n::tr("Matching settings"),choices,0,[this,profile,matches](int pick) {
                 if(profile!=profile_generation_ || pick<0 || pick>=int(matches.size()))return;
                 settings_activate(matches[pick]);
             });
-        },"Search settings");
+        },sx::i18n::tr("Search settings"));
         return;
     }
     if (signed_in() && !profile_ready_ &&
         (row == kSourceOptions || row == kMediaServers || row == kTracking || row == kLibrarySource || row == kConnectedServices || row == kServer || row == kAddAddon || row == kReload ||
          row == kSubLangs || row == kAudioLangs || row == kAutoSubs)) {
-        say("Choose a profile in Account & Services > Profiles first.", 7.0); return;
+        say(sx::i18n::tr("Choose a profile in Account & Services > Profiles first."), 7.0); return;
     }
 
     if (row != kAccount && confirm_sign_out_)
         confirm_sign_out_ = false;
     if(row>=kSportsEnable&&row<=kSportsClock) {
-        if(!profile_ready_){say("Choose a profile first.",6);return;}
+        if(!profile_ready_){say(sx::i18n::tr("Choose a profile first."),6);return;}
         if(row==kSportsEnable){sports_toggle();return;}
-        if(!sports_prefs_.enabled){say("Enable Sports Hub in this section first.",6);return;}
+        if(!sports_prefs_.enabled){say(sx::i18n::tr("Enable Sports Hub in this section first."),6);return;}
         if(row==kSportsOpen){goto_=Page::sports;return;}
         if(row==kSportsRegion)sports_region();else if(row==kSportsBrowse)sports_browse();
         else if(row==kSportsFollowing)sports_following();else if(row==kSportsScores)sports_scores();
@@ -920,23 +932,23 @@ void Session::settings_activate(int row)
         tracking_source_menu(true);
         break;
     case kDisplay:
-        open_dropdown("Display output", {"Follow PS5", "1080p", "1440p", "4K"},
+        open_dropdown(sx::i18n::tr("Display output"), {sx::i18n::tr("Follow PS5"), "1080p", "1440p", "4K"},
                       display_output_preference(prefs_.display_output) + 1, [this](int i) {
             if (i < 0 || i > 3) return;
             prefs_.display_output = display_output_preference_name(i - 1);
             save_prefs();
             cue(hui::audio::Cue::saved);
-            say("Display choice saved. Close and reopen Nuvio Max'd to apply it.", 8.0);
+            say(sx::i18n::tr("Display choice saved. Close and reopen Nuvio Max'd to apply it."), 8.0);
             refresh_settings();
         });
         break;
     case kRefresh:
-        open_dropdown("Display refresh", {"60 Hz", "Prefer 120 Hz"},
+        open_dropdown(sx::i18n::tr("Display refresh"), {"60 Hz", sx::i18n::tr("Prefer 120 Hz")},
                       prefs_.display_refresh == 120 ? 1 : 0, [this](int i) {
             if (i != 0 && i != 1) return;
             prefs_.display_refresh = i == 1 ? 120 : 60;
             save_prefs(); refresh_settings(); cue(hui::audio::Cue::saved);
-            say("Refresh choice saved. Close and reopen Nuvio Max'd to apply it.",8.0);
+            say(sx::i18n::tr("Refresh choice saved. Close and reopen Nuvio Max'd to apply it."),8.0);
         });
         break;
     case kSubLangs:
@@ -950,7 +962,7 @@ void Session::settings_activate(int row)
         });
         break;
     case kHdr:
-        open_dropdown("HDR playback", {"Auto (HDR or SDR fallback)", "Require native HDR10", "Convert HDR to SDR"},
+        open_dropdown("HDR playback", {sx::i18n::tr("Auto (HDR or SDR fallback)"), sx::i18n::tr("Require native HDR10"), sx::i18n::tr("Convert HDR to SDR")},
                       !prefs_.native_hdr ? 2 : prefs_.auto_hdr_fallback ? 0 : 1, [this](int i) {
             if (i < 0 || i > 2) return;
             prefs_.native_hdr = i != 2;
@@ -959,9 +971,9 @@ void Session::settings_activate(int row)
         });
         break;
     case kPlaybackEngine: {
-        std::vector<std::string> engines={"Nuvio native", "EVO Player 0.13.0 (experimental)"};
+        std::vector<std::string> engines={sx::i18n::tr("Nuvio native"), sx::i18n::tr("EVO Player 0.13.0 (experimental)")};
         if(VlcBackend::available())engines.push_back("VLC 3.0.24 (experimental)");
-        open_dropdown("Playback engine", engines,
+        open_dropdown(sx::i18n::tr("Playback engine"), engines,
                       prefs_.vlc_player && VlcBackend::available() ? 2 : prefs_.evo_player ? 1 : 0, [this](int i) {
             if(i<0 || i>2 || (i==2 && !VlcBackend::available()))return;
             prefs_.evo_player=i==1;prefs_.vlc_player=i==2;
@@ -974,7 +986,7 @@ void Session::settings_activate(int row)
         const std::vector<int> values = {30, 60, 120, 300};
         const int selected =
             static_cast<int>(std::find(values.begin(), values.end(), prefs_.read_ahead_seconds) - values.begin());
-        open_dropdown("Read-ahead", {"30 seconds", "1 minute", "2 minutes", "5 minutes"}, selected,
+        open_dropdown(sx::i18n::tr("Read-ahead"), {"30 seconds", "1 minute", "2 minutes", "5 minutes"}, selected,
                       [this, values](int i)
                       {
                           if (i < 0 || i >= static_cast<int>(values.size()))
@@ -989,7 +1001,7 @@ void Session::settings_activate(int row)
     case kSubFont: {
         static constexpr int values[] = {0,1,2};
         int selected=0; for(int i=0;i<3;++i) if(prefs_.subtitle_style.font==values[i]) selected=i;
-        open_dropdown("Subtitle font", {"Regular","Bold","Display"}, selected, [this](int i) {
+        open_dropdown(sx::i18n::tr("Subtitle font"), {sx::i18n::tr("Regular"),sx::i18n::tr("Bold"),sx::i18n::tr("Display")}, selected, [this](int i) {
             if(i<0 || i>=3) return;
             prefs_.subtitle_style.font=values[i]; save_prefs(); refresh_settings(); cue(hui::audio::Cue::saved);
         }); break;
@@ -997,7 +1009,7 @@ void Session::settings_activate(int row)
     case kSubColour: {
         static constexpr int values[] = {0,1,2};
         int selected=0; for(int i=0;i<3;++i) if(prefs_.subtitle_style.colour==values[i]) selected=i;
-        open_dropdown("Subtitle colour", {"White","Yellow","Cyan"}, selected, [this](int i) {
+        open_dropdown(sx::i18n::tr("Subtitle colour"), {sx::i18n::tr("White"),sx::i18n::tr("Yellow"),sx::i18n::tr("Cyan")}, selected, [this](int i) {
             if(i<0 || i>=3) return;
             prefs_.subtitle_style.colour=values[i]; save_prefs(); refresh_settings(); cue(hui::audio::Cue::saved);
         }); break;
@@ -1005,7 +1017,7 @@ void Session::settings_activate(int row)
     case kSubEffect: {
         static constexpr int values[] = {0,1,2};
         int selected=0; for(int i=0;i<3;++i) if(prefs_.subtitle_style.effect==values[i]) selected=i;
-        open_dropdown("Subtitle effect", {"Plain","Outline","Shadow"}, selected, [this](int i) {
+        open_dropdown(sx::i18n::tr("Subtitle effect"), {sx::i18n::tr("Plain"),sx::i18n::tr("Outline"),sx::i18n::tr("Shadow")}, selected, [this](int i) {
             if(i<0 || i>=3) return;
             prefs_.subtitle_style.effect=values[i]; save_prefs(); refresh_settings(); cue(hui::audio::Cue::saved);
         }); break;
@@ -1013,7 +1025,7 @@ void Session::settings_activate(int row)
     case kSubBackground: {
         static constexpr int values[] = {0,25,50,75,100};
         int selected=0; for(int i=0;i<5;++i) if(prefs_.subtitle_style.background==values[i]) selected=i;
-        open_dropdown("Subtitle background", {"Off","25%","50%","75%","100%"}, selected, [this](int i) {
+        open_dropdown(sx::i18n::tr("Subtitle background"), {sx::i18n::tr("Off"),"25%","50%","75%","100%"}, selected, [this](int i) {
             if(i<0 || i>=5) return;
             prefs_.subtitle_style.background=values[i]; save_prefs(); refresh_settings(); cue(hui::audio::Cue::saved);
         }); break;
@@ -1021,7 +1033,7 @@ void Session::settings_activate(int row)
     case kSeek: {
         static constexpr int values[] = {5,10,15,30,60};
         int selected=0; for(int i=0;i<5;++i) if(prefs_.seek_seconds==values[i]) selected=i;
-        open_dropdown("D-pad seek interval", {"5 s","10 s","15 s","30 s","60 s"}, selected, [this](int i) {
+        open_dropdown(sx::i18n::tr("D-pad seek interval"), {"5 s","10 s","15 s","30 s","60 s"}, selected, [this](int i) {
             if(i<0 || i>=5) return;
             prefs_.seek_seconds=values[i]; save_prefs(); refresh_settings(); cue(hui::audio::Cue::saved);
         }); break;
@@ -1029,7 +1041,7 @@ void Session::settings_activate(int row)
     case kShoulderSeek: {
         static constexpr int values[] = {5,10,30,60,120,300};
         int selected=0; for(int i=0;i<6;++i) if(prefs_.shoulder_seek_seconds==values[i]) selected=i;
-        open_dropdown("L1 / R1 seek interval", {"5 s","10 s","30 s","60 s","120 s","300 s"}, selected, [this](int i) {
+        open_dropdown(sx::i18n::tr("L1 / R1 seek interval"), {"5 s","10 s","30 s","60 s","120 s","300 s"}, selected, [this](int i) {
             if(i<0 || i>=6) return;
             prefs_.shoulder_seek_seconds=values[i]; save_prefs(); refresh_settings(); cue(hui::audio::Cue::saved);
         }); break;
@@ -1037,7 +1049,7 @@ void Session::settings_activate(int row)
     case kCountdown: {
         static constexpr int values[] = {5,10,15,30,60,120};
         int selected=0; for(int i=0;i<6;++i) if(prefs_.next_episode_seconds==values[i]) selected=i;
-        open_dropdown("Next-episode countdown", {"5 s","10 s","15 s","30 s","60 s","120 s"}, selected, [this](int i) {
+        open_dropdown(sx::i18n::tr("Next-episode countdown"), {"5 s","10 s","15 s","30 s","60 s","120 s"}, selected, [this](int i) {
             if(i<0 || i>=6) return;
             prefs_.next_episode_seconds=values[i]; save_prefs(); refresh_settings(); cue(hui::audio::Cue::saved);
         }); break;
@@ -1047,34 +1059,34 @@ void Session::settings_activate(int row)
     case kSubtitleAutoSync: prefs_.subtitle_auto_sync=!prefs_.subtitle_auto_sync;save_prefs();refresh_settings();break;
     case kTrailerLanguage: {
         const std::vector<std::string> ids{"","en","es","fr","de","it","pt","nl","pl","tr","ar","he","ja","ko","zh","hi","ru","uk","el","cs","sv","da","fi","ro","hu","vi","th","id"};
-        std::vector<std::string> labels;int active=0;for(size_t n=0;n<ids.size();++n){labels.push_back(ids[n].empty()?"Follow preferred languages":language_name(ids[n]));if(ids[n]==prefs_.trailer_language)active=int(n);}
-        open_dropdown("Trailer language",labels,active,[this,ids](int n){if(n<0 || n>=int(ids.size()))return;prefs_.trailer_language=ids[n];save_prefs();refresh_settings();});break;
+        std::vector<std::string> labels;int active=0;for(size_t n=0;n<ids.size();++n){labels.push_back(ids[n].empty()?sx::i18n::tr("Follow preferred languages"):i18n::tr(language_name(ids[n])));if(ids[n]==prefs_.trailer_language)active=int(n);}
+        open_dropdown(sx::i18n::tr("Trailer language"),labels,active,[this,ids](int n){if(n<0 || n>=int(ids.size()))return;prefs_.trailer_language=ids[n];save_prefs();refresh_settings();});break;
     }
     case kChapterSkip: prefs_.chapter_skip_segments=!prefs_.chapter_skip_segments;save_prefs();refresh_settings();break;
     case kNightMode:
-        open_dropdown("Night Mode", {"Off (default)","Light","Medium","Strong"}, prefs_.night_mode, [this](int i){if(i<0 || i>3)return;prefs_.night_mode=i;save_prefs();refresh_settings();});break;
+        open_dropdown(sx::i18n::tr("Night Mode"), {sx::i18n::tr("Off (default)"),sx::i18n::tr("Light"),sx::i18n::tr("Medium"),sx::i18n::tr("Strong")}, prefs_.night_mode, [this](int i){if(i<0 || i>3)return;prefs_.night_mode=i;save_prefs();refresh_settings();});break;
     case kLfeMix:
-        open_dropdown("Bass in stereo downmix", {"Off","50% (default)","100%"},prefs_.lfe_mix_percent/50,[this](int i){if(i<0 || i>2)return;prefs_.lfe_mix_percent=i*50;save_prefs();refresh_settings();});break;
+        open_dropdown(sx::i18n::tr("Bass in stereo downmix"), {sx::i18n::tr("Off"),"50% (default)","100%"},prefs_.lfe_mix_percent/50,[this](int i){if(i<0 || i>2)return;prefs_.lfe_mix_percent=i*50;save_prefs();refresh_settings();});break;
     case kAudioGain: {
         std::vector<std::string> labels;for(int v=50;v<=300;v+=25)labels.push_back(std::to_string(v)+"%");
-        open_dropdown("Audio volume / boost",labels,(prefs_.audio_gain_percent-50)/25,[this](int i){prefs_.audio_gain_percent=50+i*25;save_prefs();refresh_settings();});break;
+        open_dropdown(sx::i18n::tr("Audio volume / boost"),labels,(prefs_.audio_gain_percent-50)/25,[this](int i){prefs_.audio_gain_percent=50+i*25;save_prefs();refresh_settings();});break;
     }
     case kAudioDelay:
     case kSubtitleDelay: {
         const bool audio=row==kAudioDelay;const int limit=audio?2000:10000;
         std::vector<std::string> labels;for(int v=-limit;v<=limit;v+=50)labels.push_back(std::to_string(v)+" ms");
-        open_dropdown(audio?"Audio sync delay":"Subtitle sync delay",labels,((audio?prefs_.audio_delay_ms:prefs_.subtitle_delay_ms)+limit)/50,[this,audio,limit](int i){
+        open_dropdown(audio?sx::i18n::tr("Audio sync delay"):sx::i18n::tr("Subtitle sync delay"),labels,((audio?prefs_.audio_delay_ms:prefs_.subtitle_delay_ms)+limit)/50,[this,audio,limit](int i){
             if(audio)prefs_.audio_delay_ms=-limit+i*50;else prefs_.subtitle_delay_ms=-limit+i*50;save_prefs();refresh_settings();});break;
     }
     case kAudioMode: {
         const int active=prefs_.audio_output_mode=="pcm"?0:prefs_.audio_output_mode=="auto"?1:2;
-        open_dropdown("Audio output",{"PCM","Auto (experimental)","Bitstream (experimental)"},active,[this](int i){
+        open_dropdown(sx::i18n::tr("Audio output"),{"PCM",sx::i18n::tr("Auto (experimental)"),sx::i18n::tr("Bitstream (experimental)")},active,[this](int i){
             prefs_.audio_output_mode=i==0?"pcm":i==1?"auto":"bitstream";save_prefs();refresh_settings();});
-        dropdown.message="Auto uses only formats advertised by the HDMI receiver. Bitstream tries a compressed port even if capability detection is unavailable. Refused ports fall back to PCM. TrueHD and DTS-HD keep decoded lossless PCM.";break;
+        dropdown.message=sx::i18n::tr("Auto uses only formats advertised by the HDMI receiver. Bitstream tries a compressed port even if capability detection is unavailable. Refused ports fall back to PCM. TrueHD and DTS-HD keep decoded lossless PCM.");break;
     }
     case kDonation: {
-        sign_in=SignInState{};sign_in.link_only=true;sign_in.title="Support on Ko-fi";
-        sign_in.link=donation_link;sign_in.cancel_label="Close";
+        sign_in=SignInState{};sign_in.link_only=true;sign_in.donation=true;sign_in.title=sx::i18n::tr("Support on Ko-fi");
+        sign_in.link=donation_link;sign_in.cancel_label=sx::i18n::tr("Close");
         std::uint8_t temp[qrcodegen_BUFFER_LEN_MAX],qr[qrcodegen_BUFFER_LEN_MAX];
         if(qrcodegen_encodeText(donation_url,temp,qr,qrcodegen_Ecc_MEDIUM,qrcodegen_VERSION_MIN,20,qrcodegen_Mask_AUTO,true)) {
             sign_in.qr_size=qrcodegen_getSize(qr);sign_in.qr_modules.resize(sign_in.qr_size*sign_in.qr_size);
@@ -1084,7 +1096,7 @@ void Session::settings_activate(int row)
         sign_in_open=true;break;
     }
     case kMetadataCredits:
-        open_dropdown("Metadata credits",{"Close"},0,[](int){});
+        open_dropdown(sx::i18n::tr("Metadata credits"),{sx::i18n::tr("Close")},0,[](int){});
         dropdown.message="This product uses the TMDB API but is not endorsed or certified by TMDB. Movie and TV metadata: https://www.themoviedb.org/";
         break;
     case kInstallSource: install_source_menu(); break;
@@ -1105,13 +1117,13 @@ void Session::settings_activate(int row)
             const std::string url = normalize_addon_url(v);
             if (trim(v).empty() || trim(v) == "https://")
                 return;
-            say("Loading addon or plugin repository...");
+            say(sx::i18n::tr("Loading addon or plugin repository..."));
             bg<std::string>(
                 [url]() {
                     ::Addon a;
                     std::string err;
                     if (!fetch_addon(url, a, err))
-                        return "Could not add the addon or plugin: " + err;
+                        return sx::i18n::tr("Could not add the addon or plugin: ") + err;
                     return a.provider_repository ? std::string("plugin") : std::string("addon");
                 },
                 [this, url](std::string &err) {
@@ -1122,13 +1134,13 @@ void Session::settings_activate(int row)
                     }
                     const bool plugin = err == "plugin";
                     if (plugin ? inherit_plugins_ : inherit_addons_) {
-                        say("This profile inherits those sources. Switch to the primary profile to edit them.", 8.0); return;
+                        say(sx::i18n::tr("This profile inherits those sources. Switch to the primary profile to edit them."), 8.0); return;
                     }
                     if (std::find(prefs_.extra_addons.begin(), prefs_.extra_addons.end(), url) == prefs_.extra_addons.end())
                         prefs_.extra_addons.push_back(url);
                     save_prefs();
                     sync_source(url, plugin, false);
-                    say("Added. Open Addons to manage it and enable individual providers.", 7.0);
+                    say(sx::i18n::tr("Added. Open Addons to manage it and enable individual providers."), 7.0);
                     load_addons();
                     refresh_settings();
                 });
@@ -1144,7 +1156,8 @@ void Session::settings_activate(int row)
     case kSubSize:
     {
         const int cur = subtitle_size::index(prefs_.sub_size);
-        open_dropdown("Subtitle size", std::vector<std::string>(subtitle_size::labels.begin(), subtitle_size::labels.end()), cur, [this](int i) {
+        std::vector<std::string> sizes;for(const char* label:subtitle_size::labels)sizes.emplace_back(i18n::tr(label));
+        open_dropdown(sx::i18n::tr("Subtitle size"), sizes, cur, [this](int i) {
             if (i<0 || i>=int(subtitle_size::ids.size())) return;
             prefs_.sub_size = subtitle_size::ids[i];
             save_prefs();
@@ -1207,6 +1220,7 @@ void Session::open_dropdown(const std::string &title, const std::vector<std::str
     update_dialog_ = false;
     install_source_dialog_ = false;
     dropdown.title = title;
+    dropdown.purpose=DropdownState::Purpose::generic;
     dropdown.message.clear();
     dropdown.danger = -1;
     dropdown.dialog = false;
@@ -1236,7 +1250,7 @@ void Session::release_notes_dismiss() {
 
 void Session::dropdown_cancel()
 {
-    if((dropdown.title=="Importing USB playlist" || dropdown.title=="Scanning USB playlists") && live_usb_cancel_)*live_usb_cancel_=true;
+    if((dropdown.purpose==DropdownState::Purpose::usb_import || dropdown.purpose==DropdownState::Purpose::usb_scan) && live_usb_cancel_)*live_usb_cancel_=true;
     if(install_source_dialog_ && install_source_first_) {
         dropdown_open=false; dropdown_chosen_=nullptr;
         install_source_choose(2);
@@ -1260,7 +1274,7 @@ void Session::login_start()
     sign_in_open = true;
     sign_in = SignInState();
     sign_in.link = "nuvio.tv/link";
-    sign_in.status = "Loading...";
+    sign_in.status = sx::i18n::tr("Loading...");
     login_code_raw_.clear();
     login_qr_url_.clear();
     login_polling_ = false;
@@ -1270,7 +1284,7 @@ void Session::login_start()
                          return;
                      if (!lc.ok)
                      {
-                         sign_in.status = "Could not get a code: " + lc.error;
+                         sign_in.status = sx::i18n::tr("Could not get a code: ") + lc.error;
                          return;
                      }
                      login_code_raw_ = lc.code;
@@ -1290,8 +1304,8 @@ void Session::login_start()
                                  sign_in.qr_modules[y * sign_in.qr_size + x] = qrcodegen_getModule(qr, x, y);
                      }
                      else
-                         say("Use the displayed address and code to sign in", 6.0);
-                     sign_in.status = "Waiting for approval on your phone...";
+                         say(sx::i18n::tr("Use the displayed address and code to sign in"), 6.0);
+                     sign_in.status = sx::i18n::tr("Waiting for approval on your phone...");
                      login_interval_ = lc.poll_interval;
                      login_next_poll_ = now_seconds() + login_interval_;
                      login_expires_ = now_seconds() + lc.expires_in;
@@ -1304,7 +1318,7 @@ void Session::login_poll()
         return;
     if (now_seconds() > login_expires_)
     {
-        sign_in.status = "Sign-in timed out. Get a fresh code from Settings.";
+        sign_in.status = sx::i18n::tr("Sign-in timed out. Get a fresh code from Settings.");
         login_code_raw_.clear();
         return;
     }
@@ -1358,7 +1372,7 @@ void Session::login_done(const std::string &auth_key)
     prefs_.auth_key = auth_key;
     prefs_.user_email.clear();
     save_prefs();
-    say("Signed in");
+    say(sx::i18n::tr("Signed in"));
     bg<ApiResult>([auth_key]() { return api_get_user(auth_key); },
                   [this](ApiResult &r) {
                       if (!r.ok)
@@ -1366,18 +1380,18 @@ void Session::login_done(const std::string &auth_key)
                       prefs_.user_email = jstr(r.result, "email");
                       save_prefs();
                       refresh_settings();
-                      say("Signed in as " + prefs_.user_email);
+                      say(sx::i18n::tr("Signed in as ") + prefs_.user_email);
                   });
     profile_ready_ = false;
     profiles_loading_ = false;
     profile_prompt_pending_ = true;
-    board.status = "Choose a Nuvio profile to load your catalogs and history.";
+    board.status = sx::i18n::tr("Choose a Nuvio profile to load your catalogs and history.");
     refresh_library(); refresh_addons(); refresh_settings();
 }
 
 void Session::sign_out()
 {
-    if (watching || resuming_) { say("Stop playback before signing out", 6.0); return; }
+    if (watching || resuming_) { say(sx::i18n::tr("Stop playback before signing out"), 6.0); return; }
     const std::string key = prefs_.auth_key;
     bg<ApiResult>([key]() { return api_logout(key); }, [this](ApiResult& r) {
         if (!r.ok) { say(r.error, 8.0, true); return; }
@@ -1386,7 +1400,7 @@ void Session::sign_out()
         profile_apply(json{{"path", data_dir_ + "/guest"}, {"authKey", ""}, {"profile", json{{"name", "Guest"}}}});
         ++login_gen_;
         save_prefs();
-        say("Signed out");
+        say(sx::i18n::tr("Signed out"));
     });
 
 }
@@ -1409,7 +1423,7 @@ void Session::update(float dt, const Cursor &cursor)
         prefs_.auth_key.clear(); prefs_.user_email.clear();
         profile_apply(json{{"path", data_dir_ + "/guest"}, {"authKey", ""}, {"profile", json{{"name", "Guest"}}}});
         save_prefs(); refresh_settings();
-        say("Your Nuvio session expired. Sign in again in Settings.", 8.0, true);
+        say(sx::i18n::tr("Your Nuvio session expired. Sign in again in Settings."), 8.0, true);
     }
     if (profile_prompt_pending_ && !typing() && !release_notes_open && !dropdown_open && !sign_in_open && !install_source_dialog_) {
         profile_prompt_pending_ = false; profiles_menu(true);
@@ -1602,9 +1616,16 @@ void Session::refresh_art(const Cursor &cursor)
         detail.title.backdrop = fetch(background, ArtKind::backdrop, true);
         const std::string &poster = d_meta_loaded_ && !d_meta_.poster.empty() ? d_meta_.poster : d_item_.poster;
         detail.title.poster = fetch(poster, ArtKind::poster, !detail.series);
+        for(size_t i=0;i<detail.people.size();++i)detail.people[i].photo=fetch(detail.people[i].photo_url,ArtKind::poster,std::abs(int(i)-cursor.cast)<8);
         for (std::size_t i = 0; i < detail.episodes.size() && i < d_season_videos_.size(); ++i)
             detail.episodes[i].thumb = fetch(d_season_videos_[i]->thumbnail.empty() ? background : d_season_videos_[i]->thumbnail, ArtKind::thumb,
                                              std::abs(static_cast<int>(i) - cursor.episode) < 10);
+    }
+    if(person_open){
+        person.photo=fetch(person.data.photo,ArtKind::poster,true);
+        person.movies.resize(person.data.movies.size());person.series.resize(person.data.series.size());
+        for(size_t i=0;i<person.movies.size();++i)person.movies[i]=fetch(person.data.movies[i].poster,ArtKind::poster,std::abs(int(i)-cursor.person_movie)<8);
+        for(size_t i=0;i<person.series.size();++i)person.series[i]=fetch(person.data.series[i].poster,ArtKind::poster,std::abs(int(i)-cursor.person_series)<8);
     }
 }
 

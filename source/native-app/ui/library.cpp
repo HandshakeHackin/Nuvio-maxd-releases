@@ -1,3 +1,4 @@
+#include "../ui/i18n.hpp"
 #include "library.hpp"
 
 #include <algorithm>
@@ -100,7 +101,7 @@ void Library::draw(hui::gfx::DrawList &list, hui::gfx::BackdropSpec &backdrop) c
 
     fade_down(list, theme::kRailWidth, 0.0f, theme::kScreenW, 118.0f, 0.62f);
     fade_up(list, theme::kRailWidth, 990.0f, theme::kScreenW, 90.0f, 0.94f);
-    draw_topbar(list, env_, false, age_,nullptr,0,(page_==Page::iptv||page_==Page::servers)?(page_==Page::servers?"Search media server":"Search saved IPTV catalogs"):"Search your Library");
+    draw_topbar(list, env_, false, age_,nullptr,0,(page_==Page::iptv||page_==Page::servers)?(page_==Page::servers?sx::i18n::tr("Search media server"):sx::i18n::tr("Search saved IPTV catalogs")):sx::i18n::tr("Search your Library"));
     rail_.draw(list, env_, age_);
 }
 

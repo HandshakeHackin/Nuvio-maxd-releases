@@ -1,3 +1,4 @@
+#include "../ui/i18n.hpp"
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "usb_reader.hpp"
 #include "update_channel.hpp"
@@ -14,10 +15,10 @@ const char* helper_path(){
 using usb_reader::Json;
 bool message(UpdateChannel& channel,Json& j,const std::atomic<bool>& cancel){std::string line;if(!channel.line(line,cancel))return false;j=Json::parse(line,nullptr,false);return j.is_object();}
 bool begin(UpdateChannel& channel,const Json& request,const std::atomic<bool>& cancel,std::string& error){
-    if(!usb_reader::request_ok(request)){error="Invalid USB reader request.";return false;}
-    if(!channel.open(helper_path(),cancel,error,30)){error="Could not start the USB reader. The existing local payload loader must be available on port 9021.";return false;}
+    if(!usb_reader::request_ok(request)){error=sx::i18n::tr("Invalid USB reader request.");return false;}
+    if(!channel.open(helper_path(),cancel,error,30)){error=sx::i18n::tr("Could not start the USB reader. The existing local payload loader must be available on port 9021.");return false;}
     auto data=request.dump()+"\n";Json hello;
-    if(!channel.send(data.data(),data.size(),cancel)||!message(channel,hello,cancel)||hello.value("kind",std::string())!="ready"||hello.value("protocol",0)!=usb_reader::protocol||hello.value("title_id",std::string())!=usb_reader::title){error="USB reader did not complete its handshake.";return false;}return true;
+    if(!channel.send(data.data(),data.size(),cancel)||!message(channel,hello,cancel)||hello.value("kind",std::string())!="ready"||hello.value("protocol",0)!=usb_reader::protocol||hello.value("title_id",std::string())!=usb_reader::title){error=sx::i18n::tr("USB reader did not complete its handshake.");return false;}return true;
 }
 live_usb::MountDiagnostics mount(const Json& j){
     live_usb::MountDiagnostics d;d.metadata_rc=j.at("metadata_rc").get<int>();d.metadata_errno=j.at("metadata_errno").get<int>();d.open_errno=j.at("open_errno").get<int>();
@@ -44,16 +45,16 @@ Scan scan(const std::atomic<bool>& cancel){
             break;
         }
     }catch(...){ }
-    result.files.clear();result.error=cancel?"USB scan cancelled.":"USB reader scan failed or returned invalid data.";return result;
+    result.files.clear();result.error=cancel?sx::i18n::tr("USB scan cancelled."):sx::i18n::tr("USB reader scan failed or returned invalid data.");return result;
 }
 live_tv::Result import_playlist(const live_usb::File& file,const std::string& profile,const std::string& id,const std::atomic<bool>& cancel){
     UpdateChannel channel;std::string error;const int mount=usb_reader::mount_index(file.root);
     try{
         if(!begin(channel,{{"protocol",usb_reader::protocol},{"title_id",usb_reader::title},{"op","read"},{"mount",mount},{"path",file.path}},cancel,error))return {{},error};
-        Json j;if(!message(channel,j,cancel)||j.value("kind",std::string())!="body"||!j.contains("bytes")||!j["bytes"].is_number_unsigned())return {{},"USB reader rejected the file or stopped responding. Scan again."};
-        auto size=j["bytes"].get<uint64_t>();if(!size||size>live_tv::max_bytes)return {{},"USB playlist is empty or exceeds 128 MiB."};
-        std::string body(size,'\0');if(!channel.receive(body.data(),body.size(),cancel)||cancel)return {{},cancel?"Playlist import cancelled.":"USB playlist transfer failed. Previous copy was kept."};
+        Json j;if(!message(channel,j,cancel)||j.value("kind",std::string())!="body"||!j.contains("bytes")||!j["bytes"].is_number_unsigned())return {{},sx::i18n::tr("USB reader rejected the file or stopped responding. Scan again.")};
+        auto size=j["bytes"].get<uint64_t>();if(!size||size>live_tv::max_bytes)return {{},sx::i18n::tr("USB playlist is empty or exceeds 128 MiB.")};
+        std::string body(size,'\0');if(!channel.receive(body.data(),body.size(),cancel)||cancel)return {{},cancel?sx::i18n::tr("Playlist import cancelled."):sx::i18n::tr("USB playlist transfer failed. Previous copy was kept.")};
         return live_usb::save_body(body,profile,id,&cancel);
-    }catch(...){return {{},"USB reader transfer failed. Previous copy was kept."};}
+    }catch(...){return {{},sx::i18n::tr("USB reader transfer failed. Previous copy was kept.")};}
 }
 }

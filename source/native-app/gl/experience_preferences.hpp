@@ -7,6 +7,7 @@
 #include <string>
 namespace sx {
 struct ExperiencePreferences {
+    std::string ui_language="en"; // local app preference, applied on next launch
     std::string trailer_language; // empty follows audio, then subtitle language
     std::string seen_release;
     std::string install_source; // user-selected, local only; empty means not asked yet
@@ -28,6 +29,8 @@ inline int preference_int(const nlohmann::json& j, const char* key, int fallback
     return std::isfinite(v) ? int(std::clamp(v,double(lo),double(hi))) : fallback;
 }
 inline void load_experience(const nlohmann::json& j, ExperiencePreferences& p) {
+    const auto ui_language=j.find("ui_language");
+    p.ui_language=ui_language!=j.end()&&ui_language->is_string()&&*ui_language=="de"?"de":"en";
     if(j.contains("trailer_language") && j["trailer_language"].is_string()) {
         const auto value=j["trailer_language"].get<std::string>();
         if(value.empty() || (value.size()==2 && value.find_first_not_of("abcdefghijklmnopqrstuvwxyz")==std::string::npos))p.trailer_language=value;
@@ -63,6 +66,7 @@ inline void load_experience(const nlohmann::json& j, ExperiencePreferences& p) {
     if(j.contains("high_contrast") && j["high_contrast"].is_boolean()) p.high_contrast=j["high_contrast"];
 }
 inline void save_experience(nlohmann::json& j, const ExperiencePreferences& p) {
+    j["ui_language"]=p.ui_language=="de"?"de":"en";
     j["subtitle_auto_sync"]=p.subtitle_auto_sync;
     j["trailer_language"]=p.trailer_language;
     j["chapter_skip_segments"]=p.chapter_skip_segments;

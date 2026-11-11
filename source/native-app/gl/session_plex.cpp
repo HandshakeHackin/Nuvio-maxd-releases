@@ -1,3 +1,4 @@
+#include "../ui/i18n.hpp"
 #include "qrcodegen.h"
 #include "session.hpp"
 namespace sx {
@@ -10,11 +11,11 @@ void Session::media_plex_cancel() {
 }
 void Session::media_plex_start(const std::string &replace) {
   if (!profile_ready_) {
-    say("Select a Nuvio profile first", 6);
+    say(sx::i18n::tr("Select a Nuvio profile first"), 6);
     return;
   }
   if (replace.empty() && media_accounts_.size() >= 8) {
-    say("Remove a server connection first (maximum 8)", 6);
+    say(sx::i18n::tr("Remove a server connection first (maximum 8)"), 6);
     return;
   }
   if (sign_in_open)
@@ -30,10 +31,10 @@ void Session::media_plex_start(const std::string &replace) {
   device_provider_ = "plex";
   login_polling_ = false;
   sign_in = {};
-  sign_in.title = "Connect Plex";
-  sign_in.cancel_label = "Cancel";
+  sign_in.title = sx::i18n::tr("Connect Plex");
+  sign_in.cancel_label = sx::i18n::tr("Cancel");
   sign_in.link = "plex.tv/link";
-  sign_in.status = "Creating a secure device connection…";
+  sign_in.status = sx::i18n::tr("Creating a secure device connection…");
   sign_in_open = true;
   auto client = media_plex_client_;
   g_tasks.run<plex::Pair>(
@@ -48,7 +49,7 @@ void Session::media_plex_start(const std::string &replace) {
         }
         media_plex_pair_ = p;
         sign_in.code = p.code;
-        sign_in.status = "Scan the QR code or enter the code at plex.tv/link.";
+        sign_in.status = sx::i18n::tr("Scan the QR code or enter the code at plex.tv/link.");
         std::uint8_t temp[qrcodegen_BUFFER_LEN_MAX],
             qr[qrcodegen_BUFFER_LEN_MAX];
         if (qrcodegen_encodeText(p.url.c_str(), temp, qr, qrcodegen_Ecc_MEDIUM,
@@ -75,7 +76,7 @@ void Session::media_plex_poll() {
     sign_in.code.clear();
     sign_in.qr_modules.clear();
     sign_in.qr_size = 0;
-    sign_in.status = "Plex code expired. Close and connect again.";
+    sign_in.status = sx::i18n::tr("Plex code expired. Close and connect again.");
     return;
   }
   login_polling_ = true;
@@ -111,7 +112,7 @@ void Session::media_plex_servers(const plex::Pair &pair) {
   auto cancel = device_cancel_;
   auto client = media_plex_client_;
   const auto replace = media_plex_replace_;
-  sign_in.status = "Finding accessible Plex servers…";
+  sign_in.status = sx::i18n::tr("Finding accessible Plex servers…");
   g_tasks.run<plex::Servers>(
       [client, pair, cancel] { return client.servers(pair, cancel.get()); },
       [this, client, pair, gen, profile, cancel, replace](plex::Servers &r) {
@@ -131,10 +132,10 @@ void Session::media_plex_servers(const plex::Pair &pair) {
         std::vector<std::string> labels;
         for (const auto &s : r.items)
           labels.push_back(s.name);
-        labels.push_back("Cancel");
+        labels.push_back(sx::i18n::tr("Cancel"));
         auto servers = r.items;
         open_dropdown(
-            "Choose Plex server", labels, 0,
+            sx::i18n::tr("Choose Plex server"), labels, 0,
             [this, client, pair, servers, profile, gen, cancel,
              replace](int n) {
               if (n < 0 || size_t(n) >= servers.size() ||
@@ -150,7 +151,7 @@ void Session::media_plex_servers(const plex::Pair &pair) {
               media_server::Connection c;
               c.id =
                   "plex-" + pair.device + "-" + std::to_string(now_epoch_ms());
-              say("Connecting to Plex server…", 8);
+              say(sx::i18n::tr("Connecting to Plex server…"), 8);
               struct Connected {
                 media_server::Connection c;
                 media_server::Result result;
@@ -180,7 +181,7 @@ void Session::media_plex_servers(const plex::Pair &pair) {
                         [&](const auto &c) { return c.id == replace; });
                     if (existing == media_accounts_.end()) {
                       if (media_accounts_.size() >= 8) {
-                        say("Maximum server connections reached", 6, true);
+                        say(sx::i18n::tr("Maximum server connections reached"), 6, true);
                         return;
                       }
                       media_accounts_.push_back(std::move(result.c));
@@ -195,7 +196,7 @@ void Session::media_plex_servers(const plex::Pair &pair) {
                     media_save();
                     media_reload();
                     goto_ = Page::servers;
-                    say("Plex connected", 5);
+                    say(sx::i18n::tr("Plex connected"), 5);
                   });
             });
       });

@@ -1,3 +1,4 @@
+#include "../ui/i18n.hpp"
 // App-local mappings for buttons actually delivered by PS5 Media Remote/CEC.
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
@@ -24,12 +25,12 @@ struct RemoteBinding {
 };
 inline bool valid_remote_action(RemoteAction a){return int(a)>=0&&a<RemoteAction::count;}
 inline std::string remote_button_name(const RemoteButton& b){
- const std::string prefix=b.source==0?"TV/CEC ":"Media Remote ";
+ const std::string prefix=b.source==0?"TV/CEC ":sx::i18n::tr("Media Remote ");
  if(b.key){
-  const char* name=b.code==13?"OK":b.code==15?"Back":(b.code==18||b.code==27)?"Options":b.code==22?"Play":b.code==26?"Pause":b.code==45?"Play/Pause":b.code==23?"Rewind":b.code==24?"Fast forward":nullptr;
-  return prefix+(name?std::string(name):"key "+std::to_string(b.code));
+  const char* name=b.code==13?"OK":b.code==15?sx::i18n::tr("Back"):(b.code==18||b.code==27)?sx::i18n::tr("Options"):b.code==22?sx::i18n::tr("Play"):b.code==26?sx::i18n::tr("Pause"):b.code==45?sx::i18n::tr("Play/Pause"):b.code==23?sx::i18n::tr("Rewind"):b.code==24?sx::i18n::tr("Fast forward"):nullptr;
+  return prefix+(name?std::string(name):sx::i18n::tr("key ")+std::to_string(b.code));
  }
- return prefix+"button "+std::to_string(b.code);
+ return prefix+sx::i18n::tr("button ")+std::to_string(b.code);
 }
 inline bool set_remote_binding(std::vector<RemoteBinding>& mappings,RemoteButton b,RemoteAction action){
  if(!b.valid()||!valid_remote_action(action))return false;

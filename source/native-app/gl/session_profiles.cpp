@@ -1,3 +1,4 @@
+#include "../ui/i18n.hpp"
 // Nuvio account profiles: metadata and PINs use the account service; all local
 // history and source switches are scoped to the selected account/profile.
 // SPDX-License-Identifier: GPL-3.0-or-later
@@ -43,9 +44,10 @@ void Session::save_profile_settings() {
     j["subtitle_languages"] = prefs_.subtitle_langs;
     j["audio_languages"] = prefs_.audio_langs;
     j["auto_subtitles"] = prefs_.auto_subtitles;
-    if (!save_json(profile_dir_ + "/profile-settings.json", j)) say("Could not save profile preferences", 8.0, true);
+    if (!save_json(profile_dir_ + "/profile-settings.json", j)) say(sx::i18n::tr("Could not save profile preferences"), 8.0, true);
 }
 void Session::clear_profile_views() {
+    person_leave();*cast_cancel_=true;++cast_generation_;detail_seed_.reset();
     sports_reset();
     media_reset();
     torrent_reset();
@@ -96,11 +98,11 @@ void Session::profile_apply(const json& result) {
     if (signed_in()) tracking_refresh();
     load_profile_settings(); load_progress(); refresh_library(); refresh_addons(); refresh_settings();
     changed_ |= kDiscover | kDiscoverNew | kSearch | kSearchNew;
-    board.status = "Loading this profile's catalogs...";
+    board.status = sx::i18n::tr("Loading this profile's catalogs...");
     load_addons(); if (signed_in()) load_library();
 }
 void Session::profile_choose(int id, bool locked) {
-    if (watching || resuming_) { say("Stop playback before switching profiles", 6.0); return; }
+    if (watching || resuming_) { say(sx::i18n::tr("Stop playback before switching profiles"), 6.0); return; }
     const auto select = [this, id](const std::string& pin) {
         if (profiles_loading_) return;
         const auto key = prefs_.auth_key;
@@ -111,16 +113,16 @@ void Session::profile_choose(int id, bool locked) {
         // account context. The user cannot start an old stream in that gap.
         if (restore) { save_progress(); save_profile_settings(); }
         clear_profile_views(); profile_ready_ = false; profiles_loading_ = true;
-        board.status = "Opening profile...";
-        say("Opening profile...");
+        board.status = sx::i18n::tr("Opening profile...");
+        say(sx::i18n::tr("Opening profile..."));
         bg<ApiResult>([key, id, pin] { return api_profile_select(key, id, pin); }, [this, restore, outgoing](ApiResult& r) {
             profiles_loading_ = false;
             if (!r.ok) {
                 if (restore) profile_apply(outgoing);
-                else board.status = "Choose a profile in Settings > Account & Services > Profiles.";
+                else board.status = sx::i18n::tr("Choose a profile in Settings > Account & Services > Profiles.");
                 say(r.error, 10.0, true); return;
             }
-            profile_apply(r.result); say("Profile: " + jstr(active_profile_, "name"));
+            profile_apply(r.result); say(sx::i18n::tr("Profile: ") + jstr(active_profile_, "name"));
         });
     };
     if (locked) {
@@ -150,14 +152,14 @@ void Session::profile_pin_input(const hui::InputFrame& input) {
     pin.clear();
 }
 void Session::profiles_menu(bool startup) {
-    if (!signed_in()) { say("Sign in to Nuvio to use account profiles", 6.0); return; }
-    if (watching || resuming_) { say("Stop playback before switching profiles", 6.0); return; }
+    if (!signed_in()) { say(sx::i18n::tr("Sign in to Nuvio to use account profiles"), 6.0); return; }
+    if (watching || resuming_) { say(sx::i18n::tr("Stop playback before switching profiles"), 6.0); return; }
     if (profiles_loading_) return;
     profiles_loading_ = true;
     const auto key = prefs_.auth_key;
     bg<ApiResult>([key] { return api_profiles_get(key); }, [this, startup](ApiResult& r) {
         profiles_loading_ = false;
-        if (!r.ok) { say(r.error + ". Open Settings > Account & Services > Profiles to retry.", 12.0, true); return; }
+        if (!r.ok) { say(r.error + sx::i18n::tr(". Open Settings > Account & Services > Profiles to retry."), 12.0, true); return; }
         profiles_ = jobj(r.result, "profiles");
         prefs_.auth_key = jstr(r.result, "authKey", prefs_.auth_key);
         std::vector<std::string> choices;
@@ -168,14 +170,14 @@ void Session::profiles_menu(bool startup) {
         }
         const auto snapshot = profiles_;
         const int count = int(choices.size());
-        choices.push_back("Create profile"); choices.push_back("Cancel");
-        open_dropdown(startup ? "Who's watching?" : "Nuvio profiles", choices, selected,
+        choices.push_back(sx::i18n::tr("Create profile")); choices.push_back(sx::i18n::tr("Cancel"));
+        open_dropdown(startup ? sx::i18n::tr("Who's watching?") : sx::i18n::tr("Nuvio profiles"), choices, selected,
             [this, snapshot, count](int index) {
                 if (index >= 0 && index < count) {
                     const auto& p = snapshot[static_cast<size_t>(index)];
                     profile_choose(int(jnum(p, "profile_index")), jbool(p, "pin_enabled"));
                 } else if (index == count) {
-                    say("Enter a name for the new profile", 8.0);
+                    say(sx::i18n::tr("Enter a name for the new profile"), 8.0);
                     ask_text([this](const std::string& name) {
                         if (trim(name).empty()) return;
                         profiles_loading_ = true;
@@ -188,7 +190,7 @@ void Session::profiles_menu(bool startup) {
                     });
                 }
             });
-        dropdown.message = "History, addons and plugins belong to each profile. Shared sources follow your Nuvio profile settings.";
+        dropdown.message = sx::i18n::tr("History, addons and plugins belong to each profile. Shared sources follow your Nuvio profile settings.");
     }, true);
 }
 void Session::load_watched() {
@@ -220,7 +222,7 @@ void Session::sync_watched_mark(const std::string& video, const std::string& tit
     bg<ApiResult>([key, video, title, watched, content, season, episode] { return api_watched_update(key, video, title, watched, content, season, episode); },
         [this](ApiResult& r) {
             if (!r.ok) say(r.error, 8.0, true);
-            else if (!jbool(r.result, "synced")) say("Watched history saved on this PS5; Nuvio sync will retry.", 6.0);
+            else if (!jbool(r.result, "synced")) say(sx::i18n::tr("Watched history saved on this PS5; Nuvio sync will retry."), 6.0);
         });
 }
 void Session::sync_source(const std::string& url, bool plugin, bool remove, bool automatic) {
@@ -231,7 +233,7 @@ void Session::sync_source(const std::string& url, bool plugin, bool remove, bool
     bg<ApiResult>([key, url, plugin, remove] { return api_profile_source_update(key, url, plugin, remove); },
         [this](ApiResult& r) {
             if (!r.ok) say(r.error, 10.0, true);
-            else { say("Sources synced to this Nuvio profile"); load_addons(); }
+            else { say(sx::i18n::tr("Sources synced to this Nuvio profile")); load_addons(); }
         });
 }
 } // namespace sx

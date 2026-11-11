@@ -1,3 +1,4 @@
+#include "../ui/i18n.hpp"
 // Experimental MediaBrowser libraries. Credentials and watch state belong to
 // the active profile; addon discovery and Nuvio/tracker source preferences stay
 // intact.
@@ -88,7 +89,7 @@ void Session::media_load() {
 bool Session::media_save() {
   if (!profile_ready_ || profile_dir_.empty()) {
     dlog("media servers: save skipped; profile not ready");
-    say("Select a profile before saving media server connections", 7, true);
+    say(sx::i18n::tr("Select a profile before saving media server connections"), 7, true);
     return false;
   }
   make_dirs(profile_dir_);
@@ -104,7 +105,7 @@ bool Session::media_save() {
     dlog("media servers: save failed (%s), %zu connection(s)",
          !written ? "write" : read_error.empty() ? "readback mismatch" : read_error.c_str(),
          a.size());
-    say("Could not save media server connection; reconnect after restart", 9, true);
+    say(sx::i18n::tr("Could not save media server connection; reconnect after restart"), 9, true);
   } else {
     media_saved_connections_ = a;
     dlog("media servers: saved and verified %zu connection(s)", a.size());
@@ -124,11 +125,11 @@ void Session::media_connect(const std::string &kind,
     return;
   }
   if (!profile_ready_) {
-    say("Select a Nuvio profile first", 6);
+    say(sx::i18n::tr("Select a Nuvio profile first"), 6);
     return;
   }
   if (replace_id.empty() && media_accounts_.size() >= 8) {
-    say("Remove a connection before adding another server (maximum 8)", 6);
+    say(sx::i18n::tr("Remove a connection before adding another server (maximum 8)"), 6);
     return;
   }
   const auto profile = profile_generation_;
@@ -137,8 +138,7 @@ void Session::media_connect(const std::string &kind,
         if (profile != profile_generation_ || base.empty())
           return;
         if (media_server::normalize(base, kind).empty()) {
-          say("Enter an HTTP or HTTPS server address without a query or "
-              "embedded credentials",
+          say(sx::i18n::tr("Enter an HTTP or HTTPS server address without a query or embedded credentials"),
               8, true);
           return;
         }
@@ -161,7 +161,7 @@ void Session::media_connect(const std::string &kind,
                     c.device = c.id;
                     c.kind = kind;
                     c.base = base;
-                    say("Connecting to " +
+                    say(sx::i18n::tr("Connecting to ") +
                             std::string(kind == "emby" ? "Emby" : "Jellyfin") +
                             "…",
                         5);
@@ -209,25 +209,25 @@ void Session::media_connect(const std::string &kind,
                           const bool saved = media_save();
                           media_reload();
                           goto_ = Page::servers;
-                          say(saved ? "Media server connected"
-                                    : "Connected for this session; saving failed", 7, !saved);
+                          say(saved ? sx::i18n::tr("Media server connected")
+                                    : sx::i18n::tr("Connected for this session; saving failed"), 7, !saved);
                         });
                   },
-                  "Server password (used only to sign in)", true);
+                  sx::i18n::tr("Server password (used only to sign in)"), true);
             },
-            "Server username");
+            sx::i18n::tr("Server username"));
       },
       std::string(kind == "emby" ? "Emby" : "Jellyfin") +
-          " server URL (include port and base path)");
+          sx::i18n::tr(" server URL (include port and base path)"));
 }
 void Session::media_menu() {
   const auto profile = profile_generation_;
-  std::vector<std::string> labels{"Connect Jellyfin (experimental)",
-                                  "Connect Emby (experimental)",
-                                  "Connect Plex (experimental)"};
+  std::vector<std::string> labels{sx::i18n::tr("Connect Jellyfin (experimental)"),
+                                  sx::i18n::tr("Connect Emby (experimental)"),
+                                  sx::i18n::tr("Connect Plex (experimental)")};
   for (const auto &a : media_accounts_)
     labels.push_back(a.server_name + " · " + a.user_name);
-  open_dropdown("Media servers", labels, 0, [this, profile](int n) {
+  open_dropdown(sx::i18n::tr("Media servers"), labels, 0, [this, profile](int n) {
     if (profile != profile_generation_ || n < 0)
       return;
     if (n < 3) {
@@ -239,10 +239,10 @@ void Session::media_menu() {
       return;
     const auto id = media_accounts_[index].id;
     open_dropdown(
-        "Media server connection",
-        {"Browse libraries", "Continue watching", "Search server",
-         "Refresh current page", "Next page", "Previous page",
-         "Disconnect and remove", "Reconnect / sign in again"},
+        sx::i18n::tr("Media server connection"),
+        {sx::i18n::tr("Browse libraries"), sx::i18n::tr("Continue watching"), sx::i18n::tr("Search server"),
+         sx::i18n::tr("Refresh current page"), sx::i18n::tr("Next page"), sx::i18n::tr("Previous page"),
+         sx::i18n::tr("Disconnect and remove"), sx::i18n::tr("Reconnect / sign in again")},
         0, [this, profile, id](int action) {
           if (profile != profile_generation_ || action < 0)
             return;
@@ -263,8 +263,8 @@ void Session::media_menu() {
           if (action == 6) {
             auto c = *it;
             open_dropdown(
-                "Remove this profile's server connection?",
-                {"Keep connection", "Disconnect and remove"}, 0,
+                sx::i18n::tr("Remove this profile's server connection?"),
+                {sx::i18n::tr("Keep connection"), sx::i18n::tr("Disconnect and remove")}, 0,
                 [this, profile, id, c](int confirm) {
                   if (confirm != 1 || profile != profile_generation_)
                     return;
@@ -306,7 +306,7 @@ void Session::media_menu() {
           if (action == 1) {
             media_location_ = {};
             media_location_.type = "resume";
-            media_location_.label = "Continue watching";
+            media_location_.label = sx::i18n::tr("Continue watching");
             media_stack_.clear();
           }
           if (action == 2) {
@@ -329,9 +329,8 @@ void Session::media_menu() {
 }
 void Session::media_build(bool reset) {
   media_content = {};
-  media_content.heading = "Media Servers";
-  media_content.notice = "Experimental · Your server libraries and watch "
-                         "progress · Options: connections and pages";
+  media_content.heading = sx::i18n::tr("Media Servers");
+  media_content.notice = sx::i18n::tr("Experimental · Your server libraries and watch progress · Options: connections and pages");
   if (media_account_ < media_accounts_.size()) {
     const auto &c = media_accounts_[media_account_];
     media_content.heading = c.server_name.empty()
@@ -341,11 +340,11 @@ void Session::media_build(bool reset) {
                                 : c.server_name;
     media_content.heading +=
         " · " +
-        (media_location_.label.empty() ? "Libraries" : media_location_.label);
+        (media_location_.label.empty() ? sx::i18n::tr("Libraries") : media_location_.label);
   }
-  media_content.filters = {{"Server", "Choose"},
-                           {"Browse", "Libraries"},
-                           {"Continue watching", "Resume"}};
+  media_content.filters = {{sx::i18n::tr("Server"), sx::i18n::tr("Choose")},
+                           {sx::i18n::tr("Browse"), sx::i18n::tr("Libraries")},
+                           {sx::i18n::tr("Continue watching"), sx::i18n::tr("Resume")}};
   for (const auto &j : media_items_) {
     Title t;
     t.id = jstr(j, "Id");
@@ -367,11 +366,11 @@ void Session::media_build(bool reset) {
     media_content.items.push_back(std::move(t));
   }
   media_content.status =
-      media_loading_ ? "Loading media server…"
+      media_loading_ ? sx::i18n::tr("Loading media server…")
       : media_error_.empty()
-          ? "No items here. Open Options to choose a server, search or refresh."
+          ? sx::i18n::tr("No items here. Open Options to choose a server, search or refresh.")
           : media_error_;
-  media_content.count = std::to_string(media_total_) + " items · Page " +
+  media_content.count = std::to_string(media_total_) + sx::i18n::tr(" items · Page ") +
                         std::to_string(media_location_.offset / 100 + 1);
   changed_ |= kMedia;
   if (reset)
@@ -429,7 +428,7 @@ void Session::media_filter(int n) {
   media_location_ = {};
   if (n == 2) {
     media_location_.type = "resume";
-    media_location_.label = "Continue watching";
+    media_location_.label = sx::i18n::tr("Continue watching");
   }
   media_reload();
 }
@@ -447,18 +446,18 @@ void Session::media_search() {
             media_accounts_[media_account_].id != id)
           return;
         if (q.size() > 256) {
-          say("Search is too long", 5);
+          say(sx::i18n::tr("Search is too long"), 5);
           return;
         }
         media_stack_.push_back(media_location_);
         media_location_ = {};
         media_location_.type = "items";
         media_location_.query = q;
-        media_location_.label = q.empty() ? "All titles" : "Search: " + q;
+        media_location_.label = q.empty() ? sx::i18n::tr("All titles") : sx::i18n::tr("Search: ") + q;
         media_reload();
         goto_ = Page::servers;
       },
-      "Search this media server");
+      sx::i18n::tr("Search this media server"));
 }
 bool Session::media_back() {
   if (media_play_pending_) {
@@ -466,7 +465,7 @@ bool Session::media_back() {
       *media_play_cancel_ = true;
     ++media_play_generation_;
     media_play_pending_ = false;
-    say("Cancelled media server playback", 4);
+    say(sx::i18n::tr("Cancelled media server playback"), 4);
     return true;
   }
   if (media_stack_.empty())
@@ -493,14 +492,14 @@ void Session::media_activate(int n) {
   }
   auto profile = profile_generation_;
   auto id = media_accounts_[media_account_].id;
-  std::vector<std::string> labels{"Play / resume", "Play from beginning",
-                                  "Compatible playback (server HLS)"};
+  std::vector<std::string> labels{sx::i18n::tr("Play / resume"), sx::i18n::tr("Play from beginning"),
+                                  sx::i18n::tr("Compatible playback (server HLS)")};
   std::vector<std::string> sources;
   auto a = jobj(item, "MediaSources");
   if (a.is_array())
     for (const auto &v : a)
       if (media_server::safe_id(jstr(v, "Id"))) {
-        labels.push_back("Version: " + jstr(v, "Name", jstr(v, "Container")));
+        labels.push_back(sx::i18n::tr("Version: ") + jstr(v, "Name", jstr(v, "Container")));
         sources.push_back(jstr(v, "Id"));
       }
   open_dropdown(jstr(item, "Name"), labels, 0,
@@ -532,7 +531,7 @@ void Session::media_play(const json &item, bool compatible,
   media_play_cancel_ = std::make_shared<std::atomic<bool>>(false);
   auto cancel = media_play_cancel_;
   auto generation = ++media_play_generation_, profile = profile_generation_;
-  say("Preparing server playback… Circle cancels.", 5);
+  say(sx::i18n::tr("Preparing server playback… Circle cancels."), 5);
   g_tasks.run<media_server::Playback>(
       [c, id, source, compatible, cancel, client = media_plex_client_] {
         if (c.kind == "plex")

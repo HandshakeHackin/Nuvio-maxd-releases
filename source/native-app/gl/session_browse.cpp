@@ -1,3 +1,4 @@
+#include "../ui/i18n.hpp"
 // The Board, Discover and the Library.
 
 #include "session.hpp"
@@ -190,7 +191,7 @@ void Session::build_board()
     board_.clear();
     BoardRow cw;
     cw.key = "continue";
-    cw.title = "Continue Watching";
+    cw.title = sx::i18n::tr("Continue Watching");
     cw.continue_watching = true;
     cw.loaded = true;
     board_.push_back(cw);
@@ -268,6 +269,7 @@ void Session::refresh_board()
             continue;
         Row row;
         row.key = br.key;
+        row.continue_watching=br.continue_watching;
         row.title = br.title;
         for (const Item &it : br.items)
             row.items.push_back(make_title(it, br.continue_watching));
@@ -278,15 +280,15 @@ void Session::refresh_board()
     if (!board.rows.empty())
         board.status.clear();
     else if (addons_loading_ || any_loading)
-        board.status = "Loading your catalogs...";
+        board.status = sx::i18n::tr("Loading your catalogs...");
     else if (addons_.empty())
-        board.status = "No addon could be reached. Check the network connection, then reload the addons in Settings.";
+        board.status = sx::i18n::tr("No addon could be reached. Check the network connection, then reload the addons in Settings.");
     else if (any_error)
-        board.status = "Your home catalogs could not be loaded. Reload addons and catalogs in Settings.";
+        board.status = sx::i18n::tr("Your home catalogs could not be loaded. Reload addons and catalogs in Settings.");
     else if (board_.size() > 1)
-        board.status = "Your home catalogs returned no titles. Check the catalog configuration in your Nuvio addons.";
+        board.status = sx::i18n::tr("Your home catalogs returned no titles. Check the catalog configuration in your Nuvio addons.");
     else
-        board.status = "No home catalogs are enabled. Enable Popular TV or other home rows in your Nuvio addons, then reload in Settings.";
+        board.status = sx::i18n::tr("No home catalogs are enabled. Enable Popular TV or other home rows in your Nuvio addons, then reload in Settings.");
     changed_ |= kBoard;
     art_dirty_ = true;
 }
@@ -295,7 +297,7 @@ void Session::continue_remove(const Item &it)
 {
     const auto source = jstr(tracking_status_,"progressPreferred","nuvio");
     if (source == "trakt" || source == "simkl") {
-        say("Remove this Continue Watching entry on "+std::string(source == "trakt" ? "Trakt" : "SIMKL")+". It has not been marked watched.",9.0); return;
+        say(sx::i18n::tr("Remove this Continue Watching entry on ")+std::string(source == "trakt" ? "Trakt" : "SIMKL")+sx::i18n::tr(". It has not been marked watched."),9.0); return;
     }
     const auto p = progress_.find(it.id);
     if (p != progress_.end())
@@ -316,10 +318,10 @@ void Session::continue_remove(const Item &it)
         bg<ApiResult>([key, changes]() { return api_library_put(key, changes); },
                       [this](ApiResult &r) {
                           if (!r.ok)
-                              say("Could not update your library: " + r.error, 5.0, true);
+                              say(sx::i18n::tr("Could not update your library: ") + r.error, 5.0, true);
                       });
     }
-    say("Removed from Continue Watching");
+    say(sx::i18n::tr("Removed from Continue Watching"));
     refresh_board();
     refresh_library();
 }
@@ -342,15 +344,15 @@ bool Session::board_options(int row, int col)
         progress = t.progress;
     }
     const std::string where = it.type == "series" ? episode_badge(it.video_id) : std::string();
-    open_dropdown(it.name, {"Remove from Continue Watching", "Cancel"}, -1, [this, it, poster, progress, where](int i) {
+    open_dropdown(it.name, {sx::i18n::tr("Remove from Continue Watching"), sx::i18n::tr("Cancel")}, -1, [this, it, poster, progress, where](int i) {
         if (i != 0)
             return;
         // Taking something away asks once more, and the cursor starts on the safe answer.
-        open_dropdown(it.name, {"Remove", "Keep"}, -1, [this, it](int j) {
+        open_dropdown(it.name, {sx::i18n::tr("Remove"), sx::i18n::tr("Keep")}, -1, [this, it](int j) {
             if (j == 0)
                 continue_remove(it);
         });
-        dropdown.message = "Remove it from Continue Watching?";
+        dropdown.message = sx::i18n::tr("Remove it from Continue Watching?");
         dropdown.danger = 0;
         dropdown.selected = 1;
         dropdown.dialog = true;
@@ -414,10 +416,10 @@ void Session::continue_press(int row, int col)
         return;
     }
     const bool series = it.type == "series";
-    std::vector<std::string> options{"Play now"};
+    std::vector<std::string> options{sx::i18n::tr("Play now")};
     if (series)
-        options.push_back("Choose another episode");
-    options.push_back("Choose another stream");
+        options.push_back(sx::i18n::tr("Choose another episode"));
+    options.push_back(sx::i18n::tr("Choose another stream"));
     open_dropdown(it.name, options, -1, [this, title, it, series](int i) {
         if (i == 0)
             resume_play(title, it);
@@ -454,7 +456,7 @@ void Session::resume_play(const Title &title, const Item &it)
     launch = LaunchState();
     launch.title = it.name;
     launch.subtitle = it.type == "series" ? episode_badge(it.video_id) : std::string();
-    launch.stages = {"Finding sources", "Connecting to peers", "Filling the buffer", "Starting"};
+    launch.stages = {sx::i18n::tr("Finding sources"), sx::i18n::tr("Connecting to peers"), sx::i18n::tr("Filling the buffer"), sx::i18n::tr("Starting")};
     launch.stage = 0;
     launch.progress = -1.0f;
     launch_open = true;
@@ -528,7 +530,7 @@ void Session::enter_discover()
         discover.filters.clear();
         discover.items.clear();
         disc_items_.clear();
-        discover.status = addons_loading_ ? "Addons are still loading..." : "None of your addons have catalogs to browse.";
+        discover.status = addons_loading_ ? sx::i18n::tr("Addons are still loading...") : sx::i18n::tr("None of your addons have catalogs to browse.");
         changed_ |= kDiscover;
         return;
     }
@@ -573,17 +575,17 @@ void Session::discover_build_chips()
         disc_catalog_ = 0;
 
     discover.filters.clear();
-    discover.filters.push_back({"Type", capitalize(disc_type_)});
+    discover.filters.push_back({sx::i18n::tr("Type"), i18n::media_type(disc_type_)});
     if (!disc_catalogs_.empty())
     {
         const DiscCatalog &dc = disc_catalogs_[static_cast<std::size_t>(disc_catalog_)];
-        discover.filters.push_back({"Catalog", catalog_label(dc.addon, dc.catalog)});
+        discover.filters.push_back({sx::i18n::tr("Catalog"), catalog_label(dc.addon, dc.catalog)});
         const CatalogExtra *g = dc.catalog->extra("genre");
         if (g && !g->options.empty())
         {
             if (g->required && disc_genre_.empty())
                 disc_genre_ = g->options[0];
-            discover.filters.push_back({"Genre", disc_genre_.empty() ? "All genres" : disc_genre_});
+            discover.filters.push_back({sx::i18n::tr("Genre"), disc_genre_.empty() ? sx::i18n::tr("All genres") : disc_genre_});
         }
         else
         {
@@ -617,7 +619,7 @@ void Session::discover_load(bool more)
     const int gen = disc_gen_;
     disc_loading_ = true;
     if (disc_items_.empty())
-        discover.status = "Loading...";
+        discover.status = sx::i18n::tr("Loading...");
     struct Res
     {
         std::vector<Item> items;
@@ -649,9 +651,9 @@ void Session::discover_load(bool more)
             if (added == 0)
                 disc_end_ = true;
             if (!r.error.empty() && disc_items_.empty())
-                discover.status = "Could not load this catalog (" + r.error + ")";
+                discover.status = sx::i18n::tr("Could not load this catalog (") + r.error + ")";
             else if (disc_items_.empty())
-                discover.status = "Nothing here.";
+                discover.status = sx::i18n::tr("Nothing here.");
             else
                 discover.status.clear();
             changed_ |= kDiscover;
@@ -672,11 +674,11 @@ void Session::filter_activate(Page page, int filter)
             int active = 0;
             for (std::size_t i = 0; i < disc_types_.size(); ++i)
             {
-                opts.push_back(capitalize(disc_types_[i]));
+                opts.push_back(i18n::media_type(disc_types_[i]));
                 if (disc_types_[i] == disc_type_)
                     active = static_cast<int>(i);
             }
-            open_dropdown("Type", opts, active, [this](int i) {
+            open_dropdown(sx::i18n::tr("Type"), opts, active, [this](int i) {
                 if (disc_types_[static_cast<std::size_t>(i)] == disc_type_)
                     return;
                 disc_type_ = disc_types_[static_cast<std::size_t>(i)];
@@ -696,7 +698,7 @@ void Session::filter_activate(Page page, int filter)
                     label += " (" + dc.addon->name + ")";
                 opts.push_back(label);
             }
-            open_dropdown("Catalog", opts, disc_catalog_, [this](int i) {
+            open_dropdown(sx::i18n::tr("Catalog"), opts, disc_catalog_, [this](int i) {
                 if (i == disc_catalog_)
                     return;
                 disc_catalog_ = i;
@@ -713,7 +715,7 @@ void Session::filter_activate(Page page, int filter)
             std::vector<std::string> opts;
             int active = 0;
             if (!g->required)
-                opts.push_back("All genres");
+                opts.push_back(sx::i18n::tr("All genres"));
             for (const auto &o : g->options)
             {
                 if (o == disc_genre_)
@@ -721,7 +723,7 @@ void Session::filter_activate(Page page, int filter)
                 opts.push_back(o);
             }
             const bool required = g->required;
-            open_dropdown("Genre", opts, active, [this, opts, required](int i) {
+            open_dropdown(sx::i18n::tr("Genre"), opts, active, [this, opts, required](int i) {
                 const std::string genre = (!required && i == 0) ? "" : opts[static_cast<std::size_t>(i)];
                 if (genre == disc_genre_)
                     return;
@@ -746,15 +748,15 @@ void Session::filter_activate(Page page, int filter)
                 if (!kv.second.type.empty() && std::find(types.begin(), types.end(), kv.second.type) == types.end())
                     types.push_back(kv.second.type);
             std::sort(types.begin(), types.end());
-            std::vector<std::string> opts = {"All types"};
+            std::vector<std::string> opts = {sx::i18n::tr("All types")};
             int active = 0;
             for (const auto &t : types)
             {
                 if (t == lib_type_)
                     active = static_cast<int>(opts.size());
-                opts.push_back(capitalize(t));
+                opts.push_back(i18n::media_type(t));
             }
-            open_dropdown("Type", opts, active, [this, types](int i) {
+            open_dropdown(sx::i18n::tr("Type"), opts, active, [this, types](int i) {
                 lib_type_ = i == 0 ? "" : types[static_cast<std::size_t>(i - 1)];
                 refresh_library();
                 changed_ |= kLibraryNew;
@@ -762,7 +764,7 @@ void Session::filter_activate(Page page, int filter)
         }
         else if (filter == 1)
         {
-            open_dropdown("Sort by", {"Last watched", "A-Z", "Most watched"}, lib_sort_, [this](int i) {
+            open_dropdown(sx::i18n::tr("Sort by"), {sx::i18n::tr("Last watched"), "A-Z", sx::i18n::tr("Most watched")}, lib_sort_, [this](int i) {
                 lib_sort_ = i;
                 refresh_library();
                 changed_ |= kLibraryNew;
@@ -797,7 +799,7 @@ void Session::library_search()
         lib_query_ = sx::library_search::query(text);
         refresh_library();
         changed_ |= kLibraryNew;
-    }, "Search your Library (empty clears search)");
+    }, sx::i18n::tr("Search your Library (empty clears search)"));
 }
 
 void Session::refresh_library()
@@ -853,12 +855,12 @@ void Session::refresh_library()
     if (!lib_type_.empty() && std::find(types.begin(), types.end(), lib_type_) == types.end())
         lib_type_.clear();
 
-    static const char *sorts[] = {"Last watched", "A-Z", "Most watched"};
+    static const char *sorts[] = {sx::i18n::tr("Last watched"), "A-Z", sx::i18n::tr("Most watched")};
     library.filters.clear();
-    library.filters.push_back({"Show", lib_type_.empty() ? "All types" : capitalize(lib_type_)});
-    library.filters.push_back({"Sort", sorts[lib_sort_]});
-    library.filters.push_back({"Search", lib_query_.empty() ? "Titles" : lib_query_});
-    if (!lib_query_.empty()) library.filters.push_back({"Clear", "Search"});
+    library.filters.push_back({sx::i18n::tr("Show"), lib_type_.empty() ? sx::i18n::tr("All types") : i18n::media_type(lib_type_)});
+    library.filters.push_back({sx::i18n::tr("Sort"), sorts[lib_sort_]});
+    library.filters.push_back({sx::i18n::tr("Search"), lib_query_.empty() ? sx::i18n::tr("Titles") : lib_query_});
+    if (!lib_query_.empty()) library.filters.push_back({sx::i18n::tr("Clear"), sx::i18n::tr("Search")});
     const auto words = sx::library_search::terms(lib_query_);
 
     lib_items_.clear();
@@ -882,13 +884,13 @@ void Session::refresh_library()
     if (n > 0)
         library.status.clear();
     else if (signed_in() && !library_loaded_)
-        library.status = "Loading your library...";
+        library.status = sx::i18n::tr("Loading your library...");
     else if (!signed_in() && all.empty())
-        library.status = "Sign in to your Nuvio account in Settings to see your library here.";
+        library.status = sx::i18n::tr("Sign in to your Nuvio account in Settings to see your library here.");
     else if (!lib_query_.empty())
-        library.status = "No Library titles match. Edit Search or choose Clear Search.";
+        library.status = sx::i18n::tr("No Library titles match. Edit Search or choose Clear Search.");
     else
-        library.status = "Nothing in your library matches this filter.";
+        library.status = sx::i18n::tr("Nothing in your library matches this filter.");
     changed_ |= kLibrary;
     art_dirty_ = true;
 }

@@ -1,3 +1,4 @@
+#include "../ui/i18n.hpp"
 #include "discover.hpp"
 
 #include <algorithm>
@@ -129,7 +130,7 @@ void Discover::draw_preview(hui::gfx::DrawList &list, const Title &t) const
     text(list, env_.fonts.semibold, env_.fonts.semibold.font->fit(t.genres, 22.0f, w), x, baseline, 22.0f,
          theme::accent_soft);
     hui::ui::paragraph(list, env_.fonts.regular, t.synopsis, x, baseline + 46.0f, 24.0f, w, 35.0f, theme::ink_2, 4);
-    draw_chip(list, env_, hui::ui::Button::cross, "Open", x, kPanel.y + kPanel.h - 62.0f, true);
+    draw_chip(list, env_, hui::ui::Button::cross, sx::i18n::tr("Open"), x, kPanel.y + kPanel.h - 62.0f, true);
     list.pop_opacity();
     list.pop_opacity();
 }

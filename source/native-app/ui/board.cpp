@@ -1,3 +1,4 @@
+#include "../ui/i18n.hpp"
 #include "board.hpp"
 
 #include "cards.hpp"
@@ -301,14 +302,14 @@ void Board::draw_row(hui::gfx::DrawList &list, int row, float top) const
          env_.fonts.semibold.font->fit(data.title, theme::kHeading, theme::kRight - theme::kLeft - 260.0f), theme::kLeft,
          top + 36.0f, theme::kHeading, current ? theme::ink : theme::ink_2, Align::left, -0.3f);
     if (data.items.empty())
-        text(list, env_.fonts.regular, "Nothing here yet", theme::kLeft, top + 110.0f, theme::kSubtitle, theme::ink_3);
+        text(list, env_.fonts.regular, sx::i18n::tr("Nothing here yet"), theme::kLeft, top + 110.0f, theme::kSubtitle, theme::ink_3);
     // "See all": the Square glyph appears beside the row that has the focus. Continue Watching has none:
     // everything in it can be reached by scrolling.
     const bool continue_row = data.key == "continue";
-    const float see_w = env_.fonts.regular.measure("See all", theme::kLabel + 2.0f);
+    const float see_w = env_.fonts.regular.measure(sx::i18n::tr("See all"), theme::kLabel + 2.0f);
     if (!continue_row)
     {
-        text(list, env_.fonts.regular, "See all", theme::kRight - 6.0f, top + 34.0f, theme::kLabel + 2.0f,
+        text(list, env_.fonts.regular, sx::i18n::tr("See all"), theme::kRight - 6.0f, top + 34.0f, theme::kLabel + 2.0f,
              current ? theme::ink_2 : theme::ink_3, Align::right);
         if (current)
             hui::ui::draw_button(list, env_.fonts, hui::ui::GlyphStyle::dark(), hui::ui::Button::square,
@@ -317,9 +318,9 @@ void Board::draw_row(hui::gfx::DrawList &list, int row, float top) const
     // On Continue Watching, Options takes the card off the row.
     if (current && continue_row && !data.items.empty())
     {
-        const float lw = env_.fonts.regular.measure("Options", theme::kLabel + 2.0f);
+        const float lw = env_.fonts.regular.measure(sx::i18n::tr("Options"), theme::kLabel + 2.0f);
         const float right = theme::kRight - 6.0f;
-        text(list, env_.fonts.regular, "Options", right, top + 34.0f, theme::kLabel + 2.0f, theme::ink_2, Align::right);
+        text(list, env_.fonts.regular, sx::i18n::tr("Options"), right, top + 34.0f, theme::kLabel + 2.0f, theme::ink_2, Align::right);
         hui::ui::draw_button(list, env_.fonts, hui::ui::GlyphStyle::dark(), hui::ui::Button::options,
                              right - lw - 52.0f, top + 26.0f, 32.0f);
     }
@@ -327,7 +328,7 @@ void Board::draw_row(hui::gfx::DrawList &list, int row, float top) const
 
     // The strip is clipped at the left, under the rail's edge, and bleeds off the right.
     list.push_clip({theme::kLeft - 38.0f, top + 40.0f, theme::kScreenW, kRowH - 44.0f});
-    const bool resume = data.title.find("Continue") != std::string::npos;
+    const bool resume = data.continue_watching;
     for (std::size_t i = 0; i < data.items.size(); ++i)
     {
         const Rect r = card_rect(row, static_cast<int>(i), false);
@@ -406,7 +407,7 @@ void Board::draw_hero(hui::gfx::DrawList &list, float offset) const
     hui::ui::paragraph(list, env_.fonts.regular, now->synopsis, theme::kLeft, 348.0f + rise, 26.0f, 780.0f, 38.0f,
                        theme::ink_2, 2);
     const bool resume = now->progress >= 0.0f;
-    const float chip_w = draw_chip(list, env_, hui::ui::Button::cross, resume ? "Resume" : "Open", theme::kLeft,
+    const float chip_w = draw_chip(list, env_, hui::ui::Button::cross, resume ? sx::i18n::tr("Resume") : sx::i18n::tr("Open"), theme::kLeft,
                                    448.0f + rise, true);
     if (resume)
     {
@@ -443,7 +444,7 @@ void Board::draw(hui::gfx::DrawList &list, hui::gfx::BackdropSpec &backdrop) con
             list.push_opacity(in);
             text(list, env_.fonts.semibold, "No results for \xE2\x80\x9C" + *query_ + "\xE2\x80\x9D", theme::kLeft, 330.0f,
                  44.0f, theme::ink, Align::left, -0.6f);
-            text(list, env_.fonts.regular, "Check the spelling, or try a shorter name.", theme::kLeft, 392.0f,
+            text(list, env_.fonts.regular, sx::i18n::tr("Check the spelling, or try a shorter name."), theme::kLeft, 392.0f,
                  theme::kSubtitle, theme::ink_2);
             list.pop_opacity();
         }

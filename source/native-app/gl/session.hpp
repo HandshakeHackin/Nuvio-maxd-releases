@@ -10,6 +10,7 @@
 #pragma once
 
 #include "art.hpp"
+#include "person.hpp"
 #include "app_update.hpp"
 #include "episode_playback.hpp"
 #include "content.hpp"
@@ -72,6 +73,7 @@ class Session
         int stream = -1;
         std::string stream_addon;
         bool streams_open = false;
+        int cast=0,person_movie=0,person_series=0;
     };
 
     // What changed since take_changed() last said. kDiscoverNew / kLibraryNew mean
@@ -88,6 +90,7 @@ class Session
         kIptvNew = 8192,
         kMedia = 16384, kMediaNew = 32768, kTorrentPage = 65536, kSports = 131072,
         kDetail = 32,
+        kPerson=262144,
         kDiscoverNew = 64,
         kLibraryNew = 128,
         kSearch = 256,
@@ -217,6 +220,19 @@ class Session
     void torrent_show_web_drop_qr();
     SettingsContent settings;
     DetailContent detail;
+    PersonContent person;
+    bool person_open=false;
+    void cast_load();
+    bool person_show(int member);
+    void detail_browse_people(){resume_play_=false;cancel_autoplay();}
+    void person_retry();
+    void person_leave();
+    void person_restore(PersonContent);
+    void person_pick(const people::Credit&);
+    bool take_person_title(Item* out){if(!person_target_)return false;*out=std::move(*person_target_);person_target_.reset();return true;}
+    void open_title_item(const Item&);
+    Item detail_item()const{return d_item_;}
+    unsigned profile_epoch()const{return profile_generation_;}
     BoardContent search; // the results of a search, rows like the Board's
     std::string search_query;
     bool search_open = false; // the results are on show
@@ -754,6 +770,11 @@ class Session
 
     // detail
     Item d_item_;
+    std::optional<Item> detail_seed_,person_target_;
+    std::shared_ptr<std::atomic<bool>> person_cancel_=std::make_shared<std::atomic<bool>>(false);
+    std::shared_ptr<std::atomic<bool>> cast_cancel_=std::make_shared<std::atomic<bool>>(false);
+    unsigned person_generation_=0,cast_generation_=0;
+    people::Member selected_person_;
     ::Meta d_meta_;
     bool d_meta_loaded_ = false;
     std::vector<int> d_seasons_;

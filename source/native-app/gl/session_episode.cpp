@@ -1,3 +1,4 @@
+#include "../ui/i18n.hpp"
 #include "session.hpp"
 #include "source_policy.hpp"
 #include "http.h"
@@ -169,18 +170,18 @@ bool Session::watch_episode_update(double now, double position, double duration,
     if (const auto target = w_episode_.skip_target(duration)) {
         (void)target;
         const auto kind = w_episode_.segments[w_episode_.active].kind;
-        playing.skip_label = kind == episode_playback::Kind::intro ? "Skip Intro" :
-                             kind == episode_playback::Kind::recap ? "Skip Recap" : "Skip Credits";
+        playing.skip_label = kind == episode_playback::Kind::intro ? sx::i18n::tr("Skip Intro") :
+                             kind == episode_playback::Kind::recap ? sx::i18n::tr("Skip Recap") : sx::i18n::tr("Skip Credits");
     }
     playing.next_label.clear(); playing.next_status.clear();
     if (w_episode_.next_visible && !playing.episode_dismissed) {
-        playing.next_label = "Next: S" + std::to_string(w_next_->season) + " E" + std::to_string(w_next_->episode);
+        playing.next_label = sx::i18n::tr("Next: S") + std::to_string(w_next_->season) + " E" + std::to_string(w_next_->episode);
         if (!w_next_->title.empty()) playing.next_label += "  " + w_next_->title;
-        if (!complete || !fresh) playing.next_status = "Finding next episode streams...";
-        else if (pick < 0) playing.next_status = "Choose a stream to keep your preferred quality";
-        else if (!prefs_.autoplay_next || w_episode_.cancelled) playing.next_status = "Press Cross to play";
-        else if (!advancing) playing.next_status = "Countdown paused";
-        else playing.next_status = "Playing in " + std::to_string(static_cast<int>(std::ceil(std::max(0.0, w_episode_.remaining)))) + " s";
+        if (!complete || !fresh) playing.next_status = sx::i18n::tr("Finding next episode streams...");
+        else if (pick < 0) playing.next_status = sx::i18n::tr("Choose a stream to keep your preferred quality");
+        else if (!prefs_.autoplay_next || w_episode_.cancelled) playing.next_status = sx::i18n::tr("Press Cross to play");
+        else if (!advancing) playing.next_status = sx::i18n::tr("Countdown paused");
+        else playing.next_status = sx::i18n::tr("Playing in ") + std::to_string(static_cast<int>(std::ceil(std::max(0.0, w_episode_.remaining)))) + " s";
     }
     if (playing.skip_label.empty() && playing.next_label.empty()) playing.episode_focused = false;
     if (playing.skip_label.empty()) playing.episode_action = 1;
@@ -206,7 +207,7 @@ bool Session::watch_episode_input(const hui::InputFrame& in) {
         w_episode_.cancel(); playing.episode_dismissed = true; playing.episode_focused = false;
         next_preparation_cancel();
         playing.next_label.clear();
-        say("Automatic next episode cancelled for this episode"); return true;
+        say(sx::i18n::tr("Automatic next episode cancelled for this episode")); return true;
     }
     if (in.is_pressed(Action::confirm)) {
         if (playing.episode_action == 1 && !playing.next_label.empty()) watch_next_episode();

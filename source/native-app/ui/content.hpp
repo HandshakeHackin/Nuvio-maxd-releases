@@ -35,6 +35,7 @@ struct Row
     std::string title; // "Continue Watching", "Popular - Movie"
     std::vector<Title> items;
     std::string key;   // which catalog it is, so a row keeps the cursor when others appear above it
+    bool continue_watching=false;
 };
 
 struct BoardContent
@@ -153,6 +154,10 @@ struct Stream
 
 struct DetailContent
 {
+    struct PersonCard {std::string id,name,role,photo_url;std::uint32_t photo=0;bool crew=false;std::string character{};};
+    std::vector<PersonCard> people;
+    std::string people_status;
+    bool people_loading=false;
     Title title;
     std::string directors;
     std::string cast;

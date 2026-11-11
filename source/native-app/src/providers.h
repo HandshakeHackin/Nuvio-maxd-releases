@@ -1,6 +1,7 @@
 // Isolated JavaScript provider repositories, separate from Stremio addon
 // resources.
 #pragma once
+#include "people.h"
 #include "stremio.h"
 namespace providers {
 // Split enabled scripts into independently cancellable worker jobs without
@@ -39,6 +40,9 @@ Identity identify(const std::string &video_id, const Meta &meta);
 bool initialize(const std::string &runtime_path);
 bool configure(const std::string &applications_path);
 json trailer_videos(const Meta&,const std::atomic<bool>* cancel=nullptr,const std::string& language="en");
+people::Cast title_people(const Meta&,const std::atomic<bool>* cancel=nullptr,const std::string& language="en");
+people::Person person_details(const people::Member&,const std::atomic<bool>* cancel=nullptr,const std::string& language="en");
+people::Resolved person_title(const people::Credit&,const std::atomic<bool>* cancel=nullptr);
 void clear_script_cache();
 json settings_layout(const Addon &, const ProviderScript &, std::string &error,
                      const std::atomic<bool> *cancel = nullptr);
@@ -55,6 +59,9 @@ inline bool initialize(const std::string &) { return false; }
 inline bool configure(const std::string &) { return false; }
 inline void clear_script_cache() {}
 inline json trailer_videos(const Meta&,const std::atomic<bool>* =nullptr,const std::string& ="en") {return json::object();}
+inline people::Cast title_people(const Meta&,const std::atomic<bool>* =nullptr,const std::string& ="en"){return {{},"Cast photos are unavailable in this build."};}
+inline people::Person person_details(const people::Member& m,const std::atomic<bool>* =nullptr,const std::string& ="en"){people::Person p;p.id=m.id;p.name=m.name;p.error="Person details are unavailable in this build.";return p;}
+inline people::Resolved person_title(const people::Credit&,const std::atomic<bool>* =nullptr){return {{},{},"Person titles are unavailable in this build."};}
 inline json settings_layout(const Addon &, const ProviderScript &, std::string &error,
                             const std::atomic<bool> * = nullptr) {
   error="This build does not include JavaScript providers."; return json::array();

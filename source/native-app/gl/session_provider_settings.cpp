@@ -1,3 +1,4 @@
+#include "../ui/i18n.hpp"
 #include "session.hpp"
 #include "providers.h"
 
@@ -7,10 +8,10 @@ void Session::provider_options(const std::string& url) {
     auto a=find_addon(url); if(!a)return;
     std::vector<std::string> rows,ids;
     for(const auto& p:a->providers) {rows.push_back(p.name);ids.push_back(p.id);}
-    open_dropdown("Provider settings",rows,0,[this,url,ids](int i){
+    open_dropdown(sx::i18n::tr("Provider settings"),rows,0,[this,url,ids](int i){
         if(i>=0 && size_t(i)<ids.size())provider_options_load(url,ids[i]);
     });
-    dropdown.message="Choose a provider to change its available options. Settings belong to the current profile.";
+    dropdown.message=sx::i18n::tr("Choose a provider to change its available options. Settings belong to the current profile.");
 }
 void Session::provider_options_load(const std::string& url,const std::string& id) {
     auto a=find_addon(url);if(!a || inherit_plugins_ || watching || resuming_)return;
@@ -19,7 +20,7 @@ void Session::provider_options_load(const std::string& url,const std::string& id
         const auto addon_generation=addons_gen_;
         const auto cancel=std::make_shared<std::atomic<bool>>(false);
         struct Result {json layout;std::string error;};
-        say("Loading provider options...");
+        say(sx::i18n::tr("Loading provider options..."));
         provider_tasks_.run<Result>([a=*a,p,cancel]{Result r;r.layout=providers::settings_layout(a,p,r.error,cancel.get());return r;},
             [this,url,id,generation,addon_generation](Result& r){
                 if(generation!=profile_generation_ || addon_generation!=addons_gen_ || inherit_plugins_)return;
@@ -43,9 +44,9 @@ void Session::provider_options_show(const std::string& url,const std::string& id
         rows.push_back(label);fields.push_back(f);
         if(fields.size()==64)break;
     }
-    if(rows.empty()){say("This provider has no editable options available on this PS5.",7);return;}
-    rows.push_back("Reset provider settings");
-    open_dropdown("Provider settings",rows,0,[this,url,id,layout,fields,generation](int i){
+    if(rows.empty()){say(sx::i18n::tr("This provider has no editable options available on this PS5."),7);return;}
+    rows.push_back(sx::i18n::tr("Reset provider settings"));
+    open_dropdown(sx::i18n::tr("Provider settings"),rows,0,[this,url,id,layout,fields,generation](int i){
         if(i<0 || size_t(i)>fields.size() || generation!=profile_generation_ || inherit_plugins_)return;
         auto save=[this,url,id,layout,generation](const std::string& key,const json& value){
             if(generation!=profile_generation_ || inherit_plugins_ || !find_addon(url))return;
@@ -55,7 +56,7 @@ void Session::provider_options_show(const std::string& url,const std::string& id
             if(!settings.is_object())settings=json::object();
             if(key.empty())settings=json::object();else settings[key]=value;
             for(auto& a:addons_)if(a->transport_url==url)for(auto& p:a->providers)if(p.id==id)p.settings=settings;
-            save_profile_settings();say("Provider settings saved");
+            save_profile_settings();say(sx::i18n::tr("Provider settings saved"));
             provider_options_show(url,id,layout);
         };
         if(size_t(i)==fields.size()){save("",json());return;}
@@ -79,6 +80,6 @@ void Session::provider_options_show(const std::string& url,const std::string& id
             if(choice>=0 && size_t(choice)<values.size())save(key,values[choice]);
         });
     });
-    dropdown.message="Provider options are saved for this profile. Password fields require a masked keyboard and are not offered here.";
+    dropdown.message=sx::i18n::tr("Provider options are saved for this profile. Password fields require a masked keyboard and are not offered here.");
 }
 }

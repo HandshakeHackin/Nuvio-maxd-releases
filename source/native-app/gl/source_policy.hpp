@@ -1,3 +1,4 @@
+#include "../ui/i18n.hpp"
 // Conservative source hints: addon metadata is unverified, never a playback guarantee.
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
@@ -56,10 +57,10 @@ inline Assessment assess(const ::Stream& s,const Preferences& p,Context ctx={}) 
     const auto hide=[&](const char* reason){a.hidden=true;if(a.reason.empty())a.reason=reason;};
     if(p.checks) {
         const auto dot=file.find_last_of('.');const auto ext=dot==std::string::npos?"":file.substr(dot);
-        if(ext==".exe"||ext==".scr"||ext==".bat"||ext==".cmd"||ext==".msi"||ext==".apk"||ext==".lnk"||ext==".zip"||ext==".rar"||ext==".7z"||ext==".iso")hide("Archive or non-video file");
+        if(ext==".exe"||ext==".scr"||ext==".bat"||ext==".cmd"||ext==".msi"||ext==".apk"||ext==".lnk"||ext==".zip"||ext==".rar"||ext==".7z"||ext==".iso")hide(sx::i18n::tr("Archive or non-video file"));
         if(stream_display::has(file,"sample")) {
-            if(n>0&&n<400*1048576.0)hide("Likely sample file");
-            else a.warning="Filename mentions sample";
+            if(n>0&&n<400*1048576.0)hide(sx::i18n::tr("Likely sample file"));
+            else a.warning=sx::i18n::tr("Filename mentions sample");
         }
         if(ctx.season>=0&&ctx.episode>0&&!file.empty()) {
             static const std::regex episode(R"((?:^|[^a-z0-9])s([0-9]{1,2})[ ._-]?e([0-9]{1,3})(?:[ ._-]*(?:-|e|to)[ ._-]*e?([0-9]{1,3}))?(?![a-z0-9]))");
@@ -70,16 +71,16 @@ inline Assessment assess(const ::Stream& s,const Preferences& p,Context ctx={}) 
                 match|=season==ctx.season&&first<=ctx.episode&&ctx.episode<=last;
             }
             const bool pack=stream_display::has(file,"complete")||stream_display::has(file,"pack")||stream_display::has(file,"season");
-            if(found&&!match){if(pack)a.warning="Check episode in this pack";else hide("Filename names another episode");}
+            if(found&&!match){if(pack)a.warning=sx::i18n::tr("Check episode in this pack");else hide(sx::i18n::tr("Filename names another episode"));}
         }
     }
-    if(cam){a.warning="Possible cinema recording / screener";a.score-=300;if(p.hide_cam)hide("Cinema recording / screener excluded");}
-    if(p.min_height&&height&&height<p.min_height)hide("Below preferred resolution");
-    if(p.max_gb&&n>double(p.max_gb)*1e9)hide("Above file-size limit");
-    if(p.hdr=="avoid"&&hdr)hide("HDR excluded by preference");
-    if(!p.language.empty()&&language_match(s,p.language)){a.score+=200;reasons.push_back("Preferred language advertised");}
-    if(s.direct_http()){a.score+=40;reasons.push_back("Direct link");}
-    else if(s.debrid_resolvable){a.score+=30;reasons.push_back("Debrid resolvable");}
+    if(cam){a.warning=sx::i18n::tr("Possible cinema recording / screener");a.score-=300;if(p.hide_cam)hide(sx::i18n::tr("Cinema recording / screener excluded"));}
+    if(p.min_height&&height&&height<p.min_height)hide(sx::i18n::tr("Below preferred resolution"));
+    if(p.max_gb&&n>double(p.max_gb)*1e9)hide(sx::i18n::tr("Above file-size limit"));
+    if(p.hdr=="avoid"&&hdr)hide(sx::i18n::tr("HDR excluded by preference"));
+    if(!p.language.empty()&&language_match(s,p.language)){a.score+=200;reasons.push_back(sx::i18n::tr("Preferred language advertised"));}
+    if(s.direct_http()){a.score+=40;reasons.push_back(sx::i18n::tr("Direct link"));}
+    else if(s.debrid_resolvable){a.score+=30;reasons.push_back(sx::i18n::tr("Debrid resolvable"));}
     if(height){a.score+=height/60;reasons.push_back(res);}
     if(p.hdr=="prefer"&&hdr){a.score+=25;reasons.push_back("HDR advertised");}
     if(!a.warning.empty())a.score-=100;

@@ -1,3 +1,4 @@
+#include "../ui/i18n.hpp"
 #include "../src/subtitle_size.hpp"
 #include "player.hpp"
 
@@ -155,7 +156,7 @@ void PlayerUi::draw_controls(hui::gfx::DrawList &list, float amount) const
     // Tracks on the left, buttons on the right.
     // Long track names share what room the buttons leave: the shorter one
     // keeps its full name, the longer one gives way.
-    const std::string audio = "Audio  " + state.audio, subs = "Subtitles  " + state.subs;
+    const std::string audio = sx::i18n::tr("Audio  ") + state.audio, subs = sx::i18n::tr("Subtitles  ") + state.subs;
     const float budget = 560.0f;
     const float na = env_.fonts.semibold.measure(audio.c_str(), theme::kBody);
     const float ns = env_.fonts.semibold.measure(subs.c_str(), theme::kBody);
@@ -172,17 +173,17 @@ void PlayerUi::draw_controls(hui::gfx::DrawList &list, float amount) const
     float cx = x;
     cx += draw_chip(list, env_, hui::ui::Button::triangle, audio.c_str(), cx, 1010.0f, false, ma) + 14.0f;
     cx += draw_chip(list, env_, hui::ui::Button::square, subs.c_str(), cx, 1010.0f, false, ms) + 14.0f;
-    draw_chip(list, env_, hui::ui::Button::options, state.chapters.empty()?"Tracks":"Tracks / Chapters", cx, 1010.0f);
+    draw_chip(list, env_, hui::ui::Button::options, state.chapters.empty()?sx::i18n::tr("Tracks"):sx::i18n::tr("Tracks / Chapters"), cx, 1010.0f);
     hui::ui::HintLayout layout;
     layout.size = 36.0f;
     layout.text_size = 24.0f;
     layout.cy = 1010.0f;
     layout.item_gap = 34.0f;
     layout.font = &env_.fonts.regular;
-    const hui::ui::Hint hints[] = {{hui::ui::Button::cross, state.paused ? "Play" : "Pause"},
+    const hui::ui::Hint hints[] = {{hui::ui::Button::cross, state.paused ? sx::i18n::tr("Play") : sx::i18n::tr("Pause")},
                                    {hui::ui::Button::dpad, "10 s"},
                                    {hui::ui::Button::l1, "1 min", hui::ui::Button::r1},
-                                   {hui::ui::Button::circle, "Stop"}};
+                                   {hui::ui::Button::circle, sx::i18n::tr("Stop")}};
     hui::ui::draw_hints(list, env_.fonts, hui::ui::GlyphStyle::dark(), hints, 4, x + w, true, layout);
     list.pop_transform();
     list.pop_opacity();
@@ -218,9 +219,9 @@ void PlayerUi::draw_menu(hui::gfx::DrawList &list, float amount) const
         const std::vector<std::string> *tracks;
         int active;
     };
-    const Column columns[3] = {{"Audio", &state.audio_tracks, state.audio_active},
-                               {"Subtitles", &state.subtitle_tracks, state.subtitle_active},
-                               {"Chapters", &state.chapter_labels, state.chapter_active}};
+    const Column columns[3] = {{sx::i18n::tr("Audio"), &state.audio_tracks, state.audio_active},
+                               {sx::i18n::tr("Subtitles"), &state.subtitle_tracks, state.subtitle_active},
+                               {sx::i18n::tr("Chapters"), &state.chapter_labels, state.chapter_active}};
     const int count=state.chapters.empty()?2:3;
     const float stride=count==2?660.0f:440.0f;
     for (int c = 0; c < count; ++c)
@@ -264,17 +265,17 @@ void PlayerUi::draw_menu(hui::gfx::DrawList &list, float amount) const
         list.pop_opacity();
     }
     if(state.menu_column==2) {
-        text(list,env_.fonts.regular,"Choose a chapter. Jumping keeps your current pause state.",panel.x+50,panel.y+panel.h-90,22,theme::ink_2);
-        draw_chip(list,env_,hui::ui::Button::cross,"Jump to chapter",panel.x+50,panel.y+panel.h-44);
-        text(list,env_.fonts.regular,"Left / Right: Audio, Subtitles, Chapters",panel.x+400,panel.y+panel.h-44,22,theme::ink_3);
+        text(list,env_.fonts.regular,sx::i18n::tr("Choose a chapter. Jumping keeps your current pause state."),panel.x+50,panel.y+panel.h-90,22,theme::ink_2);
+        draw_chip(list,env_,hui::ui::Button::cross,sx::i18n::tr("Jump to chapter"),panel.x+50,panel.y+panel.h-44);
+        text(list,env_.fonts.regular,sx::i18n::tr("Left / Right: Audio, Subtitles, Chapters"),panel.x+400,panel.y+panel.h-44,22,theme::ink_3);
     } else {
-    text(list, env_.fonts.regular, "Audio  " + state.audio_adjustments, panel.x+50.0f,panel.y+panel.h-90.0f,22.0f,theme::ink_2);
-    text(list, env_.fonts.regular, "L2/R2 sync · L1/R1 volume · Triangle reset",panel.x+50.0f,panel.y+panel.h-44.0f,20.0f,theme::ink_3);
-    text(list, env_.fonts.regular, "Subtitle delay  " + (state.subtitle_delay.empty() ? std::string("0.00 s") : state.subtitle_delay) + "   (L2 / R2 · Triangle reset)",
+    text(list, env_.fonts.regular, sx::i18n::tr("Audio  ") + state.audio_adjustments, panel.x+50.0f,panel.y+panel.h-90.0f,22.0f,theme::ink_2);
+    text(list, env_.fonts.regular, sx::i18n::tr("L2/R2 sync · L1/R1 volume · Triangle reset"),panel.x+50.0f,panel.y+panel.h-44.0f,20.0f,theme::ink_3);
+    text(list, env_.fonts.regular, sx::i18n::tr("Subtitle delay  ") + (state.subtitle_delay.empty() ? std::string("0.00 s") : state.subtitle_delay) + sx::i18n::tr("   (L2 / R2 · Triangle reset)"),
          panel.x + 710.0f, panel.y + panel.h - 44.0f, 24.0f, theme::ink_3);
     }
-    draw_chip(list,env_,hui::ui::Button::square,"Playback options",panel.x+50,panel.y+30);
-    draw_chip(list, env_, hui::ui::Button::circle, "Close", panel.x + panel.w - 200.0f, panel.y + 30.0f);
+    draw_chip(list,env_,hui::ui::Button::square,sx::i18n::tr("Playback options"),panel.x+50,panel.y+30);
+    draw_chip(list, env_, hui::ui::Button::circle, sx::i18n::tr("Close"), panel.x + panel.w - 200.0f, panel.y + 30.0f);
     list.pop_transform();
     list.pop_opacity();
 }
@@ -322,13 +323,13 @@ void PlayerUi::draw(hui::gfx::DrawList &list) const
                 hints.item_gap = 24.0f;
                 hints.font = &env_.fonts.regular;
                 const hui::ui::Hint actions[] = {
-                    {hui::ui::Button::cross, action == 0 ? "Skip" : "Play"},
-                    {hui::ui::Button::circle, state.next_label.empty() ? "Back" : "Cancel next"}};
+                    {hui::ui::Button::cross, action == 0 ? sx::i18n::tr("Skip") : sx::i18n::tr("Play")},
+                    {hui::ui::Button::circle, state.next_label.empty() ? sx::i18n::tr("Back") : sx::i18n::tr("Cancel next")}};
                 hui::ui::draw_hints(list, env_.fonts, hui::ui::GlyphStyle::dark(), actions, 2,
                                     x + 25, false, hints);
             }
             else
-                text(list, env_.fonts.regular, "Press Down to select", x + 25,
+                text(list, env_.fonts.regular, sx::i18n::tr("Press Down to select"), x + 25,
                      panel.y + panel.h - 17, 20, theme::ink_3);
             x -= 18;
         };

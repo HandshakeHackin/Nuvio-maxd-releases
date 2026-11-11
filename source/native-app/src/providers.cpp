@@ -408,6 +408,9 @@ bool configure(const std::string &path) {
 json trailer_videos(const Meta& meta,const std::atomic<bool>* cancel,const std::string& language) {
   return trailers::tmdb_videos(meta,configured_tmdb_key(),cancel,{},language);
 }
+people::Cast title_people(const Meta& m,const std::atomic<bool>* cancel,const std::string& language){return people::fetch_cast(m,configured_tmdb_key(),language,cancel);}
+people::Person person_details(const people::Member& m,const std::atomic<bool>* cancel,const std::string& language){return people::fetch_person(m,configured_tmdb_key(),language,cancel);}
+people::Resolved person_title(const people::Credit& c,const std::atomic<bool>* cancel){return people::resolve(c,configured_tmdb_key(),cancel);}
 void clear_script_cache() { std::lock_guard<std::mutex> lock(scripts_mutex);scripts.clear(); }
 json execute(const std::string &source, const json &arguments,
              const json &settings, std::string &error,

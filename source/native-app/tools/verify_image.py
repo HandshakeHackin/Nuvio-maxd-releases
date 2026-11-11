@@ -46,7 +46,7 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
     param = json.loads((extracted / 'sce_sys/param.json').read_text())
     display_profile = validate_display_metadata(param)
     assert param['titleId'] == 'PPSA99288'
-    assert param['contentVersion'] == '07.000.016'
+    assert param['contentVersion'] == '07.000.017'
     assert param['localizedParameters']['en-US']['titleName'] == "Nuvio Max'd"
     assert param['contentId'] == 'UP9000-PPSA99288_00-NUVIOPS5NAT00001'
     assert param['applicationCategoryType'] == 0
@@ -58,7 +58,7 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
     assert struct.unpack_from('<HH', data, elf + 16) == (0xFE10, 62)
     assert struct.unpack_from('<Q', data, elf + 24)[0] != 0
     info = json.loads((extracted / 'build-info.json').read_text())
-    assert info['version'] == '1.0.0.16-native-experimental'
+    assert info['version'] == '1.0.0.17-native'
     assert info['userExperienceUpdates']['optionalDonationQr']
     assert info['userExperienceUpdates']['installSourceSelector'] and info['userExperienceUpdates']['sourceAwareUpdateReminders']
     assert info['experimentalAv']['driverOwnedHdrSwitch'] and info['experimentalAv']['pcmDefault']
@@ -67,6 +67,9 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
     assert info['graphicsRefresh']['streamReloadSelection'] and info['graphicsRefresh']['startupStageTiming']
     assert info['controllerLightbar']['sharedBootEnvelope'] and info['controllerLightbar']['systemResetOnClose']
     assert info['name'] == "Nuvio Max'd"
+    assert info['releaseChannel']=='stable'
+    assert info['interfaceLanguages']['available']==['en','de'] and info['interfaceLanguages']['englishFallback']
+    assert info['peopleBrowsing']['castAndCrewPhotos'] and info['peopleBrowsing']['personBiography'] and info['peopleBrowsing']['movieAndTvCredits']
     assert info['updater']['repository'] == 'HandshakeHackin/Nuvio-maxd-releases'
     assert not info['sourceDirty']
     assert info['cloudProgressSync'] is True
@@ -113,6 +116,13 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
     assert info['mediaRemote']['buttonRemapping'] and info['mediaRemote']['appLocalOnly']
     assert 'USB diagnostics: missing/access/empty mounts, metadata fallback, unknown types, enumeration errors, privacy, cancellation and global count/depth limits passed' in test_log
     assert 'USB reader: bounded protocol, loopback loader, fragmented/buffered transfers, invalid replies, cancellation, validation, private atomic copies and profile isolation passed' in test_log
+    assert 'Localization: saved English/German preference' in test_log
+    assert 'Localization dialogs: production USB cancellation uses stable purposes' in test_log
+    assert 'People metadata: movie/TV credits' in test_log
+    assert 'People UI: cast/person focus' in test_log
+    assert 'People Session: cancelled/stale/profile completions' in test_log
+    assert all(mode+': GL error 0x0' in test_log for mode in ['de-person','de-cast','de-language','de-login','de-profile-pin','de-usb-language','de-person-last','de-cast-last'])
+    assert 'person: GL error 0x0' in test_log and 'cast: GL error 0x0' in test_log and 'language: GL error 0x0' in test_log
     assert 'ALL TORRENT STREAMING HOST TESTS PASSED!' in test_log
     assert 'HDR fallback: strict/SDR modes, failed restoration, retained picture, session reset and unchanged preferences passed' in test_log
     assert 'Controller lightbar: throttling, failure suppression, reconnect, reset and logo/reduced-motion envelopes passed' in test_log
@@ -187,6 +197,8 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
         'updater': info['updater'], 'hostUpdaterTestsPassed': 46,
         'episodePlayback': info['episodePlayback'],
         'displaySelection': info['displaySelection'],
+        'interfaceLanguages': info['interfaceLanguages'], 'peopleBrowsing': info['peopleBrowsing'],
+        'hostLocalizationTestsPassed': True, 'hostPeopleMetadataUiSessionTestsPassed': True,
         'hardwareVerified': False, 'verifiedFirmwares': [],
         'filesystemPermissions': 'ExFAT mount permissions require console verification',
         'fileSha256': actual,

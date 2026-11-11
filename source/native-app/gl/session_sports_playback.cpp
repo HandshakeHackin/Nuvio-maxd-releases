@@ -1,3 +1,4 @@
+#include "../ui/i18n.hpp"
 #include "session.hpp"
 #include <algorithm>
 namespace sx {
@@ -14,11 +15,11 @@ void Session::sports_event(const sports::Event &original) {
   std::vector<std::string> labels;
   for (const auto &m : candidates)
     labels.push_back(live_channels_[m.channel].name + " · " +
-                     (m.rank >= 300 ? "guide match" : "broadcaster candidate"));
-  labels.push_back("Search all my Live TV channels");
-  labels.push_back("Follow / unfollow competition");
+                     (m.rank >= 300 ? sx::i18n::tr("guide match") : sx::i18n::tr("broadcaster candidate")));
+  labels.push_back(sx::i18n::tr("Search all my Live TV channels"));
+  labels.push_back(sx::i18n::tr("Follow / unfollow competition"));
   for (const auto &team : event.teams)
-    labels.push_back("Follow / unfollow " + team.name);
+    labels.push_back(sx::i18n::tr("Follow / unfollow ") + team.name);
   const auto count = candidates.size();
   open_dropdown(event.title, labels, 0,
                 [this, p, g, d, live, source, event, candidates, count](int i) {
@@ -68,8 +69,7 @@ void Session::sports_event(const sports::Event &original) {
       sports::event_time(event, sports_prefs_.utc_offset) + " · " +
       sports::event_status(event, sports_prefs_.hide_scores,
                            now_epoch_ms() / 1000) +
-      ". Broadcaster matches do not confirm this programme. Choose a channel "
-      "to watch; availability depends on your provider.";
+      sx::i18n::tr(". Broadcaster matches do not confirm this programme. Choose a channel to watch; availability depends on your provider.");
 }
 void Session::sports_channel_search(const sports::Event &event) {
   if (!sports_visible)
@@ -78,8 +78,7 @@ void Session::sports_channel_search(const sports::Event &event) {
              d = ++sports_dialog_, live = live_generation_;
   const auto source = live_source_;
   if (live_channels_.empty()) {
-    say("Configure and load your own source in Live TV first. Sports metadata "
-        "does not include playable streams.",
+    say(sx::i18n::tr("Configure and load your own source in Live TV first. Sports metadata does not include playable streams."),
         10);
     return;
   }
@@ -90,7 +89,7 @@ void Session::sports_channel_search(const sports::Event &event) {
           return;
         const auto query = sports::clean(raw, 80);
         if (query.size() < 2) {
-          say("Enter two or more characters to search channels.", 6);
+          say(sx::i18n::tr("Enter two or more characters to search channels."), 6);
           return;
         }
         std::vector<size_t> ids;
@@ -102,20 +101,19 @@ void Session::sports_channel_search(const sports::Event &event) {
             names.push_back(live_channels_[i].name);
           }
         if (ids.empty()) {
-          say("No channels matched that search.", 6);
+          say(sx::i18n::tr("No channels matched that search."), 6);
           return;
         }
         open_dropdown(
-            "Choose a channel · " + event.title, names, 0,
+            sx::i18n::tr("Choose a channel · ") + event.title, names, 0,
             [this, p, g, d, live, source, ids](int i) {
               if (!sports_valid(p, g, d) || live != live_generation_ ||
                   source != live_source_ || i < 0 || size_t(i) >= ids.size())
                 return;
               live_play(live_channels_[ids[size_t(i)]]);
             });
-        dropdown.message = "Manual channel selection. The programme is not "
-                           "confirmed; consult your provider guide.";
+        dropdown.message = sx::i18n::tr("Manual channel selection. The programme is not confirmed; consult your provider guide.");
       },
-      "Search loaded Live TV channels");
+      sx::i18n::tr("Search loaded Live TV channels"));
 }
 } // namespace sx

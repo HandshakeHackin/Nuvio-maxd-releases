@@ -1,3 +1,4 @@
+#include "../ui/i18n.hpp"
 // Profile-local source preferences, shared without UI or ranking dependencies.
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
@@ -10,7 +11,7 @@ struct Preferences {
     std::string hdr="any", language;
 };
 inline std::string language_label(const std::string& code) {
-    const std::pair<const char*,const char*> names[]={{"eng","English"},{"spa","Spanish"},{"fra","French"},{"deu","German"},{"ita","Italian"},{"por","Portuguese"},{"jpn","Japanese"},{"kor","Korean"},{"hin","Hindi"}};
+    const std::pair<const char*,const char*> names[]={{"eng","English"},{"spa",sx::i18n::tr("Spanish")},{"fra",sx::i18n::tr("French")},{"deu",sx::i18n::tr("German")},{"ita",sx::i18n::tr("Italian")},{"por",sx::i18n::tr("Portuguese")},{"jpn",sx::i18n::tr("Japanese")},{"kor",sx::i18n::tr("Korean")},{"hin",sx::i18n::tr("Hindi")}};
     for(const auto& name:names)if(code==name.first)return name.second;
     return "any";
 }

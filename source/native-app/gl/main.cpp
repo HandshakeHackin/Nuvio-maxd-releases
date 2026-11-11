@@ -3,6 +3,7 @@
 // what the screens show is gl/session.cpp.
 
 #include "chrome.hpp"
+#include "i18n.hpp"
 #include "console_lights.hpp"
 #include "media_remote.hpp"
 #include "system_status.hpp"
@@ -83,6 +84,7 @@ int main()
     // Read before EGL starts: changing the mode later would destroy GL objects.
     json stored;
     load_json(std::string(kData) + "/settings.json", stored);
+    sx::i18n::set_language(jstr(stored,"ui_language","en"));
     hui::tween::reduced_motion = jbool(stored,"reduced_motion",false);
     sx::theme::set_high_contrast(jbool(stored,"high_contrast",false));
     const int preference = display_output_preference(jstr(stored, "display_output", "ps5"));

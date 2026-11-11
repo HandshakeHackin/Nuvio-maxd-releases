@@ -1,3 +1,4 @@
+#include "../ui/i18n.hpp"
 // ReSeq-inspired sports flow adapted to the native controller UI.
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "session.hpp"
@@ -5,8 +6,8 @@
 #include <sys/stat.h>
 namespace sx {
 namespace {
-const char *views[] = {"All events", "My Sports", "On now / starting",
-                       "Upcoming", "Results"};
+const char *views[] = {sx::i18n::tr("All events"), sx::i18n::tr("My Sports"), sx::i18n::tr("On now / starting"),
+                       sx::i18n::tr("Upcoming"), sx::i18n::tr("Results")};
 std::string offset_label(int n) {
   char b[32];
   std::snprintf(b, sizeof(b), "UTC %c%02d:%02d", n < 0 ? '-' : '+',
@@ -77,8 +78,8 @@ void Session::sports_toggle() {
   }
   sports_save();
   say(sports_visible
-          ? "Sports Hub enabled. Choose your sports and teams in this section."
-          : "Sports Hub disabled. Your selections are saved.",
+          ? sx::i18n::tr("Sports Hub enabled. Choose your sports and teams in this section.")
+          : sx::i18n::tr("Sports Hub disabled. Your selections are saved."),
       7);
 }
 void Session::sports_scores() {
@@ -155,37 +156,35 @@ void Session::sports_build() {
       std::min(sports_page_, rows.empty() ? size_t(0) : (rows.size() - 1) / 60);
   Addon settings;
   settings.identity = "sports:settings";
-  settings.name = "Sports Hub";
+  settings.name = sx::i18n::tr("Sports Hub");
   settings.version =
       std::string(views[sports_view_]) + " · " + sports_prefs_.region;
   settings.description =
-      "X: preferences · Triangle: search · Options: selections";
+      sx::i18n::tr("X: preferences · Triangle: search · Options: selections");
   settings.initial = "S";
   sports_content.items.push_back(settings);
   Addon filter;
   filter.identity = "sports:view";
-  filter.name = "Choose view";
+  filter.name = sx::i18n::tr("Choose view");
   filter.version = offset_label(sports_prefs_.utc_offset);
-  filter.description = "All events, My Sports, On now, Upcoming or Results. "
-                       "Times use your selected UTC offset.";
+  filter.description = sx::i18n::tr("All events, My Sports, On now, Upcoming or Results. Times use your selected UTC offset.");
   filter.initial = "V";
   sports_content.items.push_back(filter);
   Addon paging;
   paging.identity = "sports:paging";
-  paging.name = "Events and refresh";
-  paging.version = std::to_string(rows.size()) + " events · Page " +
+  paging.name = sx::i18n::tr("Events and refresh");
+  paging.version = std::to_string(rows.size()) + sx::i18n::tr(" events · Page ") +
                    std::to_string(sports_page_ + 1);
   paging.initial = "R";
   paging.description =
-      sports_loading_           ? "Loading public sports schedule..."
+      sports_loading_           ? sx::i18n::tr("Loading public sports schedule...")
       : !sports_notice_.empty() ? sports_notice_
       : sports_snapshot_.generated
-          ? "Schedule: " +
+          ? sx::i18n::tr("Schedule: ") +
                 sports::clock(sports_snapshot_.generated,
                               sports_prefs_.utc_offset) +
-                " · ReSeq public feed / ESPN. Scores may be delayed."
-          : "No schedule loaded. Refresh here; guide events work with your "
-            "configured Live TV source.";
+                sx::i18n::tr(" · ReSeq public feed / ESPN. Scores may be delayed.")
+          : sx::i18n::tr("No schedule loaded. Refresh here; guide events work with your configured Live TV source.");
   sports_content.items.push_back(paging);
   const auto first = sports_page_ * 60,
              last = std::min(rows.size(), first + 60);
@@ -198,7 +197,7 @@ void Session::sports_build() {
     card.version = sports::event_time(e, sports_prefs_.utc_offset);
     card.description = (l ? l->name : e.league) + " · " +
                        sports::event_status(e, sports_prefs_.hide_scores, now);
-    card.types = sports::follows(e, sports_prefs_) ? "Following" : "";
+    card.types = sports::follows(e, sports_prefs_) ? sx::i18n::tr("Following") : "";
     card.initial = l ? l->name.substr(0, 1) : "S";
     card.colour = e.state == "in" && e.fresh ? 0x138b69 : 0x334b75;
     sports_content.items.push_back(std::move(card));
@@ -207,9 +206,8 @@ void Session::sports_build() {
   if (rows.empty() && !sports_loading_ && sports_notice_.empty())
     sports_content.items[2].description =
         sports_query_.empty()
-            ? "No events match this view. Choose sports, follow teams, change "
-              "view or refresh. Free schedule coverage varies."
-            : "No events match your search. Clear or change it with Triangle.";
+            ? sx::i18n::tr("No events match this view. Choose sports, follow teams, change view or refresh. Free schedule coverage varies.")
+            : sx::i18n::tr("No events match your search. Clear or change it with Triangle.");
   changed_ |= kSports;
 }
 void Session::sports_reload(bool force) {
@@ -217,7 +215,7 @@ void Session::sports_reload(bool force) {
       now_seconds() < sports_next_feed_)
     return;
   if (sports_catalogue_.leagues.empty()) {
-    sports_notice_ = "Sports catalogue is missing from this build.";
+    sports_notice_ = sx::i18n::tr("Sports catalogue is missing from this build.");
     sports_build();
     return;
   }
@@ -263,12 +261,11 @@ void Session::sports_reload(bool force) {
             r.snapshot = std::move(fresh);
             if (!write_file(path, response.body))
               r.notice =
-                  "Schedule loaded, but could not save the public cache.";
+                  sx::i18n::tr("Schedule loaded, but could not save the public cache.");
             return r;
           }
         }
-        r.notice = "Schedule refresh failed. Showing valid cached/guide "
-                   "events; try again later.";
+        r.notice = sx::i18n::tr("Schedule refresh failed. Showing valid cached/guide events; try again later.");
         if (!r.snapshot.error.empty())
           r.snapshot = {};
         return r;
@@ -386,7 +383,7 @@ void Session::sports_activate(int index) {
   }
   if (index == 1) {
     const auto p = profile_generation_, g = sports_generation_;
-    open_dropdown("Sports view",
+    open_dropdown(sx::i18n::tr("Sports view"),
                   {views[0], views[1], views[2], views[3], views[4]},
                   sports_view_, [this, p, g](int i) {
                     if (p != profile_generation_ || g != sports_generation_ ||
@@ -400,9 +397,9 @@ void Session::sports_activate(int index) {
   }
   if (index == 2) {
     const auto p = profile_generation_, g = sports_generation_;
-    open_dropdown("Sports events",
-                  {"Next page", "Previous page", "Refresh schedule",
-                   "Reload Live TV / guide"},
+    open_dropdown(sx::i18n::tr("Sports events"),
+                  {sx::i18n::tr("Next page"), sx::i18n::tr("Previous page"), sx::i18n::tr("Refresh schedule"),
+                   sx::i18n::tr("Reload Live TV / guide")},
                   0, [this, p, g](int i) {
                     if (p != profile_generation_ || g != sports_generation_ ||
                         !sports_visible)
@@ -436,6 +433,6 @@ void Session::sports_search() {
         sports_page_ = 0;
         sports_build();
       },
-      "Search Sports Hub (empty clears)");
+      sx::i18n::tr("Search Sports Hub (empty clears)"));
 }
 } // namespace sx

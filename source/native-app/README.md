@@ -1,5 +1,18 @@
 # Native Nuvio Max'd for PS5
 
+## 1.0.0.17: interface language and people browsing
+
+Choose **Settings → App & Updates → Language → Deutsch**, then restart the app
+for German menus. English remains available and is the fallback. This is a local
+app preference; audio/subtitle languages and addon metadata remain independent.
+
+On a movie/series detail page press **R2** for the cast/crew photo row. Select a
+person for biography, birth details and movie/TV credits. Select a credit to open
+its title through the configured addons. Circle returns through the bounded
+history. Missing metadata/photos use fallbacks. No extra payload is needed for
+these two features. See [implementation and checks](PEOPLE_AND_LANGUAGES.md).
+
+
 The interface uses BlackBearReloaded's `ps5-homebrew-ui` (Prospero UI), with
 spring-driven carousels, artwork crossfades and translucent player panels. Series
 have a selectable season row and a horizontal episode carousel with 640×360

@@ -1,3 +1,4 @@
+#include "../ui/i18n.hpp"
 #include "shell.hpp"
 
 #include <algorithm>
@@ -16,7 +17,7 @@ constexpr int kPageCount = 10;
 
 Shell::Shell(const Env &env, Session &session)
     : env_(env), s_(session), board_(env), search_board_(env), discover_(env), library_(env), iptv_library_(env,Page::iptv), media_library_(env,Page::servers), addons_(env), live_tv_(env,Page::livetv), torrents_page_(env,Page::torrents), sports_page_(env,Page::sports), settings_(env),
-      detail_(env), player_ui_(env)
+      detail_(env), person_(env), player_ui_(env)
 {
     board_.set_content(&s_.board);
     search_board_.set_search(&s_.search_query);
@@ -48,6 +49,7 @@ Session::Cursor Shell::cursor() const
     c.episode = detail_.episode_index();
     c.stream = detail_.stream_index();
     c.stream_addon = detail_.stream_addon();
+    c.cast=detail_.cast_index();c.person_movie=person_.focus().movie;c.person_series=person_.focus().series;
     c.streams_open = screen_ == Screen::detail && detail_.mode() == Detail::Mode::streams;
     c.search_row = search_board_.cursor_row();
     c.search_col = search_board_.cursor_col();
@@ -56,6 +58,7 @@ Session::Cursor Shell::cursor() const
 
 void Shell::go_page(int page)
 {
+    history_.clear();s_.person_leave();
     page_ = std::clamp(page, 0, kPageCount - 1);
     if(page_==6 && !s_.iptv_visible)page_=0;
     if(page_==7 && !s_.media_visible)page_=0;
@@ -100,6 +103,7 @@ void Shell::go_page(int page)
 
 void Shell::open_title(const Title &title, const std::string &streams_video)
 {
+    history_.clear();s_.person_leave();
     came_from_ = screen_;
     s_.open_title(title, streams_video);
     detail_.set_content(&s_.detail);
@@ -110,6 +114,7 @@ void Shell::open_title(const Title &title, const std::string &streams_video)
 // Back from a title's page: to the page or the search results it was opened from.
 void Shell::leave_title()
 {
+    if(browse_back())return;
     s_.close_detail();
     if (came_from_ == Screen::search && s_.search_open)
     {
@@ -125,6 +130,7 @@ void Shell::leave_title()
 // What the session changed since the last frame, passed on to the screens that show it.
 void Shell::apply_changes()
 {
+    if(nav_epoch_!=s_.profile_epoch()) {nav_epoch_=s_.profile_epoch();history_.scope(nav_epoch_);if(screen_==Screen::person||screen_==Screen::detail)go_page(page_);}
     const unsigned c = s_.take_changed();
     if (c & Session::kBoard)
         board_.refresh();
@@ -153,6 +159,7 @@ void Shell::apply_changes()
         settings_.refresh();
     if (c & Session::kDetail)
         detail_.refresh();
+    if(c & Session::kPerson)person_.refresh();
     if (c & Session::kSearchNew)
     {
         search_board_.set_content(&s_.search);
@@ -165,6 +172,14 @@ void Shell::apply_changes()
     else if (c & Session::kSearch)
     {
         search_board_.refresh();
+    }
+    Item person_title;
+    if(s_.take_person_title(&person_title)&&screen_==Screen::person){
+        if(history_.full())s_.say(sx::i18n::tr("Browsing history is full. Go back before opening another title."),7);
+        else {
+            BrowseFrame frame;frame.person=true;frame.content=s_.person;frame.focus=person_.focus();history_.push(std::move(frame));
+            s_.person_leave();s_.open_title_item(person_title);detail_.set_content(&s_.detail);detail_.enter();screen_=Screen::detail;
+        }
     }
     Title requested;
     std::string requested_streams;
@@ -180,8 +195,20 @@ void Shell::apply_changes()
 
 void Shell::route_detail(const hui::InputFrame &input, float dt)
 {
-    if (input.pressed != 0 || input.nav != Direction::none)
-        s_.cancel_autoplay(); // any button cancels playing the next episode
+    if(input.pressed!=0||input.nav!=Direction::none)s_.cancel_autoplay();
+    if(input.is_pressed(Action::jump_next)){s_.detail_browse_people();detail_.toggle_cast();return;}
+    if(detail_.mode()==Detail::Mode::people){
+        if(input.is_pressed(Action::back)){detail_.toggle_cast();return;}
+        if(input.is_pressed(Action::north))s_.cast_load();
+        if(input.is_pressed(Action::confirm)){
+            const int index=detail_.cast_index();
+            if(index>=0&&index<int(s_.detail.people.size())){
+                if(history_.full())s_.say(sx::i18n::tr("Browsing history is full. Go back before opening another person."),7);
+                else if(s_.person_show(index)){BrowseFrame frame;frame.title=s_.detail_item();frame.detail=detail_.focus();history_.push(std::move(frame));person_.set_content(&s_.person);screen_=Screen::person;}
+            }
+        }
+        detail_.update(input,dt);return;
+    }
     if(input.is_pressed(Action::menu)) {s_.detail_trailers();return;}
     const bool streams = detail_.mode() == Detail::Mode::streams;
     const bool series = s_.detail.series;
@@ -214,6 +241,20 @@ void Shell::route_detail(const hui::InputFrame &input, float dt)
     detail_.update(input, dt);
     if (leave)
         leave_title();
+}
+
+bool Shell::browse_back() {
+    auto frame=history_.pop();if(!frame)return false;
+    s_.person_leave();s_.close_detail();
+    if(frame->person){s_.person_restore(std::move(frame->content));person_.set_content(&s_.person);person_.restore(frame->focus);screen_=Screen::person;}
+    else {s_.open_title_item(frame->title);detail_.set_content(&s_.detail);detail_.enter();detail_.restore(frame->detail);screen_=Screen::detail;}
+    return true;
+}
+void Shell::route_person(const hui::InputFrame& input,float dt) {
+    if(input.is_pressed(Action::back)){if(!browse_back()){s_.person_leave();go_page(page_);}return;}
+    if(input.is_pressed(Action::north))s_.person_retry();
+    if(input.is_pressed(Action::confirm))if(const auto* credit=person_.selected())s_.person_pick(*credit);
+    person_.update(input,dt);
 }
 
 void Shell::route_search(const hui::InputFrame &input, float dt)
@@ -413,6 +454,7 @@ unsigned Shell::focus_signature()
     mix(c.discover);
     mix(c.library);
     mix(c.episode);
+    mix(c.cast);mix(c.person_movie);mix(c.person_series);mix(person_.focus().row);
     mix(c.search_row);
     mix(c.search_col);
     mix(board_.rail_focused());
@@ -530,6 +572,7 @@ void Shell::update(const hui::InputFrame &input, float dt)
     {
         route_detail(in, dt);
     }
+    else if(screen_==Screen::person)route_person(in,dt);
     else if (screen_ == Screen::search)
     {
         route_search(in, dt);
@@ -572,7 +615,7 @@ void Shell::draw(hui::gfx::DrawList &list, hui::gfx::BackdropSpec &backdrop) con
             backdrop.mode=hui::gfx::BackdropMode::none;
             using hui::gfx::Color;
             list.rounded_rect({0,0,theme::kScreenW,theme::kScreenH},0,Color::rgb(0x070b14));
-            text(list,env_.fonts.semibold,"Live TV · Four screens (experimental)",40,55,30,theme::ink);
+            text(list,env_.fonts.semibold,sx::i18n::tr("Live TV · Four screens (experimental)"),40,55,30,theme::ink);
             for(int i=0;i<4;++i) {
                 const auto& tile=s_.multiview_tiles[i];
                 const float x=40.0f+(i%2)*940.0f,y=85.0f+(i/2)*460.0f;
@@ -584,7 +627,7 @@ void Shell::draw(hui::gfx::DrawList &list, hui::gfx::BackdropSpec &backdrop) con
                 text(list,env_.fonts.semibold,env_.fonts.semibold.font->fit(tile.name,24,870),x+20,y+402,24,theme::ink);
                 text(list,env_.fonts.regular,env_.fonts.regular.font->fit(tile.status,20,870),x+20,y+429,20,theme::ink_2);
             }
-            text(list,env_.fonts.regular,"D-pad: focus · Cross: listen · Square: replace · Triangle: full screen · Circle: stop",40,1040,24,theme::ink_2);
+            text(list,env_.fonts.regular,sx::i18n::tr("D-pad: focus · Cross: listen · Square: replace · Triangle: full screen · Circle: stop"),40,1040,24,theme::ink_2);
         }
         else if (s_.launch_open)
         {
@@ -610,6 +653,7 @@ void Shell::draw(hui::gfx::DrawList &list, hui::gfx::BackdropSpec &backdrop) con
     {
         detail_.draw(list, backdrop);
     }
+    else if(screen_==Screen::person)person_.draw(list,backdrop);
     else if (screen_ == Screen::search)
     {
         search_board_.draw(list, backdrop);

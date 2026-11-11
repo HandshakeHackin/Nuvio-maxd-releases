@@ -1,4 +1,6 @@
+#include "../ui/i18n.hpp"
 #include "detail.hpp"
+#include "i18n.hpp"
 #include "stream_badges.hpp"
 
 #include <algorithm>
@@ -79,9 +81,9 @@ Rect Detail::filter_rect(int index, bool final_position) const
 
 void Detail::rebuild_streams()
 {
-    const std::string active = filter_ < static_cast<int>(filters_.size()) ? filters_[filter_] : "All";
+    const std::string active = filter_ < static_cast<int>(filters_.size()) ? filters_[filter_] : sx::i18n::tr("All");
     const std::string cursor = filter_cursor_ >= 0 && filter_cursor_ < static_cast<int>(filters_.size()) ? filters_[filter_cursor_] : "";
-    filters_ = {"All"};
+    filters_ = {sx::i18n::tr("All")};
     if (content_)
     {
         const auto add = [&](const std::string &name) {
@@ -125,6 +127,7 @@ void Detail::select_filter(int index)
 void Detail::set_content(const DetailContent *content)
 {
     content_ = content;
+    cast_=0;cast_scroll_.position.snap(0);
     episode_ = content ? std::clamp(content->episode_hint,0,std::max(0,static_cast<int>(content->episodes.size())-1)) : 0;
     season_cursor_ = shown_season_ = content ? content->season : 0;
     seasons_focused_ = false;
@@ -160,6 +163,7 @@ void Detail::refresh()
 {
     if (!content_)
         return;
+    if(!content_->people.empty())cast_=std::clamp(cast_,0,int(content_->people.size())-1);
     const int episodes = static_cast<int>(content_->episodes.size());
     rebuild_streams();
     if (content_->hint_serial != hint_serial_)
@@ -200,6 +204,12 @@ void Detail::update(const hui::InputFrame &input, float dt)
     clock_ += dt;
     if (!content_)
         return;
+    if(mode_==Mode::people){
+        const int count=int(content_->people.size());
+        if(input.nav==Direction::left)cast_=std::max(0,cast_-1);
+        if(input.nav==Direction::right)cast_=std::min(std::max(0,count-1),cast_+1);
+        cast_scroll_.reveal(cast_*220.0f,cast_*220.0f+190,1700,12,std::max(0.0f,count*220.0f-30));cast_scroll_.update(dt,18);return;
+    }
     if (mode_ == Mode::episodes)
     {
         const int count = static_cast<int>(content_->episodes.size());
@@ -304,7 +314,7 @@ void Detail::draw_info(hui::gfx::DrawList &list) const
         text(list,env_.fonts.regular,env_.fonts.regular.font->fit(meta,26,1250),110,328,26,theme::ink_2);
         draw_imdb(list,env_,t.imdb,1430,328);
         const Episode *selected = content_->episodes.empty() ? nullptr : &content_->episodes[episode_];
-        const std::string heading = selected ? "Episode " + std::to_string(selected->number) + "  ·  " + selected->title : "Episodes";
+        const std::string heading = selected ? sx::i18n::tr("Episode ") + std::to_string(selected->number) + "  ·  " + selected->title : sx::i18n::tr("Episodes");
         text(list,env_.fonts.semibold,env_.fonts.semibold.font->fit(heading,32,1600),110,406,32,theme::ink);
         hui::ui::paragraph(list,env_.fonts.regular,selected && !selected->synopsis.empty() ? selected->synopsis : t.synopsis,
                            110,448,26,1560,36,theme::ink_2,2);
@@ -341,19 +351,19 @@ void Detail::draw_info(hui::gfx::DrawList &list) const
         baseline = hui::ui::paragraph(list,env_.fonts.regular,t.synopsis,110,baseline,27,840,39,theme::ink_2,4) + 32;
         if (!content_->directors.empty())
         {
-            text(list,env_.fonts.regular,"Director",110,baseline,22,theme::ink_3);
+            text(list,env_.fonts.regular,sx::i18n::tr("Director"),110,baseline,22,theme::ink_3);
             text(list,env_.fonts.regular,env_.fonts.regular.font->fit(content_->directors,24,690),260,baseline,24,theme::ink_2);
             baseline += 40;
         }
         if (!content_->cast.empty())
         {
-            text(list,env_.fonts.regular,"Cast",110,baseline,22,theme::ink_3);
+            text(list,env_.fonts.regular,sx::i18n::tr("Cast"),110,baseline,22,theme::ink_3);
             baseline = hui::ui::paragraph(list,env_.fonts.regular,content_->cast,260,baseline,24,690,34,theme::ink_2,2) + 28;
         }
         const int selected = stream_index();
         if (selected >= 0 && !content_->streams[selected].detail.empty() && baseline < 900)
         {
-            text(list,env_.fonts.regular,"Selected release",110,baseline,22,theme::ink_3);
+            text(list,env_.fonts.regular,sx::i18n::tr("Selected release"),110,baseline,22,theme::ink_3);
             hui::ui::paragraph(list,env_.fonts.regular,content_->streams[selected].detail,110,baseline+34,23,840,32,theme::ink_2,2);
         }
         list.pop_opacity();
@@ -397,14 +407,14 @@ void Detail::draw_info(hui::gfx::DrawList &list) const
     baseline += 18.0f;
     if (!content_->directors.empty())
     {
-        text(list, env_.fonts.regular, content_->series ? "Creators" : "Director", x, baseline, 22.0f, theme::ink_3);
+        text(list, env_.fonts.regular, content_->series ? sx::i18n::tr("Creators") : sx::i18n::tr("Director"), x, baseline, 22.0f, theme::ink_3);
         text(list, env_.fonts.regular, env_.fonts.regular.font->fit(content_->directors, 24.0f, w - 190.0f), x + 150.0f,
              baseline, 24.0f, theme::ink_2);
         baseline += 42.0f;
     }
     if (!content_->cast.empty())
     {
-        text(list, env_.fonts.regular, "Cast", x, baseline, 22.0f, theme::ink_3);
+        text(list, env_.fonts.regular, sx::i18n::tr("Cast"), x, baseline, 22.0f, theme::ink_3);
         baseline = hui::ui::paragraph(list, env_.fonts.regular, content_->cast, x + 150.0f, baseline, 24.0f, w - 190.0f, 36.0f,
                                       theme::ink_2, 2);
     }
@@ -412,7 +422,7 @@ void Detail::draw_info(hui::gfx::DrawList &list) const
     if (mode_ == Mode::streams && selected >= 0 && !content_->streams[selected].detail.empty())
     {
         baseline += 56;
-        text(list,env_.fonts.regular,"Selected release",x,baseline,22,theme::ink_3);
+        text(list,env_.fonts.regular,sx::i18n::tr("Selected release"),x,baseline,22,theme::ink_3);
         hui::ui::paragraph(list,env_.fonts.regular,content_->streams[selected].detail,x,baseline+38,24,w,34,theme::ink_2,3);
     }
     list.pop_opacity();
@@ -435,7 +445,7 @@ void Detail::draw_episodes(hui::gfx::DrawList &list) const
     list.pop_clip();
     char count[80];
     std::snprintf(count,sizeof(count),"%zu episodes  ·  %s",content_->episodes.size(),
-                  seasons_focused_ ? "Choose a season, then press Cross" : "Up to choose a season");
+                  seasons_focused_ ? sx::i18n::tr("Choose a season, then press Cross") : sx::i18n::tr("Up to choose a season"));
     text(list,env_.fonts.regular,count,110,596,22,theme::ink_2);
     list.push_clip({94,kListTop-8,kEpisodeViewW+32,kEpisodeH+34});
     for (int i = 0; i < static_cast<int>(content_->episodes.size()); ++i)
@@ -450,7 +460,7 @@ void Detail::draw_episodes(hui::gfx::DrawList &list) const
         else
         {
             list.gradient_rect(thumb,14,theme::accent_deep,theme::ground);
-            text(list,env_.fonts.semibold,"Episode " + std::to_string(e.number),thumb.cx(),thumb.cy()+10,30,theme::ink_2,Align::center);
+            text(list,env_.fonts.semibold,sx::i18n::tr("Episode ") + std::to_string(e.number),thumb.cx(),thumb.cy()+10,30,theme::ink_2,Align::center);
         }
         if (e.progress >= 0)
         {
@@ -484,9 +494,9 @@ void Detail::draw_episodes(hui::gfx::DrawList &list) const
 void Detail::draw_streams(hui::gfx::DrawList &list) const
 {
     const float hx = kPanel.x + 28;
-    const std::string heading = content_->stream_heading.empty() ? "Streams" : content_->stream_heading;
+    const std::string heading = content_->stream_heading.empty() ? sx::i18n::tr("Streams") : content_->stream_heading;
     text(list,env_.fonts.semibold,env_.fonts.semibold.font->fit(heading,30,kPanel.w-210),hx,137,30,theme::ink);
-    char count[48]; std::snprintf(count,sizeof(count),"%zu streams",visible_.size());
+    char count[48]; std::snprintf(count,sizeof(count),sx::i18n::tr("%zu streams"),visible_.size());
     text(list,env_.fonts.regular,count,kPanel.x+kPanel.w-28,137,22,theme::ink_3,Align::right);
     list.push_clip({hx-4,160,kPanel.w-48,66});
     for (int i = -2; i < static_cast<int>(filters_.size()); ++i)
@@ -495,7 +505,7 @@ void Detail::draw_streams(hui::gfx::DrawList &list) const
         const bool active = i == filter_;
         list.rounded_rect(r,24,active ? Color::rgb(0xf0f0f0) : Color::rgb(0x202020));
         const Color ink = active ? Color::rgb(0x111111) : theme::ink;
-        if (i == -2) text(list,env_.fonts.semibold,"Source options",r.cx(),r.cy()+8,24,ink,Align::center);
+        if (i == -2) text(list,env_.fonts.semibold,sx::i18n::tr("Source options"),r.cx(),r.cy()+8,24,ink,Align::center);
         else if (i == -1)
         {
             list.arc(r.cx(),r.cy(),10,2.2f,0.7f,5.0f,ink);
@@ -506,7 +516,7 @@ void Detail::draw_streams(hui::gfx::DrawList &list) const
             list.bordered_rect(r,24,Color::rgb(0xffffff,0),3,theme::accent);
     }
     list.pop_clip();
-    const std::string provider = filter_ > 0 ? filters_[filter_] : "All sources";
+    const std::string provider = filter_ > 0 ? filters_[filter_] : sx::i18n::tr("All sources");
     text(list,env_.fonts.semibold,env_.fonts.semibold.font->fit(provider,26,280),hx,268,26,theme::ink_2);
     if(!content_->streams_status.empty() && !visible_.empty())
         text(list,env_.fonts.regular,env_.fonts.regular.font->fit(content_->streams_status,20,kPanel.w-350),hx+300,268,20,theme::ink_3);
@@ -535,7 +545,7 @@ void Detail::draw_streams(hui::gfx::DrawList &list) const
             dx += 30 + text(list,env_.fonts.regular,env_.fonts.regular.font->fit(s.language,23,170),dx+30,r.y+76,23,theme::ink_3);
             dx += 22;
         }
-        const std::string source = s.addon + (s.seeds.empty() ? "" : "  ·  " + s.seeds) + (s.prepared ? "  ·  Ready" : "");
+        const std::string source = s.addon + (s.seeds.empty() ? "" : "  ·  " + s.seeds) + (s.prepared ? sx::i18n::tr("  ·  Ready") : "");
         text(list,env_.fonts.regular,env_.fonts.regular.font->fit(source,21,std::max(0.0f,r.x+r.w-24-dx)),dx,r.y+76,21,theme::ink_3);
         draw_stream_badges(list,env_,s,x,r.y+109,room);
         if (s.badges.empty() && s.detail != s.name)
@@ -548,13 +558,14 @@ void Detail::draw_streams(hui::gfx::DrawList &list) const
     list.pop_clip();
     if (visible_.empty())
     {
-        const std::string status = !content_->streams_status.empty() ? content_->streams_status : "This addon returned no playable streams.";
+        const std::string status = !content_->streams_status.empty() ? content_->streams_status : sx::i18n::tr("This addon returned no playable streams.");
         hui::ui::paragraph(list,env_.fonts.regular,status,hx+16,kStreamTop+52,26,kPanel.w-88,38,theme::ink_3,5);
     }
 }
 
 void Detail::draw_hints_row(hui::gfx::DrawList &list) const
 {
+    draw_chip(list,env_,hui::ui::Button::r2,i18n::tr("Cast & crew"),110,1010);
     hui::ui::HintLayout layout;
     layout.size = 36.0f;
     layout.text_size = 22.0f;
@@ -563,21 +574,41 @@ void Detail::draw_hints_row(hui::gfx::DrawList &list) const
     layout.font = &env_.fonts.regular;
     if (mode_ == Mode::episodes)
     {
-        const hui::ui::Hint hints[] = {{hui::ui::Button::cross, seasons_focused_ ? "Select season" : "Streams"},
-                                       {hui::ui::Button::l1, "Season", hui::ui::Button::r1},
-                                       {hui::ui::Button::options, "Watch trailer"},
-                                       {hui::ui::Button::circle, "Back"}};
+        const hui::ui::Hint hints[] = {{hui::ui::Button::cross, seasons_focused_ ? sx::i18n::tr("Select season") : sx::i18n::tr("Streams")},
+                                       {hui::ui::Button::l1, sx::i18n::tr("Season"), hui::ui::Button::r1},
+                                       {hui::ui::Button::options, sx::i18n::tr("Watch trailer")},
+                                       {hui::ui::Button::circle, sx::i18n::tr("Back")}};
         hui::ui::draw_hints(list, env_.fonts, hui::ui::GlyphStyle::dark(), hints, 4, theme::kRight, true, layout);
     }
     else
     {
-        const hui::ui::Hint hints[] = {{hui::ui::Button::cross, filters_focused_ ? "Select" : "Play"},
-                                       {hui::ui::Button::l1, "Addon", hui::ui::Button::r1},
-                                       {hui::ui::Button::triangle, "Reload"},
-                                       {hui::ui::Button::options, "Watch trailer"},
-                                       {hui::ui::Button::circle, "Back"}};
+        const hui::ui::Hint hints[] = {{hui::ui::Button::cross, filters_focused_ ? sx::i18n::tr("Select") : sx::i18n::tr("Play")},
+                                       {hui::ui::Button::l1, sx::i18n::tr("Addon"), hui::ui::Button::r1},
+                                       {hui::ui::Button::triangle, sx::i18n::tr("Reload")},
+                                       {hui::ui::Button::options, sx::i18n::tr("Watch trailer")},
+                                       {hui::ui::Button::circle, sx::i18n::tr("Back")}};
         hui::ui::draw_hints(list, env_.fonts, hui::ui::GlyphStyle::dark(), hints, 5, theme::kRight, true, layout);
     }
+}
+
+void Detail::draw_people(hui::gfx::DrawList& list)const {
+    text(list,env_.fonts.regular,i18n::tr("Cast & crew"),110,110,26,theme::ink_3);
+    text(list,env_.fonts.display,env_.fonts.display.font->fit(content_->title.name,48,1680),110,186,48,theme::ink);
+    hui::ui::paragraph(list,env_.fonts.regular,content_->title.synopsis,110,250,26,1650,38,theme::ink_2,2);
+    if(!content_->people_status.empty())text(list,env_.fonts.regular,env_.fonts.regular.font->fit(content_->people_status,24,1650),110,360,24,theme::ink_2);
+    list.push_clip({100,390,1720,520});
+    for(int i=std::max(0,cast_-8);i<int(content_->people.size())&&i<cast_+10;++i){
+        const auto& p=content_->people[i];float x=110+i*220.0f-cast_scroll_.offset();Rect r{x,410,190,285};
+        list.rounded_rect(r,18,theme::surface);
+        if(p.photo)list.image(p.photo,r,kFullUv,Color::rgb(0xffffff));
+        else text(list,env_.fonts.semibold,"?",r.cx(),r.cy(),60,theme::ink_3,Align::center);
+        if(i==cast_)list.bordered_rect({x-6,404,202,297},20,Color::rgb(0xffffff,0),4,theme::accent_soft);
+        hui::ui::paragraph(list,env_.fonts.semibold,p.name,x,740,25,190,32,theme::ink,2);
+        const auto role=p.crew?i18n::tr(p.role)+(p.character.empty()?"":" / "+p.character):p.role;
+        hui::ui::paragraph(list,env_.fonts.regular,role,x,816,22,190,29,theme::ink_2,2);
+    }
+    list.pop_clip();
+    text(list,env_.fonts.regular,i18n::tr("D-pad: browse · Cross: person details · Triangle: retry · Circle / R2: back"),110,1020,23,theme::ink_2);
 }
 
 void Detail::draw(hui::gfx::DrawList &list, hui::gfx::BackdropSpec &backdrop) const
@@ -586,6 +617,7 @@ void Detail::draw(hui::gfx::DrawList &list, hui::gfx::BackdropSpec &backdrop) co
     list.rounded_rect({0, 0, theme::kScreenW, theme::kScreenH}, 0, theme::ground);
     if (!content_)
         return;
+    if(mode_==Mode::people){draw_people(list);return;}
     const float intro = tween::stagger(age_, 0, 0.0f, 0.8f);
     // The artwork fills the screen, then the page closes over it where text goes.
     if (content_->title.backdrop != 0)

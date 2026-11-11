@@ -1,3 +1,9 @@
+# 1.0.0.17
+
+- Add saved English/German menus, bundled translations, German-aware settings search and language-independent dialog identities.
+- Add TMDB cast/crew photos, person biographies and movie/TV credit browsing through configured addons, with bounded loading, cancellation and back navigation.
+- Preserve the reporter-confirmed 1.0.0.16 USB reader behavior and profile-local playlist copies.
+
 ## 1.0.0.16 experimental
 
 Unconfirmed USB access candidate: an explicit, bounded reader helper uses the existing local payload loader while Max'd remains sandboxed. Strict playlist validation, private atomic profile copies and diagnostics remain. Physical-console confirmation is pending.

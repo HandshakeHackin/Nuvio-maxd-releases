@@ -1,5 +1,7 @@
+#include "../ui/i18n.hpp"
 #pragma once
 #include "content.hpp"
+#include "i18n.hpp"
 #include <algorithm>
 #include <array>
 #include <cctype>
@@ -14,8 +16,7 @@ public:
     static constexpr int search_action=-1000;
     static std::vector<int> search(const SettingsContent& content,const std::string& query) {
         const auto fold=[](std::string text) {
-            for(auto& c:text)c=static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
-            return text;
+            return i18n::search_key(text);
         };
         std::istringstream input(fold(query));
         std::vector<std::string> words;std::string word;
@@ -24,7 +25,7 @@ public:
         if(words.empty())return matches;
         for(int i=0;i<int(content.rows.size());++i) {
             const auto& row=content.rows[i];
-            const auto text=fold(row.label+" "+row.help+" "+group(row));
+            const auto text=fold(row.label+" "+row.help+" "+i18n::tr(group(row))+" "+group(row));
             if(std::all_of(words.begin(),words.end(),[&](const auto& w){return text.find(w)!=std::string::npos;}))matches.push_back(i);
         }
         return matches;
@@ -36,7 +37,7 @@ public:
     bool root() const { return category.empty(); }
     int count() const { return int(root()?(categories.empty()?0:categories.size()+1):rows.size()); }
     int source_row() const { return !root() && index>=0 && index<int(rows.size()) ? rows[index] : -1; }
-    static std::string group(const SettingRow& row) { return row.category.empty()?"General":row.category; }
+    static std::string group(const SettingRow& row) { return row.category.empty()?sx::i18n::tr("General"):row.category; }
     void refresh(const SettingsContent& content) {
         const int selected=source_row();
         categories.clear(); rows.clear();
@@ -66,16 +67,17 @@ public:
     SettingRow category_row(const SettingsContent& content,int at) const {
         SettingRow row; row.kind=SettingRow::Kind::action;
         if(at==0) {
-            row.label="Search settings";
-            row.help="Find a setting by its name, description or category. Select a result to open or change it.";
+            row.label=sx::i18n::tr("Search settings");
+            row.help=sx::i18n::tr("Find a setting by its name, description or category. Select a result to open or change it.");
             return row;
         }
         row.label=categories.at(at-1); int n=0;
         for(const auto& item:content.rows) if(group(item)==row.label) {
             if(n<4) { if(n) row.help+=" · "; row.help+=item.label; } ++n;
         }
-        if(n>4) row.help+=" · more";
-        row.value=std::to_string(n)+(n==1?" setting":" settings");
+        if(n>4) row.help+=sx::i18n::tr(" · more");
+        row.value=std::to_string(n)+(n==1?i18n::tr(" setting"):i18n::tr(" settings"));
+        row.label=i18n::tr(row.label);
         return row;
     }
 };

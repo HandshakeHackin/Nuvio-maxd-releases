@@ -12,7 +12,7 @@ flags=(-std=c++20 -O0 -pthread -DNUVIO_HAVE_PROVIDERS -DPROVIDER_TEST_DIAGNOSTIC
  -I"$ROOT/src" -I"$ROOT/third_party" -I"$QUICKJS_DIR" "${includes[@]}")
 key=$(printf '%s\0' "$CXX" "${flags[@]}" | sha256sum | cut -d' ' -f1)
 objects=()
-for source in "$ROOT/tests/providers_host.cpp" "$ROOT/src/"{providers,trailers,stremio,http,util}.cpp; do
+for source in "$ROOT/tests/providers_host.cpp" "$ROOT/src/"{providers,people,trailers,stremio,http,util}.cpp; do
  object="$BUILD/$(basename "$source").o"
  if python3 "$ROOT/tools/object_needs_rebuild.py" "$object" "$object.d" "$object.flags" "$key"; then
   "$CXX" "${flags[@]}" -MMD -MF "$object.d" -c "$source" -o "$object"

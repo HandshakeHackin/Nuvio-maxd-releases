@@ -1,3 +1,4 @@
+#include "../ui/i18n.hpp"
 // Typing with the console's keyboard, and searching with it.
 
 #include "session.hpp"
@@ -26,7 +27,7 @@ void Session::ask_text(const std::function<void(const std::string &)> &done, con
     if (!ime_.open(title,secret))
     {
         text_done_ = nullptr;
-        say("The keyboard could not be opened.", 4.0, true);
+        say(sx::i18n::tr("The keyboard could not be opened."), 4.0, true);
     }
 }
 
@@ -93,10 +94,10 @@ void Session::start_search(const std::string &text)
     changed_ |= kSearch | kSearchNew;
     if (search_.empty())
     {
-        search.status = addons_loading_ ? "Addons are still loading..." : "None of your addons can search.";
+        search.status = addons_loading_ ? sx::i18n::tr("Addons are still loading...") : sx::i18n::tr("None of your addons can search.");
         return;
     }
-    search.status = "Searching...";
+    search.status = sx::i18n::tr("Searching...");
     search_pending_ = static_cast<int>(search_.size());
     for (std::size_t i = 0; i < search_.size(); ++i)
     {
@@ -158,7 +159,7 @@ void Session::refresh_search()
         search_map_.push_back(static_cast<int>(i));
     }
     // "No results" is the screen's own message once the search is over.
-    search.status = search_pending_ > 0 && total == 0 ? "Searching..." : "";
+    search.status = search_pending_ > 0 && total == 0 ? sx::i18n::tr("Searching...") : "";
     changed_ |= kSearch;
     art_dirty_ = true;
 }

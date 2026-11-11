@@ -1,3 +1,6 @@
-Nuvio Max'd 1.0.0.16 experimental
+Nuvio Max'd 1.0.0.17
 
-New reader and existing USB regressions passed locally. Native helper compilation passed. Final exact-source CI, complete app build and package/source checks are required before publication; release TEST_RESULTS.txt records their final results. PS5 access remains unconfirmed.
+The published release assets TEST_RESULTS.txt and native-validation.json contain
+the final exact-source CI, complete app build, image/ZIP, source archive and
+published-asset digest evidence. This source-tree file is the release checklist
+pointer; it does not substitute for those final verification records.

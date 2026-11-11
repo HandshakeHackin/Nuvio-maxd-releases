@@ -1,3 +1,4 @@
+#include "../ui/i18n.hpp"
 #include "chrome.hpp"
 
 #include "core/tween.hpp"
@@ -140,9 +141,9 @@ void Rail::draw(hui::gfx::DrawList &list, const Env &env, float age) const
             list.image(icon, {r.cx() - size/2, r.y + (compact?8.0f:14.0f) + 6.0f * (1.0f - in), size, size}, kFullUv, tint);
         }
         if(i>=6){
-            text(list,env.fonts.regular,(i==6?"IPTV":i==7?"Media":i==8?"Torrent":"Sports"),r.cx(),r.y+r.h-27,theme::kLabel,tint,Align::center);
-            text(list,env.fonts.regular,(i==6?"Library":i==7?"Servers":i==8?"Streams":"Hub"),r.cx(),r.y+r.h-7,theme::kLabel,tint,Align::center);
-        } else text(list, env.fonts.regular, kPageNames[i], r.cx(), r.y + r.h-18.0f, theme::kLabel, tint, Align::center);
+            text(list,env.fonts.regular,(i==6?"IPTV":i==7?sx::i18n::tr("Media"):i==8?sx::i18n::tr("Torrent"):sx::i18n::tr("Sports")),r.cx(),r.y+r.h-27,theme::kLabel,tint,Align::center);
+            text(list,env.fonts.regular,(i==6?sx::i18n::tr("Library"):i==7?sx::i18n::tr("Servers"):i==8?sx::i18n::tr("Streams"):sx::i18n::tr("Hub")),r.cx(),r.y+r.h-7,theme::kLabel,tint,Align::center);
+        } else text(list, env.fonts.regular, i18n::tr(kPageNames[i]), r.cx(), r.y + r.h-18.0f, theme::kLabel, tint, Align::center);
         list.pop_opacity();
     }
 }
@@ -184,7 +185,7 @@ void draw_topbar(hui::gfx::DrawList &list, const Env &env, bool search_focused, 
     }
     else
     {
-        text(list, env.fonts.regular, hint?hint:"Search movies, series and more", pill.x + 70.0f, pill.cy() + 8.0f, theme::kBody,
+        text(list, env.fonts.regular, hint?hint:sx::i18n::tr("Search movies, series and more"), pill.x + 70.0f, pill.cy() + 8.0f, theme::kBody,
              search_focused ? theme::ink_2 : theme::ink_3);
     }
     hui::ui::draw_button(list, env.fonts, hui::ui::GlyphStyle::dark(), hui::ui::Button::triangle,

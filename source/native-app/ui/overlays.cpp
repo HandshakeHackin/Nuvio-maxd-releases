@@ -1,3 +1,4 @@
+#include "../ui/i18n.hpp"
 #include "overlays.hpp"
 #include "release_notes.hpp"
 #include "logo_animation.hpp"
@@ -175,7 +176,7 @@ void launch_screen(hui::gfx::DrawList &list, const Env &env, const LaunchState &
         text(list, state == 1 ? env.fonts.semibold : env.fonts.regular, s.stages[i], px, line_y + 52.0f, 22.0f,
              state == 1 ? theme::ink : state == 0 ? theme::ink_2 : theme::ink_3, Align::center);
     }
-    draw_chip(list, env, hui::ui::Button::circle, "Cancel", cx - chip_width(env, "Cancel") * 0.5f, 1034.0f);
+    draw_chip(list, env, hui::ui::Button::circle, sx::i18n::tr("Cancel"), cx - chip_width(env, sx::i18n::tr("Cancel")) * 0.5f, 1034.0f);
 }
 
 } // namespace
@@ -278,7 +279,7 @@ void draw_dialog(hui::gfx::DrawList &list, const Env &env, const DropdownState &
     }
 
     // What to press.
-    const hui::ui::Hint hints[] = {{hui::ui::Button::cross, "Select"}, {hui::ui::Button::circle, "Back"}};
+    const hui::ui::Hint hints[] = {{hui::ui::Button::cross, sx::i18n::tr("Select")}, {hui::ui::Button::circle, sx::i18n::tr("Back")}};
     hui::ui::HintLayout layout;
     layout.size = 36.0f;
     layout.text_size = 24.0f;
@@ -298,20 +299,20 @@ void draw_pin_entry(hui::gfx::DrawList &list, const Env &env, const PinEntry &en
     scrim(list, 1.0f, 0.78f);
     const Rect r{theme::kScreenW*0.5f-310.0f,130.0f,620.0f,780.0f};
     panel(list,r,34.0f,0.98f);
-    text(list,env.fonts.semibold,"Profile PIN",r.x+44.0f,r.y+75.0f,34.0f,theme::ink);
-    text(list,env.fonts.regular,"Enter the PIN for this profile",r.x+44.0f,r.y+120.0f,24.0f,theme::ink_2);
-    text(list,env.fonts.semibold,entry.size()?entry.masked():"Enter PIN",r.cx(),r.y+192.0f,32.0f,theme::ink,Align::center);
+    text(list,env.fonts.semibold,sx::i18n::tr("Profile PIN"),r.x+44.0f,r.y+75.0f,34.0f,theme::ink);
+    text(list,env.fonts.regular,sx::i18n::tr("Enter the PIN for this profile"),r.x+44.0f,r.y+120.0f,24.0f,theme::ink_2);
+    text(list,env.fonts.semibold,entry.size()?entry.masked():sx::i18n::tr("Enter PIN"),r.cx(),r.y+192.0f,32.0f,theme::ink,Align::center);
     static constexpr const char* labels[]={"1","2","3","4","5","6","7","8","9","Delete","0","Continue"};
     for(int i=0;i<12;++i) {
         const Rect key{r.x+44.0f+182.0f*float(i%3),r.y+245.0f+104.0f*float(i/3),168.0f,88.0f};
         const bool selected=i==entry.selected();
         if(selected) list.bordered_rect(key,18.0f,theme::surface_hi,3.0f,theme::ink);
         else list.rounded_rect(key,18.0f,Color::rgb(0xffffff,0.06f));
-        text(list,env.fonts.semibold,labels[i],key.cx(),key.cy()+10.0f,i==9||i==11?23.0f:32.0f,
+        text(list,env.fonts.semibold,i18n::tr(labels[i]),key.cx(),key.cy()+10.0f,i==9||i==11?23.0f:32.0f,
              i==11&&!entry.size()?theme::ink_3:selected?theme::ink:theme::ink_2,Align::center);
     }
-    text(list,env.fonts.regular,"D-pad: move   Cross: select",r.cx(),r.y+700.0f,22.0f,theme::ink_2,Align::center);
-    text(list,env.fonts.regular,"Square: delete   Circle: cancel",r.cx(),r.y+738.0f,22.0f,theme::ink_2,Align::center);
+    text(list,env.fonts.regular,sx::i18n::tr("D-pad: move   Cross: select"),r.cx(),r.y+700.0f,22.0f,theme::ink_2,Align::center);
+    text(list,env.fonts.regular,sx::i18n::tr("Square: delete   Circle: cancel"),r.cx(),r.y+738.0f,22.0f,theme::ink_2,Align::center);
 }
 
 void draw_dropdown(hui::gfx::DrawList &list, const Env &env, const DropdownState &s, float t)
@@ -448,15 +449,15 @@ void draw_sign_in(hui::gfx::DrawList &list, const Env &env, const SignInState &s
         text(list, env.fonts.semibold, digit, x + 20.0f, y - 1.0f, 24.0f, Color::rgb(0xffffff), Align::center);
         text(list, env.fonts.regular, line, x + 58.0f, y, 28.0f, theme::ink_2);
     };
-    step(1, "Scan the code with your phone", r.y + 218.0f);
-    step(2, s.text_payload ? "then choose Copy text on your phone" : "or open this address on any device", r.y + 282.0f);
+    step(1, sx::i18n::tr("Scan the code with your phone"), r.y + 218.0f);
+    step(2, s.text_payload ? sx::i18n::tr("then choose Copy text on your phone") : sx::i18n::tr("or open this address on any device"), r.y + 282.0f);
     if(s.text_payload) hui::ui::paragraph(list,env.fonts.regular,s.link,x+58.0f,r.y+346.0f,24.0f,620.0f,34.0f,theme::ink_2,7);
     else text(list,env.fonts.semibold,s.link,x+58.0f,r.y+346.0f,s.link_only?29.0f:38.0f,theme::accent_soft);
     if(s.link_only) {
-        hui::ui::paragraph(list,env.fonts.regular,s.text_payload ? "No account details, filenames, stream URLs or tokens are included." : s.title=="Support on Ko-fi" ? "Donations are optional. Thank you for supporting development." : s.status,
+        hui::ui::paragraph(list,env.fonts.regular,s.text_payload ? sx::i18n::tr("No account details, filenames, stream URLs or tokens are included.") : s.donation ? sx::i18n::tr("Donations are optional. Thank you for supporting development.") : s.status,
             x+58.0f,r.y+(s.text_payload?650.0f:440.0f),28.0f,620.0f,40.0f,theme::ink_2,3);
     } else {
-    step(3, "and enter this code", r.y + 428.0f);
+    step(3, sx::i18n::tr("and enter this code"), r.y + 428.0f);
     const Rect code{x + 58.0f, r.y + 462.0f, 520.0f, 124.0f};
     list.rounded_rect(code, 26.0f, theme::surface);
     const float width = env.fonts.display.measure(s.code, 80.0f) + 6.0f * s.code.size();
@@ -497,16 +498,16 @@ void draw_release_notes(hui::gfx::DrawList& list, const Env& env, const std::str
     scrim(list,1.0f,0.88f);
     const Rect card{360,135,1200,810};
     list.bordered_rect(card,36,Color::rgb(0x101723),2,theme::hairline);
-    text(list,env.fonts.display,"What’s new",card.x+60,card.y+88,46,theme::ink);
+    text(list,env.fonts.display,sx::i18n::tr("What’s new"),card.x+60,card.y+88,46,theme::ink);
     text(list,env.fonts.semibold,"Nuvio Max’d " + version,card.x+60,card.y+136,28,theme::accent_soft);
     float y=card.y+210;
     for(const char* note : release_note_items) {
         list.circle(card.x+67,y-10,4,theme::accent_soft);
-        const float next=hui::ui::paragraph(list,env.fonts.regular,note,card.x+92,y,27,card.w-155,36,theme::ink_2,2);
+        const float next=hui::ui::paragraph(list,env.fonts.regular,i18n::tr(note),card.x+92,y,27,card.w-155,36,theme::ink_2,3);
         y=std::max(y+78,next+22);
     }
-    draw_chip(list,env,hui::ui::Button::cross,"Got it",card.x+60,card.y+card.h-60,true);
-    draw_chip(list,env,hui::ui::Button::circle,"Close",card.x+260,card.y+card.h-60,false);
+    draw_chip(list,env,hui::ui::Button::cross,sx::i18n::tr("Got it"),card.x+60,card.y+card.h-60,true);
+    draw_chip(list,env,hui::ui::Button::circle,sx::i18n::tr("Close"),card.x+260,card.y+card.h-60,false);
 }
 
 } // namespace sx

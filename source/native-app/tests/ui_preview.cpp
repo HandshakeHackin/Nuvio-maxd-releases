@@ -6,6 +6,8 @@
 #include "detail.hpp"
 #include "player.hpp"
 #include "settings.hpp"
+#include "person.hpp"
+#include "i18n.hpp"
 #include "board.hpp"
 #include "library.hpp"
 #include "addons.hpp"
@@ -25,6 +27,9 @@
 
 int main(int argc, char** argv) {
     if (argc != 3 && argc != 4) return 2;
+    std::string mode = argc == 4 ? argv[3] : "login";
+    if(mode.starts_with("de-")){sx::i18n::set_language("de");mode=mode.substr(3);}
+    const std::string preview_name=argc==4?argv[3]:"login";
     auto get_display = reinterpret_cast<PFNEGLGETPLATFORMDISPLAYEXTPROC>(eglGetProcAddress("eglGetPlatformDisplayEXT"));
     EGLDisplay display = get_display(EGL_PLATFORM_SURFACELESS_MESA, EGL_DEFAULT_DISPLAY, nullptr);
     if (!eglInitialize(display, nullptr, nullptr) || !eglBindAPI(EGL_OPENGL_API)) return 3;
@@ -40,7 +45,7 @@ int main(int argc, char** argv) {
     if(!font_data.regular.has_glyph(0x4e2d) || !font_data.regular.has_glyph(0x65e5) || !font_data.regular.has_glyph(0xac00) || !font_data.regular.has_glyph(0x0e01)) return 8;
     sx::SignInState state;
     state.link = "nuvio.tv/link"; state.code = "ABCD-EF";
-    state.status = "Waiting for approval on your phone...";
+    state.status = sx::i18n::tr("Waiting for approval on your phone...");
     std::uint8_t temp[qrcodegen_BUFFER_LEN_MAX], qr[qrcodegen_BUFFER_LEN_MAX];
     if (!qrcodegen_encodeText("https://nuvio.tv/link?code=ABCD-EF", temp, qr, qrcodegen_Ecc_MEDIUM,
         1, 20, qrcodegen_Mask_AUTO, true)) return 7;
@@ -55,7 +60,6 @@ int main(int argc, char** argv) {
     if(argc==4 && std::string(argv[3])=="sports-all-nav"){media_visible=true;torrents_visible=true;iptv_visible=true;}
     iptv_visible=iptv_visible||media_visible;
     const sx::Env env{fonts,icons,"21:45",&iptv_visible,&media_visible,&torrents_visible,&sports_visible};
-    const std::string mode = argc == 4 ? argv[3] : "login";
     const auto artwork = [&](int w, int h, float tint) {
         std::vector<std::uint8_t> px(static_cast<std::size_t>(w)*h*4);
         for (int y=0;y<h;++y) for (int x=0;x<w;++x) {
@@ -72,6 +76,26 @@ int main(int argc, char** argv) {
     };
     const auto backdrop_texture=artwork(1920,1080,0);
     const auto poster_texture=artwork(480,720,3);
+    if(mode=="person" || mode=="person-last") {
+        sx::PersonContent content;content.data.id="1";content.data.name="Alexandra Müller";content.data.photo="";content.photo=poster_texture;
+        content.data.birthday="1974-03-12";content.data.birthplace="Berlin, Deutschland";content.data.deathday="2024-01-01";content.data.known_for="Acting";
+        content.data.biography=sx::i18n::german()?"Eine kurze Biografie mit deutschen Umlauten: Ä, Ö, Ü und ß. Diese Vorschau prüft Bild, Lebensdaten und die Filmografie. Die Personenseite verwendet dieselben Schriften und dieselbe Steuerung wie die PS5-App.":"A short biography. This preview exercises portrait images, biographical facts, credits and controller focus using the production person page.";
+        for(int i=0;i<18;++i){people::Credit c;c.id=std::to_string(i+1);c.type="movie";c.name=i==1?"Ein längerer Filmtitel mit mehreren Wörtern":"Film "+std::to_string(i+1);c.year="2025";content.data.movies.push_back(c);content.movies.push_back(poster_texture);if(i<10){c.type="series";c.name="Series "+std::to_string(i+1);content.data.series.push_back(c);content.series.push_back(poster_texture);}}
+        sx::PersonPage page(env);page.set_content(&content);hui::InputFrame in;in.nav=hui::Direction::right;for(int n=0;n<(mode.ends_with("-last")?40:1);++n)page.update(in,1.f/60);in.nav=hui::Direction::none;for(int i=0;i<120;++i)page.update(in,1.f/60);hui::gfx::BackdropSpec bg;page.draw(list,bg);
+    }
+    else if(mode=="cast" || mode=="cast-last") {
+        sx::DetailContent content;content.title.name="A title with cast & crew";content.title.synopsis="Public movie metadata stays separate from the interface language.";
+        for(int i=0;i<16;++i)content.people.push_back({std::to_string(i+1),i==0?"Alexandra Müller":"Example Person "+std::to_string(i),i==0?"Director":"Character name","",poster_texture,i==0});
+        sx::Detail page(env);page.set_content(&content);page.toggle_cast();hui::InputFrame in;in.nav=hui::Direction::right;for(int n=0;n<(mode.ends_with("-last")?40:1);++n)page.update(in,1.f/60);in.nav=hui::Direction::none;for(int i=0;i<120;++i)page.update(in,1.f/60);hui::gfx::BackdropSpec bg;page.draw(list,bg);
+    }
+    else if(mode=="language") {
+        sx::SettingsContent content;sx::SettingRow row;row.category="App & Updates";row.label=sx::i18n::tr("Language");row.value=sx::i18n::german()?"Deutsch":"English";row.help=sx::i18n::tr("Choose English or German for the app menus. Restart Max'd to apply. Audio, subtitles and addon content use their own language settings.");content.rows.push_back(row);
+        sx::Settings page(env);page.set_content(&content);page.enter();hui::InputFrame in;in.nav=hui::Direction::down;page.update(in,1.f/60);in.nav=hui::Direction::none;in.pressed=hui::action_bit(hui::Action::confirm);page.update(in,1.f/60);in.pressed=0;for(int i=0;i<120;++i)page.update(in,1.f/60);hui::gfx::BackdropSpec bg;page.draw(list,bg);
+    }
+    else if(mode=="usb-language") {
+        sx::DropdownState d;d.title=sx::i18n::tr("USB access is restricted");d.options={sx::i18n::tr("Cancel"),sx::i18n::tr("Use USB reader helper")};d.selected=1;d.message=sx::i18n::tr("The reader runs with the existing payload loader's privileges to read USB playlists. Max'd stays sandboxed. Only a selected, validated playlist is saved privately to this profile.");sx::draw_dropdown(list,env,d,1);
+    }
+    else
     if(mode=="torrents"||mode=="torrents-all") {
         sx::AddonsContent content;
         const char* names[]={"Torrents & Magnet Hub","Enter Magnet or .torrent URL","Phone / PC Web Drop (QR Code)","Sample video.mkv"};
@@ -171,7 +195,7 @@ int main(int argc, char** argv) {
         sx::draw_launch(list,env,launch,0,1);
     }
     else if(mode=="donation") {
-        state.link_only=true;state.title="Support on Ko-fi";state.link=sx::donation_link;state.cancel_label="Close";
+        state.link_only=true;state.donation=true;state.title=sx::i18n::tr("Support on Ko-fi");state.link=sx::donation_link;state.cancel_label="Close";
         std::uint8_t temp[qrcodegen_BUFFER_LEN_MAX],donation_qr[qrcodegen_BUFFER_LEN_MAX];
         assert(qrcodegen_encodeText(sx::donation_url,temp,donation_qr,qrcodegen_Ecc_MEDIUM,qrcodegen_VERSION_MIN,20,qrcodegen_Mask_AUTO,true));
         state.qr_size=qrcodegen_getSize(donation_qr);state.qr_modules.resize(state.qr_size*state.qr_size);
@@ -234,6 +258,7 @@ int main(int argc, char** argv) {
             auto& row=content.rows[4];row.label="Console light sync";row.kind=sx::SettingRow::Kind::toggle;row.on=true;
             row.help="Fade the console lights with the controller while Nuvio is open. Console colours are approximate. Turning off restores the previous state. Sync active.";
         }
+        for(auto& row:content.rows){row.label=sx::i18n::tr(row.label);row.value=sx::i18n::tr(row.value);row.help=sx::i18n::tr(row.help);}
         sx::Settings settings(env);settings.set_content(&content);settings.enter();hui::InputFrame input;
         if(mode!="settings-categories") {
             // Search is the first root row; open the actual category rather
@@ -290,7 +315,7 @@ int main(int argc, char** argv) {
     {
         sx::BoardContent content;
         for (int r=0;r<2;++r) {
-            sx::Row row; row.title=r ? "Popular TV" : "Continue Watching";
+            sx::Row row; row.title=r ? "Popular TV" : sx::i18n::tr("Continue Watching");row.continue_watching=r==0;
             for (int i=0;i<9;++i) {
                 sx::Title t; t.name="The Quiet Hours"; t.id=std::to_string(i); t.poster=poster_texture; t.backdrop=backdrop_texture;
                 t.year="2026"; t.synopsis="A quiet town, a familiar face, and a story waiting to be told.";
@@ -315,8 +340,8 @@ int main(int argc, char** argv) {
             content.directors="Avery Quinn"; content.cast="Alex Morgan, Sam Rivera, Taylor Reed";
         }
         content.title.synopsis = "Choose a source from your addons. Video, audio and language badges describe the release supplied by each addon.";
-        content.stream_heading = "Available streams"; content.stream_addons = {"AIOStreams","Pengu"};
-        content.resume_label = "Resume from 35:36";
+        content.stream_heading = sx::i18n::tr("Available streams"); content.stream_addons = {"AIOStreams","Pengu"};
+        content.resume_label = sx::i18n::tr("Resume from ") + std::string("35:36");
         using B = sx::StreamBadge;
         for (int i = 0; i < 5; ++i)
         {
@@ -372,6 +397,6 @@ int main(int argc, char** argv) {
     const auto error = glGetError();
     stbi_flip_vertically_on_write(1);
     const bool written = stbi_write_png(argv[2], 1920, 1080, 4, pixels.data(), 1920 * 4);
-    std::fprintf(stderr, "%s: GL error 0x%x; %zu shapes\n", mode.c_str(), error, renderer.last_instances());
+    std::fprintf(stderr, "%s: GL error 0x%x; %zu shapes\n", preview_name.c_str(), error, renderer.last_instances());
     return written && error == GL_NO_ERROR ? 0 : 9;
 }

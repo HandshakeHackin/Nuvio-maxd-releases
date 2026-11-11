@@ -1,3 +1,4 @@
+#include "../ui/i18n.hpp"
 // A title's page: its details, the seasons and episodes of a series, and the
 // streams the addons offer for a film or an episode.
 
@@ -24,7 +25,7 @@ std::string date_label(const std::string &released)
 {
     if (released.size() < 10 || released[4] != '-' || released[7] != '-')
         return released;
-    static const char *months[] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+    static const char *months[] = {sx::i18n::tr("Jan"), sx::i18n::tr("Feb"), sx::i18n::tr("Mar"), sx::i18n::tr("Apr"), sx::i18n::tr("May"), sx::i18n::tr("Jun"), sx::i18n::tr("Jul"), sx::i18n::tr("Aug"), sx::i18n::tr("Sep"), sx::i18n::tr("Oct"), sx::i18n::tr("Nov"), sx::i18n::tr("Dec")};
     const int m = std::atoi(released.substr(5, 2).c_str());
     if (m < 1 || m > 12)
         return released.substr(0, 10);
@@ -34,7 +35,7 @@ std::string date_label(const std::string &released)
 
 std::string episode_title(const ::Video &v)
 {
-    return v.title.empty() ? "Episode " + std::to_string(v.episode) : v.title;
+    return v.title.empty() ? sx::i18n::tr("Episode ") + std::to_string(v.episode) : v.title;
 }
 
 } // namespace
@@ -63,12 +64,12 @@ void Session::detail_toggle_watched(int index)
     if (!mark)
     {
         watched_.erase(id); watched_.erase(canonical);
-        say("Marked as not watched");
+        say(sx::i18n::tr("Marked as not watched"));
     }
     else
     {
         watched_.insert(canonical);
-        say("Marked as watched");
+        say(sx::i18n::tr("Marked as watched"));
     }
     save_progress();
     sync_watched_mark(id, d_item_.name, mark, d_item_.id, video.season, video.episode);
@@ -81,6 +82,7 @@ void Session::detail_toggle_watched(int index)
 
 void Session::open_title(const Title &t, const std::string &streams_video)
 {
+    *cast_cancel_=true;++cast_generation_;
     detail_preparation_cancel();
     *d_cancel_ = true;
     *d_stream_cancel_ = true;
@@ -103,7 +105,8 @@ void Session::open_title(const Title &t, const std::string &streams_video)
     look(disc_items_);
     look(lib_items_);
     Item it;
-    if (found)
+    if(detail_seed_ && detail_seed_->id==t.id && detail_seed_->type==t.type){it=std::move(*detail_seed_);detail_seed_.reset();}
+    else if (found)
     {
         it = *found;
     }
@@ -133,8 +136,9 @@ void Session::open_title(const Title &t, const std::string &streams_video)
     detail_fill_title();
 
     detail.series = it.type == "series";
-    detail.episodes_status = "Loading episodes...";
+    detail.episodes_status = sx::i18n::tr("Loading episodes...");
     detail.streams_status = "";
+    cast_load();
     changed_ |= kDetail;
     art_dirty_ = true;
 
@@ -172,7 +176,7 @@ void Session::open_title(const Title &t, const std::string &streams_video)
                 break;
             }
             if (urls.empty())
-                r.error = "no addon has details for this";
+                r.error = sx::i18n::tr("no addon has details for this");
             return r;
         },
         [this, gen](Res &r)
@@ -181,10 +185,11 @@ void Session::open_title(const Title &t, const std::string &streams_video)
                 return;
             if (!r.ok)
             {
-                detail.episodes_status = "Could not load the details: " + r.error;
+                if(detail.people.empty()&&!detail.people_loading)cast_load();
+                detail.episodes_status = sx::i18n::tr("Could not load the details: ") + r.error;
                 // Without details it can still be played as one video.
                 detail.series = false;
-                detail_load_streams(d_item_.id, "Streams");
+                detail_load_streams(d_item_.id, sx::i18n::tr("Streams"));
                 changed_ |= kDetail;
                 if (resume_play_)
                     start_remembered_stream();
@@ -198,6 +203,7 @@ void Session::open_title(const Title &t, const std::string &streams_video)
             d_meta_loaded_ = true;
             if(d_item_.type=="series")series_updates_.put(d_item_.id,d_meta_.videos,now_seconds());
             detail_apply_meta();
+            if(detail.people.empty()&&!detail.people_loading)cast_load();
             refresh_board();refresh_library();
             if (resume_play_)
                 start_remembered_stream();
@@ -205,7 +211,7 @@ void Session::open_title(const Title &t, const std::string &streams_video)
         true);
 
     if (!detail.series)
-        detail_load_streams(it.id, "Streams"); // a film: its streams right away
+        detail_load_streams(it.id, sx::i18n::tr("Streams")); // a film: its streams right away
 }
 
 // Continue Watching, "Play now": the details are in, so the stream that was playing is played again.
@@ -230,6 +236,7 @@ void Session::start_remembered_stream()
 }
 void Session::close_detail()
 {
+    *cast_cancel_=true;++cast_generation_;
     *d_cancel_ = true;
     *d_stream_cancel_ = true;
     detail_preparation_cancel();
@@ -311,7 +318,7 @@ void Session::detail_apply_meta()
         });
         detail.seasons.clear();
         for (int s : d_seasons_)
-            detail.seasons.push_back(s == 0 ? "Specials" : "Season " + std::to_string(s));
+            detail.seasons.push_back(s == 0 ? sx::i18n::tr("Specials") : sx::i18n::tr("Season ") + std::to_string(s));
         // Start on the season being watched, else the first.
         int season_idx = 0;
         std::string resume_video;
@@ -360,7 +367,7 @@ void Session::detail_apply_meta()
         detail.episodes.clear();
         const std::string vid = m.videos.size() == 1 ? m.videos[0].id : m.id;
         if (was_series || vid != d_video_id_)
-            detail_load_streams(vid, "Streams");
+            detail_load_streams(vid, sx::i18n::tr("Streams"));
     }
     changed_ |= kDetail;
     art_dirty_ = true;
@@ -406,7 +413,7 @@ void Session::detail_set_season(int index)
     }
     detail.episode_hint = first_unwatched >= 0 ? first_unwatched : 0;
     ++detail.hint_serial;
-    detail.episodes_status = detail.episodes.empty() ? "No episodes in this season." : "";
+    detail.episodes_status = detail.episodes.empty() ? sx::i18n::tr("No episodes in this season.") : "";
     changed_ |= kDetail;
     art_dirty_ = true;
 }
@@ -456,7 +463,7 @@ void Session::detail_load_streams(const std::string &video_id, const std::string
     {
         const int seconds = static_cast<int>(resume);
         char label[64];
-        std::snprintf(label, sizeof(label), "Resume from %d:%02d", seconds / 60, seconds % 60);
+        std::snprintf(label, sizeof(label), sx::i18n::tr("Resume from %d:%02d"), seconds / 60, seconds % 60);
         detail.resume_label = label;
     }
     detail.stream_heading = heading;
@@ -495,13 +502,12 @@ void Session::detail_load_streams(const std::string &video_id, const std::string
     if (sources.empty())
     {
         autoplay_pending_ = false;
-        detail.streams_status = addons_loading_ ? "Addons are still loading." :
-                                                  "No enabled addons or plugins provide streams for this title. "
-                                                  "Manage addons and enable providers on the Addons page.";
+        detail.streams_status = addons_loading_ ? sx::i18n::tr("Addons are still loading.") :
+                                                  sx::i18n::tr("No enabled addons or plugins provide streams for this title. Manage addons and enable providers on the Addons page.");
         changed_ |= kDetail;
         return;
     }
-    detail.streams_status = "Loading streams... (0 of " + std::to_string(sources.size()) + " sources answered)";
+    detail.streams_status = sx::i18n::tr("Loading streams... (0 of ") + std::to_string(sources.size()) + sx::i18n::tr(" sources answered)");
     d_found_=stream_result_cache_.get(d_stream_cache_key_,now_seconds());
     d_cache_warm_=!d_found_.empty();
     for(const auto& s:d_found_)d_cached_sources_.insert(s.addon);
@@ -521,7 +527,7 @@ void Session::detail_load_streams(const std::string &video_id, const std::string
             try {
                 auto found = providers::fetch(s, type, video_id, meta, cancel.get());
                 return Res{std::move(found.streams), std::move(found.error)};
-            } catch (...) {return Res{{},"Provider search failed; try reloading this source"};}
+            } catch (...) {return Res{{},sx::i18n::tr("Provider search failed; try reloading this source")};}
         };
         auto done = [this, gen, name](Res &r)
         {
@@ -595,21 +601,21 @@ void Session::detail_refresh_streams()
             play_stream(selected, false);
         }
         else
-            say("Choose a stream for the next episode. No matching direct/debrid quality was found.", 7.0);
+            say(sx::i18n::tr("Choose a stream for the next episode. No matching direct/debrid quality was found."), 7.0);
     }
     if (d_answered_ < d_pending_)
-        detail.streams_status = std::string(d_cache_warm_?"Refreshing sources... (":"Loading streams... (") + std::to_string(d_answered_) + " of " + std::to_string(d_pending_) +
-                                " sources answered)";
+        detail.streams_status = std::string(d_cache_warm_?sx::i18n::tr("Refreshing sources... ("):sx::i18n::tr("Loading streams... (")) + std::to_string(d_answered_) + " of " + std::to_string(d_pending_) +
+                                sx::i18n::tr(" sources answered)");
     else if (detail.streams.empty() && hidden_torrents)
         detail.streams_status = std::to_string(hidden_torrents) +
-            " torrent results hidden. Enable Peer-to-peer torrents in Settings, or connect a compatible debrid service.";
+            sx::i18n::tr(" torrent results hidden. Enable Peer-to-peer torrents in Settings, or connect a compatible debrid service.");
     else if (detail.streams.empty())
-        detail.streams_status = prefs_.builtin_torrents ? "No streams found. Check your stream addons in Nuvio." :
-            "No playable streams returned. Check your addon setup or connect TorBox / Premiumize in Settings > Connected Services.";
+        detail.streams_status = prefs_.builtin_torrents ? sx::i18n::tr("No streams found. Check your stream addons in Nuvio.") :
+            sx::i18n::tr("No playable streams returned. Check your addon setup or connect TorBox / Premiumize in Settings > Connected Services.");
     else
         detail.streams_status.clear();
-    if(selection.hidden)detail.streams_status=std::to_string(selection.hidden)+(detail.streams.empty()?" sources filtered. Source options > Show all sources.":" filtered · Source options");
-    else if(d_show_all_sources_)detail.streams_status="Showing all enabled sources, including warnings.";
+    if(selection.hidden)detail.streams_status=std::to_string(selection.hidden)+(detail.streams.empty()?sx::i18n::tr(" sources filtered. Source options > Show all sources."):sx::i18n::tr(" filtered · Source options"));
+    else if(d_show_all_sources_)detail.streams_status=sx::i18n::tr("Showing all enabled sources, including warnings.");
     changed_ |= kDetail;
 }
 
@@ -622,23 +628,23 @@ void Session::detail_trailers() {
     auto meta=d_meta_;if(meta.id.empty())meta.id=d_item_.id;
     if(meta.type.empty())meta.type=d_item_.type;
     const auto language=trailers::preferred_language(prefs_.trailer_language.empty() ? (prefs_.audio_langs.empty()?prefs_.subtitle_langs:prefs_.audio_langs):prefs_.trailer_language);
-    d_trailer_loading_=true;say("Finding trailers...",4.0);
+    d_trailer_loading_=true;say(sx::i18n::tr("Finding trailers..."),4.0);
     bg<std::vector<trailers::Candidate>>([meta,cancel,language]{
         return trailers::candidates(meta,providers::trailer_videos(meta,cancel.get(),language),language);
     },[this,gen,cancel](auto& found){
         if(!d_open_ || gen!=d_meta_gen_ || *cancel)return;
         d_trailer_loading_=false;
-        if(found.empty()){say("No trailers are available for this title.",7.0);return;}
+        if(found.empty()){say(sx::i18n::tr("No trailers are available for this title."),7.0);return;}
         std::vector<std::string> names;for(const auto& t:found)names.push_back(t.name);
-        open_dropdown("Watch trailer",names,0,[this,gen,cancel,found](int pick){
+        open_dropdown(sx::i18n::tr("Watch trailer"),names,0,[this,gen,cancel,found](int pick){
             if(!d_open_ || watching || gen!=d_meta_gen_ || *cancel || pick<0 || pick>=int(found.size()))return;
-            d_trailer_loading_=true;say("Opening trailer...",5.0);
+            d_trailer_loading_=true;say(sx::i18n::tr("Opening trailer..."),5.0);
             const auto candidate=found[pick];
             bg<trailers::Playback>([candidate,cancel]{return trailers::resolve(candidate,cancel.get());},[this,gen,cancel,candidate](auto& source){
                 if(!d_open_ || watching || gen!=d_meta_gen_ || *cancel)return;
                 d_trailer_loading_=false;
-                if(source.url.empty()){if(source.error!="cancelled")say(source.error.empty()?"This trailer is currently unavailable. Try another trailer.":source.error,9.0,true);return;}
-                ::Stream stream;stream.name=candidate.name;stream.addon="Trailer";stream.url=source.url;
+                if(source.url.empty()){if(source.error!="cancelled")say(source.error.empty()?sx::i18n::tr("This trailer is currently unavailable. Try another trailer."):source.error,9.0,true);return;}
+                ::Stream stream;stream.name=candidate.name;stream.addon=sx::i18n::tr("Trailer");stream.url=source.url;
                 stream.request_headers=source.headers;
                 play_stream(stream,false,true);
             });

@@ -39,6 +39,7 @@ struct Session {
     std::shared_ptr<Boundary> prepared_ = std::make_shared<Boundary>(Boundary{"prepared"});
     Updater updater_;
     std::unique_ptr<Reporter> media_reporter_=std::make_unique<Reporter>();
+    void person_leave() {if(person_cancel_)*person_cancel_=true;}
     void torrent_reset() {}
     void sports_reset() { events.push_back("sports reset"); }
     void media_reset(){if(media_cancel_)*media_cancel_=true;if(media_play_cancel_)*media_play_cancel_=true;events.push_back("media reset");}
@@ -84,6 +85,7 @@ int main() {
     session.updater_.closing = true;
     session.shutdown();
     assert(*session.live_usb_cancel_ && *session.live_guide_cancel_ && *session.series_updates_cancel_ && *session.iptv_cancel_ && *session.iptv_probe_cancel_ && *session.live_cancel_ && *episode_cancel && *session.device_cancel_ && *session.d_cancel_ && *session.d_stream_cancel_);
+    assert(*session.person_cancel_ && *session.cast_cancel_);
     assert(!session.watching && *session.media_cancel_ && *session.media_play_cancel_ && !session.media_reporter_);
     session.updater_.finish_exit();
     assert(session.updater_.handed_off);

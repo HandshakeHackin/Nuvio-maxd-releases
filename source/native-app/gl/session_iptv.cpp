@@ -1,3 +1,4 @@
+#include "../ui/i18n.hpp"
 // IPTV VOD is deliberately isolated from addon discovery, history and trackers.
 #include "session.hpp"
 #include <algorithm>
@@ -45,7 +46,7 @@ void Session::iptv_save() {
   iptv_state_["kind"] = iptv::kind_name(iptv_kind_);
   iptv_state_["category"] = iptv_category_;
   if (!iptv::save_private(profile_dir_ + "/iptv-library.json", iptv_state_))
-    say("Could not save IPTV Library preferences", 6, true);
+    say(sx::i18n::tr("Could not save IPTV Library preferences"), 6, true);
 }
 void Session::iptv_load() {
   iptv_state_ = iptv::load_private(profile_dir_ + "/iptv-library.json");
@@ -126,8 +127,7 @@ void Session::iptv_probe_source(
         iptv::apply_capabilities(iptv_state_, id, result);
         if (id == iptv_source_ || iptv_source_.empty()) {
           if (!result.error.empty())
-            iptv_status_ = "Availability check failed. Saved library retained; "
-                           "Options to retry.";
+            iptv_status_ = sx::i18n::tr("Availability check failed. Saved library retained; Options to retry.");
           else
             iptv_status_.clear();
         }
@@ -157,7 +157,7 @@ void Session::iptv_build(bool reset) {
   iptv_content.filters.clear();
   iptv_indices_.clear();
   if (!iptv_visible) {
-    iptv_content.status = "Import a VOD-enabled Xtream account under Live TV.";
+    iptv_content.status = sx::i18n::tr("Import a VOD-enabled Xtream account under Live TV.");
     changed_ |= kIptv | kIptvNew;
     return;
   }
@@ -198,43 +198,42 @@ void Session::iptv_build(bool reset) {
     reset = true;
   }
   iptv_content.heading =
-      "IPTV Library" +
+      sx::i18n::tr("IPTV Library") +
       (iptv_series_.empty() ? std::string() : " · " + iptv_series_name_);
   iptv_content.notice = iptv_status_.empty()
-                            ? "Provider playback only · Movie/TV addon sources "
-                              "stay separate · Options: library controls"
+                            ? sx::i18n::tr("Provider playback only · Movie/TV addon sources stay separate · Options: library controls")
                             : iptv_status_;
   if (iptv_loading_)
     iptv_content.notice =
         iptv_catalog_.entries.empty()
-            ? "Loading provider catalog… Circle to leave; Options to cancel."
-            : "Saved catalog · Refreshing from provider…";
-  iptv_content.filters.push_back({"Server", short_label(account->name)});
+            ? sx::i18n::tr("Loading provider catalog… Circle to leave; Options to cancel.")
+            : sx::i18n::tr("Saved catalog · Refreshing from provider…");
+  iptv_content.filters.push_back({sx::i18n::tr("Server"), short_label(account->name)});
   iptv_content.filters.push_back(
-      {"Type", iptv_kind_ == iptv::Kind::movies ? "Movies" : "Series"});
-  std::string group = "All";
+      {sx::i18n::tr("Type"), iptv_kind_ == iptv::Kind::movies ? sx::i18n::tr("Movies") : sx::i18n::tr("Series")});
+  std::string group = sx::i18n::tr("All");
   if (!iptv_series_.empty())
-    group = iptv_season_ < 0 ? "All seasons"
-                             : "Season " + std::to_string(iptv_season_);
+    group = iptv_season_ < 0 ? sx::i18n::tr("All seasons")
+                             : sx::i18n::tr("Season ") + std::to_string(iptv_season_);
   else
     for (const auto &c : cats)
       if (c.id == iptv_category_)
         group = c.name;
   iptv_content.filters.push_back(
-      {iptv_series_.empty() ? "Category" : "Season", short_label(group)});
+      {iptv_series_.empty() ? sx::i18n::tr("Category") : sx::i18n::tr("Season"), short_label(group)});
   if (iptv_searching_saved_) {
-    iptv_content.heading = "IPTV Library · Saved search";
+    iptv_content.heading = sx::i18n::tr("IPTV Library · Saved search");
     iptv_content.notice =
         iptv_loading_
-            ? "Searching saved catalogs…"
-            : "Saved movies and series across this profile’s providers · " +
+            ? sx::i18n::tr("Searching saved catalogs…")
+            : sx::i18n::tr("Saved movies and series across this profile’s providers · ") +
                   iptv_status_;
     iptv_content.filters.clear();
-    iptv_content.filters.push_back({"Search", iptv_query_});
+    iptv_content.filters.push_back({sx::i18n::tr("Search"), iptv_query_});
   }
   if (iptv_series_.empty())
     iptv_content.filters.push_back(
-        {"A–Z", iptv_letter_.empty() ? "All" : iptv_letter_});
+        {"A–Z", iptv_letter_.empty() ? sx::i18n::tr("All") : iptv_letter_});
   std::vector<size_t> matching;
   const auto query = iptv::search_key(iptv_query_);
   for (size_t i = 0; i < iptv_catalog_.entries.size(); ++i) {
@@ -278,9 +277,9 @@ void Session::iptv_build(bool reset) {
     t.badge =
         kind == iptv::Kind::episodes
             ? "S" + std::to_string(e.season) + " E" + std::to_string(e.episode)
-            : "Provider stream";
+            : sx::i18n::tr("Provider stream");
     if (hit)
-      t.badge = std::string(hit->kind == iptv::Kind::movies ? "Movie · " : "Series · ") + hit->provider;
+      t.badge = std::string(hit->kind == iptv::Kind::movies ? sx::i18n::tr("Movie · ") : sx::i18n::tr("Series · ")) + hit->provider;
     if (progress.is_object() && progress.contains(t.id)) {
       const auto &p = progress[t.id];
       double duration = jnum(p, "duration"), time = jnum(p, "time");
@@ -292,13 +291,13 @@ void Session::iptv_build(bool reset) {
     iptv_indices_.push_back(i);
   }
   iptv_content.count =
-      std::to_string(matching.size()) + " titles · " +
+      std::to_string(matching.size()) + sx::i18n::tr(" titles · ") +
       std::to_string(iptv_page_ + 1) + "/" +
       std::to_string(std::max(size_t(1), (matching.size() + 99) / 100));
   iptv_content.status =
-      iptv_loading_ ? "Loading IPTV library…"
+      iptv_loading_ ? sx::i18n::tr("Loading IPTV library…")
       : iptv_status_.empty()
-          ? "No titles match. Use Options to choose a category or refresh."
+          ? sx::i18n::tr("No titles match. Use Options to choose a category or refresh.")
           : iptv_status_;
   changed_ |= kIptv;
   if (reset)
@@ -359,14 +358,14 @@ void Session::iptv_reload(bool refresh) {
         if (!r.catalog.error.empty()) {
           iptv_status_ = r.catalog.error;
           if (!iptv_catalog_.entries.empty())
-            iptv_status_ += " Saved catalog retained; Options to retry.";
+            iptv_status_ += sx::i18n::tr(" Saved catalog retained; Options to retry.");
           say(iptv_status_, 14.0, true);
         } else {
           iptv_catalog_ = std::move(r.catalog);
           iptv_status_ =
               r.cache_saved
                   ? std::string()
-                  : "Catalog loaded; local cache is full or unavailable.";
+                  : sx::i18n::tr("Catalog loaded; local cache is full or unavailable.");
         }
         iptv_build(!refresh);
         if (r.cached)
@@ -397,7 +396,7 @@ void Session::iptv_filter(int index) {
       }
     if (names.empty())
       return;
-    open_dropdown("IPTV Library server", names, 0,
+    open_dropdown(sx::i18n::tr("IPTV Library server"), names, 0,
                   [this, profile, generation, ids](int i) {
                     if (profile != profile_generation_ ||
                         generation != iptv_generation_ || i < 0 ||
@@ -423,7 +422,7 @@ void Session::iptv_filter(int index) {
     std::vector<iptv::Kind> kinds;
     for (auto kind : {iptv::Kind::movies, iptv::Kind::series})
       if (!iptv::categories(iptv_state_, iptv_source_, kind).empty()) {
-        labels.push_back(kind == iptv::Kind::movies ? "Movies" : "Series");
+        labels.push_back(kind == iptv::Kind::movies ? sx::i18n::tr("Movies") : sx::i18n::tr("Series"));
         kinds.push_back(kind);
       }
     open_dropdown(
@@ -445,14 +444,14 @@ void Session::iptv_filter(int index) {
   }
   if (index == 2 && !iptv_series_.empty()) {
     std::vector<int> seasons{-1};
-    std::vector<std::string> names{"All seasons"};
+    std::vector<std::string> names{sx::i18n::tr("All seasons")};
     std::set<int> seen;
     for (const auto &e : iptv_catalog_.entries)
       if (seen.insert(e.season).second) {
         seasons.push_back(e.season);
-        names.push_back("Season " + std::to_string(e.season));
+        names.push_back(sx::i18n::tr("Season ") + std::to_string(e.season));
       }
-    open_dropdown("IPTV series season", names, 0,
+    open_dropdown(sx::i18n::tr("IPTV series season"), names, 0,
                   [this, profile, generation, seasons](int i) {
                     if (profile != profile_generation_ ||
                         generation != iptv_generation_ || i < 0 ||
@@ -465,7 +464,7 @@ void Session::iptv_filter(int index) {
   }
   if (index == 2) {
     auto cats = iptv::categories(iptv_state_, iptv_source_, iptv_kind_);
-    std::vector<std::string> names{"All categories"}, ids{""};
+    std::vector<std::string> names{sx::i18n::tr("All categories")}, ids{""};
     for (const auto &c : cats) {
       if (c.id.empty())
         continue;
@@ -488,7 +487,7 @@ void Session::iptv_filter(int index) {
 }
 void Session::iptv_letters() {
   if (!iptv_series_.empty()) {
-    say("Browse A–Z from a movie or series catalog; episodes keep their season order.", 6);
+    say(sx::i18n::tr("Browse A–Z from a movie or series catalog; episodes keep their season order."), 6);
     return;
   }
   const auto profile = profile_generation_, generation = iptv_generation_;
@@ -500,13 +499,13 @@ void Session::iptv_letters() {
       continue;
     available.insert(iptv::initial(e.name));
   }
-  std::vector<std::string> labels{"All"};
+  std::vector<std::string> labels{sx::i18n::tr("All")};
   labels.insert(labels.end(), available.begin(), available.end());
   int selected = 0;
   for (size_t i = 1; i < labels.size(); ++i)
     if (labels[i] == iptv_letter_)
       selected = int(i);
-  open_dropdown("Browse A–Z", labels, selected,
+  open_dropdown(sx::i18n::tr("Browse A–Z"), labels, selected,
                 [this, profile, generation, labels](int i) {
                   if (profile != profile_generation_ ||
                       generation != iptv_generation_ || i < 0 ||
@@ -547,9 +546,8 @@ void Session::iptv_saved_search(const std::string &query) {
         for (const auto &hit : iptv_hits_)
           iptv_catalog_.entries.push_back(hit.entry);
         iptv_loading_ = false;
-        iptv_status_ = r.limited ? "Search limit reached; narrow your search."
-                                 : "Search covers saved catalogs only. Open "
-                                   "other categories to save more titles.";
+        iptv_status_ = r.limited ? sx::i18n::tr("Search limit reached; narrow your search.")
+                                 : sx::i18n::tr("Search covers saved catalogs only. Open other categories to save more titles.");
         iptv_build(true);
       });
 }
@@ -567,15 +565,15 @@ void Session::iptv_search() {
         } else
           iptv_saved_search(query);
       },
-      "Search saved IPTV catalogs (empty returns to browsing)");
+      sx::i18n::tr("Search saved IPTV catalogs (empty returns to browsing)"));
 }
 void Session::iptv_menu() {
   const auto profile = profile_generation_;
-  open_dropdown("IPTV Library",
-                {"Choose server", "Movies / Series", "Category / Season",
-                 "Search saved catalogs", "Refresh catalog",
-                 "Check library availability", "Previous page", "Next page",
-                 "Cancel loading", "Browse A–Z", "Return to browsing"},
+  open_dropdown(sx::i18n::tr("IPTV Library"),
+                {sx::i18n::tr("Choose server"), sx::i18n::tr("Movies / Series"), sx::i18n::tr("Category / Season"),
+                 sx::i18n::tr("Search saved catalogs"), sx::i18n::tr("Refresh catalog"),
+                 sx::i18n::tr("Check library availability"), sx::i18n::tr("Previous page"), sx::i18n::tr("Next page"),
+                 sx::i18n::tr("Cancel loading"), sx::i18n::tr("Browse A–Z"), sx::i18n::tr("Return to browsing")},
                 0, [this, profile](int i) {
                   if (profile != profile_generation_)
                     return;
@@ -622,14 +620,12 @@ void Session::iptv_menu() {
                     ++iptv_generation_;
                     ++iptv_probe_generation_;
                     iptv_loading_ = iptv_probing_ = false;
-                    iptv_status_ = "Loading cancelled. Saved catalog retained.";
+                    iptv_status_ = sx::i18n::tr("Loading cancelled. Saved catalog retained.");
                     iptv_build();
                   }
                 });
   dropdown.message =
-      "Movies and episodes play directly from your IPTV subscription. Addon "
-      "catalogs, Nuvio history and trackers are separate. Search covers saved "
-      "movie and series catalogs across this profile’s providers.";
+      sx::i18n::tr("Movies and episodes play directly from your IPTV subscription. Addon catalogs, Nuvio history and trackers are separate. Search covers saved movie and series catalogs across this profile’s providers.");
 }
 bool Session::iptv_back() {
   if (iptv_searching_saved_) {
@@ -694,7 +690,7 @@ void Session::iptv_activate(int index) {
   if (iptv_resume(key) > 5) {
     const auto profile = profile_generation_;
     const auto generation = iptv_generation_;
-    open_dropdown(entry.name, {"Resume", "Play from beginning", "Cancel"}, 0,
+    open_dropdown(entry.name, {sx::i18n::tr("Resume"), sx::i18n::tr("Play from beginning"), sx::i18n::tr("Cancel")}, 0,
                   [this, profile, generation, entry, key](int i) {
                     if (profile != profile_generation_ ||
                         generation != iptv_generation_ || i < 0 || i > 1)
@@ -718,7 +714,7 @@ void Session::iptv_play(const iptv::Entry &entry) {
       iptv_series_.empty() ? iptv::Kind::movies : iptv::Kind::episodes;
   auto url = iptv::playback_url(*a, kind, entry);
   if (url.empty()) {
-    say("The IPTV provider supplied an unsupported file format.", 7, true);
+    say(sx::i18n::tr("The IPTV provider supplied an unsupported file format."), 7, true);
     return;
   }
   cancel_autoplay();
@@ -740,7 +736,7 @@ void Session::iptv_play(const iptv::Entry &entry) {
   ::Stream stream;
   stream.url = std::move(url);
   stream.name = d_item_.name;
-  stream.addon = "IPTV Library · " + a->name;
+  stream.addon = sx::i18n::tr("IPTV Library · ") + a->name;
   play_stream(stream, false);
 }
 double Session::iptv_resume(const std::string &id) const {
