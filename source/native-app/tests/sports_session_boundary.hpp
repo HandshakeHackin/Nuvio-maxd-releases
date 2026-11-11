@@ -1,4 +1,5 @@
 #pragma once
+#include "../ui/i18n.hpp"
 #include "content.hpp"
 #include "sports_hub.hpp"
 #include <deque>
