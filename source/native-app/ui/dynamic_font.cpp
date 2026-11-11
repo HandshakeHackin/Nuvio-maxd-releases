@@ -143,17 +143,21 @@ bool load_ui_fonts(hui::gfx::Renderer &renderer, const std::string &font_dir, co
 {
     // Noto Sans and Naskh are drawn a little larger than Inter's em so the
     // three scripts sit at the same visual size in a line.
+    // Keep the font specifications alive independently of a call expression.
+    // Newer host compilers diagnose temporary initializer lists at this boundary.
+    static const std::vector<FaceSpec> regular_faces{
+        {"Inter-Regular.ttf"}, {"NotoSans-Regular.ttf"}, {"NotoSansHebrew-Regular.ttf"},
+        {"NotoNaskhArabicUI-Regular.ttf", 1.12f}, {"NotoSansCJKsc-Regular.ttf"}, {"NotoSansThai-Regular.ttf"}};
+    static const std::vector<FaceSpec> semibold_faces{
+        {"Inter-SemiBold.ttf"}, {"NotoSans-Bold.ttf"}, {"NotoSansHebrew-Bold.ttf"},
+        {"NotoNaskhArabicUI-Bold.ttf", 1.12f}, {"NotoSansCJKsc-Regular.ttf"}, {"NotoSansThai-Regular.ttf"}};
+    static const std::vector<FaceSpec> display_faces{
+        {"Montserrat-Medium.ttf"}, {"Inter-SemiBold.ttf"}, {"NotoSans-Bold.ttf"}, {"NotoSansHebrew-Bold.ttf"},
+        {"NotoNaskhArabicUI-Bold.ttf", 1.12f}, {"NotoSansCJKsc-Regular.ttf"}, {"NotoSansThai-Regular.ttf"}};
     const bool ok =
-        make(renderer, &out->regular, &out->regular_chain, font_dir,
-             {{"Inter-Regular.ttf"}, {"NotoSans-Regular.ttf"}, {"NotoSansHebrew-Regular.ttf"}, {"NotoNaskhArabicUI-Regular.ttf", 1.12f}, {"NotoSansCJKsc-Regular.ttf"}, {"NotoSansThai-Regular.ttf"}},
-             &fonts->regular) &&
-        make(renderer, &out->semibold, &out->semibold_chain, font_dir,
-             {{"Inter-SemiBold.ttf"}, {"NotoSans-Bold.ttf"}, {"NotoSansHebrew-Bold.ttf"}, {"NotoNaskhArabicUI-Bold.ttf", 1.12f}, {"NotoSansCJKsc-Regular.ttf"}, {"NotoSansThai-Regular.ttf"}},
-             &fonts->semibold) &&
-        make(renderer, &out->display, &out->display_chain, font_dir,
-             {{"Montserrat-Medium.ttf"}, {"Inter-SemiBold.ttf"}, {"NotoSans-Bold.ttf"}, {"NotoSansHebrew-Bold.ttf"},
-              {"NotoNaskhArabicUI-Bold.ttf", 1.12f}, {"NotoSansCJKsc-Regular.ttf"}, {"NotoSansThai-Regular.ttf"}},
-             &fonts->display);
+        make(renderer, &out->regular, &out->regular_chain, font_dir, regular_faces, &fonts->regular) &&
+        make(renderer, &out->semibold, &out->semibold_chain, font_dir, semibold_faces, &fonts->semibold) &&
+        make(renderer, &out->display, &out->display_chain, font_dir, display_faces, &fonts->display);
     if (!ok)
         return false;
     // Only ASCII is ever drawn with these.
