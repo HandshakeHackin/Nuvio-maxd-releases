@@ -1,4 +1,5 @@
 #include "content.hpp"
+#include "../ui/i18n.hpp"
 #include "core/input.hpp"
 #include "track_restore.hpp"
 #include <algorithm>
