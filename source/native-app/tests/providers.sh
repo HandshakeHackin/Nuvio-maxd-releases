@@ -25,7 +25,7 @@ done
 
 # Compile the transfer fixture against the exact production request implementation.
 "$CXX" "${flags[@]}" "$ROOT/tests/providers_transfer_host.cpp" \
- "$BUILD/trailers.cpp.o" "$BUILD/stremio.cpp.o" "$BUILD/http.cpp.o" "$BUILD/util.cpp.o" \
+ "$BUILD/people.cpp.o" "$BUILD/trailers.cpp.o" "$BUILD/stremio.cpp.o" "$BUILD/http.cpp.o" "$BUILD/util.cpp.o" \
  "$QUICKJS_DIR/libquickjs.a" "${libraries[@]}" -Wl,--wrap=curl_easy_setopt -ldl -lm -o "$ROOT/test-output/providers-transfer-host"
 "$ROOT/test-output/providers-transfer-host" "$ROOT/third_party/provider-runtime/runtime.js"
 "$CXX" -std=c++20 -O1 -I"$ROOT/ui" "$ROOT/tests/dropdown_window_host.cpp" -o "$ROOT/test-output/dropdown-window-host"
