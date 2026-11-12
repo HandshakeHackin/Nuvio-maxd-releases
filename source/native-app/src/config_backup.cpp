@@ -21,10 +21,11 @@ constexpr const char *journal_name = "/.configuration-rollback.json";
 bool stopped(const std::atomic<bool> *c) { return c && *c; }
 Json parse(const std::string &s) {
   bool deep = false;
+  size_t nodes = 0;
   auto j = Json::parse(
       s,
       [&](int d, Json::parse_event_t, Json &) {
-        if (d > 32) {
+        if (d > 32 || ++nodes > 500000) {
           deep = true;
           return false;
         }

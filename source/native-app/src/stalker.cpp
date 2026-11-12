@@ -65,11 +65,17 @@ void check(const std::atomic<bool> *cancel) {
   if (cancel && *cancel)
     throw Failure("Cancelled");
 }
-J parse(const std::string &s) {
-  bool deep = false;
+J parse(const std::string &s, const std::atomic<bool> *cancel) {
+  bool deep = false, limited = false;
+  size_t nodes = 0;
   auto j = J::parse(
       s,
       [&](int d, J::parse_event_t, J &) {
+        check(cancel);
+        if (++nodes > 2000000) {
+          limited = true;
+          return false;
+        }
         if (d > 40) {
           deep = true;
           return false;
@@ -77,6 +83,8 @@ J parse(const std::string &s) {
         return true;
       },
       false);
+  if (limited)
+    throw Failure("Portal response exceeds structural limits.");
   if (deep || j.is_discarded())
     throw Failure("Portal returned an invalid response.");
   return j;
@@ -201,7 +209,7 @@ public:
                         ? "Portal response exceeds the size limit."
                         : "Could not reach the portal or read its response.");
     }
-    auto j = parse(r.body);
+    auto j = parse(r.body, cancel);
     if (!j.is_object() || !j.contains("js") || j["js"].is_null())
       throw Failure("Portal returned an invalid response.");
     return j["js"];

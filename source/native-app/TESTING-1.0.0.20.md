@@ -49,7 +49,7 @@ Keep credentials, MAC addresses, playlist contents and private URLs out of repor
 - Check IPTV Library availability, movie/show categories, seasons/episodes,
   playback, private cache reload and local resume. These must stay outside addon
   catalogs, normal Continue Watching and account/tracker scrobbling.
-- Test account rejection, provider outage, empty/invalid/repeated pages and
+- Test account rejection, provider outage, empty/invalid/repeated pages, excessive JSON structure and
   cancellation/profile switching. Partial failed imports must retain saved data.
 - If your provider permits four connections, test four-screen playback, audio
   switching, replacement, full-screen selection and leaving the view.

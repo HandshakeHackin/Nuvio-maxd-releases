@@ -91,10 +91,13 @@ public:
                         ? "TVDB request limit reached. Try again later."
                         : "TVDB request failed. Provider order is retained.");
     bool deep = false;
+    size_t nodes = 0;
     auto j = J::parse(
         r.body,
         [&](int d, J::parse_event_t, J &) {
-          if (d > 40) {
+          if (cancel && *cancel)
+            throw Failure("Cancelled");
+          if (d > 40 || ++nodes > 500000) {
             deep = true;
             return false;
           }

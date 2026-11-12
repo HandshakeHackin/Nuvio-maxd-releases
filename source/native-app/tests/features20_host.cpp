@@ -375,6 +375,55 @@ int main(int argc, char **argv) {
     require(!rejected.error.empty() &&
                 rejected.error.find(source.mac) == std::string::npos,
             "portal errors redact account details");
+    auto numeric_array = [](size_t count) {
+      std::string body = "[";
+      body.reserve(count * 2 + 2);
+      for (size_t i = 0; i < count; ++i)
+        body += "0,";
+      body += "0]";
+      return body;
+    };
+    const auto huge_portal = "{\"js\":" + numeric_array(2000000) + "}";
+    auto structural =
+        stalker::channels(source, nullptr, [&](const auto &, const auto *) {
+          feature_http::Response h;
+          h.status = 200;
+          h.body = huge_portal;
+          return h;
+        });
+    require(structural.channels.empty() &&
+                structural.error.find("structural limits") != std::string::npos,
+            "portal structural bounds reject excessive JSON nodes within the "
+            "byte budget");
+    const auto huge_tvdb =
+        "{\"status\":\"success\",\"data\":{\"token\":\"fixture\",\"extra\":" +
+        numeric_array(500000) + "}}";
+    require(!tvdb::test({"own-key", ""}, error, nullptr,
+                        [&](const auto &, const auto *) {
+                          feature_http::Response h;
+                          h.status = 200;
+                          h.body = huge_tvdb;
+                          return h;
+                        }),
+            "TVDB structural response bounds");
+    auto huge_snapshot = captured.snapshot;
+    huge_snapshot["files"]["profile-settings.json"] =
+        "{\"provider_settings\":{\"many\":" + numeric_array(500000) + "}}";
+    require(!config_backup::encrypt(huge_snapshot, pass).error.empty(),
+            "configuration structural bounds before encryption or restore");
+    const auto huge_drive =
+        "{\"device_code\":\"fixture\",\"user_code\":\"ABCD-EFGH\","
+        "\"verification_url\":\"https://www.google.com/device\",\"extra\":" +
+        numeric_array(100000) + "}";
+    require(!config_drive::begin({"client", "secret", ""}, nullptr,
+                                 [&](const auto &, const auto *) {
+                                   feature_http::Response h;
+                                   h.status = 200;
+                                   h.body = huge_drive;
+                                   return h;
+                                 })
+                 .error.empty(),
+            "Drive structural response bounds");
     using P = config_drive::Plan;
     require(config_drive::plan("", "a", "", true) == P::first_upload &&
                 config_drive::plan("a", "b", "", true) == P::conflict,

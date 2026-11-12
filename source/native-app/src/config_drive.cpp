@@ -10,10 +10,11 @@ std::string field(const Json &j, const char *k) {
 }
 Json parse(const std::string &s) {
   bool deep = false;
+  size_t nodes = 0;
   auto j = Json::parse(
       s,
       [&](int d, Json::parse_event_t, Json &) {
-        if (d > 20) {
+        if (d > 20 || ++nodes > 100000) {
           deep = true;
           return false;
         }
