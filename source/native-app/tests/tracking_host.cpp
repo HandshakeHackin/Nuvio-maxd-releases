@@ -173,6 +173,10 @@ int main() {
     error.clear();const auto call_start=fake.calls.size();bool persisted=false;assert(mdb.write(batch,error,&persisted)&&persisted);
     int history_calls=0;for(std::size_t i=call_start;i<fake.calls.size();++i)if(fake.calls[i].url=="https://api.simkl.com/sync/history") {++history_calls;assert(fake.calls[i].body["shows"].size()==1&&fake.calls[i].body["shows"][0]["seasons"][0]["episodes"].size()==3);}
     assert(history_calls==1);
+    fake.malformed=true;error.clear();assert(!mdb.mark("tt999",-1,-1,true,error));
+    assert(error.find("did not confirm")!=std::string::npos);
+    load_json(root+"/tracking.json",disk);assert(!disk["pending_simkl"].empty());
+    fake.malformed=false;error.clear();assert(mdb.watched(watched,error));
     // A different profile has no connections or choices, and malformed state is not overwritten.
     std::filesystem::create_directories(root+"/other");Store other(root+"/other",transport);assert(other.source(true)=="nuvio" && !other.status()["accounts"]["trakt"]["connected"].get<bool>());
     write_file(root+"/other/tracking.json","unreadable");Store broken(root+"/other",transport);

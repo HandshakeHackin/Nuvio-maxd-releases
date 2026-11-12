@@ -528,6 +528,9 @@ bool Store::flush(const std::string& p, std::string& error) {
         if(count>1&&(response.status==400||response.status==404||response.status==422||batch_missing())) {
             count=1;body=single_body;response=request(p,path,&body);reply=parsed(response);
         }
+        if(s.contains("trackingWatched") && response.ok() && (!reply.is_object()||reply.empty()||reply.contains("error"))) {
+            error=name(p)+" did not confirm watched changes; they remain saved on this PS5";return false;
+        }
         const auto& not_found=jobj(reply,"not_found");
         bool missing_item=not_found.is_number() && not_found.get<double>()>0;
         if(not_found.is_object()) for(const auto& value:not_found) if(!value.empty()) missing_item=true;

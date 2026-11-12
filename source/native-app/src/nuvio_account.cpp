@@ -970,12 +970,13 @@ ApiResult api_watched_batch(const std::string& key,const json& entries,bool watc
     auto state=watched_state();
     if(!jobj(state,"entries").is_array()||!jobj(state,"pending").is_array()||!jobj(state,"deletes").is_array())
         return failure("Watched history cache is unreadable; cloud history was not changed");
+    // Remove superseded keys once for the complete batch. A 5,000-episode
+    // action must not rescan a 45,000-entry history 5,000 times.
+    for(const auto* field:{"entries","pending","deletes"}) {
+        auto& rows=state[field];
+        rows.erase(std::remove_if(rows.begin(),rows.end(),[&](const auto& row){return unique.count(watched_key(row))!=0;}),rows.end());
+    }
     for(const auto& entry:clean) {
-        const auto id=watched_key(entry);
-        for(const auto* field:{"entries","pending","deletes"}) {
-            auto& rows=state[field];
-            rows.erase(std::remove_if(rows.begin(),rows.end(),[&](const auto& row){return watched_key(row)==id;}),rows.end());
-        }
         if(watched){state["entries"].push_back(entry);state["pending"].push_back(entry);}
         else state["deletes"].push_back({{"content_id",entry["content_id"]},{"season",entry["season"]},{"episode",entry["episode"]}});
     }

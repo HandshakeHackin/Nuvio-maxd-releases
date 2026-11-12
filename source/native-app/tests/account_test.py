@@ -1207,6 +1207,14 @@ class AccountTests(unittest.TestCase):
         self.assertTrue(self.command('watched_batch',entries=[movie],watched=True)['ok'])
         self.assertTrue(self.command('watched_batch',entries=[movie],watched=False)['ok'])
         self.assertEqual(len(self.state['watched_1']),1)
+        # A larger unrelated history is preserved by a bulk action.
+        self.state['watched_1']=[dict(content_id='tt'+str(n+1000),content_type='movie',title='Other device',season=None,episode=None,watched_at=1700000000000) for n in range(500)]
+        self.command('watched_get')
+        batch=[dict(content_id='tt_bulk',content_type='series',title='Bulk',season=1,episode=n+1) for n in range(100)]
+        self.assertTrue(self.command('watched_batch',entries=batch,watched=True)['ok'])
+        self.assertEqual(len(self.state['watched_1']),600)
+        self.assertTrue(self.command('watched_batch',entries=batch,watched=False)['ok'])
+        self.assertEqual(len(self.state['watched_1']),500)
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)
