@@ -123,6 +123,7 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
     assert 'People metadata: movie/TV credits' in test_log
     assert 'People UI: cast/person focus' in test_log
     assert 'Title actions: production menus, library toggle' in test_log
+    assert all(mode+': GL error 0x0' in test_log for mode in ['title-actions','title-actions-movie','watched-confirm','de-title-actions','ar-title-actions','zh-Hans-title-actions','ja-title-actions','ko-title-actions'])
     assert 'People Session: cancelled/stale/profile completions' in test_log
     assert all(mode+': GL error 0x0' in test_log for mode in ['de-person','de-cast','de-language','de-login','de-profile-pin','de-usb-language','de-person-last','de-cast-last'])
     assert 'person: GL error 0x0' in test_log and 'cast: GL error 0x0' in test_log and 'language: GL error 0x0' in test_log
@@ -133,7 +134,7 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
     assert 'HDR fallback: strict/SDR modes, failed restoration, retained picture, session reset and unchanged preferences passed' in test_log
     assert 'Controller lightbar: throttling, failure suppression, reconnect, reset and logo/reduced-motion envelopes passed' in test_log
     assert 'Production startup: actual entry point passes conditional-indentation compiler check' in test_log
-    assert re.search(r'Ran 80 tests', test_log) and '\nOK\n' in test_log
+    assert re.search(r'Ran 85 tests', test_log) and '\nOK\n' in test_log
     assert 'NetworkTests.test_parallel_dns_failure_does_not_walk_entire_file' in test_log
     assert re.search(r'Ran 8 tests', test_log)
     assert 'EVO integration: SDR/10-bit B-frame decode, EOF, reopen after seek, owned planes, 24/120 cadence, early/late frames and P5 rejection passed' in test_log
@@ -173,11 +174,13 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
         'containerErrors': 0, 'containerWarnings': 0,
         'extractedFileCount': len(actual), 'allExtractedFileHashesMatch': True,
         'executable': 'x86-64 ET_SCE_EXEC inside native PS5 SELF',
-        'hostHttpsTestsPassed': 80, 'hostUiNavigationTestsPassed': 12,
+        'hostHttpsTestsPassed': 85, 'hostUiNavigationTestsPassed': 12,
         'hostUsbReaderTestsPassed': True, 'hostUsbMountDiagnosticsTestsPassed': True, 'usbPlaylistHardwareVerified': False,
         'hostTorrentIntegrationTestsPassed': True, 'hostHdrFallbackTestsPassed': True,
         'hostRemoteRemappingTestsPassed': True, 'hostRemoteSettingsTestsPassed': True,
         'mediaRemote': info['mediaRemote'],
+        'detailActions': info['detailActions'],
+        'hostTitleActionsTestsPassed': True,
         'torrentHub': info['torrentHub'],
         'hostConnectedServicesTestsPassed': 19, 'connectedServices': info['connectedServices'],
         'hostInstantPlaybackTestsPassed': 26,
