@@ -1206,6 +1206,8 @@ class AccountTests(unittest.TestCase):
         movie=dict(content_id='tt789',content_type='movie',season=None,episode=None,title='Movie')
         self.assertTrue(self.command('watched_batch',entries=[movie],watched=True)['ok'])
         self.assertTrue(self.command('watched_batch',entries=[movie],watched=False)['ok'])
+        deleted=[body for path,body,_ in self.state['calls'] if path.endswith('sync_delete_watched_items')][-1]['p_keys'][0]
+        self.assertNotIn('season',deleted);self.assertNotIn('episode',deleted)
         self.assertEqual(len(self.state['watched_1']),1)
         # A larger unrelated history is preserved by a bulk action.
         self.state['watched_1']=[dict(content_id='tt'+str(n+1000),content_type='movie',title='Other device',season=None,episode=None,watched_at=1700000000000) for n in range(500)]

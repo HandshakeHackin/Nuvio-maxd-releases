@@ -883,7 +883,10 @@ bool save_watched(const json& state) {
 bool sync_watched(json& state) {
     if (!jobj(state, "entries").is_array() || !jobj(state, "pending").is_array() || !jobj(state, "deletes").is_array()) return false;
     if (!state["deletes"].empty()) {
-        const json body{{"p_profile_id", active_profile}, {"p_keys", state["deletes"]}};
+        auto keys=state["deletes"];
+        // Match WatchedItemsSyncService: omit nullable movie coordinates on wire.
+        for(auto& key:keys)for(const auto* field:{"season","episode"})if(jobj(key,field).is_null())key.erase(field);
+        const json body{{"p_profile_id", active_profile}, {"p_keys", keys}};
         const auto h = authorized("/rest/v1/rpc/sync_delete_watched_items", &body);
         if (!h.ok()) return false;
         state["deletes"] = json::array(); if (!save_watched(state)) return false;
