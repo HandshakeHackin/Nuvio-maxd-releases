@@ -1,6 +1,7 @@
 // Nuvio account protocol: device pairing, refresh rotation and addon sync.
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "nuvio_account.h"
+#include "config_backup.h"
 #include "stremio.h"
 #include "http.h"
 #include "watch_sync.h"
@@ -684,6 +685,25 @@ std::string nuvio_profile_path() {
 }
 std::string nuvio_profile_key() {
     std::lock_guard<std::mutex> lock(mutex); return saved ? context_key() : "";
+}
+ApiResult api_configuration_capture(const std::string& key,const std::string& expected,const std::atomic<bool>* cancel) {
+    std::lock_guard<std::mutex> lock(mutex);
+    if(profile_dir!=expected || (saved?(key.empty()||key!=context_key()||owner_id().empty()):(!key.empty()||profile_dir!=dir+"/guest")))return failure("Profile changed. Reopen configuration backup.");
+    auto r=config_backup::capture(profile_dir,config_backup::scope(saved?owner_id():"",active_profile),cancel);
+    if(!r.error.empty())return failure(r.error);
+    return success(json{{"snapshot",r.snapshot},{"hash",r.hash}});
+}
+ApiResult api_configuration_restore(const std::string& key,const std::string& expected,const json& snapshot,const std::string& expected_hash) {
+    std::lock_guard<std::mutex> lock(mutex);
+    if(profile_dir!=expected || (saved?(key.empty()||key!=context_key()||owner_id().empty()):(!key.empty()||profile_dir!=dir+"/guest")))return failure("Profile changed. Restore cancelled.");
+    const auto scope=config_backup::scope(saved?owner_id():"",active_profile);
+    auto current=config_backup::capture(profile_dir,scope);if(!current.error.empty())return failure(current.error);
+    if(current.hash!=expected_hash)return failure("Configuration changed. Review the backup again before restoring.");
+    std::string error;if(!config_backup::restore(profile_dir,snapshot,scope,error))return failure(error);
+    // Retire all work queued against the pre-restore context, without bypassing
+    // the PIN verification which established this exact profile.
+    ++context_revision;watch_sync.reset();auto result=context_result();if(!saved)result["authKey"]="";
+    return success(result);
 }
 ApiResult api_profiles_get(const std::string& key) {
     std::lock_guard<std::mutex> lock(mutex);

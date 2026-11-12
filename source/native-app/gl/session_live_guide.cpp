@@ -1,5 +1,6 @@
 #include "../ui/i18n.hpp"
 #include "session.hpp"
+#include "stalker.h"
 #include <algorithm>
 namespace sx {
 void Session::live_guide_reset() {
@@ -163,7 +164,7 @@ void Session::live_guide_update(int focus) {
             live_build();
           });
     }
-  } else if (jstr(source, "type") == "xtream") {
+  } else if (jstr(source, "type") == "xtream" || jstr(source,"type")=="stalker") {
     const auto cancel = live_guide_cancel_;
     const auto generation = live_guide_generation_,
                profile = profile_generation_;
@@ -181,6 +182,7 @@ void Session::live_guide_update(int focus) {
       ++live_guide_inflight_;
       bg<live_guide::Result>(
           [source, channel, cancel, offset] {
+            if(jstr(source,"type")=="stalker")return stalker::guide(stalker::source(source),channel,now_epoch_ms()/1000-offset,cancel.get());
             return live_guide::fetch_xtream(
                 jstr(source, "url"), jstr(source, "username"),
                 jstr(source, "password"), channel, now_epoch_ms() / 1000-offset,

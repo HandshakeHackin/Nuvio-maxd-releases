@@ -487,3 +487,26 @@ Library changes go to Nuvio and a supported selected Library tracker
 (Trakt/MDBList). Watched marks follow Watch Progress. SIMKL library is read-only
 here. Resume positions remain separate. See source/native-app/TITLE_ACTIONS.md
 for bounds, offline retry and profile behavior.
+
+
+## Configuration backup and sync (1.0.0.20)
+
+Stop playback, choose the intended profile, then open Settings → Configuration backup and sync. Create a local encrypted backup with a separate passphrase of at least 12 characters; confirm it and keep it separately. The private file is `configuration-backup.nmb` in that profile's app-data folder. To move it with your existing console file manager, copy that encrypted file only. Do not share the profile folder or paste connection credentials into an issue.
+
+Restore reads that same filename and asks before replacing the current profile configuration. A backup belongs to its original Nuvio account/profile (or guest scope). It includes addon preferences, source settings, Live TV connections, imported USB playlist copies and TVDB settings. Account sessions, profile PINs, resolver/tracker sessions, watched history, resume positions, caches and global console settings are excluded. The backup format has a 16 MiB plaintext limit; larger imported playlists cannot be backed up in this version.
+
+Google Drive sync is manual. Register a suitable Google OAuth client for TVs/limited-input devices with `drive.file` access, enter its client ID and secret in Google OAuth application setup, then connect using the displayed phone code. No Google registration is bundled; its allowed scopes/testing status must permit this flow. Max'd never asks for your Google password. Choose Sync configuration and enter the backup passphrase. Review upload/restore/conflict choices. Only your encrypted backup is uploaded. If a concurrent update, missing revision tag, malformed backup or wrong passphrase prevents a safe operation, the current versions are retained. Disconnect removes the local Drive connection and retains cloud backups.
+
+## TVDB episode ordering (1.0.0.20)
+
+Enter your own TVDB API key and optional subscriber PIN in Settings → TheTVDB episode ordering; test the connection. On a series title press Options → Episode order (TheTVDB). Available orders come from TVDB. Provider order is always available. The per-series preference is local to the selected profile.
+
+Only unambiguous one-to-one mappings are applied. Canonical provider titles/dates must agree with aired metadata; stable TVDB episode IDs or unique title/date anchors establish the alternate correspondence. Split/combined or incomplete mappings retain provider order with a message. Selected numbering drives source searches and next-episode navigation; watched marks, trackers and resume use original episode identities. A source still needs to offer that order. Metadata is provided by TheTVDB.com; your own appropriate API access/license is required.
+
+## Stalker / Ministra portal (1.0.0.20)
+
+Open Live TV → Options → Add Stalker / Ministra portal. Enter a name, portal URL and the MAC assigned by your provider. Optional username/password and serial are used only when required by that subscription. The app does not find or generate account/device credentials. Use the provider's final endpoint if it redirects.
+
+Reload channels, browse groups, favorites and recent selections, and use the programme guide as usual. If the provider exposes movie/series categories, Check IPTV Library availability enables the separate IPTV Library. Live and VOD playback resolve provider links when selected; portal login tokens stay in worker memory and are not passed to media CDNs. Four-screen playback still requires four simultaneous provider connections.
+
+Catalogs retain the existing 100,000 item/128 MiB limits, with at most 2,048 pages per request; guide caches and per-channel listings remain bounded. Portals differ in authentication, season numbering and API responses; unsupported responses produce an error and retain saved data. Recording/catch-up and ambiguous season numbering are not supported. Physical console and provider testing is still required.

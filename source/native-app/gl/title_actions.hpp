@@ -9,7 +9,7 @@ inline json episodes(const Meta& meta,const std::string& content,int season,bool
                      const std::set<std::string>& watched,int64_t now) {
     json out=json::array();std::set<std::pair<int,int>> seen;
     for(const auto& video:meta.videos) {
-        if(video.id.empty()||video.season<0||video.episode<1||(season>=0&&video.season!=season))continue;
+        if(video.id.empty()||video.season<0||video.episode<1||(season>=0&&display_season(video)!=season))continue;
         const auto canonical=content+":"+std::to_string(video.season)+":"+std::to_string(video.episode);
         const auto released=airtime::iso(video.released);
         const bool marked=watched.count(canonical)||watched.count(video.id);

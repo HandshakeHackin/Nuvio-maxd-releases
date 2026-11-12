@@ -68,7 +68,13 @@ struct Video {
 	// Anime addons such as Kitsu number each entry from 1 and supply the
 	// matching IMDb numbering separately; 0 when not supplied.
 	int imdb_season = 0, imdb_episode = 0;
+    // TVDB display/source order; canonical identity and tracking coordinates above
+    // remain unchanged. Negative means use the provider's original numbering.
+    int order_season = -1, order_episode = -1;
+    std::string order_id{};
 };
+inline int display_season(const Video& v) { return v.order_season>=0?v.order_season:v.season; }
+inline int display_episode(const Video& v) { return v.order_episode>0?v.order_episode:v.episode; }
 
 struct Meta {
     json trailers = json::array();
@@ -78,6 +84,10 @@ struct Meta {
 	std::vector<std::string> genres, cast, directors;
 	std::vector<Video> videos;
 };
+inline std::string stream_video_id(const Meta& meta,const std::string& id) {
+    for(const auto& v:meta.videos)if(v.id==id && !v.order_id.empty())return v.order_id;
+    return id;
+}
 
 Meta parse_meta(const json& j);
 

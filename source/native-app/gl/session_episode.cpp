@@ -114,7 +114,7 @@ void Session::watch_prefetch_next() {
     const auto id = w_next_->id, type = w_item_.type;
     std::vector<::Addon> sources;
     for (const auto &addon : addons_)
-        for (auto source : providers::stream_sources(*addon, type, id))
+        for (auto source : providers::stream_sources(*addon, type, stream_video_id(d_meta_,id)))
             sources.push_back(std::move(source));
     for (const auto &source : sources)
     {
@@ -175,7 +175,7 @@ bool Session::watch_episode_update(double now, double position, double duration,
     }
     playing.next_label.clear(); playing.next_status.clear();
     if (w_episode_.next_visible && !playing.episode_dismissed) {
-        playing.next_label = sx::i18n::tr("Next: S") + std::to_string(w_next_->season) + " E" + std::to_string(w_next_->episode);
+        playing.next_label = sx::i18n::tr("Next: S") + std::to_string(display_season(*w_next_)) + " E" + std::to_string(display_episode(*w_next_));
         if (!w_next_->title.empty()) playing.next_label += "  " + w_next_->title;
         if (!complete || !fresh) playing.next_status = sx::i18n::tr("Finding next episode streams...");
         else if (pick < 0) playing.next_status = sx::i18n::tr("Choose a stream to keep your preferred quality");

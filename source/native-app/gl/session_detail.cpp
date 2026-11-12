@@ -35,7 +35,7 @@ std::string date_label(const std::string &released)
 
 std::string episode_title(const ::Video &v)
 {
-    return v.title.empty() ? sx::i18n::tr("Episode ") + std::to_string(v.episode) : v.title;
+    return v.title.empty() ? sx::i18n::tr("Episode ") + std::to_string(display_episode(v)) : v.title;
 }
 
 } // namespace
@@ -68,6 +68,7 @@ void Session::detail_toggle_watched(int index)
 
 void Session::open_title(const Title &t, const std::string &streams_video)
 {
+    ++tvdb_generation_;tvdb_busy_=false;
     *cast_cancel_=true;++cast_generation_;
     detail_preparation_cancel();
     *d_cancel_ = true;
@@ -188,6 +189,7 @@ void Session::open_title(const Title &t, const std::string &streams_video)
                 d_meta_.type = d_item_.type;
             d_meta_loaded_ = true;
             if(d_item_.type=="series")series_updates_.put(d_item_.id,d_meta_.videos,now_seconds());
+            if(detail_tvdb_restore())return;
             detail_apply_meta();
             if(detail.people.empty()&&!detail.people_loading)cast_load();
             refresh_board();refresh_library();
@@ -292,8 +294,8 @@ void Session::detail_apply_meta()
         detail.series = true;
         d_seasons_.clear();
         for (const auto &v : m.videos)
-            if (std::find(d_seasons_.begin(), d_seasons_.end(), v.season) == d_seasons_.end())
-                d_seasons_.push_back(v.season);
+            if (std::find(d_seasons_.begin(), d_seasons_.end(), display_season(v)) == d_seasons_.end())
+                d_seasons_.push_back(display_season(v));
         // Specials (season 0) last.
         std::stable_sort(d_seasons_.begin(), d_seasons_.end(), [](int a, int b) {
             if (a == 0)
@@ -318,14 +320,14 @@ void Session::detail_apply_meta()
             if (v.id == resume_video)
             {
                 for (std::size_t i = 0; i < d_seasons_.size(); ++i)
-                    if (d_seasons_[i] == v.season)
+                    if (d_seasons_[i] == display_season(v))
                         season_idx = static_cast<int>(i);
-                want_episode = v.episode;
+                want_episode = display_episode(v);
             }
         detail_set_season(season_idx);
         if (want_episode >= 0)
             for (std::size_t i = 0; i < d_season_videos_.size(); ++i)
-                if (d_season_videos_[i]->episode == want_episode)
+                if (display_episode(*d_season_videos_[i]) == want_episode)
                 {
                     detail.episode_hint = static_cast<int>(i);
                     ++detail.hint_serial;
@@ -336,7 +338,7 @@ void Session::detail_apply_meta()
             for (const auto &v : m.videos)
                 if (v.id == want_streams_video_)
                 {
-                    std::string heading = "S" + std::to_string(v.season) + " E" + std::to_string(v.episode);
+                    std::string heading = "S" + std::to_string(display_season(v)) + " E" + std::to_string(display_episode(v));
                     if (!v.title.empty())
                         heading += "  \xC2\xB7  " + v.title;
                     detail_load_streams(v.id, heading);
@@ -369,7 +371,7 @@ void Session::detail_set_season(int index)
     const int season = d_seasons_[static_cast<std::size_t>(index)];
     d_season_videos_.clear();
     for (const auto &v : d_meta_.videos)
-        if (v.season == season)
+        if (display_season(v) == season)
             d_season_videos_.push_back(&v);
     // What was left half-watched, shown on its episode.
     std::string resume_video;
@@ -386,7 +388,7 @@ void Session::detail_set_season(int index)
     {
         const ::Video *v = d_season_videos_[i];
         Episode e;
-        e.number = v->episode;
+        e.number = display_episode(*v);
         e.title = episode_title(*v);
         e.info = date_label(v->released);
         e.synopsis = v->overview;
@@ -419,7 +421,7 @@ void Session::detail_pick_episode(int index)
     if (index < 0 || index >= static_cast<int>(d_season_videos_.size()))
         return;
     const ::Video *v = d_season_videos_[static_cast<std::size_t>(index)];
-    std::string heading = "S" + std::to_string(v->season) + " E" + std::to_string(v->episode);
+    std::string heading = "S" + std::to_string(display_season(*v)) + " E" + std::to_string(display_episode(*v));
     if (!v->title.empty())
         heading += "  \xC2\xB7  " + v->title;
     detail_load_streams(v->id, heading);
@@ -463,7 +465,7 @@ void Session::detail_load_streams(const std::string &video_id, const std::string
         type = d_item_.type;
     std::vector<::Addon> sources;
     for (const auto &a : addons_)
-        for (auto source : providers::stream_sources(*a, type, video_id))
+        for (auto source : providers::stream_sources(*a, type, stream_video_id(d_meta_,video_id)))
         {
             detail.stream_addons.push_back(source.name);
             sources.push_back(std::move(source));
@@ -475,7 +477,7 @@ void Session::detail_load_streams(const std::string &video_id, const std::string
         for(const auto& p:a.providers)scripts.push_back(json::array({p.id,p.version,p.filename,p.settings}));
         source_identity.push_back(json::array({a.transport_url,a.id,a.name,a.version,scripts}));
     }
-    d_stream_cache_key_=json::array({profile_dir_,type,video_id,source_identity}).dump();
+    d_stream_cache_key_=json::array({profile_dir_,type,video_id,stream_video_id(d_meta_,video_id),source_identity}).dump();
     detail.streams_loading = d_pending_ > 0;
     if (prefetched)
     {

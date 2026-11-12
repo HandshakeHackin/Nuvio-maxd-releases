@@ -216,3 +216,9 @@ VLC late-clock rebuffering and post-preroll discard policy patches are adapted f
 The next revision compares [NuvioTV beta.9](https://github.com/NuvioMedia/NuvioTV/releases/tag/1.1.0-beta.9), its [Night Mode](https://github.com/NuvioMedia/NuvioTV/pull/4366) and [LFE downmix](https://github.com/NuvioMedia/NuvioTV/pull/4367) changes, [NuvioTVSmart 1.3.1](https://github.com/NuvioMedia/NuvioTVSmart/releases/tag/1.3.1) chapter/title, subtitle timing and trailer-language behavior, and [ProsperoTV guide correction](https://github.com/ThatGuyKalvin/ProsperoTV/commit/d8410e5b4bd6). The linked-channel C++ PCM processor, conservative cue-timing matcher, session integration and guide offset handling are Max’d-specific implementations. Chapter label classification adapts the GPL-3.0 Smart TV rules; ordinary chapters and post-credit scenes retain their protection. Existing upstream copyright notices remain.
 
 Three ISC-licensed libass hardening patches retain their original source notice in [third_party/libass/LICENSE](third_party/libass/LICENSE). Patch commits and checksums are recorded in dependencies.json and [the patch notes](third_party/libass/README.md). The next package includes the ISC notice.
+
+## 1.0.0.20 feature references
+
+[abbaskip/Nuvio-ReSeq](https://github.com/abbaskip/Nuvio-ReSeq/tree/3c7bd94dd1ae596fef6ff983518b121b5e261040) (GPL-3.0), especially its TVDB, Stalker portal and Drive-sync behavior, was reviewed as a compatibility reference. The native C++ feature modules are implemented in this source tree and keep the app's GPL-3.0-or-later notices. No Android runtime or provider application credentials were imported.
+
+Optional episode-order metadata is supplied by [TheTVDB.com](https://thetvdb.com/), with the user's own appropriate API access. Google Drive is an optional user-authorised encrypted backup destination. Max'd is not endorsed by these services or portal/content providers.

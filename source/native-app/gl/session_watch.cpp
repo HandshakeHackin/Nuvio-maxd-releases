@@ -212,7 +212,7 @@ void Session::play_stream(const ::Stream &st, bool transcode, bool trailer)
             {
                 season = v.season;
                 episode = v.episode;
-                subtitle = "S" + std::to_string(v.season) + " E" + std::to_string(v.episode) +
+                subtitle = "S" + std::to_string(display_season(v)) + " E" + std::to_string(display_episode(v)) +
                            (v.title.empty() ? "" : "  \xC2\xB7  " + v.title);
             }
     }
@@ -223,6 +223,8 @@ void Session::play_stream(const ::Stream &st, bool transcode, bool trailer)
 
     // Adopt the selected request before cancelling the other browsing candidates.
     w_season_ = season; w_episode_number_ = episode;
+    if(detail.series && !w_trailer_)for(const auto& v:d_meta_.videos)if(v.id==w_video_id_){season=display_season(v);episode=display_episode(v);}
+    w_source_season_=season;w_source_episode_=episode;
     if (resolving) prepared_->promote(st, season, episode);
     detail_preparation_cancel();
 
@@ -286,7 +288,7 @@ void Session::play_stream(const ::Stream &st, bool transcode, bool trailer)
     w_episode_tick_ = now_seconds();
     if (w_episode_cancel_) *w_episode_cancel_ = true;
     w_episode_cancel_ = std::make_shared<std::atomic<bool>>(false);
-    if(!w_trailer_ && w_item_.type != "tv" && w_item_.type != "media-video" && w_item_.type != "torrent" && !iptv::library_type(w_item_.type)) watch_load_segments(season, episode);
+    if(!w_trailer_ && w_item_.type != "tv" && w_item_.type != "media-video" && w_item_.type != "torrent" && !iptv::library_type(w_item_.type)) watch_load_segments(w_season_, w_episode_number_);
     if (detail.series && !w_trailer_)
         if (const auto* next = episode_playback::next_video(d_meta_.videos, w_video_id_, now_epoch_ms())) w_next_ = *next;
     art_dirty_ = true;
@@ -928,7 +930,7 @@ void Session::watch_stop(bool ended)
     }
     ++w_gen_;
     watch_reset_anime();
-    prepared_->cancel(w_stream_, w_season_, w_episode_number_);
+    prepared_->cancel(w_stream_, w_source_season_, w_source_episode_);
     next_preparation_cancel();
     if (w_episode_cancel_) *w_episode_cancel_ = true;
     if (launch_cancel_)
@@ -1606,7 +1608,7 @@ void Session::watch_next_episode()
         w_next_answered_ >= w_next_pending_ && now_seconds() - w_next_fetched_ < 90;
     const auto candidates = w_next_streams_;
     if (cached && w_next_pick_ >= 0 && w_next_pick_ < static_cast<int>(candidates.size()))
-        prepared_->promote(candidates[w_next_pick_], next.season, next.episode);
+        prepared_->promote(candidates[w_next_pick_], display_season(next), display_episode(next));
     if (watching)
     {
         watch_save_progress(true, true);
@@ -1614,7 +1616,7 @@ void Session::watch_next_episode()
     }
 
     for (std::size_t i = 0; i < d_seasons_.size(); ++i)
-        if (d_seasons_[i] == next.season && static_cast<int>(i) != d_season_idx_)
+        if (d_seasons_[i] == display_season(next) && static_cast<int>(i) != d_season_idx_)
             detail_set_season(static_cast<int>(i));
     for (std::size_t i = 0; i < d_season_videos_.size(); ++i)
         if (d_season_videos_[i]->id == next.id)
@@ -1625,7 +1627,7 @@ void Session::watch_next_episode()
 
     autoplay_pending_ = true;
     autoplay_previous_ = previous;
-    std::string heading = "S" + std::to_string(next.season) + " E" + std::to_string(next.episode);
+    std::string heading = "S" + std::to_string(display_season(next)) + " E" + std::to_string(display_episode(next));
     if (!next.title.empty())
         heading += "  \xC2\xB7  " + next.title;
     say(sx::i18n::tr("Next: ") + heading);

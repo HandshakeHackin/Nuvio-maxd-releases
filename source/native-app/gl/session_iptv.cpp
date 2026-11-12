@@ -1,6 +1,7 @@
 #include "../ui/i18n.hpp"
 // IPTV VOD is deliberately isolated from addon discovery, history and trackers.
 #include "session.hpp"
+#include "stalker.h"
 #include <algorithm>
 #include <cmath>
 #include <set>
@@ -116,7 +117,7 @@ void Session::iptv_probe_source(
   }
   const auto account = iptv_probe_accounts_[index];
   g_tasks.run<iptv::Capabilities>(
-      [account, cancel] { return iptv::probe(account, cancel.get()); },
+      [account, cancel] { return account.type=="stalker" ? stalker::probe({account.server,account.mac,account.user,account.password,account.serial},cancel.get()) : iptv::probe(account, cancel.get()); },
       [this, index, generation, profile, cancel,
        id = account.id](iptv::Capabilities &result) {
         if (generation != iptv_probe_generation_ ||
@@ -157,7 +158,7 @@ void Session::iptv_build(bool reset) {
   iptv_content.filters.clear();
   iptv_indices_.clear();
   if (!iptv_visible) {
-    iptv_content.status = sx::i18n::tr("Import a VOD-enabled Xtream account under Live TV.");
+    iptv_content.status = sx::i18n::tr("Import a VOD-enabled Xtream account or Stalker/Ministra portal under Live TV.");
     changed_ |= kIptv | kIptvNew;
     return;
   }
@@ -338,7 +339,7 @@ void Session::iptv_reload(bool refresh) {
           r.cached = true;
           return r;
         }
-        r.catalog = iptv::fetch(account, kind, category, cancel.get());
+        r.catalog = account.type=="stalker" ? stalker::catalog({account.server,account.mac,account.user,account.password,account.serial},kind,category,cancel.get()) : iptv::fetch(account, kind, category, cancel.get());
         if (r.catalog.error.empty())
           r.cache_saved = iptv::save_cache(dir, account.id, kind, category,
                                            r.catalog, cancel.get());
@@ -704,7 +705,7 @@ void Session::iptv_activate(int index) {
   } else
     iptv_play(entry);
 }
-void Session::iptv_play(const iptv::Entry &entry) {
+void Session::iptv_play(const iptv::Entry &entry, const std::string& resolved, const std::vector<std::string>& headers) {
   auto a = std::find_if(
       iptv_accounts_.begin(), iptv_accounts_.end(),
       [&](const auto &account) { return account.id == iptv_source_; });
@@ -712,7 +713,17 @@ void Session::iptv_play(const iptv::Entry &entry) {
     return;
   const auto kind =
       iptv_series_.empty() ? iptv::Kind::movies : iptv::Kind::episodes;
-  auto url = iptv::playback_url(*a, kind, entry);
+  if(a->type=="stalker" && resolved.empty()) {
+    if(iptv_loading_)return;
+    const auto account=*a;const auto generation=iptv_generation_,profile=profile_generation_;
+    const auto cancel=iptv_cancel_;iptv_loading_=true;iptv_build();
+    g_tasks.run<stalker::Link>([account,entry,kind,cancel]{return stalker::resolve({account.server,account.mac,account.user,account.password,account.serial},entry.command,true,kind==iptv::Kind::episodes?entry.episode:0,cancel.get());},
+      [this,entry,generation,profile,source=account.id](auto& r){
+        if(generation!=iptv_generation_ || profile!=profile_generation_ || source!=iptv_source_ || !profile_ready_ || !iptv_visible)return;
+        iptv_loading_=false;iptv_build();if(!r.error.empty()){say(r.error,8,true);return;}iptv_play(entry,r.url,r.headers);
+      });return;
+  }
+  auto url = resolved.empty()?iptv::playback_url(*a, kind, entry):resolved;
   if (url.empty()) {
     say(sx::i18n::tr("The IPTV provider supplied an unsupported file format."), 7, true);
     return;
@@ -735,6 +746,7 @@ void Session::iptv_play(const iptv::Entry &entry) {
   detail = DetailContent{};
   ::Stream stream;
   stream.url = std::move(url);
+  stream.request_headers = headers;
   stream.name = d_item_.name;
   stream.addon = sx::i18n::tr("IPTV Library · ") + a->name;
   play_stream(stream, false);

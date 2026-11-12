@@ -4,10 +4,13 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "session.hpp"
 #include "nuvio_account.h"
+#include "config_backup.h"
 #include <algorithm>
 
 namespace sx {
 void Session::load_profile_settings() {
+    std::string recovery_error;
+    if(!config_backup::recover(profile_dir_,recovery_error)){profile_ready_=false;say(recovery_error,15,true);return;}
     live_load();
     media_load();
     torrent_load();
@@ -47,6 +50,7 @@ void Session::save_profile_settings() {
     if (!save_json(profile_dir_ + "/profile-settings.json", j)) say(sx::i18n::tr("Could not save profile preferences"), 8.0, true);
 }
 void Session::clear_profile_views() {
+    features_reset();
     person_leave();*cast_cancel_=true;++cast_generation_;detail_seed_.reset();
     sports_reset();
     media_reset();

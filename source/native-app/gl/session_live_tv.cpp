@@ -3,6 +3,8 @@
 #include "live_usb.hpp"
 #include "usb_reader.hpp"
 #include "session.hpp"
+#include "stalker.h"
+#include "config_backup.h"
 #include <algorithm>
 #include <cstdio>
 #include <fcntl.h>
@@ -71,27 +73,8 @@ void Session::live_save() {
     return;
   live_state_["selected"] = live_source_;
   const auto path = profile_dir_ + "/live-tv.json";
-  const auto tmp = path + ".tmp", body = live_state_.dump(1, '\t');
-  int fd = open(tmp.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0600);
-  bool ok = fd >= 0;
-  if (ok) {
-    ok = fchmod(fd, 0600) == 0;
-    size_t at = 0;
-    while (ok && at < body.size()) {
-      auto n = write(fd, body.data() + at, body.size() - at);
-      if (n <= 0)
-        ok = false;
-      else
-        at += size_t(n);
-    }
-    ok = (close(fd) == 0) && ok;
-  }
-  if (ok)
-    ok = rename(tmp.c_str(), path.c_str()) == 0;
-  if (!ok) {
-    remove(tmp.c_str());
-    say(sx::i18n::tr("Could not save Live TV settings"), 7, true);
-  }
+  if(!config_backup::save(path,live_state_.dump(1,'\t')))
+    say(sx::i18n::tr("Could not save Live TV settings"),7,true);
 }
 void Session::live_build() {
   live_content.items.clear();
@@ -111,7 +94,7 @@ void Session::live_build() {
   manage.version = live_loading_
                        ? sx::i18n::tr("Loading channels...")
                        : std::to_string(live_channels_.size()) + " channels";
-  manage.types = "M3U Xtream";
+  manage.types = "M3U Xtream Stalker";
   manage.description = sx::i18n::tr("X: sources and filters · Triangle: channel search · L1: groups · R1: All / Favorites / Recent");
   if (!live_group_.empty())
     manage.version += " · " + live_group_;
@@ -193,7 +176,7 @@ void Session::live_build() {
   else if (!live_loading_ && live_indices_.empty())
     live_content.items[0].description =
         live_channels_.empty()
-            ? sx::i18n::tr("Add an M3U playlist or Xtream Codes account to start watching.")
+            ? sx::i18n::tr("Add an M3U playlist, Xtream account or Stalker portal to start watching.")
             : sx::i18n::tr("No channels match these filters. Open sources and filters to change them.");
   changed_ |= kLive;
 }
@@ -221,6 +204,7 @@ void Session::live_reload() {
   live_build();
   g_tasks.run<live_tv::Result>(
       [source, cancel, directory=profile_dir_] {
+        if(jstr(source,"type")=="stalker")return stalker::channels(stalker::source(source),cancel.get());
         if(jstr(source,"type")=="usb")return live_usb::load(directory,jstr(source,"id"),cancel.get());
         if (jstr(source, "type") == "xtream")
           return live_tv::fetch_xtream(jstr(source, "url"),
@@ -302,6 +286,18 @@ void Session::live_activate(int index, bool favorite) {
   live_play(channel);
 }
 void Session::live_play(const live_tv::Channel& channel) {
+  if(channel.url.rfind(stalker::marker,0)==0) {
+    json source;for(const auto& s:live_state_["sources"])if(jstr(s,"id")==live_source_)source=s;
+    if(jstr(source,"type")!="stalker" || live_loading_)return;
+    const auto generation=live_generation_,profile=profile_generation_;const auto cancel=live_cancel_;
+    live_loading_=true;live_build();
+    bg<stalker::Link>([source,channel,cancel]{return stalker::resolve(stalker::source(source),channel.url.substr(std::char_traits<char>::length(stalker::marker)),false,0,cancel.get());},
+      [this,channel=channel,generation,profile](auto& r)mutable{
+        if(generation!=live_generation_ || profile!=profile_generation_ || !profile_ready_)return;
+        live_loading_=false;live_build();if(!r.error.empty()){say(r.error,8,true);return;}
+        channel.url=r.url;channel.headers=r.headers;live_play(channel);
+      });return;
+  }
   const auto key=channel_key(live_source_,channel);
   // Live channels never enter title Continue Watching, Trakt or episode flows.
   d_item_ = Item{};
@@ -334,14 +330,16 @@ void Session::live_add(json source, int step) {
     return;
   const auto profile = profile_generation_;
   const bool xtream = jstr(source, "type") == "xtream";
+  const bool portal = jstr(source,"type")=="stalker";
   const std::vector<std::string> prompts =
-      xtream
+      portal ? std::vector<std::string>{sx::i18n::tr("Live TV source name"),"Stalker / Ministra portal URL","Provider-assigned MAC address","Portal username (optional)","Portal password (optional)","Portal serial number (optional)"} : xtream
           ? std::vector<std::string>{sx::i18n::tr("Live TV source name"),
                                      "Xtream server URL (http:// or https://)",
                                      sx::i18n::tr("Xtream username"), sx::i18n::tr("Xtream password")}
           : std::vector<std::string>{sx::i18n::tr("Live TV source name"),
                                      "M3U playlist URL (http:// or https://)"};
   if (step == int(prompts.size())) {
+    if(portal && !stalker::valid(stalker::source(source))){say("Enter the portal URL and MAC address supplied by your provider.",8,true);return;}
     if (live_state_["sources"].size() >= 16) {
       say(sx::i18n::tr("You can save up to 16 Live TV sources"), 5);
       return;
@@ -360,16 +358,16 @@ void Session::live_add(json source, int step) {
     live_reload();
     return;
   }
-  const char *key = step == 0   ? "name"
+  const char *key = portal ? (step==0?"name":step==1?"url":step==2?"mac":step==3?"username":step==4?"password":"serial") : step == 0   ? "name"
                     : step == 1 ? "url"
                     : step == 2 ? "username"
                                 : "password";
   ask_text(
-      [this, source, step, key, profile](const std::string &value) mutable {
+      [this, source, step, key, profile,portal](const std::string &value) mutable {
         if (profile != profile_generation_ || !profile_ready_)
           return;
-        auto v = step == 3 ? value : trim(value);
-        if (v.empty() || v.size() > (step == 1 ? 8192u : 256u)) {
+        auto v = std::string(key)=="password" ? value : trim(value);
+        if ((v.empty() && !(portal && step>=3)) || v.size() > (step == 1 ? 8192u : 256u)) {
           say(sx::i18n::tr("The field is empty or too long. Add the source again."), 6);
           return;
         }
@@ -380,9 +378,10 @@ void Session::live_add(json source, int step) {
         source[key] = step == 0 ? label(v) : v;
         live_add(source, step + 1);
       },
-      prompts[step]);
+      prompts[step],std::string(key)=="password" || std::string(key)=="serial");
 }
 void Session::live_menu() {
+  if(backup_busy_){say(sx::i18n::tr("Backup operation in progress..."));return;}
   if (!profile_ready_) {
     say(sx::i18n::tr("Choose a profile before configuring Live TV"), 6);
     return;
@@ -394,10 +393,11 @@ void Session::live_menu() {
       sx::i18n::tr("Channel groups"),    sx::i18n::tr("Search channels"),
       sx::i18n::tr("All channels"),      sx::i18n::tr("Favorites"),
       sx::i18n::tr("Recent channels"),   sx::i18n::tr("Remove current source"),
-      sx::i18n::tr("Next channel page"), sx::i18n::tr("Previous channel page"), sx::i18n::tr("Four-screen TV (experimental)"), sx::i18n::tr("Check IPTV Library availability"), sx::i18n::tr("Set XMLTV guide URL"), sx::i18n::tr("Refresh programme guide"), jbool(live_state_,"guide_enabled",true)?sx::i18n::tr("Programme guide: On"):sx::i18n::tr("Programme guide: Off"), sx::i18n::tr("Correct provider guide clock"), jbool(live_state_,"guide_grid",false)?sx::i18n::tr("Guide layout: Time grid"):sx::i18n::tr("Guide layout: Channel tiles"), sx::i18n::tr("Import playlist from USB"), sx::i18n::tr("Replace current USB playlist")};
+      sx::i18n::tr("Next channel page"), sx::i18n::tr("Previous channel page"), sx::i18n::tr("Four-screen TV (experimental)"), sx::i18n::tr("Check IPTV Library availability"), sx::i18n::tr("Set XMLTV guide URL"), sx::i18n::tr("Refresh programme guide"), jbool(live_state_,"guide_enabled",true)?sx::i18n::tr("Programme guide: On"):sx::i18n::tr("Programme guide: Off"), sx::i18n::tr("Correct provider guide clock"), jbool(live_state_,"guide_grid",false)?sx::i18n::tr("Guide layout: Time grid"):sx::i18n::tr("Guide layout: Channel tiles"), sx::i18n::tr("Import playlist from USB"), sx::i18n::tr("Replace current USB playlist"),sx::i18n::tr("Add Stalker / Ministra portal")};
   open_dropdown(sx::i18n::tr("Live TV"), options, 0, [this, generation](int i) {
     if (generation != profile_generation_)
       return;
+    if(i==21){live_add(json{{"type","stalker"}},0);return;}
     if(i==19||i==20){live_usb_import(i==20);return;}
     if(i==18){live_state_["guide_grid"]=!jbool(live_state_,"guide_grid",false);live_save();live_build();return;}
     if (i == 17) {live_guide_clock();return;}
@@ -504,7 +504,7 @@ void Session::live_menu() {
     }
   });
   dropdown.message =
-      sx::i18n::tr("Use your own M3U playlist or Xtream Codes subscription. Sources, favorites and recent channels are saved locally for this profile. IPTV Library appears separately when the service provides movies or series.");
+      sx::i18n::tr("Use your own M3U playlist, Xtream subscription or Stalker/Ministra portal. Sources, favorites and recent channels are saved locally for this profile. IPTV Library appears separately when the service provides movies or series.");
 }
 } // namespace sx
 

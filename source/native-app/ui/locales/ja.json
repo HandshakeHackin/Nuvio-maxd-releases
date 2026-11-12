@@ -438,6 +438,18 @@
     "Library: Nuvio + Trakt/MDBList when selected. Watched: selected progress service.": "ライブラリ：Nuvioと選択中のTrakt/MDBList。視聴状況：選択中の進捗サービス。",
     "Library: Nuvio only; SIMKL is read-only here. Watched: selected progress service.": "ライブラリ：Nuvioのみ。SIMKLは読み取り専用です。視聴状況：選択中の進捗サービス。",
     " released episodes. Resume positions stay unchanged.": " 話の公開済みエピソード。再生位置は変更されません。",
-    " listed episodes. Resume positions stay unchanged.": " 話の掲載エピソード。再生位置は変更されません。"
+    " listed episodes. Resume positions stay unchanged.": " 話の掲載エピソード。再生位置は変更されません。",
+    "Add Stalker / Ministra portal": "Stalker / Ministra ポータルを追加",
+    "Backup passphrase": "バックアップのパスフレーズ",
+    "Configuration backup and sync": "設定のバックアップと同期",
+    "Configuration sync conflict": "設定の同期が競合しています",
+    "Connect Google Drive": "Google Drive に接続",
+    "Create local encrypted backup": "暗号化したローカルバックアップを作成",
+    "Episode order (TheTVDB)": "エピソード順（TheTVDB）",
+    "Provider order (default)": "プロバイダーの順序（既定）",
+    "Restore configuration": "設定を復元",
+    "Restore local encrypted backup": "暗号化したローカルバックアップから復元",
+    "Sync configuration with Google Drive": "Google Drive と設定を同期",
+    "TheTVDB episode ordering": "TheTVDB のエピソード順"
   }
 }

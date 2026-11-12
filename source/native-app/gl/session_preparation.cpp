@@ -6,7 +6,7 @@ namespace sx {
 std::pair<int, int> Session::detail_episode_identity() const {
     if (detail.series)
         for (const auto& v : d_meta_.videos)
-            if (v.id == d_video_id_) return {v.season, v.episode};
+            if (v.id == d_video_id_) return {display_season(v), display_episode(v)};
     return {-1, -1};
 }
 
@@ -70,10 +70,10 @@ void Session::next_preparation_update() {
         w_next_pick_ >= static_cast<int>(w_next_streams_.size()) || w_next_prepare_busy_ ||
         now_seconds() < w_next_prepare_at_) return;
     const auto stream = w_next_streams_[w_next_pick_];
-    if (!services_.can_resolve(stream) || prepared_->state(stream, w_next_->season, w_next_->episode) != debrid::PreparedLinks::State::missing) return;
+    if (!services_.can_resolve(stream) || prepared_->state(stream, display_season(*w_next_), display_episode(*w_next_)) != debrid::PreparedLinks::State::missing) return;
     if (!w_next_prepare_scope_) w_next_prepare_scope_ = prepared_->open_scope();
     const auto manager = prepared_; const auto epoch = manager->epoch(), scope = w_next_prepare_scope_;
-    const int season = w_next_->season, episode = w_next_->episode;
+    const int season = display_season(*w_next_), episode = display_episode(*w_next_);
     w_next_prepare_busy_ = true; w_next_prepare_at_ = now_seconds() + 5;
     bg<bool>([manager, stream, season, episode, scope, epoch] {
         manager->prepare(stream, season, episode, scope, epoch); return true;

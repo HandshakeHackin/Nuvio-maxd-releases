@@ -600,8 +600,8 @@ Identity identify(const std::string &video_id, const Meta &meta) {
   }
   for (const auto &v : meta.videos)
     if (v.id == video_id && v.episode > 0) {
-      identity.season = v.season;
-      identity.episode = v.episode;
+      identity.season = display_season(v);
+      identity.episode = display_episode(v);
       break;
     }
   return identity;

@@ -19,8 +19,10 @@ void Session::detail_actions() {
         rows.push_back(i18n::tr("Mark season watched"));rows.push_back(i18n::tr("Mark season unwatched"));
     } else rows.push_back(i18n::tr(watched_.count(d_item_.id)?"Mark unwatched":"Mark watched"));
     rows.push_back(i18n::tr("Watch trailer"));
+    if(series)rows.push_back(i18n::tr("Episode order (TheTVDB)"));
     open_dropdown(i18n::tr("Title actions"),rows,0,[this,profile,title,added,series](int pick){
         if(profile!=profile_generation_||title!=d_meta_gen_||!d_open_||watching||resuming_||title_action_busy_)return;
+        if(series && pick==6){detail_tvdb_menu();return;}
         if(pick==0){detail_membership(!added);return;}
         if((series&&pick==5)||(!series&&pick==2)){detail_trailers();return;}
         if(!series&&pick==1){

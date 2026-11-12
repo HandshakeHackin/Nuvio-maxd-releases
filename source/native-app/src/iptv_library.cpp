@@ -104,6 +104,7 @@ bool number(const std::string &s) {
   return !s.empty() && s.size() <= 20 &&
          s.find_first_not_of("0123456789") == std::string::npos;
 }
+bool catalog_identifier(const std::string& s) {return !s.empty() && s.size()<=512 && s.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_.:-")==std::string::npos;}
 std::string encode(const std::string &s) {
   char *p = curl_easy_escape(nullptr, s.c_str(), int(s.size()));
   if (!p)
@@ -256,7 +257,7 @@ Json entry_json(const Entry &e) {
           {"extension", e.extension},
           {"year", e.year},
           {"season", e.season},
-          {"episode", e.episode}};
+          {"episode", e.episode}, {"command", e.command}};
 }
 Entry entry_from_json(const Json &j) {
   Entry e;
@@ -272,6 +273,8 @@ Entry entry_from_json(const Json &j) {
   };
   e.season = integer("season");
   e.episode = integer("episode");
+  e.command = value(j, "command");
+  if(e.command.size()>8192)e.command.clear();
   return e;
 }
 // Retain only small scalar fields from each list item, skipping nested
@@ -410,6 +413,12 @@ std::vector<Account> accounts(const Json &sources) {
   for (const auto &s : sources) {
     Account a{value(s, "id"), clean(value(s, "name")), value(s, "url"),
               value(s, "username"), value(s, "password")};
+    a.type=value(s,"type");a.mac=value(s,"mac");a.serial=value(s,"serial");
+    if(a.type=="stalker") {
+      if(!a.id.empty() && a.id.size()<=128 && a.id.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-")==std::string::npos &&
+          live_tv::http_url(a.server) && a.mac.size()==17 && a.user.size()<=256 && a.password.size()<=256 && a.serial.size()<=256 && out.size()<16)out.push_back(std::move(a));
+      continue;
+    }
     if (value(s, "type") == "m3u") {
       if (!playlist_account(a))
         continue;
@@ -640,7 +649,7 @@ std::vector<Category> categories(const Json &state, const std::string &source,
     return out;
   for (const auto &c : s[key]) {
     auto id = value(c, "id"), name = clean(value(c, "name"));
-    if ((id.empty() || number(id)) && !name.empty() && out.size() < 10000)
+    if ((id.empty() || catalog_identifier(id)) && !name.empty() && out.size() < 10000)
       out.push_back({id, name});
   }
   return out;
@@ -838,7 +847,7 @@ bool load_cache(const std::string &dir, const std::string &source, Kind kind,
     if (!j.is_object())
       return false;
     auto e = entry_from_json(j);
-    if (!number(e.id) || e.name.empty())
+    if (!catalog_identifier(e.id) || e.name.empty())
       return false;
     loaded.entries.push_back(std::move(e));
   }

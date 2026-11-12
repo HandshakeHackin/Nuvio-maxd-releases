@@ -403,13 +403,15 @@ class Session
     void live_play(const live_tv::Channel&);
     void multi_choose(std::vector<live_tv::Channel> chosen={}, int replace=-1);
     void multi_start(const std::vector<live_tv::Channel>&);
-    void multi_open(int tile, bool audio);
+    void multi_open(int tile, bool audio, const std::string& resolved = {}, const std::vector<std::string>& headers = {});
     void multi_stop();
     void multi_update();
     void multi_input(const hui::InputFrame&);
     std::array<std::unique_ptr<Player>,4> multi_players_;
     std::array<VideoSurface,4> multi_surfaces_;
     std::array<live_tv::Channel,4> multi_channels_;
+    std::array<unsigned,4> multi_resolve_generation_{};
+    std::array<std::shared_ptr<std::atomic<bool>>,4> multi_resolve_cancel_{};
 
     void media_plex_start(const std::string& replace_id="");
     void media_plex_poll();
@@ -461,7 +463,7 @@ class Session
     void iptv_reload(bool refresh=false);
     void iptv_progress(bool finished=false);
     double iptv_resume(const std::string&) const;
-    void iptv_play(const iptv::Entry&);
+    void iptv_play(const iptv::Entry&, const std::string& resolved = {}, const std::vector<std::string>& headers = {});
     std::vector<iptv::Account> iptv_accounts_;
     json iptv_state_ = json::object();
     iptv::Catalog iptv_catalog_;
@@ -604,6 +606,21 @@ class Session
     void detail_refresh_streams();
     void detail_fill_title();
     bool watched(const std::string &video_id) const;
+    void tvdb_menu();
+    void detail_tvdb_menu();
+    void detail_tvdb_load(const std::string&,bool restoring=false);
+    bool detail_tvdb_restore();
+    bool tvdb_busy_=false;
+    unsigned tvdb_generation_=0;
+    void features_reset();
+    void backup_menu();
+    void backup_passphrase(int);
+    void backup_run(int,const std::string&);
+    void backup_confirm_restore(const json&,const std::string&,const std::string&);
+    void backup_drive_login();
+    void backup_drive_poll();
+    bool backup_busy_=false;
+    std::shared_ptr<std::atomic<bool>> features_cancel_=std::make_shared<std::atomic<bool>>(false);
     // artwork
     void refresh_art(const Cursor &cursor);
 
@@ -823,6 +840,7 @@ class Session
     std::string w_video_id_;
     ::Stream w_stream_;
     int w_season_ = -1, w_episode_number_ = -1;
+    int w_source_season_=-1,w_source_episode_=-1;
     std::vector<WatchSub> w_subs_;
     int w_sub_active_ = -1; // index in w_subs_, -1 off
     double w_sub_delay_ = 0;

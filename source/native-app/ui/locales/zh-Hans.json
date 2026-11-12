@@ -438,6 +438,18 @@
     "Library: Nuvio + Trakt/MDBList when selected. Watched: selected progress service.": "片库：Nuvio及所选的Trakt/MDBList。观看标记：所选进度服务。",
     "Library: Nuvio only; SIMKL is read-only here. Watched: selected progress service.": "片库：仅Nuvio；此处SIMKL只读。观看标记：所选进度服务。",
     " released episodes. Resume positions stay unchanged.": " 集已播出内容。续播位置保持不变。",
-    " listed episodes. Resume positions stay unchanged.": " 集已列出内容。续播位置保持不变。"
+    " listed episodes. Resume positions stay unchanged.": " 集已列出内容。续播位置保持不变。",
+    "Add Stalker / Ministra portal": "添加 Stalker / Ministra 门户",
+    "Backup passphrase": "备份口令",
+    "Configuration backup and sync": "配置备份与同步",
+    "Configuration sync conflict": "配置同步冲突",
+    "Connect Google Drive": "连接 Google Drive",
+    "Create local encrypted backup": "创建本地加密备份",
+    "Episode order (TheTVDB)": "剧集排序（TheTVDB）",
+    "Provider order (default)": "提供商排序（默认）",
+    "Restore configuration": "恢复配置",
+    "Restore local encrypted backup": "恢复本地加密备份",
+    "Sync configuration with Google Drive": "与 Google Drive 同步配置",
+    "TheTVDB episode ordering": "TheTVDB 剧集排序"
   }
 }

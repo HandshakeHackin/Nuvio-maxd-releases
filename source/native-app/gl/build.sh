@@ -60,7 +60,7 @@ FLAGS+=(-DNUVIO_HAVE_VLC -DNUVIO_VLC_STATIC -I"$VLC_SRC/include")
 python3 "$ROOT/tools/build_locales.py" --check
 echo ">> compiling"
 sources=("$ROOT"/ui/*.cpp "$ROOT"/gl/*.cpp "$ROOT/update/core.cpp"
-	"$ROOT/src/people.cpp"
+	"$ROOT/src/feature_http.cpp" "$ROOT/src/stalker.cpp" "$ROOT/src/tvdb.cpp" "$ROOT/src/config_backup.cpp" "$ROOT/src/config_drive.cpp" "$ROOT/src/people.cpp"
 	"$ROOT/src/trailers.cpp" "$ROOT/src/live_tv.cpp" "$ROOT/src/live_guide.cpp" "$ROOT/src/iptv_library.cpp" "$ROOT/src/media_server.cpp" "$ROOT/src/plex.cpp" "$ROOT/src/nuvio_account.cpp" "$ROOT/src/watch_sync.cpp" "$ROOT/src/tracking.cpp" "$ROOT/src/connected_services.cpp" "$ROOT/src/connected_preparer.cpp" "$ROOT/src/bidi.cpp" "$ROOT/src/stremio.cpp" "$ROOT/src/providers.cpp" "$ROOT/src/http.cpp" "$ROOT/src/util.cpp" "$ROOT/src/tasks.cpp"
 	"$ROOT/src/packet_storage.cpp" "$ROOT/src/diagnostics.cpp" "$ROOT/src/player.cpp" "$ROOT/src/vlc_backend.cpp" "$ROOT/src/vlc_cancel.cpp" "$ROOT/src/netstream.cpp" "$ROOT/src/hwdec_ps5.cpp" "$ROOT/src/yuv_convert.cpp" "$ROOT/src/video_frame.cpp" "$ROOT/src/display_output.cpp"
 	"$ROOT/src/evo_backend.cpp" "$ROOT/src/evo_runtime.cpp"

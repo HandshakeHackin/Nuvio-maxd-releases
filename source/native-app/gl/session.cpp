@@ -87,7 +87,7 @@ enum SettingIndex
     kRemoteButtons,
     kSourceOptions,
     kSportsEnable,kSportsOpen,kSportsRegion,kSportsBrowse,kSportsFollowing,kSportsScores,kSportsChannels,kSportsClock,
-    kUiLanguage,
+    kUiLanguage,kTvdb,kConfigBackup,
     kSettingCount
 };
 
@@ -807,7 +807,7 @@ void Session::refresh_settings()
             : std::to_string(prefs_.extra_addons.size()) + sx::i18n::tr(" added here."));
     set(kReload, Kind::action, sx::i18n::tr("Reload addons and catalogs"), "", sx::i18n::tr("Fetch every addon and catalog again."));
     const auto update = updater_.status();
-    set(kMetadataCredits, Kind::action, sx::i18n::tr("Metadata credits"), "TMDB", sx::i18n::tr("This product uses the TMDB API but is not endorsed or certified by TMDB."));
+    set(kMetadataCredits, Kind::action, sx::i18n::tr("Metadata credits"), "TMDB / TheTVDB", sx::i18n::tr("This product uses the TMDB API but is not endorsed or certified by TMDB."));
     set(kDonation, Kind::action, sx::i18n::tr("Support on Ko-fi"), "", sx::i18n::tr("Optional support for development. Scan the QR code with your phone."));
     set(kInstallSource, Kind::value, sx::i18n::tr("Install source"), install_source_label(prefs_.install_source),
         sx::i18n::tr("Where you installed Nuvio Max'd. Update reminders use this choice; change it if you switch install methods."));
@@ -843,12 +843,17 @@ void Session::refresh_settings()
     group("Sports Hub",{kSportsEnable,kSportsOpen,kSportsRegion,kSportsBrowse,kSportsFollowing,kSportsScores,kSportsChannels,kSportsClock});
     group("Torrents",{kTorrents,kTorrentOptions});
     group("Controls",{kRemoteButtons});
-    group("App & Updates", {kUiLanguage,kReleaseNotes,kDiagnostics,kMetadataCredits,kDonation,kInstallSource,kUpdates,kExit});
+    set(kTvdb,Kind::action,i18n::tr("TheTVDB episode ordering"),"",i18n::tr("Use your TVDB API key, then choose an episode order from a series title menu."));
+    set(kConfigBackup,Kind::action,i18n::tr("Configuration backup and sync"),"",i18n::tr("Encrypted profile configuration backups. Account sessions and playback history are excluded."));
+    group("App & Updates", {kTvdb,kConfigBackup,kUiLanguage,kReleaseNotes,kDiagnostics,kMetadataCredits,kDonation,kInstallSource,kUpdates,kExit});
     changed_ |= kSettings;
 }
 
 void Session::settings_activate(int row)
 {
+    if(backup_busy_){say(i18n::tr("Backup operation in progress..."));return;}
+    if(row==kTvdb){tvdb_menu();return;}
+    if(row==kConfigBackup){backup_menu();return;}
     if(row==kUiLanguage){
         std::vector<std::string> names,codes;for(const auto& locale:i18n::locales()){names.emplace_back(locale.native_name);codes.emplace_back(locale.code);}
         open_dropdown(i18n::tr("Language"),names,int(i18n::index(prefs_.ui_language)),[this,codes](int n){
@@ -1098,7 +1103,7 @@ void Session::settings_activate(int row)
     }
     case kMetadataCredits:
         open_dropdown(sx::i18n::tr("Metadata credits"),{sx::i18n::tr("Close")},0,[](int){});
-        dropdown.message="This product uses the TMDB API but is not endorsed or certified by TMDB. Movie and TV metadata: https://www.themoviedb.org/";
+        dropdown.message="This product uses the TMDB API but is not endorsed or certified by TMDB. Movie and TV metadata: https://www.themoviedb.org/ Optional episode ordering: https://thetvdb.com/ through your own licensed API access.";
         break;
     case kInstallSource: install_source_menu(); break;
     case kReleaseNotes: release_notes_open=true; release_notes_version=nuvio_update::current_version; break;
@@ -1457,6 +1462,7 @@ void Session::update(float dt, const Cursor &cursor)
     if (sign_in_open && !sign_in.link_only) {
         if (device_provider_.empty()) login_poll();
         else if (device_provider_=="plex")media_plex_poll();
+        else if(device_provider_=="drive")backup_drive_poll();
         else if (starts_with(device_provider_, "tracking:")) tracker_login_poll();
         else service_login_poll();
     }

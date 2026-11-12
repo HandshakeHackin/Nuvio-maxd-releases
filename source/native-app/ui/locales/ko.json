@@ -438,6 +438,18 @@
     "Library: Nuvio + Trakt/MDBList when selected. Watched: selected progress service.": "라이브러리: Nuvio와 선택한 Trakt/MDBList. 시청 표시: 선택한 진행 서비스.",
     "Library: Nuvio only; SIMKL is read-only here. Watched: selected progress service.": "라이브러리: Nuvio만 지원. 여기서 SIMKL은 읽기 전용입니다. 시청 표시: 선택한 진행 서비스.",
     " released episodes. Resume positions stay unchanged.": "개의 공개된 에피소드. 이어보기 위치는 유지됩니다.",
-    " listed episodes. Resume positions stay unchanged.": "개의 등록된 에피소드. 이어보기 위치는 유지됩니다."
+    " listed episodes. Resume positions stay unchanged.": "개의 등록된 에피소드. 이어보기 위치는 유지됩니다.",
+    "Add Stalker / Ministra portal": "Stalker / Ministra 포털 추가",
+    "Backup passphrase": "백업 암호 문구",
+    "Configuration backup and sync": "설정 백업 및 동기화",
+    "Configuration sync conflict": "설정 동기화 충돌",
+    "Connect Google Drive": "Google Drive 연결",
+    "Create local encrypted backup": "암호화된 로컬 백업 만들기",
+    "Episode order (TheTVDB)": "에피소드 순서 (TheTVDB)",
+    "Provider order (default)": "제공업체 순서 (기본값)",
+    "Restore configuration": "설정 복원",
+    "Restore local encrypted backup": "암호화된 로컬 백업 복원",
+    "Sync configuration with Google Drive": "Google Drive와 설정 동기화",
+    "TheTVDB episode ordering": "TheTVDB 에피소드 순서"
   }
 }

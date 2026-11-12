@@ -11,6 +11,7 @@ namespace sx::source_policy {
 struct Context { int season=-1,episode=-1; };
 inline Context context(const Meta& meta,const std::string& id) {
     for(const auto& v:meta.videos)if(v.id==id) {
+        if(v.order_season>=0)return {display_season(v),display_episode(v)};
         if(v.imdb_episode>0)return {v.imdb_season,v.imdb_episode};
         if(starts_with(id,"kitsu:")||starts_with(id,"anilist:")||starts_with(id,"mal:"))return {};
         return {v.season,v.episode};

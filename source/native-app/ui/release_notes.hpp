@@ -7,9 +7,9 @@ inline bool should_show_release_notes(std::string_view seen, std::string_view cu
     return !current.empty() && seen != current;
 }
 inline constexpr std::array<const char*,4> release_note_items = {
-    "1.0.0.19: Options on movie/series details opens library, watched and trailer actions.",
-    "Add or remove library titles with profile sync. Watched actions cover movies and listed released episodes in a season or series.",
-    "Bulk watched actions ask for confirmation. Offline changes are saved separately from resume positions.",
-    "Episode hints show Triangle marking. Cast and person pages now use controller icons.",
+    "1.0.0.20: encrypted configuration backup, TheTVDB episode ordering and Stalker/Ministra portals.",
+    "Settings > Configuration backup and sync saves encrypted local backups and supports manual Google Drive sync with conflict review. Drive requires a suitable OAuth app registration.",
+    "Set your own TVDB API key in Settings, then choose Episode order from a series title's Options menu. Verified mappings keep history and resume identities unchanged.",
+    "Live TV > Options can add a provider-authorised Stalker/Ministra portal, including live channels, guide and available movies/series. These features await PS5/provider confirmation.",
 };
 }

@@ -22,6 +22,6 @@ assert 'const bool par = !w_trailer_ && w_item_.type != "tv" && w_item_.type != 
 PY
 ${HOST_CXX:-g++} -std=c++20 -O1 -pthread -Wall -Wextra -Werror \
  -I"$B" -I"$ROOT/tests" -I"$ROOT/src" -I"$ROOT/third_party" -I"$ROOT/ui" -I"$ROOT/third_party/hui/src" \
- "$B/session_iptv.cpp" "$ROOT/tests/iptv_session_host.cpp" "$ROOT/src/iptv_library.cpp" "$ROOT/src/live_tv.cpp" "$ROOT/src/util.cpp" \
- $(pkg-config --cflags --libs libcurl) -o "$B/iptv-session-host"
+ "$B/session_iptv.cpp" "$ROOT/tests/iptv_session_host.cpp" "$ROOT/src/stalker.cpp" "$ROOT/src/feature_http.cpp" "$ROOT/src/iptv_library.cpp" "$ROOT/src/live_tv.cpp" "$ROOT/src/util.cpp" \
+ $(pkg-config --cflags --libs libcurl openssl) -o "$B/iptv-session-host"
 python3 "$ROOT/tests/iptv_session_test.py" "$B/iptv-session-host"

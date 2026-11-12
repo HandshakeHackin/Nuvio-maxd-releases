@@ -46,7 +46,7 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
     param = json.loads((extracted / 'sce_sys/param.json').read_text())
     display_profile = validate_display_metadata(param)
     assert param['titleId'] == 'PPSA99288'
-    assert param['contentVersion'] == '07.000.019'
+    assert param['contentVersion'] == '07.000.020'
     assert param['localizedParameters']['en-US']['titleName'] == "Nuvio Max'd"
     assert param['contentId'] == 'UP9000-PPSA99288_00-NUVIOPS5NAT00001'
     assert param['applicationCategoryType'] == 0
@@ -58,7 +58,7 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
     assert struct.unpack_from('<HH', data, elf + 16) == (0xFE10, 62)
     assert struct.unpack_from('<Q', data, elf + 24)[0] != 0
     info = json.loads((extracted / 'build-info.json').read_text())
-    assert info['version'] == '1.0.0.19-native'
+    assert info['version'] == '1.0.0.20-native'
     assert info['userExperienceUpdates']['optionalDonationQr']
     assert info['userExperienceUpdates']['installSourceSelector'] and info['userExperienceUpdates']['sourceAwareUpdateReminders']
     assert info['experimentalAv']['driverOwnedHdrSwitch'] and info['experimentalAv']['pcmDefault']
@@ -122,6 +122,8 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
     assert 'Localization dialogs: eight native language names' in test_log
     assert 'People metadata: movie/TV credits' in test_log
     assert 'People UI: cast/person focus' in test_log
+    assert re.search(r'Feature cores: (\d+) checks passed',test_log) and int(re.search(r'Feature cores: (\d+) checks passed',test_log)[1])>=99
+    assert info['configurationBackup']['authenticatedEncryption'] and info['stalkerPortal']['liveTv'] and info['tvdbOrdering']['canonicalHistoryIdentity']
     assert 'Title actions: production menus, library toggle' in test_log
     assert all(mode+': GL error 0x0' in test_log for mode in ['title-actions','title-actions-movie','watched-confirm','de-title-actions','ar-title-actions','zh-Hans-title-actions','ja-title-actions','ko-title-actions'])
     assert 'People Session: cancelled/stale/profile completions' in test_log
@@ -134,7 +136,7 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
     assert 'HDR fallback: strict/SDR modes, failed restoration, retained picture, session reset and unchanged preferences passed' in test_log
     assert 'Controller lightbar: throttling, failure suppression, reconnect, reset and logo/reduced-motion envelopes passed' in test_log
     assert 'Production startup: actual entry point passes conditional-indentation compiler check' in test_log
-    assert re.search(r'Ran 85 tests', test_log) and '\nOK\n' in test_log
+    assert re.search(r'Ran 88 tests', test_log) and '\nOK\n' in test_log
     assert 'NetworkTests.test_parallel_dns_failure_does_not_walk_entire_file' in test_log
     assert re.search(r'Ran 8 tests', test_log)
     assert 'EVO integration: SDR/10-bit B-frame decode, EOF, reopen after seek, owned planes, 24/120 cadence, early/late frames and P5 rejection passed' in test_log
@@ -174,7 +176,7 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
         'containerErrors': 0, 'containerWarnings': 0,
         'extractedFileCount': len(actual), 'allExtractedFileHashesMatch': True,
         'executable': 'x86-64 ET_SCE_EXEC inside native PS5 SELF',
-        'hostHttpsTestsPassed': 85, 'hostUiNavigationTestsPassed': 12,
+        'hostHttpsTestsPassed': 88, 'hostUiNavigationTestsPassed': 12,
         'hostUsbReaderTestsPassed': True, 'hostUsbMountDiagnosticsTestsPassed': True, 'usbPlaylistHardwareVerified': False,
         'hostTorrentIntegrationTestsPassed': True, 'hostHdrFallbackTestsPassed': True,
         'hostRemoteRemappingTestsPassed': True, 'hostRemoteSettingsTestsPassed': True,

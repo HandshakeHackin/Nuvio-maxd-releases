@@ -28,6 +28,9 @@ class Backend(http.server.BaseHTTPRequestHandler):
         raw = self.rfile.read(int(self.headers['Content-Length']))
         self.respond(parse_qs(raw.decode()) if self.headers.get('Content-Type', '').startswith('application/x-www-form-urlencoded') else json.loads(raw))
 
+    do_PATCH = do_POST
+    do_PUT = do_POST
+
     def respond(self, body):
         state = self.server.state
         state['calls'].append((self.path, body, self.headers.get('Authorization')))
@@ -35,6 +38,24 @@ class Backend(http.server.BaseHTTPRequestHandler):
             self.send_json(403, {}); return
         path = self.path
         pathname = path.split('?', 1)[0]
+        if path == '/feature/etag':
+            data = json.dumps({'method': self.command, 'body': body}).encode()
+            self.send_response(200)
+            self.send_header('ETag', '"fixture-revision"')
+            self.send_header('Content-Length', str(len(data)))
+            self.end_headers()
+            self.wfile.write(data)
+            return
+        if path == '/feature/large':
+            self.send_response(200); self.end_headers()
+            try:
+                self.wfile.write(b'x' * 4096)
+            except (BrokenPipeError, ConnectionResetError):
+                pass  # The bounded client deliberately aborts this response.
+            return
+        if path == '/feature/redirect':
+            self.send_response(302); self.send_header('Location', self.server.base + '/feature/etag'); self.end_headers()
+            return
         if path == '/update/redirect':
             self.send_response(302)
             self.send_header('Location', 'http://127.0.0.1:1/never-send-release-data')
@@ -850,6 +871,54 @@ class AccountTests(unittest.TestCase):
         self.state['profiles_push_failure'] = True
         self.assertFalse(self.command('create_profile', auth_key=key, name='Extra')['ok'])
         self.assertEqual(len(self.state['profiles']), 1)
+
+    def test_configuration_restore_preserves_history_and_retires_old_context(self):
+        key = self.pair()['result']['authKey']
+        path = self.profile_path()
+        (path / 'profile-settings.json').write_text(json.dumps({'subtitle_languages': 'eng', 'account_session': 'excluded'}))
+        (path / 'progress.json').write_text('history-fixture')
+        captured = self.command('configuration_capture', auth_key=key, directory=str(path))
+        self.assertTrue(captured['ok'], captured)
+        data = captured['result']
+        self.assertNotIn('account_session', data['snapshot']['files']['profile-settings.json'])
+        data['snapshot']['files']['profile-settings.json'] = json.dumps({'subtitle_languages': 'deu'})
+        restored = self.command('configuration_restore', auth_key=key, directory=str(path), **data)
+        self.assertTrue(restored['ok'], restored)
+        self.assertNotEqual(restored['result']['authKey'], key)
+        self.assertEqual(json.loads((path / 'profile-settings.json').read_text()), {'subtitle_languages': 'deu'})
+        self.assertEqual((path / 'progress.json').read_text(), 'history-fixture')
+        self.assertFalse(self.command('configuration_capture', auth_key=key, directory=str(path))['ok'])
+        self.assertFalse(self.command('progress_write', auth_key=key, changes=[self.progress_item()])['ok'])
+
+    def test_configuration_restore_rejects_foreign_profile_and_stale_review(self):
+        key = self.pair()['result']['authKey']
+        path = self.profile_path()
+        captured = self.command('configuration_capture', auth_key=key, directory=str(path))['result']
+        (path / 'profile-settings.json').write_text(json.dumps({'subtitle_languages': 'fra'}))
+        self.assertFalse(self.command('configuration_restore', auth_key=key, directory=str(path), **captured)['ok'])
+        self.assertEqual(json.loads((path / 'profile-settings.json').read_text())['subtitle_languages'], 'fra')
+        selected = self.command('select_profile', auth_key=key, profile=2)['result']
+        second_path = Path(selected['path'])
+        second_capture = self.command('configuration_capture', auth_key=selected['authKey'], directory=str(second_path))['result']
+        self.assertFalse(self.command('configuration_restore', auth_key=selected['authKey'], directory=str(second_path), snapshot=captured['snapshot'], hash=second_capture['hash'])['ok'])
+        self.assertFalse(self.command('configuration_capture', auth_key=selected['authKey'], directory=str(path))['ok'])
+        self.assertFalse(self.command('configuration_capture', directory=str(second_path))['ok'])
+
+    def test_feature_transport_bounds_verbs_etag_and_no_credential_redirects(self):
+        for method in ('GET', 'POST', 'PUT', 'PATCH'):
+            result = self.command('feature_request', url=self.server.base + '/feature/etag', method=method, body='{"fixture":true}' if method != 'GET' else '')
+            self.assertTrue(result['ok'], result)
+            self.assertEqual(result['etag'], '"fixture-revision"')
+            self.assertEqual(json.loads(result['body'])['method'], method)
+        count = len(self.state['calls'])
+        result = self.command('feature_request', url=self.server.base + '/feature/redirect')
+        self.assertEqual(result['status'], 302)
+        self.assertEqual(len(self.state['calls']), count + 1)
+        large = self.command('feature_request', url=self.server.base + '/feature/large', limit=32)
+        self.assertFalse(large['ok']); self.assertEqual(large['body'], '')
+        count = len(self.state['calls'])
+        self.assertFalse(self.command('feature_request', url=self.server.base + '/feature/etag', cancel=True)['ok'])
+        self.assertEqual(len(self.state['calls']), count)
 
     def test_profile_switch_scopes_history_and_rejects_delayed_jobs(self):
         key = self.pair()['result']['authKey']

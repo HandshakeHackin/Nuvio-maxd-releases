@@ -78,7 +78,7 @@ inline Result fetch(const Addon &a, const std::string &type,
     return streams(a, type, id, meta, cancel);
   Result r;
   json j;
-  if (fetch_json(a.resource_url("stream", type, id), j, r.error, 30, cancel))
+  if (fetch_json(a.resource_url("stream", type, stream_video_id(meta,id)), j, r.error, 30, cancel))
     r.streams = parse_streams(j, a.name);
   return r;
 }

@@ -22,7 +22,7 @@ int main(int argc,char** argv){
  s.detail_actions();s.choose(1);s.complete();assert(!s.watched_.count("tt123")&&!last_mark);
  s.detail_actions();s.choose(2);assert(s.trailers==1);
  s.d_item_.type="series";s.d_meta_.name="Show";s.d_meta_.videos={Video{"native-a","One","","","2020-01-01",1,1},Video{"native-b","Two","","","2020-01-02",1,2},Video{"future","Future","","","2199-01-01",1,3},Video{"unknown","Unknown","","","",1,4},Video{"s2","Other","","","2020-01-03",2,1}};
- s.detail_actions();assert(s.dropdown.options.size()==6);capture("title-actions",s.dropdown);s.choose(3);capture("watched-confirm",s.dropdown);assert(s.jobs.empty());s.choose(0);assert(s.jobs.empty());
+ s.detail_actions();assert(s.dropdown.options.size()==7);s.choose(6);assert(s.tvdb_menus==1);s.detail_actions();capture("title-actions",s.dropdown);s.choose(3);capture("watched-confirm",s.dropdown);assert(s.jobs.empty());s.choose(0);assert(s.jobs.empty());
  s.detail_actions();s.choose(3);s.choose(1);s.complete();assert(last_entries.size()==2&&s.watched_.count("tt123:1:1")&&s.watched_.count("tt123:1:2")&&!s.watched_.count("tt123:1:3"));
  s.detail_actions();s.choose(2);s.choose(1);s.complete();assert(last_entries.size()==3&&!s.watched_.count("tt123:1:1"));
  auto original=s.d_meta_.videos[0];s.d_season_videos_.push_back(&original);s.detail_toggle_watched(0);s.complete();assert(last_entries.size()==1&&last_entries[0]["video_id"]=="native-a");

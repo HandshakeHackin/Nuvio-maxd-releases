@@ -438,6 +438,18 @@
     "Library: Nuvio + Trakt/MDBList when selected. Watched: selected progress service.": "المكتبة: Nuvio وTrakt/MDBList عند اختياره. المشاهدة: خدمة التقدم المختارة.",
     "Library: Nuvio only; SIMKL is read-only here. Watched: selected progress service.": "المكتبة: Nuvio فقط؛ SIMKL للقراءة فقط هنا. المشاهدة: خدمة التقدم المختارة.",
     " released episodes. Resume positions stay unchanged.": " حلقات منشورة. تبقى مواضع الاستئناف كما هي.",
-    " listed episodes. Resume positions stay unchanged.": " حلقات مدرجة. تبقى مواضع الاستئناف كما هي."
+    " listed episodes. Resume positions stay unchanged.": " حلقات مدرجة. تبقى مواضع الاستئناف كما هي.",
+    "Add Stalker / Ministra portal": "إضافة بوابة Stalker / Ministra",
+    "Backup passphrase": "عبارة مرور النسخة الاحتياطية",
+    "Configuration backup and sync": "نسخ الإعدادات احتياطيًا ومزامنتها",
+    "Configuration sync conflict": "تعارض في مزامنة الإعدادات",
+    "Connect Google Drive": "ربط Google Drive",
+    "Create local encrypted backup": "إنشاء نسخة محلية مشفّرة",
+    "Episode order (TheTVDB)": "ترتيب الحلقات (TheTVDB)",
+    "Provider order (default)": "ترتيب المزوّد (الافتراضي)",
+    "Restore configuration": "استعادة الإعدادات",
+    "Restore local encrypted backup": "استعادة نسخة محلية مشفّرة",
+    "Sync configuration with Google Drive": "مزامنة الإعدادات مع Google Drive",
+    "TheTVDB episode ordering": "ترتيب الحلقات من TheTVDB"
   }
 }

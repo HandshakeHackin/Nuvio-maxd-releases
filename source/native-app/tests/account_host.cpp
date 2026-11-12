@@ -3,6 +3,7 @@
 #include "nuvio_account.h"
 #include "stremio.h"
 #include "http.h"
+#include "feature_http.h"
 #include "../gl/model.hpp"
 #include <iostream>
 #include <thread>
@@ -29,7 +30,12 @@ int main(int argc, char** argv) {
         const json cmd = json::parse(line, nullptr, false);
         const std::string op = jstr(cmd, "op");
         json out;
-        if (op == "https_update") {
+        if(op=="feature_request") {
+            feature_http::Query q;q.url=jstr(cmd,"url");q.method=jstr(cmd,"method","GET");q.body=jstr(cmd,"body");q.limit=size_t(jnum(cmd,"limit",8192));
+            q.headers={"Authorization: Bearer fixture-credential","Content-Type: application/json"};
+            std::atomic<bool> cancel{jbool(cmd,"cancel")};const auto r=feature_http::perform(q,&cancel);
+            out={{"ok",r.ok()},{"status",r.status},{"error",r.error},{"body",r.body},{"etag",r.etag}};
+        } else if (op == "https_update") {
             const auto r = http_get_https(jstr(cmd, "url"));
             out = {{"ok", r.ok()}, {"error", r.error}, {"status", r.status}};
         } else if (op == "provider_request") {
@@ -101,6 +107,8 @@ int main(int argc, char** argv) {
             else if (op == "tracking") r = api_tracking(jstr(cmd,"auth_key"),jstr(cmd,"action"),jobj(cmd,"args"));
             else if (op == "watched_get") r = api_watched_get(jstr(cmd, "auth_key"));
             else if (op == "watched_update") r = api_watched_update(jstr(cmd, "auth_key"), jstr(cmd, "video"), jstr(cmd, "title"), jbool(cmd, "watched"), jstr(cmd, "content"), int(jnum(cmd, "season", -1)), int(jnum(cmd, "episode", -1)));
+            else if(op=="configuration_capture")r=api_configuration_capture(jstr(cmd,"auth_key"),jstr(cmd,"directory"));
+            else if(op=="configuration_restore")r=api_configuration_restore(jstr(cmd,"auth_key"),jstr(cmd,"directory"),jobj(cmd,"snapshot"),jstr(cmd,"hash"));
             else if (op == "profiles") r = api_profiles_get(jstr(cmd, "auth_key"));
             else if (op == "select_profile") r = api_profile_select(jstr(cmd, "auth_key"), int(jnum(cmd, "profile")), jstr(cmd, "pin"));
             else if (op == "create_profile") r = api_profile_create(jstr(cmd, "auth_key"), jstr(cmd, "name"));

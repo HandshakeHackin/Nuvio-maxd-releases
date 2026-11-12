@@ -14,13 +14,14 @@ struct Session {
  DetailContent detail;Prefs prefs_;Item d_item_;Meta d_meta_;std::vector<int>d_seasons_{1};std::vector<const Video*>d_season_videos_;
  std::map<std::string,json>library_;std::set<std::string>watched_;json tracking_status_;
  DropdownState dropdown;std::function<void(int)>pick;std::deque<std::function<void()>>jobs;std::vector<std::string>messages;
- int saves=0,refreshes=0,reloads=0,trailers=0;
+ int saves=0,refreshes=0,reloads=0,trailers=0,tvdb_menus=0;
  void detail_actions();void detail_membership(bool);void detail_apply_marks(const json&,bool);void detail_toggle_watched(int);
  bool signed_in()const{return authenticated;}
  bool watched(const std::string& id)const{return watched_.count(id);}
  void say(const std::string& s,double=0,bool=false){messages.push_back(s);}
  void open_dropdown(const std::string& title,const std::vector<std::string>& choices,int,std::function<void(int)> cb,bool=false){dropdown.title=title;dropdown.options=choices;pick=cb;}
- void detail_trailers(){++trailers;}
+ void detail_tvdb_menu() {++tvdb_menus;}
+    void detail_trailers(){++trailers;}
  void save_progress(){++saves;}void refresh_board(){++refreshes;}void refresh_library(){++refreshes;}void detail_set_season(int){}
  void load_library(){++reloads;}void load_watched(){++reloads;}
  template<class T>void bg(std::function<T()> work,std::function<void(T&)> done){jobs.push_back([work,done]{auto r=work();done(r);});}
