@@ -43,9 +43,56 @@ std::string content_id(const json& media) {
 }
 void append_media(json& items, const json& media, bool movie) {
     const auto id = content_id(media); if (id.empty()) return;
-    for (const auto& item : items) if (jstr(item, "_id") == id) return;
+    for (const auto& item : items) if (jstr(item, "_id") == id && jstr(item, "type") == (movie ? "movie" : "series")) return;
     items.push_back({{"_id", id}, {"name", jstr(media, "title", "Untitled")}, {"type", movie ? "movie" : "series"},
         {"poster", jstr(media, "poster")}, {"removed", false}});
+}
+// MDBList's watchlist accepts IMDb/TMDB identities. Never guess by title or
+// forward an unrelated provider's numeric ID as a TMDB identity.
+json mdblist_ids(const std::string& content) {
+    auto external=ids(content);
+    return (external.contains("imdb")&&content.size()<=16) ||
+        (external.contains("tmdb")&&jnum(external,"tmdb")>0) ? external : json::object();
+}
+bool membership_count(const json& result,const char* key,const std::string& bucket,int& count) {
+    count=0;
+    if(!result.contains(key))return true;
+    const auto& field=result[key];
+    if(field.is_object()) {
+        for(const auto& entry:field.items()) {
+            if((entry.key()!="movies"&&entry.key()!="shows") || !entry.value().is_number_integer() ||
+               jnum(field,entry.key().c_str(),-1)<0 || jnum(field,entry.key().c_str(),-1)>1)return false;
+            if(entry.key()!=bucket && jnum(field,entry.key().c_str())!=0)return false;
+        }
+        if(!field.contains(bucket))return false;
+        count=int(jnum(field,bucket.c_str()));return true;
+    }
+    if(!field.is_number_integer() || field.get<double>()<0 || field.get<double>()>1)return false;
+    count=int(field.get<double>());return true;
+}
+bool mdblist_receipt(const json& result,const std::string& bucket,bool add,bool& rejected) {
+    rejected=false;
+    if(!result.is_object())return false;
+    int changed=0,existing=0,missing=0;
+    if(!membership_count(result,add?"added":"removed",bucket,changed) ||
+       !membership_count(result,"existing",bucket,existing) ||
+       !membership_count(result,"not_found",bucket,missing))return false;
+    rejected=changed==0 && existing==0 && missing==1;
+    return result.contains(add?"added":"removed") && missing==0 &&
+        (add ? changed+existing==1 : changed==1 && existing==0);
+}
+// Raw remote rows only. An absent alias cannot prove absence: a TMDB-only row
+// might still be the IMDb title being removed. Local pending overlays never enter here.
+bool mdblist_membership(const json& rows,const json& item,bool& present) {
+    const auto target=mdblist_ids(jstr(item,"_id"));
+    if(target.empty())return false;
+    const auto key=target.begin().key();bool complete=true;
+    for(const auto& row:rows)if(jstr(row,"type")==jstr(item,"type")) {
+        const auto& external=jobj(row,"ids");
+        if(jobj(external,key.c_str())==target[key]){present=true;return true;}
+        if(!external.contains(key))complete=false;
+    }
+    present=false;return complete;
 }
 void append_playback(json& rows, const json& entry) {
     const bool movie = jobj(entry, "movie").is_object();
@@ -361,22 +408,73 @@ bool Store::flush_membership(const std::string& p,std::string& error) {
     const auto field="membership_pending_"+p;
     if(!jobj(state_,field.c_str()).is_array() || state_[field].empty())return true;
     if(!connected(p) || !refresh(p,error)){if(error.empty())error="Reconnect "+name(p)+" to sync library changes";return false;}
+    json remote;
+    const auto account_key=jstr(jobj(jobj(state_,"accounts"),p.c_str()),"api_key");
+    if(p=="mdblist" && !read_mdblist(remote,error))return false;
+    if(p=="mdblist" && ((cancel_&&*cancel_) || !connected(p) || jstr(state_,"library")!=p ||
+       jstr(jobj(jobj(state_,"accounts"),p.c_str()),"api_key")!=account_key)) {
+        error="Tracker library context changed; pending changes retained";return false;
+    }
     while(!state_[field].empty()) {
         const auto op=state_[field].front();const auto& item=op["item"];
         const bool add=jbool(op,"add"),movie=jstr(item,"type")=="movie";
         const std::string bucket=movie?"movies":"shows";
-        const json body{{bucket,json::array({{{"ids",ids(jstr(item,"_id"))}}})}};
         const auto path=p=="trakt"?std::string("/sync/watchlist")+(add?"":"/remove"):
             std::string("/watchlist/items/")+(add?"add":"remove");
-        const auto response=request(p,path,&body);const auto result=parsed(response);
-        const auto& counts=jobj(result,add?"added":"deleted");
-        const auto& existing=jobj(result,"existing");const auto& missing=jobj(result,"not_found");
-        bool not_found=missing.is_number() && missing.get<double>()>0;
-        if(missing.is_object())for(const auto& v:missing)if((v.is_array()&&!v.empty())||(v.is_number()&&v.get<double>()>0))not_found=true;
-        const bool counted=(jobj(counts,bucket.c_str()).is_number() && jnum(counts,bucket.c_str())>=(add?1:0)) || (add&&jnum(existing,bucket.c_str())>0);
-        if(!response.ok() || !result.is_object() || not_found || !counted) {
-            error=!response.ok()?failure(p,response):name(p)+" did not confirm the library change; it remains pending";
-            return false;
+        if(p=="mdblist") {
+            auto current=[&] {
+                return !(cancel_&&*cancel_) && connected(p) && jstr(state_,"library")==p &&
+                    jstr(jobj(jobj(state_,"accounts"),p.c_str()),"api_key")==account_key &&
+                    jobj(state_,field.c_str()).is_array() && !state_[field].empty() && state_[field].front()==op;
+            };
+            if(!current()){error="Tracker library context changed; pending changes retained";return false;}
+            const auto external=mdblist_ids(jstr(item,"_id"));
+            if(external.empty()){error="MDBList needs an IMDb or TMDB title ID; change remains pending";return false;}
+            bool present=false;
+            bool confirmed=mdblist_membership(remote,item,present) && present==add;
+            bool nested=jbool(state_["accounts"][p],"watchlist_nested_ids");
+            for(int attempt=0;!confirmed && attempt<2;++attempt) {
+                // Default to the public watchlist contract. Try the compatibility
+                // shape only after an explicit rejection AND a complete readback.
+                const json body{{bucket,json::array({nested?json{{"ids",external}}:external})}};
+                const auto response=request(p,path,&body);const auto result=parsed(response);
+                if(!current()){error="Tracker library context changed; pending changes retained";return false;}
+                bool rejected=false;
+                confirmed=response.ok() && mdblist_receipt(result,bucket,add,rejected);
+                if(!confirmed) {
+                    if(response.status==401 || response.status==403 || response.status==429) {
+                        error=failure(p,response);return false;
+                    }
+                    std::string read_error;
+                    if(!read_mdblist(remote,read_error) || !current()) {
+                        error="MDBList could not verify the remote library change; it remains pending";return false;
+                    }
+                    const bool known=mdblist_membership(remote,item,present);
+                    confirmed=known && present==add;
+                    if(!confirmed && attempt==0 && known && response.error.empty() &&
+                       (response.status==400 || response.status==422 || (response.ok()&&rejected))) {
+                        nested=!nested;continue;
+                    }
+                }
+                if(confirmed)state_["accounts"][p]["watchlist_nested_ids"]=nested;
+                else {error=response.ok()?"MDBList did not confirm the library change; it remains pending":failure(p,response);return false;}
+            }
+            // Keep this raw snapshot consistent for the remaining queued intents.
+            remote.erase(std::remove_if(remote.begin(),remote.end(),[&](const auto& row){
+                bool found=false;return mdblist_membership(json::array({row}),item,found)&&found;
+            }),remote.end());
+            if(add)remote.push_back({{"type",jstr(item,"type")},{"ids",external}});
+        } else {
+            const json body{{bucket,json::array({{{"ids",ids(jstr(item,"_id"))}}})}};
+            const auto response=request(p,path,&body);const auto result=parsed(response);
+            const auto& counts=jobj(result,add?"added":"deleted");
+            const auto& existing=jobj(result,"existing");const auto& missing=jobj(result,"not_found");
+            bool not_found=missing.is_number() && missing.get<double>()>0;
+            if(missing.is_object())for(const auto& v:missing)if((v.is_array()&&!v.empty())||(v.is_number()&&v.get<double>()>0))not_found=true;
+            const bool counted=(jobj(counts,bucket.c_str()).is_number() && jnum(counts,bucket.c_str())>=(add?1:0)) || (add&&jnum(existing,bucket.c_str())>0);
+            if(!response.ok() || !result.is_object() || not_found || !counted) {
+                error=!response.ok()?failure(p,response):name(p)+" did not confirm the library change; it remains pending";return false;
+            }
         }
         auto& cache=state_["library_cache_"+p];if(!cache.is_array())cache=json::array();
         cache.erase(std::remove_if(cache.begin(),cache.end(),[&](const auto& row){return jstr(row,"_id")==jstr(item,"_id")&&jstr(row,"type")==jstr(item,"type");}),cache.end());
@@ -386,10 +484,12 @@ bool Store::flush_membership(const std::string& p,std::string& error) {
     return true;
 }
 bool Store::membership(const json& item,bool add,bool& synced,std::string& error) {
+    synced=false;error.clear();
     if(!readable_){error="Tracker settings are unreadable; existing data was retained";return false;}
     const auto p=jstr(state_,"library","nuvio"),type=jstr(item,"type");
     if(p!="trakt" && p!="mdblist"){error="Library changes here support Nuvio, Trakt and MDBList. SIMKL library remains read-only.";return false;}
     if(ids(jstr(item,"_id")).empty() || (type!="movie"&&type!="series")){error=name(p)+" cannot identify this title";return false;}
+    if(p=="mdblist"&&mdblist_ids(jstr(item,"_id")).empty()){error="MDBList needs an IMDb or TMDB title ID";return false;}
     const auto field="membership_pending_"+p;
     if(state_.contains(field)&&!state_[field].is_array()){error="Tracker library queue is unreadable";return false;}
     auto old=state_;auto& queue=state_[field];if(!queue.is_array())queue=json::array();
@@ -407,6 +507,68 @@ bool Store::progress(json& rows, std::string& error) {
         std::string ignored; save(ignored);
     }
     return ok;
+}
+bool Store::read_mdblist(json& rows,std::string& error) {
+    json result=json::array();std::set<std::string> cursors,identities;
+    std::string cursor;int offset=0,expected_movies=-1,expected_shows=-1,movies=0,shows=0;
+    for(int page=0;page<100;++page) {
+        json response;
+        const auto query=cursor.empty()?"&offset="+std::to_string(offset):"&cursor="+url_encode(cursor);
+        if(!fetch("mdblist","/watchlist/items?limit=100&append_to_response=poster"+query,response,error))return false;
+        if(!response.is_object() || !response.contains("movies") || !response.contains("shows"))break;
+        std::size_t count=0;bool valid=true;
+        for(const auto* bucket:{"movies","shows"}) {
+            if(!response.contains(bucket))continue;
+            if(!response[bucket].is_array() || response[bucket].size()>100){valid=false;break;}
+            for(auto row:response[bucket]) {
+                if(!row.is_object()){valid=false;break;}
+                if(!jobj(row,"ids").is_object())row["ids"]=json::object();
+                auto external=mdblist_ids(jstr(row,"imdb_id",jstr(row["ids"],"imdb")));
+                const auto& tmdb=jobj(row,"id").is_number_integer()?row["id"]:jobj(row["ids"],"tmdb");
+                if(tmdb.is_number_integer() && tmdb.get<double>()>0 && tmdb.get<double>()<1e11)external["tmdb"]=tmdb;
+                if(external.empty()){valid=false;break;}
+                const std::string type=std::string(bucket)=="movies"?"movie":"series";
+                for(const auto& id:external.items())if(!identities.insert(type+":"+id.key()+":"+id.value().dump()).second)valid=false;
+                if(!valid)break;
+                result.push_back({{"ids",external},{"type",type},{"title",jstr(row,"title").substr(0,512)},
+                    {"poster",jstr(row,"poster").substr(0,2048)}});++count;
+                if(type=="movie")++movies;else ++shows;
+                if(result.size()>10000){valid=false;break;}
+            }
+            if(!valid)break;
+        }
+        if(!valid)break;
+        const auto& pagination=jobj(response,"pagination");
+        if(response.contains("pagination")&&!pagination.is_object())break;
+        for(auto pair:{std::pair<const char*,int*>{"total_movies",&expected_movies},{"total_shows",&expected_shows}}) {
+            if(!pagination.contains(pair.first))continue;
+            const auto& total=pagination[pair.first];
+            if(!total.is_number_integer() || total.get<double>()<0 || total.get<double>()>10000 ||
+               (*pair.second>=0&&*pair.second!=total.get<int>())){valid=false;break;}
+            *pair.second=total.get<int>();
+        }
+        if(!valid)break;
+        const auto& more=jobj(pagination,"has_more");
+        if(pagination.contains("has_more")&&!more.is_boolean())break;
+        const auto& next=jobj(pagination,"next_cursor").is_null()?jobj(response,"next_cursor"):pagination["next_cursor"];
+        if(!next.is_null()&&!next.is_string())break;
+        const auto next_cursor=next.is_string()?next.get<std::string>():"";
+        if(!next_cursor.empty()) {
+            if((more.is_boolean()&&!more.get<bool>()) || count==0 || next_cursor.size()>4096 || !cursors.insert(next_cursor).second)break;
+            cursor=next_cursor;continue;
+        }
+        if(more.is_boolean()&&more.get<bool>()) {
+            if(!cursor.empty() || count==0)break;
+            const auto& limit=jobj(pagination,"limit");
+            if(!limit.is_null()&&(!limit.is_number_integer()||limit.get<double>()<1||limit.get<double>()>100))break;
+            offset+=limit.is_number_integer()?limit.get<int>():100;continue;
+        }
+        // A full page with no continuation information cannot prove completion.
+        if(!more.is_boolean() && count>=100)break;
+        if((expected_movies>=0&&movies!=expected_movies)||(expected_shows>=0&&shows!=expected_shows))break;
+        rows=std::move(result);return true;
+    }
+    error="MDBList returned an incomplete or unreadable watchlist; saved data retained";return false;
 }
 bool Store::read_library(json& items, std::string& error) {
     const auto p = source(false); if (p == "nuvio") return false;
@@ -434,23 +596,8 @@ bool Store::read_library(json& items, std::string& error) {
             append_media(result, media, type == std::string("movies") || jstr(media, "anime_type") == "movie");
         }
     } else {
-        std::string cursor; std::set<std::string> cursors;
-        for (int page = 0; page < 100; ++page) {
-            if (!fetch(p, "/watchlist/items?limit=100&append_to_response=poster"+(cursor.empty() ? "" : "&cursor="+url_encode(cursor)), response, error) || !response.is_object() || (!response.contains("movies") && !response.contains("shows"))) {
-                if (error.empty()) error = "MDBList returned an unreadable watchlist";
-                return false;
-            }
-            for (auto type : {"movies", "shows"}) if (jobj(response, type).is_array()) for (auto row : response[type]) {
-                if (!jobj(row, "ids").is_object()) row["ids"] = json::object();
-                if (!jstr(row, "imdb_id").empty()) row["ids"]["imdb"] = row["imdb_id"];
-                else if (jobj(row, "id").is_number_integer()) row["ids"]["tmdb"] = row["id"];
-                append_media(result, row, std::string(type) == "movies");
-            }
-            cursor = jstr(jobj(response, "pagination"), "next_cursor", jstr(response, "next_cursor"));
-            if (cursor.empty()) { items = result; return true; }
-            if (!cursors.insert(cursor).second) break;
-        }
-        error = "MDBList returned an incomplete paginated watchlist"; return false;
+        json rows;if(!read_mdblist(rows,error))return false;
+        for(const auto& row:rows)append_media(result,row,jstr(row,"type")=="movie");
     }
     items = result; return true;
 }

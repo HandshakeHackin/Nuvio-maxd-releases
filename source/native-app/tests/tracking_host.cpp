@@ -8,6 +8,7 @@
 #include <unistd.h>
 
 using tracking::Store;
+void mdblist_membership_cases();
 struct Fake {
     struct Call { std::string url; bool post; json body; std::vector<std::string> headers; };
     std::vector<Call> calls;
@@ -42,7 +43,11 @@ struct Fake {
             assert(body);out={{"all","2026-10-18T00:00:00Z"}};
         } else if(body && (url=="https://api.trakt.tv/sync/watchlist" || url=="https://api.trakt.tv/sync/watchlist/remove" || url.find("/watchlist/items/add?")!=std::string::npos || url.find("/watchlist/items/remove?")!=std::string::npos)) {
             const bool add=url.find("remove")==std::string::npos;
-            out={{add?"added":"deleted",{{"movies",1},{"shows",1}}}};
+            if(url.find("mdblist.com")!=std::string::npos) {
+                const auto bucket=calls.back().body.contains("movies")?"movies":"shows";
+                assert(!calls.back().body[bucket][0].contains("ids"));
+                out={{add?"added":"removed",{{bucket,1}}}};
+            } else out={{add?"added":"deleted",{{"movies",1},{"shows",1}}}};
         } else if (url.find("/sync/watchlist?")!=std::string::npos) {
             assert(!body); out=json::array({{{"movie",{{"title","Movie"},{"ids",{{"imdb","tt123"}}}}}}});
         } else if (url.find("/watchlist/items?")!=std::string::npos) {
@@ -112,7 +117,7 @@ int main() {
     fake.unauthorized=true;error.clear();assert(!restored.progress(progress,error));assert(restored.source(true)=="nuvio");
     assert(restored.status()["progressPreferred"]=="trakt");fake.unauthorized=false;
     restored.action("disconnect",{{"provider","trakt"}},error); assert(restored.status()["progressPreferred"]=="nuvio");
-    // MDBList validates before replacing a key, supports cursor pagination and independent selectors.
+    // MDBList validates before replacing a key, retains cursor compatibility and independent selectors.
     Store mdb(root,transport);error.clear();fake.reject_key=true;
     mdb.action("key",{{"provider","mdblist"},{"api_key","rejected"}},error);assert(!error.empty() && !mdb.status()["accounts"]["mdblist"]["connected"].get<bool>());
     fake.reject_key=false;error.clear();mdb.action("key",{{"provider","mdblist"},{"api_key","private-mdb"}},error);assert(error.empty());
@@ -237,6 +242,7 @@ int main() {
     Store unconfigured(root+"/unconfigured",transport);
     assert(unconfigured.status()["accounts"]["trakt"]["configured"]==false);
     error.clear();unconfigured.action("device_start",{{"provider","trakt"}},error);assert(error.find("no registered")!=std::string::npos);
+    mdblist_membership_cases();
     std::filesystem::remove_all(root);
     std::cout<<"Tracker contracts passed: pairing, validation, refresh, sources, pagination, resume, scrobble, watched marks, offline retry, redaction, permissions and profile isolation\n";
 }

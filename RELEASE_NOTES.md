@@ -1,3 +1,15 @@
+# Nuvio Max'd 1.0.0.21 experimental — MDBList library sync
+
+- Recognizes MDBList add/existing/remove confirmations separately from Trakt.
+- Checks the remote watchlist before retrying pending changes; supports bounded offset pagination and guarded ID-format compatibility.
+- Preserves profile isolation, offline queues, watched history and resume positions.
+
+**Unconfirmed fix for #22.** Please test movie/series add and remove, restart, and the result on mdblist.com. Full app/package and regression checks accompany the build; live MDBList/PS5 confirmation is still needed.
+
+Previous release notes follow.
+
+---
+
 # Nuvio Max'd 1.0.0.20 — configuration backup, TVDB ordering and portals
 
 - Encrypted per-profile configuration backup/restore, including private imported USB playlists. AES-256-GCM with PBKDF2-HMAC-SHA256; rollback recovery; no account sessions or playback history in backups.

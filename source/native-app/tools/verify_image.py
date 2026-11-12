@@ -46,7 +46,7 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
     param = json.loads((extracted / 'sce_sys/param.json').read_text())
     display_profile = validate_display_metadata(param)
     assert param['titleId'] == 'PPSA99288'
-    assert param['contentVersion'] == '07.000.020'
+    assert param['contentVersion'] == '07.000.021'
     assert param['localizedParameters']['en-US']['titleName'] == "Nuvio Max'd"
     assert param['contentId'] == 'UP9000-PPSA99288_00-NUVIOPS5NAT00001'
     assert param['applicationCategoryType'] == 0
@@ -58,7 +58,7 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
     assert struct.unpack_from('<HH', data, elf + 16) == (0xFE10, 62)
     assert struct.unpack_from('<Q', data, elf + 24)[0] != 0
     info = json.loads((extracted / 'build-info.json').read_text())
-    assert info['version'] == '1.0.0.20-native'
+    assert info['version'] == '1.0.0.21-native-experimental'
     assert info['userExperienceUpdates']['optionalDonationQr']
     assert info['userExperienceUpdates']['installSourceSelector'] and info['userExperienceUpdates']['sourceAwareUpdateReminders']
     assert info['experimentalAv']['driverOwnedHdrSwitch'] and info['experimentalAv']['pcmDefault']
@@ -67,9 +67,10 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
     assert info['graphicsRefresh']['streamReloadSelection'] and info['graphicsRefresh']['startupStageTiming']
     assert info['controllerLightbar']['sharedBootEnvelope'] and info['controllerLightbar']['systemResetOnClose']
     assert info['name'] == "Nuvio Max'd"
-    assert info['releaseChannel']=='stable'
+    assert info['releaseChannel']=='experimental'
     assert info['interfaceLanguages']['available']==['en','de','es','fr','ar','zh-Hans','ja','ko'] and info['interfaceLanguages']['englishFallback']
     assert info['detailActions']['libraryMembership'] and info['detailActions']['controllerGlyphHints']
+    assert info['mdblistMembershipFix']['rawRemoteReconciliation'] and info['mdblistMembershipFix']['boundedOffsetPagination']
     assert info['detailActions']['trackerLibraryWrites']==['trakt','mdblist'] and info['detailActions']['bulkEpisodeLimit']==5000
     assert info['peopleBrowsing']['castAndCrewPhotos'] and info['peopleBrowsing']['personBiography'] and info['peopleBrowsing']['movieAndTvCredits']
     assert info['updater']['repository'] == 'HandshakeHackin/Nuvio-maxd-releases'
@@ -113,6 +114,7 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
     assert info['displayRefresh']['resolutionReducedForRefresh'] is False
     assert info['hdrToSdr']['exposureGain'] == 1
     test_log = args.host_test_log.read_text()
+    assert 'MDBList membership: 43 regression cases passed' in test_log
     assert 'Remote remapping: learning, consumed capture' in test_log
     assert 'Remote Session: action selection, assign/edit/remove/reset' in test_log
     assert info['mediaRemote']['buttonRemapping'] and info['mediaRemote']['appLocalOnly']
