@@ -209,7 +209,7 @@ void Shell::route_detail(const hui::InputFrame &input, float dt)
         }
         detail_.update(input,dt);return;
     }
-    if(input.is_pressed(Action::menu)) {s_.detail_trailers();return;}
+    if(input.is_pressed(Action::menu)) {s_.detail_actions();return;}
     const bool streams = detail_.mode() == Detail::Mode::streams;
     const bool series = s_.detail.series;
     // Back leaves the page, except from a series' streams, where it goes back to the episodes.

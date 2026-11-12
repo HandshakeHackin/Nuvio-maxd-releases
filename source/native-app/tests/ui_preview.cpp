@@ -76,6 +76,16 @@ int main(int argc, char** argv) {
     };
     const auto backdrop_texture=artwork(1920,1080,0);
     const auto poster_texture=artwork(480,720,3);
+    if(mode=="title-actions"||mode=="title-actions-movie"||mode=="watched-confirm") {
+        std::ifstream input(root+"/test-output/title-actions/previews.json");nlohmann::json scenes;input>>scenes;
+        const auto& scene=scenes.at(mode);sx::DropdownState d;
+        d.title=sx::i18n::tr(scene.at("title").get<std::string>());
+        for(const auto& label:scene.at("options"))d.options.push_back(sx::i18n::tr(label.get<std::string>()));
+        d.message=sx::i18n::tr(scene.at("message").get<std::string>());d.dialog=scene.at("dialog");
+        if(mode=="watched-confirm")d.selected=1;
+        sx::draw_dropdown(list,env,d,1);
+    }
+    else
     if(mode=="person" || mode=="person-last") {
         sx::PersonContent content;content.data.id="1";content.data.name="Alexandra Müller";content.data.photo="";content.photo=poster_texture;
         content.data.birthday="1974-03-12";content.data.birthplace="Berlin, Deutschland";content.data.deathday="2024-01-01";content.data.known_for="Acting";

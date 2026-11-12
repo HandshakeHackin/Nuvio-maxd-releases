@@ -6,6 +6,7 @@ B="$ROOT/test-output"
 read -r -a bidi_cflags <<< "$(pkg-config --cflags fribidi)"
 read -r -a bidi_libs <<< "$(pkg-config --libs fribidi)"
 mkdir -p "$B"
+if [[ -z "${PREVIEW_MODES:-}" || "${PREVIEW_MODES:-}" =~ title-actions|watched-confirm ]]; then bash "$ROOT/tests/title_actions.sh"; fi
 if [[ -z "${PREVIEW_MODES:-}" || "${PREVIEW_MODES:-}" == *remote-* ]]; then bash "$ROOT/tests/remote_session.sh"; fi
 if [[ -z "${PREVIEW_MODES:-}" || "${PREVIEW_MODES:-}" =~ torrent-resume|torrent-settings|playback-recovery|diagnostic-summary ]]; then
     bash "$ROOT/tests/torrent_streaming.sh"
@@ -29,7 +30,7 @@ EGL_PLATFORM=surfaceless LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=llvmpipe \
 
 fi
 
-read -r -a modes <<< "${PREVIEW_MODES:-sports-settings sports-settings-off sports-hub sports-all-nav sports-menu sports-picker sports-teams sports-channels source-preferences source-preferences-last source-ranking torrent-resume torrent-settings playback-recovery diagnostic-summary torrent-buffer remote-remap remote-learn remote-timeout torrents torrents-all live-guide live-grid live-grid-future series-updates library-search library-search-empty library-search-long iptv movie series seasons player tracks chapters chapters-menu home skip skip-focused recap-focused credits-focused next-focused subtitle-preview subtitle-preview-largest subtitle-preview-high-contrast release-notes install-source store-update github-update donation audio-output settings-categories settings-lighting profile-pin cast person language de-cast de-person de-language de-usb-language de-settings-categories de-profile-pin de-login de-release-notes de-movie de-home de-person-last de-cast-last}"
+read -r -a modes <<< "${PREVIEW_MODES:-title-actions title-actions-movie watched-confirm de-title-actions ar-title-actions zh-Hans-title-actions ja-title-actions ko-title-actions sports-settings sports-settings-off sports-hub sports-all-nav sports-menu sports-picker sports-teams sports-channels source-preferences source-preferences-last source-ranking torrent-resume torrent-settings playback-recovery diagnostic-summary torrent-buffer remote-remap remote-learn remote-timeout torrents torrents-all live-guide live-grid live-grid-future series-updates library-search library-search-empty library-search-long iptv movie series seasons player tracks chapters chapters-menu home skip skip-focused recap-focused credits-focused next-focused subtitle-preview subtitle-preview-largest subtitle-preview-high-contrast release-notes install-source store-update github-update donation audio-output settings-categories settings-lighting profile-pin cast person language de-cast de-person de-language de-usb-language de-settings-categories de-profile-pin de-login de-release-notes de-movie de-home de-person-last de-cast-last}"
 if [ -z "${PREVIEW_MODES:-}" ]; then
     for language in es fr ar zh-Hans ja ko; do
         for scene in language-picker settings-categories login profile-pin person home player usb-language release-notes; do

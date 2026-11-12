@@ -7,9 +7,9 @@ inline bool should_show_release_notes(std::string_view seen, std::string_view cu
     return !current.empty() && seen != current;
 }
 inline constexpr std::array<const char*,4> release_note_items = {
-    "1.0.0.18: Menu languages now include English, German, Spanish, French, Arabic, Simplified Chinese, Japanese and Korean.",
-    "Choose Language in Settings, then restart Max'd. Some advanced help and provider messages still use English.",
-    "Arabic text uses joined letters and right-to-left text order. Chinese, Japanese and Korean use the bundled fonts.",
-    "Audio/subtitle preferences and addon content are separate from menu language. Saved playlists and profile data are preserved.",
+    "1.0.0.19: Options on movie/series details opens library, watched and trailer actions.",
+    "Add or remove library titles with profile sync. Watched actions cover movies and listed released episodes in a season or series.",
+    "Bulk watched actions ask for confirmation. Offline changes are saved separately from resume positions.",
+    "Episode hints show Triangle marking. Cast and person pages now use controller icons.",
 };
 }

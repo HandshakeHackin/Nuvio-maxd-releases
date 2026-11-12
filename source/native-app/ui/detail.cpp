@@ -565,7 +565,7 @@ void Detail::draw_streams(hui::gfx::DrawList &list) const
 
 void Detail::draw_hints_row(hui::gfx::DrawList &list) const
 {
-    draw_chip(list,env_,hui::ui::Button::r2,i18n::tr("Cast & crew"),110,1010);
+    draw_chip(list,env_,hui::ui::Button::r2,i18n::tr("Cast & crew"),110,978);
     hui::ui::HintLayout layout;
     layout.size = 36.0f;
     layout.text_size = 22.0f;
@@ -576,16 +576,17 @@ void Detail::draw_hints_row(hui::gfx::DrawList &list) const
     {
         const hui::ui::Hint hints[] = {{hui::ui::Button::cross, seasons_focused_ ? sx::i18n::tr("Select season") : sx::i18n::tr("Streams")},
                                        {hui::ui::Button::l1, sx::i18n::tr("Season"), hui::ui::Button::r1},
-                                       {hui::ui::Button::options, sx::i18n::tr("Watch trailer")},
+                                       {hui::ui::Button::triangle, sx::i18n::tr("Mark watched / unwatched")},
+                                       {hui::ui::Button::options, sx::i18n::tr("Title actions")},
                                        {hui::ui::Button::circle, sx::i18n::tr("Back")}};
-        hui::ui::draw_hints(list, env_.fonts, hui::ui::GlyphStyle::dark(), hints, 4, theme::kRight, true, layout);
+        hui::ui::draw_hints(list, env_.fonts, hui::ui::GlyphStyle::dark(), hints, 5, theme::kRight, true, layout);
     }
     else
     {
         const hui::ui::Hint hints[] = {{hui::ui::Button::cross, filters_focused_ ? sx::i18n::tr("Select") : sx::i18n::tr("Play")},
                                        {hui::ui::Button::l1, sx::i18n::tr("Addon"), hui::ui::Button::r1},
                                        {hui::ui::Button::triangle, sx::i18n::tr("Reload")},
-                                       {hui::ui::Button::options, sx::i18n::tr("Watch trailer")},
+                                       {hui::ui::Button::options, sx::i18n::tr("Title actions")},
                                        {hui::ui::Button::circle, sx::i18n::tr("Back")}};
         hui::ui::draw_hints(list, env_.fonts, hui::ui::GlyphStyle::dark(), hints, 5, theme::kRight, true, layout);
     }
@@ -608,7 +609,10 @@ void Detail::draw_people(hui::gfx::DrawList& list)const {
         hui::ui::paragraph(list,env_.fonts.regular,role,x,816,22,190,29,theme::ink_2,2);
     }
     list.pop_clip();
-    text(list,env_.fonts.regular,i18n::tr("D-pad: browse · Cross: person details · Triangle: retry · Circle / R2: back"),110,1020,23,theme::ink_2);
+    hui::ui::HintLayout layout;layout.size=36;layout.text_size=22;layout.cy=1020;layout.item_gap=24;layout.font=&env_.fonts.regular;
+    const hui::ui::Hint hints[]={{hui::ui::Button::dpad,i18n::tr("Browse")},{hui::ui::Button::cross,i18n::tr("Person details")},
+        {hui::ui::Button::triangle,i18n::tr("Retry")},{hui::ui::Button::circle,i18n::tr("Back"),hui::ui::Button::r2}};
+    hui::ui::draw_hints(list,env_.fonts,hui::ui::GlyphStyle::dark(),hints,4,theme::kRight,true,layout);
 }
 
 void Detail::draw(hui::gfx::DrawList &list, hui::gfx::BackdropSpec &backdrop) const

@@ -426,6 +426,18 @@
     "Correct provider guide clock": "配信元の番組表時刻を補正",
     "Guide layout: Time grid": "番組表の表示：時間グリッド",
     "Guide layout: Channel tiles": "番組表の表示：チャンネルタイル",
-    "Season ": "シーズン "
+    "Season ": "シーズン ",
+    "Title actions": "作品の操作",
+    "Mark series watched": "シリーズを視聴済みにする",
+    "Mark series unwatched": "シリーズを未視聴にする",
+    "Mark season watched": "シーズンを視聴済みにする",
+    "Mark season unwatched": "シーズンを未視聴にする",
+    "Open title": "作品を開く",
+    "Mark watched / unwatched": "視聴済み / 未視聴",
+    "Saving title changes...": "作品の変更を保存中...",
+    "Library: Nuvio + Trakt/MDBList when selected. Watched: selected progress service.": "ライブラリ：Nuvioと選択中のTrakt/MDBList。視聴状況：選択中の進捗サービス。",
+    "Library: Nuvio only; SIMKL is read-only here. Watched: selected progress service.": "ライブラリ：Nuvioのみ。SIMKLは読み取り専用です。視聴状況：選択中の進捗サービス。",
+    " released episodes. Resume positions stay unchanged.": " 話の公開済みエピソード。再生位置は変更されません。",
+    " listed episodes. Resume positions stay unchanged.": " 話の掲載エピソード。再生位置は変更されません。"
   }
 }

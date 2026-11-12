@@ -46,7 +46,7 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
     param = json.loads((extracted / 'sce_sys/param.json').read_text())
     display_profile = validate_display_metadata(param)
     assert param['titleId'] == 'PPSA99288'
-    assert param['contentVersion'] == '07.000.018'
+    assert param['contentVersion'] == '07.000.019'
     assert param['localizedParameters']['en-US']['titleName'] == "Nuvio Max'd"
     assert param['contentId'] == 'UP9000-PPSA99288_00-NUVIOPS5NAT00001'
     assert param['applicationCategoryType'] == 0
@@ -58,7 +58,7 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
     assert struct.unpack_from('<HH', data, elf + 16) == (0xFE10, 62)
     assert struct.unpack_from('<Q', data, elf + 24)[0] != 0
     info = json.loads((extracted / 'build-info.json').read_text())
-    assert info['version'] == '1.0.0.18-native'
+    assert info['version'] == '1.0.0.19-native'
     assert info['userExperienceUpdates']['optionalDonationQr']
     assert info['userExperienceUpdates']['installSourceSelector'] and info['userExperienceUpdates']['sourceAwareUpdateReminders']
     assert info['experimentalAv']['driverOwnedHdrSwitch'] and info['experimentalAv']['pcmDefault']
@@ -69,6 +69,8 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
     assert info['name'] == "Nuvio Max'd"
     assert info['releaseChannel']=='stable'
     assert info['interfaceLanguages']['available']==['en','de','es','fr','ar','zh-Hans','ja','ko'] and info['interfaceLanguages']['englishFallback']
+    assert info['detailActions']['libraryMembership'] and info['detailActions']['controllerGlyphHints']
+    assert info['detailActions']['trackerLibraryWrites']==['trakt','mdblist'] and info['detailActions']['bulkEpisodeLimit']==5000
     assert info['peopleBrowsing']['castAndCrewPhotos'] and info['peopleBrowsing']['personBiography'] and info['peopleBrowsing']['movieAndTvCredits']
     assert info['updater']['repository'] == 'HandshakeHackin/Nuvio-maxd-releases'
     assert not info['sourceDirty']
@@ -120,6 +122,7 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
     assert 'Localization dialogs: eight native language names' in test_log
     assert 'People metadata: movie/TV credits' in test_log
     assert 'People UI: cast/person focus' in test_log
+    assert 'Title actions: production menus, library toggle' in test_log
     assert 'People Session: cancelled/stale/profile completions' in test_log
     assert all(mode+': GL error 0x0' in test_log for mode in ['de-person','de-cast','de-language','de-login','de-profile-pin','de-usb-language','de-person-last','de-cast-last'])
     assert 'person: GL error 0x0' in test_log and 'cast: GL error 0x0' in test_log and 'language: GL error 0x0' in test_log

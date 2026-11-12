@@ -1,5 +1,12 @@
 # Native Nuvio Max'd for PS5
 
+## 1.0.0.19: detail actions and controller hints
+
+Press **Options** on movie/series details to manage library membership, watched
+marks or trailers. Bulk season/series changes ask for confirmation and use known
+released episodes. Cast/person pages now show controller icons. See
+[behavior, sync scope and checks](TITLE_ACTIONS.md).
+
 ## 1.0.0.18: more menu languages
 
 Choose English, German, Spanish, French, Arabic, Simplified Chinese, Japanese or

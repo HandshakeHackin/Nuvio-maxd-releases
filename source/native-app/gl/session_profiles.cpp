@@ -64,7 +64,7 @@ void Session::clear_profile_views() {
     cancel_autoplay(); resuming_ = false; open_req_.reset(); want_streams_video_.clear();
     tracking_status_ = json::object(); ++tracking_generation_; ++library_generation_;
     library_.clear(); progress_.clear(); watched_.clear(); addons_.clear(); board_.clear();
-    library_loaded_ = false; library_loading_ = false; addons_loading_ = false;
+    library_loaded_ = false; library_loading_ = false; addons_loading_ = false; title_action_busy_ = false;
     board_loading_ = false; disc_loading_ = false; disc_end_ = false;
     disc_items_.clear(); disc_types_.clear(); discover.items.clear();
     board.rows.clear(); board_map_.clear(); meta_cache_.clear(); meta_asked_.clear(); meta_inflight_ = 0;

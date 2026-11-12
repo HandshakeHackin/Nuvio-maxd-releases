@@ -96,7 +96,9 @@ int main(int argc, char** argv) {
             }
         } else {
             ApiResult r;
-            if (op == "tracking") r = api_tracking(jstr(cmd,"auth_key"),jstr(cmd,"action"),jobj(cmd,"args"));
+            if(op=="membership")r=api_library_membership_update(jstr(cmd,"auth_key"),jobj(cmd,"item"),jbool(cmd,"add"),jstr(cmd,"source","nuvio"));
+            else if(op=="watched_batch")r=api_watched_batch(jstr(cmd,"auth_key"),jobj(cmd,"entries"),jbool(cmd,"watched"),jstr(cmd,"source","nuvio"));
+            else if (op == "tracking") r = api_tracking(jstr(cmd,"auth_key"),jstr(cmd,"action"),jobj(cmd,"args"));
             else if (op == "watched_get") r = api_watched_get(jstr(cmd, "auth_key"));
             else if (op == "watched_update") r = api_watched_update(jstr(cmd, "auth_key"), jstr(cmd, "video"), jstr(cmd, "title"), jbool(cmd, "watched"), jstr(cmd, "content"), int(jnum(cmd, "season", -1)), int(jnum(cmd, "episode", -1)));
             else if (op == "profiles") r = api_profiles_get(jstr(cmd, "auth_key"));

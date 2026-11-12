@@ -1,3 +1,7 @@
+# 1.0.0.19 — detail actions and controller hints
+
+Library membership sync and movie/season/series watched controls from title details (#22); discoverable episode marking; controller glyphs on cast and person pages (#21). Bounded private offline queues, bulk confirmation and profile/service guards. See source/native-app/TITLE_ACTIONS.md.
+
 # 1.0.0.18 — menu languages
 
 Add Spanish, French, Arabic, Simplified Chinese, Japanese and Korean menus, a registry-driven language picker, 425-message core coverage, English fallback, accent/Arabic/CJK menu search and catalog/font/persistence regressions. Keep audio/subtitle and profile/source settings independent.

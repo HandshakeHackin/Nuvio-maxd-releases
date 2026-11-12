@@ -1,4 +1,5 @@
-Nuvio Max'd 1.0.0.18 verification evidence is generated from the final clean
-source, complete app build, exact-source CI and package checks. See the candidate
-build's native-validation.json and accompanying TEST_RESULTS.txt for actual
-results. Source-tree documentation is not evidence of a published release.
+Nuvio Max'd 1.0.0.19 verification evidence is generated from the final clean
+source commit after the full native build, exact-source host/VLC checks and
+ZIP/native image/source archive verification. See the release's TEST_RESULTS.txt
+and native-validation.json for the completed checks and CI links. These checks
+do not establish physical PS5 or real-account round-trip acceptance.

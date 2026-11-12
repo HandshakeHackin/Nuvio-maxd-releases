@@ -426,6 +426,18 @@
     "Correct provider guide clock": "تصحيح وقت دليل المزوّد",
     "Guide layout: Time grid": "تخطيط الدليل: شبكة زمنية",
     "Guide layout: Channel tiles": "تخطيط الدليل: بطاقات القنوات",
-    "Season ": "الموسم "
+    "Season ": "الموسم ",
+    "Title actions": "إجراءات العنوان",
+    "Mark series watched": "تحديد المسلسل كمشاهَد",
+    "Mark series unwatched": "تحديد المسلسل كغير مشاهَد",
+    "Mark season watched": "تحديد الموسم كمشاهَد",
+    "Mark season unwatched": "تحديد الموسم كغير مشاهَد",
+    "Open title": "فتح العنوان",
+    "Mark watched / unwatched": "مشاهَد / غير مشاهَد",
+    "Saving title changes...": "جارٍ حفظ تغييرات العنوان...",
+    "Library: Nuvio + Trakt/MDBList when selected. Watched: selected progress service.": "المكتبة: Nuvio وTrakt/MDBList عند اختياره. المشاهدة: خدمة التقدم المختارة.",
+    "Library: Nuvio only; SIMKL is read-only here. Watched: selected progress service.": "المكتبة: Nuvio فقط؛ SIMKL للقراءة فقط هنا. المشاهدة: خدمة التقدم المختارة.",
+    " released episodes. Resume positions stay unchanged.": " حلقات منشورة. تبقى مواضع الاستئناف كما هي.",
+    " listed episodes. Resume positions stay unchanged.": " حلقات مدرجة. تبقى مواضع الاستئناف كما هي."
   }
 }

@@ -192,8 +192,24 @@ class Backend(http.server.BaseHTTPRequestHandler):
             state[field] = [r for r in state.get(field, []) if key(r) not in removed]
             self.send_json(200, {})
         elif path.endswith('sync_pull_library'):
-            assert body == {'p_profile_id': state.get('expected_profile', 1), 'p_limit': 500, 'p_offset': 0}
-            self.send_json(200, [{'content_id': 'tt123', 'content_type': 'movie', 'name': 'Test title'}])
+            if state.get('library_malformed'):
+                self.send_json(200, {'unexpected':'not a snapshot'}); return
+            assert body['p_profile_id'] == state.get('expected_profile', 1) and body['p_limit'] == 500
+            items = state.setdefault('library_' + str(body['p_profile_id']), [{'content_id': 'tt123', 'content_type': 'movie', 'name': 'Test title'}])
+            self.send_json(503 if state.get('library_offline') else 200, items[body['p_offset']:body['p_offset']+500])
+        elif path.endswith(('sync_push_library_items', 'sync_delete_library_items')):
+            assert body['p_profile_id'] == state.get('expected_profile', 1)
+            if state.get('library_offline'):
+                self.send_json(503, {}); return
+            assert body['p_origin_client_id'].startswith('nuvio-ps5-')
+            adding = path.endswith('sync_push_library_items')
+            rows = body['p_items' if adding else 'p_keys']
+            field = 'library_' + str(body['p_profile_id'])
+            current = state.setdefault(field, [{'content_id': 'tt123', 'content_type': 'movie', 'name': 'Test title'}])
+            key = lambda row: (row['content_id'], row['content_type'])
+            keys = {key(row) for row in rows}
+            state[field] = [row for row in current if key(row) not in keys] + (rows if adding else [])
+            self.send_json(200, {})
         elif path.endswith('sync_pull_watch_progress'):
             assert body == {'p_profile_id': state.get('expected_profile', 1)}
             self.send_json(503 if state.get('progress_offline') else 200, state.get('progress_rows', []) if body['p_profile_id'] == 1 else state.get('progress_rows_' + str(body['p_profile_id']), []))
@@ -1106,6 +1122,91 @@ class AccountTests(unittest.TestCase):
         status=self.command('tracking',action='status')['result']
         self.assertEqual(status['library'],'nuvio')
         self.assertEqual(status['libraryPreferred'],'simkl')
+
+    def test_library_membership_is_separate_from_resume_and_history(self):
+        key = self.pair()['result']['authKey']
+        self.assertTrue(self.command('library', auth_key=key)['ok'])
+        self.assertTrue(self.command('progress_write', auth_key=key, changes=[self.progress_item()])['ok'])
+        item = dict(_id='tt999', type='movie', name='あ'*400, stream='https://private.invalid/token', headers={'secret':'secret'})
+        self.assertTrue(self.command('membership', auth_key=key, item=item, add=True)['result']['synced'])
+        sent = next(body['p_items'][0] for path, body, _ in self.state['calls'] if path.endswith('sync_push_library_items'))
+        self.assertNotIn('stream', sent)
+        self.assertNotIn('headers', sent)
+        self.assertIsNone(sent['addon_base_url'])
+        self.assertLessEqual(len(sent['name'].encode('utf-8')),1024)
+        self.assertEqual(sent['name'],'あ'*341)
+        self.assertIn('tt999', {row['_id'] for row in self.command('library')['result'] if not row.get('temp')})
+        self.assertTrue(self.command('membership', item=dict(_id='tt123', type='movie'), add=False)['ok'])
+        rows = self.command('library')['result']
+        original = next(row for row in rows if row['_id']=='tt123')
+        self.assertTrue(original['removed'] and original['temp'])
+        self.assertGreater(original['state']['timeOffset'],0)
+        self.assertFalse(any(path.endswith(('sync_push_watched_items','sync_delete_watched_items')) for path, _, _ in self.state['calls']))
+        self.assertEqual((self.profile_path()/'library-sync.json').stat().st_mode & 0o777,0o600)
+
+    def test_library_snapshot_removal_and_malformed_reply_preserve_correct_membership(self):
+        self.assertTrue(self.pair()['ok'])
+        self.assertIn('tt123',{r['_id'] for r in self.command('library')['result']})
+        self.state['library_1']=[]
+        self.assertNotIn('tt123',{r['_id'] for r in self.command('library')['result'] if not r.get('temp')})
+        self.state['library_1']=[dict(content_id='tt456',content_type='series',name='Saved')]
+        self.command('library');self.state['library_malformed']=True
+        self.assertIn('tt456',{r['_id'] for r in self.command('library')['result']})
+        self.state['library_malformed']=False
+        self.state['library_1']=[dict(content_id='tt'+str(n+1000),content_type='movie',name='Movie') for n in range(10001)]
+        self.assertIn('tt456',{r['_id'] for r in self.command('library')['result']})
+
+    def test_membership_offline_restart_latest_intent_and_remote_changes(self):
+        key = self.pair()['result']['authKey']
+        self.command('library')
+        self.state['library_offline'] = True
+        item = dict(_id='tt456', type='series', name='Offline series')
+        result = self.command('membership', item=item, add=True)
+        self.assertTrue(result['ok']); self.assertFalse(result['result']['synced'])
+        self.command('membership', item=item, add=False)
+        self.command('membership', item=item, add=True)
+        pending = json.loads((self.profile_path()/'library-sync.json').read_text())['pending']
+        self.assertEqual(len(pending),1)
+        self.command('restore')
+        self.state['library_1'].append(dict(content_id='tt_other', content_type='movie',name='Other device'))
+        self.state['library_offline'] = False
+        rows = self.command('library')['result']
+        self.assertTrue({'tt456','tt_other','tt123'} <= {r['_id'] for r in rows})
+        self.assertEqual(json.loads((self.profile_path()/'library-sync.json').read_text())['pending'],[])
+        key = self.command('profiles')['result']['authKey']
+        other = self.command('select_profile',auth_key=key,profile=2)['result']['authKey']
+        self.state['expected_profile'] = 2
+        self.assertFalse(self.command('membership',auth_key=key,item=item,add=False)['ok'])
+        self.assertNotIn('tt456',{r['_id'] for r in self.command('library',auth_key=other)['result']})
+
+    def test_membership_source_change_and_unreadable_cache_do_not_write(self):
+        key = self.pair()['result']['authKey']
+        self.assertFalse(self.command('membership',auth_key=key,item=dict(_id='tt456',type='movie'),add=True,source='trakt')['ok'])
+        target=self.profile_path()/'library-sync.json';target.write_text('unreadable')
+        self.assertFalse(self.command('membership',item=dict(_id='tt456',type='movie'),add=True)['ok'])
+        self.assertEqual(target.read_text(),'unreadable')
+        self.assertFalse(any(path.endswith('sync_push_library_items') for path,_,_ in self.state['calls']))
+
+    def test_watched_batch_atomic_validation_offline_retry_and_movie_unmark(self):
+        key = self.pair()['result']['authKey']
+        entries=[dict(content_id='tt456',content_type='series',title='Series',season=1,episode=e) for e in range(1,4)]
+        self.state['watched_1']=[dict(content_id='tt_other',content_type='movie',title='Other',season=None,episode=None,watched_at=1700000000000)]
+        self.assertFalse(self.command('watched_batch',entries=entries+[dict(entries[0],episode=-1)],watched=True)['ok'])
+        self.assertEqual(len(self.state['watched_1']),1)
+        self.assertFalse(self.command('watched_batch',entries=entries,watched=True,source='trakt')['ok'])
+        self.state['watched_offline']=True
+        result=self.command('watched_batch',entries=entries,watched=True)
+        self.assertTrue(result['ok']);self.assertFalse(result['result']['synced'])
+        self.command('restore');self.state['watched_offline']=False
+        self.assertEqual(len(self.command('watched_get')['result']['entries']),4)
+        push=[body for path,body,_ in self.state['calls'] if path.endswith('sync_push_watched_items')]
+        self.assertEqual(len(push),1)
+        self.assertTrue(self.command('watched_batch',entries=entries,watched=False)['ok'])
+        self.assertEqual([r['content_id'] for r in self.state['watched_1']],['tt_other'])
+        movie=dict(content_id='tt789',content_type='movie',season=None,episode=None,title='Movie')
+        self.assertTrue(self.command('watched_batch',entries=[movie],watched=True)['ok'])
+        self.assertTrue(self.command('watched_batch',entries=[movie],watched=False)['ok'])
+        self.assertEqual(len(self.state['watched_1']),1)
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

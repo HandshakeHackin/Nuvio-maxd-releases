@@ -123,6 +123,14 @@ Store::Store(std::string directory, Transport transport, const std::atomic<bool>
     for (auto p : providers) {
         if (state_["accounts"].contains(p) && !state_["accounts"][p].is_object()) readable_ = false;
         if (state_.contains("pending_"+std::string(p)) && !state_["pending_"+std::string(p)].is_array()) readable_ = false;
+        const auto field="membership_pending_"+std::string(p);
+        if(state_.contains(field)) {
+            const auto& queue=state_[field];
+            if(!queue.is_array()||queue.size()>128)readable_=false;
+            else for(const auto& op:queue)if(!jobj(op,"add").is_boolean()||!jobj(op,"item").is_object()||ids(jstr(jobj(op,"item"),"_id")).empty())readable_=false;
+        }
+        const auto cache="library_cache_"+std::string(p);
+        if(state_.contains(cache)&&(!state_[cache].is_array()||state_[cache].size()>10000))readable_=false;
     }
 }
 bool Store::save(std::string& error) {
@@ -258,6 +266,7 @@ json Store::action(const std::string& operation, const json& args, std::string& 
             for (const auto* field : {"library", "progress"}) if (jstr(state_, field) == p) state_[field] = "nuvio";
             if(p=="simkl") {state_.erase("simkl_cache");state_.erase("simkl_activities");state_.erase("simkl_checked");}
             state_.erase(("pending_"+p)); state_.erase("failed_"+p); state_.erase("cache_"+p); state_.erase("pairing_"+p);
+            state_.erase("membership_pending_"+p); state_.erase("library_cache_"+p);
         } else if (operation == "key") {
             if (connected(p)) { error = "Disconnect the current tracker before replacing its account"; return {}; }
             if (p != "mdblist" || !credential(jstr(args, "api_key"))) { error = "Enter a valid MDBList API key"; return {}; }
@@ -315,6 +324,7 @@ json Store::action(const std::string& operation, const json& args, std::string& 
             if (!validate(p, error)) { a = previous; return {}; }
             a["verified"] = true; a["reconnect"] = false; a["error"] = ""; state_.erase("pairing_"+p);
             state_.erase("pending_"+p); state_.erase("failed_"+p);
+            state_.erase("membership_pending_"+p); state_.erase("library_cache_"+p);
             if(p=="simkl") {state_.erase("simkl_cache");state_.erase("simkl_activities");state_.erase("simkl_checked");}
             remove((dir_+"/native-library-"+p+".json").c_str());
             remove((dir_+"/progress-"+p+".json").c_str());
@@ -324,12 +334,71 @@ json Store::action(const std::string& operation, const json& args, std::string& 
     return status();
 }
 bool Store::library(json& items, std::string& error) {
-    error.clear(); const bool ok=read_library(items,error);
+    error.clear();
+    if(!readable_){error="Tracker settings are unreadable; existing data was retained";return false;}
+    const auto p=jstr(state_,"library","nuvio");
+    std::string pending_error;
+    flush_membership(p,pending_error);
+    bool ok=read_library(items,error);
+    if(ok && provider(p))state_["library_cache_"+p]=items;
+    else if(provider(p) && jobj(state_,("library_cache_"+p).c_str()).is_array()) {
+        items=state_["library_cache_"+p];ok=true;
+        if(error.empty())error="Reconnect "+name(p)+"; showing its saved library";
+    }
+    if(ok && jobj(state_,("membership_pending_"+p).c_str()).is_array())for(const auto& op:state_["membership_pending_"+p]) {
+        const auto& item=op["item"];
+        items.erase(std::remove_if(items.begin(),items.end(),[&](const auto& row){return jstr(row,"_id")==jstr(item,"_id") && jstr(row,"type")==jstr(item,"type");}),items.end());
+        if(jbool(op,"add"))items.push_back(item);
+    }
+    if(error.empty())error=pending_error;
     if (source(false)!="nuvio" || !error.empty()) {
         state_["library_error"] = ok ? "" : error;
         std::string ignored; save(ignored);
     }
     return ok;
+}
+bool Store::flush_membership(const std::string& p,std::string& error) {
+    const auto field="membership_pending_"+p;
+    if(!jobj(state_,field.c_str()).is_array() || state_[field].empty())return true;
+    if(!connected(p) || !refresh(p,error)){if(error.empty())error="Reconnect "+name(p)+" to sync library changes";return false;}
+    while(!state_[field].empty()) {
+        const auto op=state_[field].front();const auto& item=op["item"];
+        const bool add=jbool(op,"add"),movie=jstr(item,"type")=="movie";
+        const std::string bucket=movie?"movies":"shows";
+        const json body{{bucket,json::array({{{"ids",ids(jstr(item,"_id"))}}})}};
+        const auto path=p=="trakt"?std::string("/sync/watchlist")+(add?"":"/remove"):
+            std::string("/watchlist/items/")+(add?"add":"remove");
+        const auto response=request(p,path,&body);const auto result=parsed(response);
+        const auto& counts=jobj(result,add?"added":"deleted");
+        const auto& existing=jobj(result,"existing");const auto& missing=jobj(result,"not_found");
+        bool not_found=missing.is_number() && missing.get<double>()>0;
+        if(missing.is_object())for(const auto& v:missing)if((v.is_array()&&!v.empty())||(v.is_number()&&v.get<double>()>0))not_found=true;
+        const bool counted=(jobj(counts,bucket.c_str()).is_number() && jnum(counts,bucket.c_str())>=(add?1:0)) || (add&&jnum(existing,bucket.c_str())>0);
+        if(!response.ok() || !result.is_object() || not_found || !counted) {
+            error=!response.ok()?failure(p,response):name(p)+" did not confirm the library change; it remains pending";
+            return false;
+        }
+        auto& cache=state_["library_cache_"+p];if(!cache.is_array())cache=json::array();
+        cache.erase(std::remove_if(cache.begin(),cache.end(),[&](const auto& row){return jstr(row,"_id")==jstr(item,"_id")&&jstr(row,"type")==jstr(item,"type");}),cache.end());
+        if(add)cache.push_back(item);
+        state_[field].erase(state_[field].begin());if(!save(error))return false;
+    }
+    return true;
+}
+bool Store::membership(const json& item,bool add,bool& synced,std::string& error) {
+    if(!readable_){error="Tracker settings are unreadable; existing data was retained";return false;}
+    const auto p=jstr(state_,"library","nuvio"),type=jstr(item,"type");
+    if(p!="trakt" && p!="mdblist"){error="Library changes here support Nuvio, Trakt and MDBList. SIMKL library remains read-only.";return false;}
+    if(ids(jstr(item,"_id")).empty() || (type!="movie"&&type!="series")){error=name(p)+" cannot identify this title";return false;}
+    const auto field="membership_pending_"+p;
+    if(state_.contains(field)&&!state_[field].is_array()){error="Tracker library queue is unreadable";return false;}
+    auto old=state_;auto& queue=state_[field];if(!queue.is_array())queue=json::array();
+    queue.erase(std::remove_if(queue.begin(),queue.end(),[&](const auto& op){return jstr(op["item"],"_id")==jstr(item,"_id")&&jstr(op["item"],"type")==type;}),queue.end());
+    if(queue.size()>=128){state_=old;error="Tracker library queue is full";return false;}
+    json safe{{"_id",jstr(item,"_id")},{"type",type},{"name",jstr(item,"name")},{"poster",jstr(item,"poster")},{"removed",false},{"temp",false}};
+    queue.push_back({{"item",safe},{"add",add}});
+    if(!save(error)){state_=old;return false;}
+    synced=flush_membership(p,error);return true;
 }
 bool Store::progress(json& rows, std::string& error) {
     error.clear(); const bool ok=read_progress(rows,error);
@@ -407,8 +476,10 @@ bool Store::flush(const std::string& p, std::string& error) {
     if (!connected(p) || !refresh(p, error)) return false;
     // Keep failed events bound to the exact tracker account they were created for.
     // Replacing/disconnecting a connection clears them; do not migrate across accounts.
-    bool rejected=false;
+    bool rejected=false;unsigned requests=0;
     while (!state_[field].empty()) {
+        if(requests>=8){error=name(p)+" updates remain queued; refresh Watch Progress to continue";return false;}
+        ++requests;
         const auto item = state_[field].front();
         const auto& s = jobj(item, "state");
         auto body = scrobble(p, item);
@@ -428,8 +499,35 @@ bool Store::flush(const std::string& p, std::string& error) {
             if (p != "mdblist") { error = "Removing Continue Watching from "+name(p)+" is not supported here yet"; return false; }
             path = "/scrobble/clear";
         }
+        const auto single_body=body;
+        // Batch only explicit history intents with the same operation. Scrobbles
+        // retain their normal ordering and per-playback identity.
+        std::size_t count=1;
+        if(s.contains("trackingWatched")) {
+            json movies=json::array(),shows=json::array();
+            for(std::size_t i=0;i<state_[field].size()&&i<100;++i) {
+                const auto& next=state_[field][i];const auto& ns=jobj(next,"state");
+                if(!ns.contains("trackingWatched")||jbool(ns,"trackingWatched")!=jbool(s,"trackingWatched"))break;
+                json media{{"ids",ids(jstr(next,"_id"))}};
+                if(jstr(next,"type")=="movie")movies.push_back(media);
+                else {
+                    auto show=std::find_if(shows.begin(),shows.end(),[&](const auto& row){return jobj(row,"ids")==media["ids"];});
+                    if(show==shows.end()){media["seasons"]=json::array();shows.push_back(media);show=shows.end()-1;}
+                    auto& seasons=(*show)["seasons"];const int season=int(jnum(ns,"nuvioSeason"));
+                    auto sn=std::find_if(seasons.begin(),seasons.end(),[&](const auto& row){return jnum(row,"number")==season;});
+                    if(sn==seasons.end()){seasons.push_back({{"number",season},{"episodes",json::array()}});sn=seasons.end()-1;}
+                    (*sn)["episodes"].push_back({{"number",int(jnum(ns,"nuvioEpisode"))}});
+                }
+                count=i+1;
+            }
+            body=json::object();if(!movies.empty())body["movies"]=movies;if(!shows.empty())body["shows"]=shows;
+        }
         auto response = request(p, path, &body);
-        const auto reply=parsed(response);
+        auto reply=parsed(response);
+        const auto batch_missing=[&]{const auto& m=jobj(reply,"not_found");if(m.is_number())return m.get<double>()>0;if(m.is_object())for(const auto& v:m)if((v.is_array()&&!v.empty())||(v.is_number()&&v.get<double>()>0))return true;return false;};
+        if(count>1&&(response.status==400||response.status==404||response.status==422||batch_missing())) {
+            count=1;body=single_body;response=request(p,path,&body);reply=parsed(response);
+        }
         const auto& not_found=jobj(reply,"not_found");
         bool missing_item=not_found.is_number() && not_found.get<double>()>0;
         if(not_found.is_object()) for(const auto& value:not_found) if(!value.empty()) missing_item=true;
@@ -437,8 +535,12 @@ bool Store::flush(const std::string& p, std::string& error) {
             const auto failed="failed_"+p;
             if(!jobj(state_,failed.c_str()).is_array()) state_[failed]=json::array();
             auto& rejected_items=state_[failed];
-            rejected_items.erase(std::remove_if(rejected_items.begin(),rejected_items.end(),[&](const auto& old){return progress_key(old)==progress_key(item);}),rejected_items.end());
-            rejected_items.push_back(item);state_[field].erase(state_[field].begin());rejected=true;
+            for(std::size_t i=0;i<count;++i) {
+                const auto rejected_item=state_[field].front();
+                rejected_items.erase(std::remove_if(rejected_items.begin(),rejected_items.end(),[&](const auto& old){return progress_key(old)==progress_key(rejected_item);}),rejected_items.end());
+                rejected_items.push_back(rejected_item);state_[field].erase(state_[field].begin());
+            }
+            rejected=true;
             if(!save(error)) return false;
             continue; // A permanently rejected title must not block other titles.
         }
@@ -450,7 +552,7 @@ bool Store::flush(const std::string& p, std::string& error) {
             return false;
         }
         if(p=="simkl") {state_.erase("simkl_cache");state_.erase("simkl_checked");}
-        state_[field].erase(state_[field].begin());
+        state_[field].erase(state_[field].begin(),state_[field].begin()+count);
         if (!save(error)) return false;
     }
     if(rejected) {
@@ -459,7 +561,8 @@ bool Store::flush(const std::string& p, std::string& error) {
     }
     state_["accounts"][p]["error"] = ""; return save(error);
 }
-bool Store::write(const json& items, std::string& error) {
+bool Store::write(const json& items, std::string& error, bool* persisted) {
+    if(persisted)*persisted=false;
     const auto p = jstr(state_, "progress", "nuvio");
     if (!provider(p)) return true;
     const auto field = "pending_"+p;
@@ -492,7 +595,9 @@ bool Store::write(const json& items, std::string& error) {
             if (s.contains(key)) portable["state"][key] = s[key];
         queue.push_back(portable);
     }
+    if(state_[field].size()>10000){error="Tracker update queue is full";return false;}
     if (!save(error)) return false;
+    if(persisted)*persisted=true;
     if (!connected(p)) { error = "Reconnect "+name(p)+"; progress is saved on this PS5"; return false; }
     return flush(p, error);
 }

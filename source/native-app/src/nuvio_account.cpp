@@ -4,6 +4,7 @@
 #include "stremio.h"
 #include "http.h"
 #include "watch_sync.h"
+#include "library_sync.hpp"
 #include "tracking.h"
 #include <memory>
 #include <openssl/rand.h>
@@ -537,34 +538,28 @@ ApiResult api_library_get(const std::string& key) {
     const auto local_path = profile_dir + (tracking::provider(progress_source) ? "/native-library-"+progress_source+".json" : "/native-library.json");
     json local; load_json(local_path, local);
     if (!local.is_array()) local = json::array();
-    json remote = json::array();
-    for (int offset = 0; offset < 10000; offset += 500) {
-        const json body{{"p_profile_id", active_profile}, {"p_limit", 500}, {"p_offset", offset}};
-        const auto h = authorized("/rest/v1/rpc/sync_pull_library", &body);
-        const json rows = parse(h);
-        if (!h.ok() || !rows.is_array()) { remote = local; break; }
-        for (const auto& r : rows) {
-            if (jnum(r, "profile_id", active_profile) != active_profile) continue;
-            const std::string id = jstr(r, "content_id", jstr(r, "contentId"));
-            if (id.empty()) continue;
-            remote.push_back(json{{"_id", id}, {"type", jstr(r, "content_type", "movie")},
-                {"name", jstr(r, "name", "Untitled")}, {"poster", jstr(r, "poster")},
-                {"background", jstr(r, "background")}, {"removed", false}});
-        }
-        if (rows.size() < 500) break;
-    }
+    library_sync::Store membership(profile_dir,active_profile);
+    if(!membership.readable())return failure("Library cache is unreadable; existing data was retained");
+    const auto library_rpc=[](const std::string& rpc,const json& body){return authorized("/rest/v1/rpc/"+rpc,&body);};
+    const bool membership_synced=membership.pull(library_rpc);
+    json remote=json::array();
+    for(const auto& row:membership.items())remote.push_back(library_sync::native(row));
     for (const auto& item : local) {
         bool found = false;
         for (auto& r : remote) if (jstr(r, "_id") == jstr(item, "_id")) {
             r["state"] = jobj(item, "state"); found = true; break;
         }
-        if (!found) remote.push_back(item);
+        if (!found && jobj(item,"state").is_object()) {
+            auto progress=item;progress["removed"]=true;progress["temp"]=true;remote.push_back(progress);
+        }
     }
     std::string tracker_error, notice;
+    if(!membership_synced)notice="Library changes are saved on this PS5; Nuvio sync will retry.";
     if (trackers.source(false) != "nuvio") {
         json external;
         if (trackers.library(external, tracker_error)) {
             remote = std::move(external);
+            if(!tracker_error.empty())notice=tracker_error;
         } else notice = tracker_error + " Using Nuvio Library until it reconnects.";
     } else if (jstr(tracker_status, "libraryPreferred", "nuvio") != "nuvio")
         notice = "Library tracker is disconnected. Using Nuvio Library until it reconnects.";
@@ -591,6 +586,23 @@ ApiResult api_library_get(const std::string& key) {
         else (*it)["state"] = state;
     }
     auto result = success(remote); result.error = notice; return result;
+}
+ApiResult api_library_membership_update(const std::string& key,const json& item,bool add,const std::string& expected_source) {
+    std::lock_guard<std::mutex> lock(mutex);
+    if(!valid_context(key)||!establish_context())return failure("Nuvio profile changed");
+    tracking::Store trackers(profile_dir);
+    const auto source=jstr(trackers.status(),"libraryPreferred","nuvio");
+    if(source!=expected_source)return failure("Library source changed; reopen title actions");
+    const auto portable=library_sync::portable(item);
+    if(!library_sync::valid(portable))return failure("Unsupported library title");
+    library_sync::Store membership(profile_dir,active_profile);
+    bool synced=false;std::string error;
+    const auto rpc=[](const std::string& name,const json& body){return authorized("/rest/v1/rpc/"+name,&body);};
+    if(!membership.update(portable,add,rpc,synced,error))return failure(error);
+    bool tracker_synced=true;std::string tracker_error;
+    if(source!="nuvio" && !trackers.membership(library_sync::native(portable),add,tracker_synced,tracker_error))tracker_synced=false;
+    return success(json{{"synced",synced&&tracker_synced},{"nuvioSynced",synced},{"trackerSynced",tracker_synced},
+        {"trackerError",tracker_error},{"source",source},{"added",add}});
 }
 ApiResult api_library_put(const std::string& key, const json& changes) {
     // Keep the native library schema on-device. Only portable resume fields
@@ -838,7 +850,7 @@ std::string watched_key(const json& entry) {
 json watched_entry(const std::string& video, const std::string& title) {
     auto parts = split(video, ':');
     json entry{{"content_id", video}, {"content_type", "movie"}, {"title", title},
-               {"season", nullptr}, {"episode", nullptr}, {"watched_at", int64_t(account_time() * 1000)}};
+               {"season", nullptr}, {"episode", nullptr}, {"watched_at", now_epoch_ms()}};
     if (parts.size() >= 3) {
         const auto integer = [](const std::string& v) {
             return !v.empty() && v.size() <= 6 && std::all_of(v.begin(), v.end(), [](char c) { return c >= '0' && c <= '9'; });
@@ -866,8 +878,7 @@ json watched_state() {
 }
 bool save_watched(const json& state) {
     const auto path = profile_dir + "/watched-sync.json";
-    if (!save_json(path, state)) return false;
-    chmod(path.c_str(), 0600); return true;
+    return library_sync::save_private(path,state);
 }
 bool sync_watched(json& state) {
     if (!jobj(state, "entries").is_array() || !jobj(state, "pending").is_array() || !jobj(state, "deletes").is_array()) return false;
@@ -929,41 +940,58 @@ ApiResult api_watched_get(const std::string& key) {
     const bool synced = sync_watched(state);
     return success(json{{"entries", state["entries"]}, {"synced", synced}});
 }
-ApiResult api_watched_update(const std::string& key, const std::string& video, const std::string& title, bool watched, const std::string& content, int season, int episode) {
+ApiResult api_watched_batch(const std::string& key,const json& entries,bool watched,const std::string& expected_source) {
     std::lock_guard<std::mutex> lock(mutex);
-    if (!valid_context(key) || !establish_context()) return failure("Nuvio profile changed");
-    if (video.empty()) return failure("Missing watched title identifier");
+    if(!valid_context(key)||!establish_context())return failure("Nuvio profile changed");
+    if(!entries.is_array()||entries.empty()||entries.size()>5000)return failure("Watched action exceeds the 5,000 episode limit");
     tracking::Store trackers(profile_dir);
-    if (tracking::provider(jstr(trackers.status(),"progressPreferred"))) {
+    const auto source=jstr(trackers.status(),"progressPreferred","nuvio");
+    if(!expected_source.empty()&&source!=expected_source)return failure("Watch Progress source changed; reopen title actions");
+    json clean=json::array();std::set<std::string> unique;
+    for(const auto& row:entries) {
+        const auto id=jstr(row,"content_id"),type=jstr(row,"content_type");
+        const auto& sn=jobj(row,"season");const auto& en=jobj(row,"episode");
+        if(!library_sync::valid(row) || (type=="series"&&(!sn.is_number_integer()||!en.is_number_integer()||sn.get<int64_t>()<0||sn.get<int64_t>()>100000||en.get<int64_t>()<1||en.get<int64_t>()>100000)) ||
+           (type=="movie"&&(!sn.is_null()||!en.is_null())))return failure("Invalid watched title or episode");
+        auto entry=json{{"content_id",id},{"content_type",type},{"title",library_sync::text(jstr(row,"title"),1024)},
+            {"season",sn},{"episode",en},{"watched_at",int64_t(account_time()*1000)}};
+        if(unique.insert(watched_key(entry)).second)clean.push_back(entry);
+    }
+    if(tracking::provider(source)) {
+        json changes=json::array();
+        for(const auto& entry:clean)changes.push_back({{"_id",entry["content_id"]},{"type",entry["content_type"]},
+            {"state",{{"nuvioSeason",jnum(entry,"season",-1)},{"nuvioEpisode",jnum(entry,"episode",-1)},{"trackingWatched",watched}}}});
         std::string error;
-        if (!trackers.mark(content.empty() ? video : content,season,episode,watched,error)) return failure(error);
-        return success(json{{"synced",true}});
+        bool saved=false;
+        const bool synced=trackers.write(changes,error,&saved);
+        if(!saved)return failure(error);
+        return success(json{{"synced",synced},{"source",source},{"notice",error}});
     }
-    auto state = watched_state();
-    if (!jobj(state, "entries").is_array() || !jobj(state, "pending").is_array() || !jobj(state, "deletes").is_array())
+    auto state=watched_state();
+    if(!jobj(state,"entries").is_array()||!jobj(state,"pending").is_array()||!jobj(state,"deletes").is_array())
         return failure("Watched history cache is unreadable; cloud history was not changed");
-    auto entry = watched_entry(video, title);
-    if (!content.empty()) {
-        entry["content_id"] = content;
-        entry["content_type"] = season >= 0 && episode >= 0 ? "series" : "movie";
-        entry["season"] = season >= 0 ? json(season) : json(nullptr);
-        entry["episode"] = episode >= 0 ? json(episode) : json(nullptr);
+    for(const auto& entry:clean) {
+        const auto id=watched_key(entry);
+        for(const auto* field:{"entries","pending","deletes"}) {
+            auto& rows=state[field];
+            rows.erase(std::remove_if(rows.begin(),rows.end(),[&](const auto& row){return watched_key(row)==id;}),rows.end());
+        }
+        if(watched){state["entries"].push_back(entry);state["pending"].push_back(entry);}
+        else state["deletes"].push_back({{"content_id",entry["content_id"]},{"season",entry["season"]},{"episode",entry["episode"]}});
     }
-    const auto id = watched_key(entry);
-    for (const auto* field : {"entries", "pending", "deletes"}) {
-        auto& rows = state[field];
-        rows.erase(std::remove_if(rows.begin(), rows.end(), [&](const json& r) { return watched_key(r) == id; }), rows.end());
+    if(state["entries"].size()>45000||state["pending"].size()>45000||state["deletes"].size()>45000)return failure("Watched history cache is full");
+    if(!save_watched(state))return failure("Could not save watched history");
+    const bool synced=sync_watched(state);
+    return success(json{{"synced",synced},{"source",source}});
+}
+ApiResult api_watched_update(const std::string& key,const std::string& video,const std::string& title,bool watched,const std::string& content,int season,int episode) {
+    if(video.empty())return failure("Missing watched title identifier");
+    auto entry=watched_entry(video,title);
+    if(!content.empty()) {
+        entry["content_id"]=content;entry["content_type"]=season>=0&&episode>=0?"series":"movie";
+        entry["season"]=season>=0?json(season):json(nullptr);entry["episode"]=episode>=0?json(episode):json(nullptr);
     }
-    if (watched) { state["entries"].push_back(entry); state["pending"].push_back(entry); }
-    else {
-        json removed{{"content_id", entry["content_id"]}};
-        if (entry["season"].is_number()) removed["season"] = entry["season"];
-        if (entry["episode"].is_number()) removed["episode"] = entry["episode"];
-        state["deletes"].push_back(removed);
-    }
-    if (!save_watched(state)) return failure("Could not save watched history");
-    const bool synced = sync_watched(state);
-    return success(json{{"synced", synced}});
+    return api_watched_batch(key,json::array({entry}),watched,"");
 }
 
 ApiResult api_logout(const std::string& key) {

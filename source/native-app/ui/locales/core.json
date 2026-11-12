@@ -424,6 +424,18 @@
     "Yes",
     "Your subtitles look like this.",
     "and enter this code",
-    "or open this address on any device"
+    "or open this address on any device",
+    "Title actions",
+    "Mark series watched",
+    "Mark series unwatched",
+    "Mark season watched",
+    "Mark season unwatched",
+    "Open title",
+    "Mark watched / unwatched",
+    "Saving title changes...",
+    "Library: Nuvio + Trakt/MDBList when selected. Watched: selected progress service.",
+    "Library: Nuvio only; SIMKL is read-only here. Watched: selected progress service.",
+    " released episodes. Resume positions stay unchanged.",
+    " listed episodes. Resume positions stay unchanged."
   ]
 }

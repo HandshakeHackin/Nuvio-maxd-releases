@@ -38,6 +38,9 @@ void PersonPage::draw(hui::gfx::DrawList& list,hui::gfx::BackdropSpec& backdrop)
   }list.pop_clip();if(rows.empty())text(list,env_.fonts.regular,i18n::tr(content_->loading?"Loading...":"No credits available."),650,top+120,24,theme::ink_2);
  }
  if(!content_->status.empty())text(list,env_.fonts.regular,env_.fonts.regular.font->fit(content_->status,22,1700),100,1008,22,theme::accent_soft);
- text(list,env_.fonts.regular,i18n::tr("D-pad: browse · Cross: open title · Triangle: retry · Circle: back"),100,1050,22,theme::ink_2);
+ hui::ui::HintLayout layout;layout.size=36;layout.text_size=22;layout.cy=1050;layout.item_gap=24;layout.font=&env_.fonts.regular;
+ const hui::ui::Hint hints[]={{hui::ui::Button::dpad,i18n::tr("Browse")},{hui::ui::Button::cross,i18n::tr("Open title")},
+    {hui::ui::Button::triangle,i18n::tr("Retry")},{hui::ui::Button::circle,i18n::tr("Back")}};
+ hui::ui::draw_hints(list,env_.fonts,hui::ui::GlyphStyle::dark(),hints,4,theme::kRight,true,layout);
 }
 }

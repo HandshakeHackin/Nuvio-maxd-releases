@@ -57,25 +57,11 @@ void Session::detail_toggle_watched(int index)
 {
     if (index < 0 || index >= static_cast<int>(d_season_videos_.size()))
         return;
-    const std::string &id = d_season_videos_[static_cast<std::size_t>(index)]->id;
-    const auto& video = *d_season_videos_[static_cast<size_t>(index)];
-    const auto canonical = d_item_.id + ":" + std::to_string(video.season) + ":" + std::to_string(video.episode);
-    const bool mark = !watched(id);
-    if (!mark)
-    {
-        watched_.erase(id); watched_.erase(canonical);
-        say(sx::i18n::tr("Marked as not watched"));
-    }
-    else
-    {
-        watched_.insert(canonical);
-        say(sx::i18n::tr("Marked as watched"));
-    }
-    save_progress();
-    sync_watched_mark(id, d_item_.name, mark, d_item_.id, video.season, video.episode);
-    detail.episodes[static_cast<std::size_t>(index)].watched = watched(id);
-    refresh_board();refresh_library();
-    changed_ |= kDetail;
+    const auto& video=*d_season_videos_[static_cast<size_t>(index)];
+    const auto canonical=d_item_.id+":"+std::to_string(video.season)+":"+std::to_string(video.episode);
+    const json row{{"content_id",d_item_.id},{"content_type","series"},{"title",d_item_.name},
+        {"season",video.season},{"episode",video.episode},{"video_id",video.id}};
+    detail_apply_marks(json::array({row}),!watched(video.id)&&!watched(canonical));
 }
 
 // ---------------------------------------------------------------------------

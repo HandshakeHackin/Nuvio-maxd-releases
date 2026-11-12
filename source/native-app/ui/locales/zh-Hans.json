@@ -426,6 +426,18 @@
     "Correct provider guide clock": "校正提供商节目表时间",
     "Guide layout: Time grid": "节目表布局：时间网格",
     "Guide layout: Channel tiles": "节目表布局：频道卡片",
-    "Season ": "季 "
+    "Season ": "季 ",
+    "Title actions": "标题操作",
+    "Mark series watched": "将剧集标记为已看",
+    "Mark series unwatched": "将剧集标记为未看",
+    "Mark season watched": "将本季标记为已看",
+    "Mark season unwatched": "将本季标记为未看",
+    "Open title": "打开标题",
+    "Mark watched / unwatched": "已看 / 未看",
+    "Saving title changes...": "正在保存标题更改...",
+    "Library: Nuvio + Trakt/MDBList when selected. Watched: selected progress service.": "片库：Nuvio及所选的Trakt/MDBList。观看标记：所选进度服务。",
+    "Library: Nuvio only; SIMKL is read-only here. Watched: selected progress service.": "片库：仅Nuvio；此处SIMKL只读。观看标记：所选进度服务。",
+    " released episodes. Resume positions stay unchanged.": " 集已播出内容。续播位置保持不变。",
+    " listed episodes. Resume positions stay unchanged.": " 集已列出内容。续播位置保持不变。"
   }
 }

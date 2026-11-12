@@ -276,6 +276,10 @@ class Session
     void detail_pick_episode(int index);
     void detail_change_season(int delta);
     void detail_toggle_watched(int index);
+    void detail_actions();
+    void detail_membership(bool add);
+    void detail_apply_marks(const json& entries,bool marking);
+    bool title_action_busy_ = false;
     void detail_play(int index, bool with_server);
     void detail_reload_streams();
     void source_options();

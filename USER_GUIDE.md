@@ -475,3 +475,15 @@ Settings → Playback diagnostics shows the files beside log.txt: runtime.json, 
 ### In-app change log
 
 “What’s new” appears on first launch and after installing a new version. Press Cross or Circle to close it; the app remembers the version you have read. Open Settings → What’s new to read it again. New users continue to sign-in after dismissing the notes.
+
+## Detail actions (1.0.0.19)
+
+Press **Options** on movie/series details for **Title actions**. Manage library
+membership, mark a movie watched/unwatched, change a season or series' listed
+released episodes after confirmation, or watch a trailer. Triangle marks an
+individual episode on the episode carousel and reloads sources on the stream
+list. R2 opens cast/crew. Cast and person pages show controller button icons.
+Library changes go to Nuvio and a supported selected Library tracker
+(Trakt/MDBList). Watched marks follow Watch Progress. SIMKL library is read-only
+here. Resume positions remain separate. See source/native-app/TITLE_ACTIONS.md
+for bounds, offline retry and profile behavior.

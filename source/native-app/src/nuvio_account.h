@@ -20,6 +20,12 @@ ApiResult api_profile_source_update(const std::string& key, const std::string& u
                                    bool plugin, bool remove);
 
 ApiResult api_watched_get(const std::string& key);
+// Explicit title membership; never writes playback progress or watched history.
+ApiResult api_library_membership_update(const std::string& key, const json& item, bool add,
+                                        const std::string& expected_source);
+// Atomic local batch, one bounded cloud synchronization for movie/season/series actions.
+ApiResult api_watched_batch(const std::string& key, const json& entries, bool watched,
+                            const std::string& expected_source);
 ApiResult api_watched_update(const std::string& key, const std::string& video_id,
                             const std::string& title, bool watched, const std::string& content = "",
                             int season = -1, int episode = -1);

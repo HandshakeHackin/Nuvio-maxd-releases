@@ -426,6 +426,18 @@
     "Correct provider guide clock": "제공업체 편성표 시간 보정",
     "Guide layout: Time grid": "편성표 모양: 시간표",
     "Guide layout: Channel tiles": "편성표 모양: 채널 타일",
-    "Season ": "시즌 "
+    "Season ": "시즌 ",
+    "Title actions": "작품 작업",
+    "Mark series watched": "시리즈를 시청 완료로 표시",
+    "Mark series unwatched": "시리즈를 미시청으로 표시",
+    "Mark season watched": "시즌을 시청 완료로 표시",
+    "Mark season unwatched": "시즌을 미시청으로 표시",
+    "Open title": "작품 열기",
+    "Mark watched / unwatched": "시청 완료 / 미시청",
+    "Saving title changes...": "작품 변경 사항 저장 중...",
+    "Library: Nuvio + Trakt/MDBList when selected. Watched: selected progress service.": "라이브러리: Nuvio와 선택한 Trakt/MDBList. 시청 표시: 선택한 진행 서비스.",
+    "Library: Nuvio only; SIMKL is read-only here. Watched: selected progress service.": "라이브러리: Nuvio만 지원. 여기서 SIMKL은 읽기 전용입니다. 시청 표시: 선택한 진행 서비스.",
+    " released episodes. Resume positions stay unchanged.": "개의 공개된 에피소드. 이어보기 위치는 유지됩니다.",
+    " listed episodes. Resume positions stay unchanged.": "개의 등록된 에피소드. 이어보기 위치는 유지됩니다."
   }
 }

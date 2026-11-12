@@ -40,6 +40,9 @@ struct Fake {
             if (reject_key) return {401,"private-rejected-key","","",0};
         } else if(url.find("/sync/activities")!=std::string::npos) {
             assert(body);out={{"all","2026-10-18T00:00:00Z"}};
+        } else if(body && (url=="https://api.trakt.tv/sync/watchlist" || url=="https://api.trakt.tv/sync/watchlist/remove" || url.find("/watchlist/items/add?")!=std::string::npos || url.find("/watchlist/items/remove?")!=std::string::npos)) {
+            const bool add=url.find("remove")==std::string::npos;
+            out={{add?"added":"deleted",{{"movies",1},{"shows",1}}}};
         } else if (url.find("/sync/watchlist?")!=std::string::npos) {
             assert(!body); out=json::array({{{"movie",{{"title","Movie"},{"ids",{{"imdb","tt123"}}}}}}});
         } else if (url.find("/watchlist/items?")!=std::string::npos) {
@@ -144,6 +147,32 @@ int main() {
     assert(expiring.unsent(rejected) && !expiring.unsent(item));
     load_json(root+"/tracking.json",disk);assert(disk["pending_trakt"].empty() && disk["failed_trakt"].size()==1);
     fake.reject_item=false;
+    // Membership writes never become scrobbles/history, use the Library selector,
+    // survive outage/restart and stay with the exact tracker account.
+    std::filesystem::create_directories(root+"/membership");
+    load_json(root+"/tracking.json",disk);disk["library"]="trakt";disk["progress"]="mdblist";
+    save_json(root+"/membership/tracking.json",disk);Store member(root+"/membership",transport);
+    bool synced=false;auto member_item=json{{"_id","tt555"},{"type","movie"},{"name","Movie"},{"stream","https://secret.invalid"}};
+    fake.offline=true;error.clear();assert(member.membership(member_item,true,synced,error)&&!synced);
+    load_json(root+"/membership/tracking.json",disk);assert(disk["membership_pending_trakt"].size()==1&&disk.dump().find("secret.invalid")==std::string::npos);
+    error.clear();assert(member.membership(member_item,false,synced,error)&&!synced);
+    load_json(root+"/membership/tracking.json",disk);assert(disk["membership_pending_trakt"].size()==1&&!disk["membership_pending_trakt"][0]["add"].get<bool>());
+    fake.offline=false;Store retry_member(root+"/membership",transport);assert(retry_member.library(library,error));
+    bool membership_request=false;for(const auto& c:fake.calls)if(c.url=="https://api.trakt.tv/sync/watchlist/remove"){
+        assert(c.body["movies"][0]["ids"]["imdb"]=="tt555");membership_request=true;}
+    assert(membership_request);
+    retry_member.action("source",{{"field","library"},{"value","mdblist"}},error);
+    assert(retry_member.membership(member_item,true,synced,error)&&synced&&fake.calls.back().url.find("/watchlist/items/add?")!=std::string::npos);
+    retry_member.action("source",{{"field","library"},{"value","simkl"}},error);
+    const auto before=fake.calls.size();error.clear();assert(!retry_member.membership(member_item,false,synced,error));assert(fake.calls.size()==before&&error.find("read-only")!=std::string::npos);
+    retry_member.action("source",{{"field","library"},{"value","trakt"}},error);fake.offline=true;
+    assert(retry_member.membership(member_item,true,synced,error));fake.offline=false;
+    retry_member.action("disconnect",{{"provider","trakt"}},error);load_json(root+"/membership/tracking.json",disk);assert(!disk.contains("membership_pending_trakt"));
+    // A season's explicit watched marks use one grouped history request.
+    json batch=json::array();for(int n=1;n<=3;++n)batch.push_back({{"_id","tt789"},{"type","series"},{"state",{{"trackingWatched",true},{"nuvioSeason",1},{"nuvioEpisode",n}}}});
+    error.clear();const auto call_start=fake.calls.size();bool persisted=false;assert(mdb.write(batch,error,&persisted)&&persisted);
+    int history_calls=0;for(std::size_t i=call_start;i<fake.calls.size();++i)if(fake.calls[i].url=="https://api.simkl.com/sync/history") {++history_calls;assert(fake.calls[i].body["shows"].size()==1&&fake.calls[i].body["shows"][0]["seasons"][0]["episodes"].size()==3);}
+    assert(history_calls==1);
     // A different profile has no connections or choices, and malformed state is not overwritten.
     std::filesystem::create_directories(root+"/other");Store other(root+"/other",transport);assert(other.source(true)=="nuvio" && !other.status()["accounts"]["trakt"]["connected"].get<bool>());
     write_file(root+"/other/tracking.json","unreadable");Store broken(root+"/other",transport);

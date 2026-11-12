@@ -426,6 +426,18 @@
     "Correct provider guide clock": "Corregir hora de guía",
     "Guide layout: Time grid": "Diseño de guía: cuadrícula horaria",
     "Guide layout: Channel tiles": "Diseño de guía: mosaicos de canales",
-    "Season ": "Temporada "
+    "Season ": "Temporada ",
+    "Title actions": "Acciones del título",
+    "Mark series watched": "Marcar serie como vista",
+    "Mark series unwatched": "Marcar serie como no vista",
+    "Mark season watched": "Marcar temporada como vista",
+    "Mark season unwatched": "Marcar temporada como no vista",
+    "Open title": "Abrir título",
+    "Mark watched / unwatched": "Vista / no vista",
+    "Saving title changes...": "Guardando cambios del título...",
+    "Library: Nuvio + Trakt/MDBList when selected. Watched: selected progress service.": "Biblioteca: Nuvio + Trakt/MDBList si se selecciona. Vistas: servicio de progreso elegido.",
+    "Library: Nuvio only; SIMKL is read-only here. Watched: selected progress service.": "Biblioteca: solo Nuvio; SIMKL es de solo lectura aquí. Vistas: servicio de progreso elegido.",
+    " released episodes. Resume positions stay unchanged.": " episodios publicados. Se conservan los puntos de reanudación.",
+    " listed episodes. Resume positions stay unchanged.": " episodios listados. Se conservan los puntos de reanudación."
   }
 }
