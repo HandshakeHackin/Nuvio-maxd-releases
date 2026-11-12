@@ -1,0 +1,46 @@
+Nuvio Max'd 1.0.0.19 — verification evidence
+
+Source: 2590e59f2baf45195206b6132d9295f98ea86f36, clean builds/v1.0.0.19. ContentVersion 07.000.019.
+Complete native app/helpers compiled in a fresh object directory, then the final
+history changes rebuilt and linked at this exact source revision. All 522
+maintenance dependency output hashes and SDK/GL/provider pins verified; no
+pinned dependencies changed. Restored downloads and host tools were verified.
+
+Exact-source complete host suite, PIN/sign-in, Plex/media-server checks and
+133 native renderer previews passed: https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/43207798268/job/131147288490
+Real VLC file/HTTP/HLS/seek/cancellation suite passed: https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/43207798268/job/131147287769
+Verifier input removes timestamps and 2 expected HTTPS-server peer-reset
+tracebacks inside the passing untrusted-certificate rejection test only. Raw
+logs are retained and hashed. No test/assertion failures were removed.
+
+85 account HTTPS tests include library membership writes/deletes, UTF-8 field
+bounds, offline restart/latest-intent retry, retention of another device's data,
+profile/source guards, malformed/oversized snapshots, separation from resume and
+watched history, private file modes and atomic batch validation. Bulk history
+merges retain unrelated entries. Tracker fixtures cover Trakt/MDBList membership,
+SIMKL read-only library behavior, batched watched writes, unconfirmed reply
+retention, connection ownership and no fallback writes to another service.
+Production Session menu/callback tests cover movie/season/series/episode marks,
+confirmation/cancel, future/unknown/invalid release dates, scope limits, failed
+persistence acknowledgements and stale profile/title/service callbacks.
+
+Title action labels/help cover all eight menu languages. English/German have
+1,297 catalog entries; the other six have all 437 required core messages, with
+English fallback elsewhere. Twelve catalog regressions and 3786 glyph
+rasters passed. Cast/person controller glyphs and title menus were rendered in
+English/German/Arabic/CJK previews. Existing playback, profile, USB, updater,
+tracker and metadata checks passed.
+
+Image: zero container errors/warnings; 163 extracted file hashes
+match the staged app and ZIP. ZIP safe-entry/integrity checks passed.
+Source archive: 990 file hashes verified at the exact source commit.
+USB native objects retain no raw syscall instructions or dup/fdopendir/fstatat/
+openat imports. Existing optional helper scope/startup is retained.
+
+Static catalog scan: 0 errors, 6 warnings, 1 notices; existing bundled
+reader/updater still need maintainer helper review. No approval records changed.
+This report does not establish catalog submission, acceptance or deployment.
+Physical PS5 and real-account round trips for the new actions need confirmation.
+SIMKL library remains read-only here; watched marks use the selected progress
+service. Manual marks do not erase resume positions. Only listed eligible
+episodes are included in bulk operations, with a 5,000-episode maximum.
