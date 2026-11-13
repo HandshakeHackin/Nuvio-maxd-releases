@@ -1,0 +1,26 @@
+Nuvio Max'd 1.0.0.25 — official release verification
+
+Clean source 6dbf2b10fb44e028e22e283fb4d09862a01af06f, branch builds/v1.0.0.25, contentVersion 07.000.025.
+App version 1.0.0.25-native; stable release channel.
+Complete PS5 app, USB reader and updater built in a fresh object directory.
+All 741 pinned dependency outputs and SDK/GL/source/recipe/asset receipts match.
+The dependency graph is unchanged from 1.0.0.24.
+
+Exact-source full host CI and 144 renderer previews: https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/43526000703/job/132231787540
+Real VLC playback, HTTP/HLS, seeking and cancellation: https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/43526000703/job/132231787192
+Both jobs passed. Raw logs are retained and hashed. Log normalization removes
+timestamps and 2 complete expected peer-reset traces in the passing TLS
+rejection fixture only. All renderer previews report GL error zero.
+The suite includes the blocked-demux seek regression, 123 feature-core checks,
+88 HTTPS account tests, 43 MDBList membership and 33 watched-history cases.
+
+Image verification: zero container errors/warnings; 164 extracted file
+hashes match the staged app and ZIP. ZIP integrity/entry/permission checks pass.
+Matching source archive: 1030 file hashes verified at the same commit.
+Native object audit: no dup/fdopendir/fstatat/openat imports or raw syscall
+instructions in the audited app/USB/feature objects. Profile isolation, bounded
+scanning and private copies are retained.
+Catalog scan: zero errors, 4 warnings and 1 notices. Existing privileged
+reader/updater helpers require catalog maintainer review; approvals unchanged.
+This report records host, compilation and package verification. Hardware test
+coverage is recorded separately in native-validation.json. See TESTING.txt.
