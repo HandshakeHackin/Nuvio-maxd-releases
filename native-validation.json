@@ -1,0 +1,1126 @@
+{
+  "name": "Nuvio Max'd",
+  "version": "1.0.0.24-native-experimental",
+  "sourceCommit": "46f85494b91fa1049068da716434871bf2aa95f8",
+  "contentVersion": "07.000.024",
+  "image": "NuvioMaxd-1.0.0.24-native.ffpfsc",
+  "imageBytes": 49283072,
+  "imageSha256": "d8a01a5b3f547a5a659d706b8cb6a2ca0e4cdf2505cc235573592f20b102cec9",
+  "container": "PS5 PFS + PFSC containing exFAT",
+  "containerErrors": 0,
+  "containerWarnings": 0,
+  "extractedFileCount": 164,
+  "allExtractedFileHashesMatch": true,
+  "executable": "x86-64 ET_SCE_EXEC inside native PS5 SELF",
+  "hostHttpsTestsPassed": 88,
+  "hostUiNavigationTestsPassed": 12,
+  "hostUsbReaderTestsPassed": true,
+  "hostUsbMountDiagnosticsTestsPassed": true,
+  "usbPlaylistHardwareVerified": false,
+  "hostTorrentIntegrationTestsPassed": true,
+  "hostHdrFallbackTestsPassed": true,
+  "hostRemoteRemappingTestsPassed": true,
+  "hostRemoteSettingsTestsPassed": true,
+  "mediaRemote": {
+    "hdmiCec": true,
+    "buttonRemapping": true,
+    "pressToAssign": true,
+    "testButtonDetection": true,
+    "appLocalOnly": true,
+    "controllerUnchanged": true,
+    "hardwareVerified": false
+  },
+  "detailActions": {
+    "libraryMembership": true,
+    "nuvioLibrarySync": true,
+    "trackerLibraryWrites": [
+      "trakt",
+      "mdblist"
+    ],
+    "simklLibraryReadOnly": true,
+    "movieWatchedToggle": true,
+    "seriesSeasonWatchedBatch": true,
+    "bulkEpisodeLimit": 5000,
+    "confirmBulkChanges": true,
+    "futureUnknownDateGuard": true,
+    "profileAndServiceGuards": true,
+    "privateOfflineQueues": true,
+    "keepsResumeSeparate": true,
+    "controllerGlyphHints": true,
+    "hardwareVerified": false
+  },
+  "hostTitleActionsTestsPassed": true,
+  "torrentHub": {
+    "optIn": true,
+    "magnetAndTorrentFiles": true,
+    "filePicker": true,
+    "profileLocalHistory": true,
+    "cacheGiB": [
+      1,
+      2,
+      4,
+      6
+    ],
+    "numericDhtBootstrap": true,
+    "trackerWorkers": 2,
+    "pairedTemporaryWebDrop": true,
+    "consoleConfirmation": true,
+    "upstreamCommit": "8e34590582ad89c0f12182289f83c2526bd47c4a",
+    "hardwareVerified": false
+  },
+  "hostConnectedServicesTestsPassed": 19,
+  "connectedServices": {
+    "providers": [
+      "torbox",
+      "premiumize"
+    ],
+    "torboxAuthentication": [
+      "device QR",
+      "API key",
+      "Nuvio Sync import"
+    ],
+    "premiumizeAuthentication": [
+      "API key",
+      "Nuvio Sync import"
+    ],
+    "sync": "explicit read-only credential import from selected Nuvio profile",
+    "clientResolve": true,
+    "cachedFilesOnly": true,
+    "fileQuality": "original provider file; no provider transcoded stream link",
+    "preferredProvider": true,
+    "cloudLibrary": false,
+    "backgroundLinkPreparation": true,
+    "preparationDefaultCandidates": 2,
+    "preparationMaxCandidates": 5,
+    "preparationMaxConcurrent": 1,
+    "preparationStartsPerMinute": 6,
+    "preparationStartsPerHour": 30,
+    "preparedLinkTtlSeconds": 300,
+    "preparedLinkCacheCapacity": 100,
+    "preparedLinksPersisted": false,
+    "hardwareVerified": false
+  },
+  "hostInstantPlaybackTestsPassed": 26,
+  "hostDecoderSetupTestsPassed": 11,
+  "hostStreamPresentationTestsPassed": 15,
+  "hostVideoPackingAndGpuTestsPassed": 24,
+  "hostNetworkTestsPassed": 8,
+  "hostHdrOutputTestsPassed": 10,
+  "hostEpisodePlaybackTestsPassed": 61,
+  "hostDisplaySelectionAssertionsPassed": 27,
+  "hostDisplayRefreshTestsPassed": 6,
+  "watchProgressSync": "Profile-isolated Nuvio Sync; portable merged snapshots and persistent offline mutations",
+  "videoPresentation": "Native-resolution YUV to RGB10_A2; compatible PQ/BT.2020 sources use experimental 10-bit HDR10 output",
+  "videoConversionSurface": "RGB10_A2; HDR10 final pixels packed exactly into BGRA8 transport for the accepted RGB/BGR10A2 PQ VideoOut format",
+  "userExperienceUpdates": {
+    "versionChangelog": true,
+    "installSourceSelector": true,
+    "optionalDonationQr": true,
+    "sourceAwareUpdateReminders": true,
+    "startupUpdateCheck": true,
+    "subtitleStylingPreview": true,
+    "customSeekIntervals": true,
+    "customEpisodeCountdown": true,
+    "reducedMotion": true,
+    "higherContrast": true,
+    "privateRuntimeAndCrashDiagnostics": true,
+    "backgroundLogging": true,
+    "calmerBackgrounds": "optional, saved locally; video quality unchanged",
+    "nativePresentation": "timestamp order with bounded source-frame catch-up",
+    "longWordWrapping": "UTF-8 code-point boundaries",
+    "updaterBackup": "retains previous verified image"
+  },
+  "graphicsRefresh": {
+    "opengl": "1.0.2",
+    "periodicDriverStatistics": "opt-in; teardown summary retained",
+    "streamReloadSelection": true,
+    "startupStageTiming": true,
+    "hardwareVerified": false
+  },
+  "controllerLightbar": {
+    "logoPalette": "teal/white/pink-purple",
+    "cycleSeconds": 18,
+    "sharedBootEnvelope": true,
+    "steadyAfterBoot": false,
+    "steadyWithReducedMotion": true,
+    "reducedMotion": true,
+    "maxUpdatesPerSecond": 30,
+    "reconnectRecovery": true,
+    "systemResetOnClose": true,
+    "hardwareVerified": false
+  },
+  "hostControllerLightbarTestsPassed": true,
+  "hostUpstreamAdaptationTestsPassed": true,
+  "hostExperienceTestsPassed": true,
+  "playbackEngines": {
+    "default": "native",
+    "optional": [
+      "EVO Player 0.13.7",
+      "VLC 3.0.24"
+    ],
+    "scope": "integrated optional playback engines",
+    "hardwareVerified": false
+  },
+  "evoPlayer": {
+    "repository": "https://github.com/sainsaji/EVO-PLAYER-PS5",
+    "version": "0.13.7",
+    "commit": "08bcab5de76cb7507ecc0bc3e1d4bca9bea13788",
+    "vendored": true,
+    "scope": "video decoder dispatcher, native decoder, presentation core and clock",
+    "localPatches": "third_party/evo/UPSTREAM.json: retained HEVC base-layer filtering; original 0.13.7 hashes and previous base provenance recorded"
+  },
+  "hostEvoIntegrationTestsPassed": true,
+  "nativeHdr": {
+    "default": true,
+    "format": "Bgr10A2Bt2100Pq; Rgb10A2Bt2100Pq only after invalid-format rejection",
+    "switching": "in-place SubmitChangeBufferAttribute2 only; no unregister fallback",
+    "packingMatchesAcceptedFormat": true,
+    "confirmation": "VideoOut output status after a successful flip",
+    "sdrConversion": "Auto fallback after successful SDR restore, or explicit SDR setting; legacy choices retained",
+    "sourceMasteringMetadataForwarded": false,
+    "dynamicMetadataSupported": false,
+    "hardwareVerified": false
+  },
+  "experimentalAv": {
+    "driverOwnedHdrSwitch": true,
+    "pcmDefault": true,
+    "audioModes": [
+      "pcm",
+      "auto",
+      "bitstream"
+    ],
+    "bitstreamCodecs": [
+      "AC3",
+      "EAC3",
+      "DTS core"
+    ],
+    "trueHdDtsHd": "decoded PCM; S16 output preferred for compatibility",
+    "autoHonorsStereo": true,
+    "hardwareVerified": false,
+    "driverPatchSha256": "89de635fdeb50680e47f113297bdc392c1cf7ec974f4267e67311441d0a6cacf",
+    "driverObjectSha256": "de87d5c1c5dfe5c7feb2467785a5cc1e15c888dfcd85f8ca8c71ff4a3475b5f1"
+  },
+  "startupHotfix": {
+    "displayFailureHaltConditional": true,
+    "productionEntryPointCompilerGuard": true,
+    "hardwareVerified": false
+  },
+  "hostStartupCompileCheckPassed": true,
+  "hostDriverHdrTransactionsPassed": true,
+  "hostBitstreamTestsPassed": true,
+  "playbackQualityUpdates": {
+    "sampleClock": true,
+    "seekGate": true,
+    "decoderFailureReseek": true,
+    "surroundPcm": true,
+    "floatingPointAudio": "stereo fallback only",
+    "preferredPcm": "S16 48 kHz",
+    "explicitStereoDownmix": true,
+    "pcmLevelDiagnostics": true,
+    "pcmDeviceLatencyEstimateGrains": 2,
+    "audioStereoFallback": true,
+    "embeddedFirstSubtitleDefaults": true,
+    "manualSubtitleChoiceProtected": true,
+    "externalSubtitleReopenRecovery": true,
+    "libassStyledText": true,
+    "bitmapSubtitles": true,
+    "bundledCjkThaiFonts": true,
+    "packetSlabBytes": 268435456,
+    "packetHardBudgetBytes": 335544320,
+    "pcmRingSeconds": 2,
+    "hardwareVerified": false
+  },
+  "hostPlaybackQualityTestsPassed": 13,
+  "hostPlaybackLifecycleTestsPassed": 3,
+  "applicationDisplayProfile": {
+    "attribute": 1644167168,
+    "attribute2": 0,
+    "attribute3": 262208
+  },
+  "hdrToSdr": {
+    "toneMap": "luminance extended Reinhard",
+    "outputResponse": "BT.1886 ideal black (2.4)",
+    "gamut": "BT.2020 to BT.709 with luminance-preserving neutral-axis fitting",
+    "sourcePeak": "MaxCLL, mastering display, otherwise 1000 nits",
+    "exposureGain": 1,
+    "hardwareVerified": false
+  },
+  "displayRefresh": {
+    "default": 60,
+    "optional": 120,
+    "restartRequired": true,
+    "acceptedRateReadback": true,
+    "resolutionReducedForRefresh": false,
+    "hardwareVerified": false
+  },
+  "updater": {
+    "repository": "HandshakeHackin/Nuvio-maxd-releases",
+    "format": "FFPFSC",
+    "helper": "nuvio-updater.elf",
+    "shadowmountApi": "1.7 / public HTTP API v1",
+    "automaticInstallHardwareVerified": false
+  },
+  "hostUpdaterTestsPassed": 46,
+  "episodePlayback": {
+    "timings": [
+      "IntroDB",
+      "AniSkip",
+      "optional Anime-Skip"
+    ],
+    "skipIntro": true,
+    "skipRecap": true,
+    "skipCredits": true,
+    "controllerGlyphs": true,
+    "nextEpisodePrefetch": true,
+    "creditsAutoplayCountdownSeconds": 10,
+    "qualityPolicy": "same binge group then same addon; no missing advertised resolution/format traits",
+    "hardwareVerified": false
+  },
+  "displaySelection": "PS5 configured resolution by default; 1080p, 1440p and 2160p overrides",
+  "interfaceLanguages": {
+    "available": [
+      "en",
+      "de",
+      "es",
+      "fr",
+      "ar",
+      "zh-Hans",
+      "ja",
+      "ko"
+    ],
+    "default": "en",
+    "savedLocally": true,
+    "restartToApply": true,
+    "englishFallback": true,
+    "catalogEntries": 1365,
+    "translationsPerLanguage": {
+      "en": 1365,
+      "de": 1365,
+      "es": 450,
+      "fr": 450,
+      "ar": 450,
+      "zh-Hans": 450,
+      "ja": 450,
+      "ko": 450
+    },
+    "coreMenuEntries": 450,
+    "advancedHelpMayUseEnglish": true,
+    "arabicTextShaping": true,
+    "rtlTextLanguages": [
+      "ar"
+    ],
+    "mirrorsScreenLayout": false,
+    "changesPlaybackLanguages": false,
+    "hardwareVerified": false
+  },
+  "peopleBrowsing": {
+    "castAndCrewPhotos": true,
+    "personBiography": true,
+    "movieAndTvCredits": true,
+    "configuredAddonPlayback": true,
+    "titleIdMapping": "TMDB external IDs to IMDb, supported TMDB IDs otherwise",
+    "maxCastMembers": 80,
+    "maxCreditsPerKind": 256,
+    "historyDepth": 8,
+    "profileScopedCancellation": true,
+    "metadataProvider": "TMDB",
+    "hardwareVerified": false
+  },
+  "hostLocalizationTestsPassed": true,
+  "hostPeopleMetadataUiSessionTestsPassed": true,
+  "hardwareVerified": false,
+  "verifiedFirmwares": [],
+  "filesystemPermissions": "USB sandbox scope and existing helper capability preparation retained; bounded diagnostics and private profile-local atomic copies verified. Console operation of this dependency refresh remains unconfirmed.",
+  "fileSha256": {
+    "account-config.json": "1014f3c748bee58a832ea5d1be191ebaa2e577ef8a08e8168f01cb6d78f1921f",
+    "LICENSE": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+    "nuvio-usb-reader.elf": "986f059ac4fedce2f256790845e36dc98d5695eacdeee6f46ed8da83331ebeac",
+    "build-info.json": "267c090881e49f502298742dfde0f0e5579f2691dd93c897b7726c9c78e57075",
+    "tracker-applications.json": "44527d59f8228d61a62c36c6226c815dc5cdf6c83b86b81d960f55aedeb4f8f1",
+    "ca-bundle.crt": "427c064216761a1e72a8b30f0d954d08cb6e4435a82091fb865afd20c8497285",
+    "eboot.bin": "1e4e6286102288f5a46da223db55e276cb93fd779f12678db262ffc44cd1f636",
+    "nuvio-updater.elf": "cf621c78efd1cb3a200181f456ea7687ed078e69e1d2cd06d1ac31b44f385abb",
+    "THIRD_PARTY.md": "3839386118493ca50631ce95f4a6aef1197137f0a44fe2f96885eb857a5858e3",
+    "licenses/Stremio-MIT.txt": "40f7f4a6bc790d341e490c56f6fd5af2f50cdce89393b9fa4c81f4510ca97976",
+    "licenses/dlmalloc.txt": "edb18b4197c8119814088f713fe38492e1fb22cb96d433522326e5890c24be0d",
+    "licenses/xz.txt": "616a3ad264ce29b8f1cb97e53037b139d406899ca8d1f799651e17bfa09830b8",
+    "licenses/FriBidi.txt": "20e50fe7aae3e56378ebf0417d9de904f55a0e61e4df315333e632a4d3555d95",
+    "licenses/dht.txt": "788a780deb7b73c6acd19521f05dc690bac30deaa1a077576c838e131f583aeb",
+    "licenses/README.txt": "f0783c64308e2b435fb41c15c30e1d3fa65eba87ad348fb0f6c07ed06c2aa05c",
+    "licenses/stb_image.txt": "b3f6b86d05ca0a39eead96e6844b776abb7bf7d6024355f20a38f7f484d17ed4",
+    "licenses/nlohmann-json.txt": "d64d1b4d948aa7751cfb613c02dc246aab7b358d760053e6580f01affe946906",
+    "licenses/libass.txt": "f7e30699d02798351e7f839e3d3bfeb29ce65e44efa7735c225464c4fd7dfe9c",
+    "licenses/zstd.txt": "7055266497633c9025b777c78eb7235af13922117480ed5c674677adc381c9d8",
+    "licenses/bzip2.txt": "c6dbbf828498be844a89eaa3b84adbab3199e342eb5cb2ed2f0d4ba7ec0f38a3",
+    "licenses/miniupnpc.txt": "3e9ebf0db9dc0e77df435b53536cf416e04d4ef3b977a4163887517043ba85a2",
+    "licenses/libpsl.txt": "e7c9f0d8498d28a360a7e8293ea70fd7bd952955b636938322c13d60a03b5a45",
+    "licenses/OpenSSL.txt": "7d5450cb2d142651b8afa315b5f238efc805dad827d91ba367d8516bc9d49e7a",
+    "licenses/libxml2.txt": "5d4873884a890122a4b9b20ad56ac6f7da1d796a5bfcf04a427970ac96217626",
+    "licenses/curl.txt": "82f2f4427d6545ee5aaac4f0b80428da6cc8ba41c2cf5da3a03680ec327b9681",
+    "licenses/xz-0BSD.txt": "616a3ad264ce29b8f1cb97e53037b139d406899ca8d1f799651e17bfa09830b8",
+    "licenses/libwebp-PATENTS.txt": "cc3273e0694ea5896145e0677699b53471b03ea43021ddc50e7923fbb9f5023c",
+    "licenses/HarfBuzz.txt": "ba8f810f2455c2f08e2d56bb49b72f37fcf68f1f4fade38977cfd7372050ad64",
+    "licenses/libwebp.txt": "5aec868f669e384a22372a4e8a1a6cd7d44c64cd451f960ca69cc170d1e13acf",
+    "licenses/LLVM.txt": "539dd7aed86e8a4f12cbdd0e6c50c189c7d74847e4fecc64ce2c6ee3a01da38b",
+    "licenses/FreeType.txt": "5a5ee54c5001bbad1cdc1a57cc3dd4c42199b2da09d39c7ee41fab002d02967f",
+    "licenses/qrcodegen.h": "e82df4bff37d18b5863b9e7486fe6bda1b6cda8c3b9ecebfec473907265cb589",
+    "licenses/fontconfig.txt": "51a51aa9823704fd90bccc616cdd17ebabb5b2b3e9cbde886ca02c7002288067",
+    "licenses/zlib.txt": "e32ff4e00d9d94930537635291da39e7e612703334bf6fde8c7f1686fe8a45a2",
+    "licenses/libpng.txt": "bdb0a645ea18c60507d0368379b1ac5474b92255fcc2d115e07486a7672ba526",
+    "licenses/FreeBSD.txt": "d714467a37d231cd5e630f09eacb134d6936e74940836129309ed20d796ca790",
+    "licenses/libiconv.txt": "20e50fe7aae3e56378ebf0417d9de904f55a0e61e4df315333e632a4d3555d95",
+    "licenses/FFmpeg.txt": "e6dc72d5665a1ebd6dcc841de59278dad4ca77ecc47b03f1064a55c3e9ea8bb8",
+    "licenses/MPL-2.0.txt": "3f3d9e0024b1921b067d6f7f88deb4a60cbe7a78e76c64e3f1d7fc3b779b9d04",
+    "licenses/native-app-boilerplate-GPL-3.0.txt": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+    "licenses/LGPL-2.1.txt": "20e50fe7aae3e56378ebf0417d9de904f55a0e61e4df315333e632a4d3555d95",
+    "licenses/expat.txt": "31b15de82aa19a845156169a17a5488bf597e561b2c318d159ed583139b25e87",
+    "licenses/dashboard-icons.txt": "e58a8fa57781d1dc7158b333b68c99461031fd2c25dfbd23eac15a8e984cae56",
+    "licenses/GPL-2.0.txt": "edaef632cbb643e4e7a221717a6c441a4c1a7c918e6e4d56debc3d8739b233f6",
+    "fonts/NotoSansCJKsc-Regular.ttf": "3012a9b63f5eca3e3b38f23a1be5ed504675e394abf8e7a4fa981506582c04aa",
+    "fonts/NotoSans-Regular.ttf": "478c558ea716033cd60c03438f628dfa75694dcf6b5f6d505a2f05fd2b4f3823",
+    "fonts/NotoNaskhArabicUI-Bold.ttf": "04017b0ccdd1156dcde3bc386734c1b03165261762f16a025c8afc9088ae76e9",
+    "fonts/NotoSansHebrew-NOTICE.txt": "207c0fe7a14676e43523fbbc6310a88aeb9a133166ecaff8ca9f7445b27517db",
+    "fonts/Inter-SemiBold.ttf": "78a843fade9d4612a5567302fb595b56976eb5fcebf4fea5a5912d638bafcde3",
+    "fonts/NotoSansCJK-LICENSE.txt": "6a73f9541c2de74158c0e7cf6b0a58ef774f5a780bf191f2d7ec9cc53efe2bf2",
+    "fonts/Montserrat-Medium.ttf": "7ce96811837174f00c087b73332aed3f04a19069248ab46213d9ea05ff879cbc",
+    "fonts/NotoSansHebrew-Regular.ttf": "5fb2e1fc38c242d64f9fc5f77e026473f288b9791762d80df98a3ec762d5bbdf",
+    "fonts/NotoSansThai-LICENSE.txt": "0dab92d0544f7b233403f14b84a663bdbfa746982eda629e7f4f9ffe1b036feb",
+    "fonts/NotoSansHebrew-Bold.ttf": "2aea024b57ba381f7ce84547e35fa4b39ef75d824284ce632a204eb61756f531",
+    "fonts/Inter-LICENSE.txt": "262481e844521b326f5ecd053e59b98c8b2da78c8ee1bdbb6e8174305e54935a",
+    "fonts/NotoNaskhArabicUI-NOTICE.txt": "a7a5a25eb188bf1cd96982030d53e23c33485c69b1044a562254226857ee13af",
+    "fonts/NotoSansCJK-NOTICE.txt": "c9954228236205d9f2d9e42be2e9a3618ba92ba36b4d1b98f57770a9d3e20e57",
+    "fonts/OFL.txt": "cee9892f9f0cc8fe882c9e9537ee6a89621d86ee7ceaf70b02e2b2b1c25c061a",
+    "fonts/NotoSansHebrew-LICENSE.txt": "9b9fe028b5ba74d231659a1bbaf0ed09b11e759d1ca6a070999e16d151616b47",
+    "fonts/Montserrat-LICENSE.txt": "41f82bb4d24b304f30f7136bc47abdd083782e4265c984160f5649d1e78ea49c",
+    "fonts/Inter-Regular.ttf": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
+    "fonts/NotoNaskhArabicUI-Regular.ttf": "6f0a92031367b2f5a2078fe9d24f3433122b61a0bad57c423aad8f3c39aa2e6e",
+    "fonts/NotoSans-Bold.ttf": "1df075a380fc7cb898acf64c1f7b3b4dd780de3caa860178bf929de35817a913",
+    "fonts/NotoSansThai-Regular.ttf": "404ddfb5ed0aaa6b6ec8a85700d682978992062d67da93903967b56cbd9a4acc",
+    "hui-fonts/inter-regular.huifont": "e8a7f447a5182ab466a7cc39cb99b58eda2b2717b9a0e05c5dbabe23d18051cf",
+    "hui-fonts/dejavu-sans-mono.huifont": "84d8db8c0650faace68a31286953d5a2f5681f920c51290ee5c385b398acba43",
+    "hui-fonts/montserrat-medium.huifont": "29332ab3fa2a07b67978fa8a9f5411a1a5b042309f8996cb7cd6785a3e13bbf9",
+    "hui-fonts/PatrickHand-LICENSE.txt": "377f4f9c19e935228552478eb68cc2ed82910988a60ba60e2ac73b09f32d02d1",
+    "hui-fonts/DejaVu-LICENSE.txt": "63d3ba759d12804c5b31a9d5940d855c1820d1f5999e6b0872eb1c7ff045fbc9",
+    "hui-fonts/inter-semibold.huifont": "affcc3bda4e07bdc2b71aba3bd701b88a5ea728b33640671dd604ae1e64c948a",
+    "hui-fonts/press-start-2p.huifont": "e9ddf4dd2ab7207c996ede28620f4205594d3f99206fb7edea5af28212dd74a5",
+    "hui-fonts/PressStart2P-LICENSE.txt": "705960c3281a5765ecc0b59bd4ed7ca59eed165748076bc2fc3e8fdbfeb944b0",
+    "hui-fonts/Inter-LICENSE.txt": "262481e844521b326f5ecd053e59b98c8b2da78c8ee1bdbb6e8174305e54935a",
+    "hui-fonts/Montserrat-LICENSE.txt": "41f82bb4d24b304f30f7136bc47abdd083782e4265c984160f5649d1e78ea49c",
+    "hui-fonts/patrick-hand.huifont": "5e1f423eb8d330fb71d7c5a95fa59d400d6942a835a4fdd26522f69abce2fc92",
+    "sce_module/libc.prx": "e6ff45d16adf687855cc3b33b0c8a4132b6504360b221e0a34c7e99fb3ba0036",
+    "sports/LICENSE-Nuvio-ReSeq.txt": "8b1ba204bb69a0ade2bfcf65ef294a920f6bb361b317dba43c7ef29d96332b9b",
+    "sports/catalogue.json": "e360c2a3ff4939c58f25372291f0a4f256c0f019884e86c058d941d1a1b46506",
+    "sports/UPSTREAM.json": "31ca1471da5aeb78d27ee391568435c2936ae60b3be776c8577c14ac9a2df402",
+    "icons/play_s.png": "aef83e2a4cf3ce1878d0d2810b93d360953355eb482aa0ff6472001899188cb1",
+    "icons/nav_discover.png": "57bd2c1616ac1047b8591218ef2f38c9662d32ec73db88ed08b4eb8d556fe519",
+    "icons/nav_discover_o.png": "7af0a57c765f5bade9c1fceec6585bfe423a60870a025c2f0a49cb5a78450267",
+    "icons/logo.png": "e01816b5731249e38e40025809897668d0286e9c6c62bb5da1e38581e250f5d3",
+    "icons/chevron_down.png": "b3f62177327d2fa2f3dad9a73c9d97c9a0ebce5b944cdb7e15b99ba6a572e23e",
+    "icons/nav_settings.png": "46015063d6c320d39dd5becaf3d5a794665422cc3d7b857f018e682365dbc296",
+    "icons/cross.png": "58b5da51effecd7ae482434ee103fd365158db587c71da769afdfd7eb99f3de8",
+    "icons/check.png": "79698857dd29820820951e8da42f04023587d0dd0dda25ae90bfd73891913856",
+    "icons/logo_xl.png": "a48a1d778515c5f6943427b7d19b0e621c9991a03352ec57c04a39e3f2ba0047",
+    "icons/nav_addons.png": "ed4cc6426ed3fed225501eb385af8261965a3750bf86afcd7dd3c7c2bb050999",
+    "icons/nav_library.png": "d58b57a3acd7833801af4bc4feba9b65e8b75d0b98a374f957c9f2a5e33d7841",
+    "icons/pause.png": "53bf621371ae732a31bdbab134d068226d442b6c32976e0895dc31d0c51f1c24",
+    "icons/nav_settings_o.png": "a2358aad7dc5f30e01c0b3ff4d128522953e1f8b5edf5a1f03ef71c86837cf3b",
+    "icons/nav_library_o.png": "2c52fd44fc54b24f003d8e9786d8c567ed8c618f09b7cf6a3cba4083b059c719",
+    "icons/nav_board.png": "ccd7ba20b7d5ac81fce8695440a54de4630f0f4c97998b270aeae8ae6caf8e62",
+    "icons/nav_addons_o.png": "dca36da26f4bba161ef34dd518fde741adc97f8a9607aac0c9be4942cbc873e0",
+    "icons/triangle.png": "85844578bc9ecdc167e7559af16900b336e08dfb0dea432589912ead97dba21e",
+    "icons/search.png": "1a9a6d7ea872e3f3adf150d300451b831290afaea2bd5a54cbdb0b78070484ae",
+    "icons/options.png": "2649ba11a67726b1b3334cfc32c2b508dbcc5f6a5d2c7ac71a01f659aad0ade7",
+    "icons/r1.png": "73a79bf449eeea49873b8816025f22610ec24b626823f92d5f2ed2e8876aaeb1",
+    "icons/l1.png": "74a2a11849f8b48612677acdf3c7c8badde1b761e85791f2fb59b34e59969ab4",
+    "icons/chevron_left.png": "59b233d548d2951d3ee3d9e97f6fd22722d9c5303dbe25d22aa7b5dcfa4b5140",
+    "icons/logo_m.png": "3f506bdc709e156a11b585abe75a21bcb49de31e8d1327ecfa5f87f59fcecc91",
+    "icons/square.png": "af51b3cd83d5e020b35eaf59d9f5ba134e38c4e235c7b92727d5fdb138094d0d",
+    "icons/chevron_right.png": "1fac22c0ef15834173b4f0e542fcd0a11909c8fcdfa389defcef5f624cd91700",
+    "icons/check_s.png": "5c4c2b2a62a8022a5fbeee7115af038e1e37e6d2693b1dac0e064e28e93c9890",
+    "icons/logo_l.png": "60a97dfe4c3d82ffff3e310b712f1d46e8becbeec4f7bf03c85be7e5025fe463",
+    "icons/play.png": "276468a4e1f1d5f8cc99ee04fc4b0dbd7e80dbfd1212dad5f24ac9530c067d7a",
+    "icons/dpad.png": "9da9d6debc8f23761d2a76e3eb98d75e34d0a59d22c6cf541efbee78ce1f9e8a",
+    "icons/circle.png": "742a38922505cd254643ad92d7e41e26f8b4de699390773870e20581d40a1165",
+    "icons/nav_board_o.png": "307a1661783048bbc1bd739ed02e93f85c7d1355123fa7ba9de1f388b33abd1a",
+    "providers/applications.json": "956f9fd66c1d8404e047445dab93b7cc65804b3b1bc412a4b731af453b3b1f42",
+    "providers/runtime.js": "6885f80ae72437b84894aad0440ea16f35c77f8f8009ebdc7a4f826a6a1e45d5",
+    "sce_sys/icon0.png": "3c655e095db72d3a3d4cef6876c6ffe825e742d13af0afda3c84b141d1eb6226",
+    "sce_sys/param.json": "e7767f62d450dbef5de17dd17beb35a2387b9d2d1f98d30bfa43328f4417fc38",
+    "licenses/vlc/COPYING.matroska": "dc626520dcd53a22f727af3ee42c770e56c97a64fe3adb063799d8ab032fe551",
+    "licenses/vlc/COPYING.ebml": "dc626520dcd53a22f727af3ee42c770e56c97a64fe3adb063799d8ab032fe551",
+    "licenses/vlc/README.md": "b9661cf1046fc53f40001885430b80f608fcdd1b59374f34422ec2bbf1b2d69c",
+    "licenses/vlc/COPYING.LIB": "dc626520dcd53a22f727af3ee42c770e56c97a64fe3adb063799d8ab032fe551",
+    "licenses/vlc/COPYING.dvbpsi": "dc626520dcd53a22f727af3ee42c770e56c97a64fe3adb063799d8ab032fe551",
+    "licenses/vlc/COPYING.utf8cpp": "c9bff75738922193e67fa726fa225535870d2aa1059f91452c411736284ad566",
+    "licenses/vlc/COPYING": "8177f97513213526df2cf6184d8ff986c675afb514d4e68a404010521b880643",
+    "licenses/vlc/UPSTREAM.json": "65b75fc45eae2366a0073bda674a9fd666fcc5c295be5436758a5e8ad61f8bac",
+    "licenses/provider-runtime/LICENSES.txt": "aea736833da0be81f49854142e2186e1ab52a9a73d408d707243c671fd8f4109",
+    "licenses/torrent-edition/LICENSE": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+    "licenses/torrent-edition/UPSTREAM.json": "9d5875a5f414040038c8df4ac26cf7c68d42eb802756f57f8059d89870971508",
+    "licenses/ps5-homebrew-ui/LICENSE": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+    "licenses/ps5-homebrew-ui/THIRD_PARTY_NOTICES.md": "1d92d371d6cae90f07805101fe1dcc27cfe1b23c29452bb2093826093cfb01d6",
+    "licenses/evo-player/LICENSE": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+    "licenses/evo-player/LOCAL_CHANGES.md": "00694bbfe1500eb813a8b72ed7080c05aec9d6a43f67683defc6708cc1bd58fb",
+    "licenses/evo-player/INTEGRATION.md": "f8390ccf82c9fbdadbd5b56e0157e159d1774be474e6b3da6128b4bec900023f",
+    "licenses/evo-player/UPSTREAM.json": "d0b608282c6f04d978ef9bdf394ca1ce37bdfd9676523c953e88cd24042e0344",
+    "licenses/ps5-opengl/LICENSE": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+    "licenses/ps5-opengl/THIRD_PARTY_NOTICES.md": "f28d226f4cd2ee580787ddc02956e0f551d337dc3775aa51bf933c283713a22a",
+    "licenses/libass/LICENSE": "f7e30699d02798351e7f839e3d3bfeb29ce65e44efa7735c225464c4fd7dfe9c",
+    "licenses/libass/README.md": "c7455b5c20a8875b9c624cd21ae1444663affcf80e7ae4c1c6ca9391000df938",
+    "licenses/evo-player/patches/0001-hevc-base-layer-only.patch": "d8af613cc199247c68f14296f82da35f485c766cdebe6134ecc35a3c4d4dae35",
+    "licenses/ps5-opengl/LICENSES/NanoVG.txt": "45185a6680ed83863bef33e1055f9fd76374df4b81c957802c19a286c982dfd2",
+    "licenses/ps5-opengl/LICENSES/OpenGNM-PSBC.txt": "3abdeb196a1a67a5d4379f8b79597342e764eb3e14d1bc4d7784c72c2565300d",
+    "licenses/ps5-opengl/LICENSES/Dear-ImGui.txt": "c80c5789748d955c4a650562baa0d750494e2c7128c2ca66aaebe2e3c4e198bf",
+    "licenses/ps5-opengl/LICENSES/SPIRV-Headers.txt": "ea43b1de38a6f90c488800d66dec1ed671e68cda530266bc96951fb5b6307613",
+    "licenses/ps5-opengl/LICENSES/Vulkan-Headers.txt": "95ad366d23fadf701d355bc45fb8b82ae2d700239471d35d41286ac3b08ff903",
+    "licenses/ps5-opengl/LICENSES/Sokol.txt": "72f9367756dba68918b8955092c14503934681862eee33cc16495a02f40025ef",
+    "licenses/ps5-opengl/LICENSES/VK-GL-CTS.txt": "3ddf9be5c28fe27dad143a5dc76eea25222ad1dd68934a047064e56ed2fa40c5",
+    "licenses/ps5-opengl/LICENSES/SDL2.txt": "7826eca0a0f7e591f38dd844e207a200aac81a59b20d8a30c3af8c6282af13e6",
+    "licenses/ps5-opengl/LICENSES/OpenGNM.txt": "4ef11e5f2fa4563cc95a209dc9ca4f9322f1cd19bad07082ee90594eda8664c6",
+    "licenses/ps5-opengl/LICENSES/Sokol-Samples.txt": "51490332d416ce2bb3a84557c7da7a1a9854c9419b6dbef251bc77d6c995e736",
+    "licenses/ps5-opengl/LICENSES/vecmath.txt": "7c1e700f01750ceb638d511438456a2e957a9e4908655936388b87ad52cfd48a",
+    "licenses/ps5-opengl/LICENSES/Mesa/Apache-2.0": "7e4d3fba250d15e9e0afa380d4b611828fa2560cc8fdebe95bcf2f01a487de12",
+    "licenses/ps5-opengl/LICENSES/Mesa/MIT": "323c587d0ccf10e376f8bf9a7f31fb4ca6078105194b42e0b1e0ee2bc9bde71f",
+    "licenses/ps5-opengl/LICENSES/Mesa/GPL-1.0-or-later": "8ff76f1528e6e4e9400c0f6b1f2d19d4979aaac3bcc44bb707a55389132825c4",
+    "licenses/ps5-opengl/LICENSES/Mesa/GPL-2.0-only": "6667ad4063569cd53b13500550d93fcd3dc11bcf82c5514296af013a0b720ba5",
+    "licenses/ps5-opengl/LICENSES/Mesa/BSL-1.0": "9b9fea7520a816107fcac2598b7c0155222f16bc430e989706b22f4367f1df7d",
+    "licenses/ps5-opengl/LICENSES/Mesa/SGI-B-2.0": "686bf035a1fd22076416fd3b90370ac67771e884bf57f55693d51f8ce7c710a7",
+    "licenses/ps5-opengl/LICENSES/Mesa/exceptions/Linux-Syscall-Note": "9b4084655174654608fd037e9ddb4feeadfada01cd042e9c17b05aa7105b2b9f",
+    "sounds/glass/error_01.wav": "ab0fe700bb8d245f5e42ea2484045908c39971459aafeb985c7413caa30fcf85",
+    "sounds/glass/notify_01.wav": "e9fd1bd98879ed2eb7746714411a4c499a7e8b8c5eda704e316eca40230e160f",
+    "sounds/glass/launch_01.wav": "eae4ba7af91695850c7f031eeed0a01807d9ed1dca063fdca5a7df03e97870cd",
+    "sounds/glass/welcome_01.wav": "eae4ba7af91695850c7f031eeed0a01807d9ed1dca063fdca5a7df03e97870cd",
+    "sounds/glass/toggle_02.wav": "1647840bf2e0c6b2febeb527c5b8535f3c0d6b5cc9d2745b7433c9f9cc9aa2d9",
+    "sounds/glass/saved_01.wav": "273d07c2f504fe74d8d1ef09a0c3c8adaa8fead462ab5541b3db1b5816ec81c5",
+    "sounds/glass/resume_01.wav": "193a9d27b322941c578a307a76da7ffdcfeaff31f42aa054a7c52e59eda0e5ee",
+    "sounds/glass/back_01.wav": "132a55c945c7a3f17d52ccd513c8f162508a301cbcdca1c3bea376af7e06d8b9",
+    "sounds/glass/tab_01.wav": "78e9228799ea0fa67f1bc921242c635efd524faaf66cb035e0e9211497bbe22c",
+    "sounds/glass/focus_02.wav": "8675f6e70ed8c0a446f5899da100e0be92aa43fc7ab8d93bfa010716c24445ca"
+  },
+  "zip": "PPSA99288.zip",
+  "zipBytes": 46836776,
+  "zipSha256": "100329ceff6f576a9c122e7441535328dffa7df5ce75bd8758f237b5179f18fb",
+  "zipFilesMatchImage": true,
+  "zipPermissions": "0777",
+  "sourceArchiveEvidence": {
+    "sourceCommit": "46f85494b91fa1049068da716434871bf2aa95f8",
+    "fileCount": 1029,
+    "archiveSha256": "516d010a07200e36ae239f2fea0482931a83fd80fe52b2de0f9d2875a01610ca",
+    "allFileHashesMatch": true
+  },
+  "hostTestEvidence": {
+    "conclusion": "success",
+    "sourceCommit": "46f85494b91fa1049068da716434871bf2aa95f8",
+    "url": "https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/43499580729/job/132141524579",
+    "rawLogSha256": "1d85fe09bc6ebe7954e4ed9d75dcf7558ca2e3517ab2644da93298fce39410dd",
+    "normalizedLogSha256": "1ca18e710def83448341f170704f171ea812f386353be2b5081d26f8b3017f0c",
+    "expectedHttpsFixturePeerResetTraces": 2
+  },
+  "vlcHostTestEvidence": {
+    "conclusion": "success",
+    "sourceCommit": "46f85494b91fa1049068da716434871bf2aa95f8",
+    "url": "https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/43499580729/job/132141525094",
+    "rawLogSha256": "06aca159023143e9d9a9254b67d6b057988ab0362c49147b11124f32bbd8a37f"
+  },
+  "hostToolsEvidence": {
+    "conclusion": "success",
+    "freshCompleteBuild": true,
+    "buildLogSha256": "6a6e284f54b071e0540fe997a7cc2460ceb073bbc0d1d984ae84df4924120c13",
+    "dependencyValidationLogSha256": "aec84d491362bc962f77289773ab5a9305dd2ec92c74ee8f84b43017287b59cb",
+    "allMaintenancePinsMatch": 741,
+    "dependencyPinsChanged": true,
+    "preservedSdkValidationLogSha256": "6e6f811f26eac0788ef45ddb5f1de0978c262c9a503135b08db5dd5bebab13bc"
+  },
+  "dependencyRefreshEvidence": {
+    "compiler": "23.1.5",
+    "pacbrew": "0.41.1",
+    "sources": {
+      "OpenSSL": "4.1.0",
+      "libass": "0.17.5",
+      "curl": "8.23.0",
+      "expat": "2.10.0",
+      "freetype": "2.15.0",
+      "libpng": "1.6.59",
+      "fribidi": "1.0.18",
+      "ffmpeg": "9.0.2",
+      "harfbuzz": "15.1.0",
+      "libxml2": "2.15.4",
+      "libwebp": "1.6.0",
+      "zlib": "1.4",
+      "zstd": "1.5.7",
+      "xz": "5.8.4",
+      "libpsl": "0.23.3",
+      "fontconfig": "2.18.3",
+      "libiconv": "1.19.1",
+      "miniupnpc": "2.3.3",
+      "dht": "0.28"
+    },
+    "independentFfmpegRebuild": {
+      "version": "1.0.0.24",
+      "reason": "Owner-authorized dependency refresh; FFmpeg9.0.2 compiled twice in fresh independent object directories with LLVM23.1.5 and no cache.",
+      "source": {
+        "version": "9.0.2",
+        "archive": "FFmpeg-n9.0.2.tar.gz",
+        "url": "https://github.com/FFmpeg/FFmpeg/archive/refs/tags/n9.0.2.tar.gz",
+        "sha256": "6e374ed621e48faa40639307dff48ba6fe574a509977956d2cce9669b7cc27e9",
+        "verification": "Official HTTPS source archive; record SHA-256 and immutable tag provenance"
+      },
+      "sourceDateEpoch": 1794528000,
+      "sdkPrefix": "/workspace/nuvio-maintenance-libs/sdk",
+      "actualSdkPrefix": "/workspace/nuvio-deps24/sdk",
+      "informationalPrefixRetainedForReproducibility": true,
+      "independentCleanRebuildsIdentical": true,
+      "outputs": {
+        "target/user/homebrew/lib/libavcodec.a": {
+          "sha256": "4b51aedbba2049e707d20dd6cd84a3fc0f476e4dc98764f79d6a1facace3426a",
+          "independentCleanBuildSha256": "4b51aedbba2049e707d20dd6cd84a3fc0f476e4dc98764f79d6a1facace3426a"
+        },
+        "target/user/homebrew/lib/libavformat.a": {
+          "sha256": "648d92554dd0bc13035812bc02c51181a724ba191de4ff2d4e756b6c5dd83978",
+          "independentCleanBuildSha256": "648d92554dd0bc13035812bc02c51181a724ba191de4ff2d4e756b6c5dd83978"
+        },
+        "target/user/homebrew/lib/libavutil.a": {
+          "sha256": "108b77005e48c74380f985e7ac36c1a11aa38736d11e526981acc68e5fee60d8",
+          "independentCleanBuildSha256": "108b77005e48c74380f985e7ac36c1a11aa38736d11e526981acc68e5fee60d8"
+        },
+        "target/user/homebrew/lib/libswscale.a": {
+          "sha256": "98dfd7ff0bea8e3af2edd470f4f7e61410055faafe1fd00a9c76a424552809f2",
+          "independentCleanBuildSha256": "98dfd7ff0bea8e3af2edd470f4f7e61410055faafe1fd00a9c76a424552809f2"
+        },
+        "target/user/homebrew/lib/libswresample.a": {
+          "sha256": "64181f5249bd8774d2aafe8cee777c32147df73a3dd21455ff64419945eddf67",
+          "independentCleanBuildSha256": "64181f5249bd8774d2aafe8cee777c32147df73a3dd21455ff64419945eddf67"
+        },
+        "target/user/homebrew/lib/libavfilter.a": {
+          "sha256": "ff42c8bfdc7993dfa1018975271e2609ad5cb03fb2bc5f7b80c43c57de47b877",
+          "independentCleanBuildSha256": "ff42c8bfdc7993dfa1018975271e2609ad5cb03fb2bc5f7b80c43c57de47b877"
+        },
+        "target/user/homebrew/lib/libavdevice.a": {
+          "sha256": "bbd4ef0a1a9442c9a3e1aecb5fe126828bc9e5e8144eea2f1b1caea148577948",
+          "independentCleanBuildSha256": "bbd4ef0a1a9442c9a3e1aecb5fe126828bc9e5e8144eea2f1b1caea148577948"
+        }
+      },
+      "llvmVersion": "23.1.5",
+      "nasmVersion": "NASM version 2.16.03",
+      "hardwareVerified": false,
+      "proofLogSha256": "99b19120caaaa68cda04768e60bf365dea523bc40b4f6f1c96046d75fc18ce1b"
+    },
+    "hostCompatibilityEnvironment": {
+      "hostLibraryVersions": {
+        "openssl": "4.1.0",
+        "libcurl": "8.23.0",
+        "libavcodec": "63.1.102",
+        "libavformat": "63.1.102",
+        "libavutil": "61.1.102",
+        "libswscale": "10.1.102",
+        "libswresample": "7.1.102"
+      },
+      "hostCompiler": "g++ (Debian 14.2.0-19) 14.2.0",
+      "nativeCompiler": "clang version 23.1.5 (https://github.com/llvm/llvm-project 392dfff97d29b59d77e5cac6d4b6ef2585fe7117)",
+      "caBundleLoad": true,
+      "caCertificates": 119,
+      "scope": "Linux compatibility graph for the new FFmpeg9/OpenSSL4/curl8.23 ABIs; other host libraries use the retained host sysroot. Complete PS5 target graph was rebuilt independently.",
+      "runtimeLibraryEvidence": {
+        "account": [
+          "libssl.so.4 => /workspace/nuvio-deps24/host-graph/lib/libssl.so.4 (0x00007fe4397b1000)",
+          "libcrypto.so.4 => /workspace/nuvio-deps24/host-graph/lib/libcrypto.so.4 (0x00007fe4391dd000)"
+        ],
+        "evo": [
+          "libavcodec.so.63 => /workspace/nuvio-deps24/host-graph/lib/libavcodec.so.63 (0x00007f9fb2ba9000)",
+          "libavformat.so.63 => /workspace/nuvio-deps24/host-graph/lib/libavformat.so.63 (0x00007f9fb28eb000)",
+          "libavutil.so.61 => /workspace/nuvio-deps24/host-graph/lib/libavutil.so.61 (0x00007f9fb2703000)",
+          "libssl.so.4 => /workspace/nuvio-deps24/host-graph/lib/libssl.so.4 (0x00007f9fb1e0f000)",
+          "libcrypto.so.4 => /workspace/nuvio-deps24/host-graph/lib/libcrypto.so.4 (0x00007f9fb183b000)"
+        ]
+      }
+    },
+    "newAbiSuiteExecution": {
+      "exitCode": 0,
+      "scope": "All host suite checks completed across initial run and targeted reruns. Initial run stopped on the curl8.23 static-library mock intercepting an internal admin handle; repaired test injection reran all8 network cases and the remaining updater suite. Strengthened subtitle tests passed separately after the Arabic/Montserrat selection fixes.",
+      "initialRunExitCode": 1,
+      "initialLog": "host-new-abi-suite-initial.log",
+      "resumeLog": "host-new-abi-resume.log",
+      "fontLog": "font-regression-after2.log",
+      "exactFinalSourceCompleteSuite": "Required GitHub CI run before publication.",
+      "seekRegression": {
+        "sourceCommit": "46f85494b91fa1049068da716434871bf2aa95f8",
+        "oldCodeDeterministicFailureLog": "seek-gate-before.log",
+        "newAbiCasesPassed": [
+          "seek_gate",
+          "player_lifecycle",
+          "torrent_player",
+          "player_network"
+        ],
+        "newAbiLogs": [
+          "seek-gate-after-final.log",
+          "seek-lifecycle-after-final.log",
+          "seek-torrent-after-final.log",
+          "seek-network-after-final.log"
+        ],
+        "additionalCiAbi": "FFmpeg8.0.1 minimal host graph: full lifecycle and controlled gate checks passed",
+        "additionalCiAbiLogs": [
+          "seek-lifecycle-ffmpeg8.log",
+          "seek-gate-ffmpeg8.log"
+        ]
+      }
+    },
+    "newAbiInitialLogSha256": "6bc5cada317efc70363b4c396a246b13877496f6d70618a521adfd99e95497d7",
+    "newAbiResumeLogSha256": "95d5801edad61e699cf4db5ec94e23e60b777d366b3d3c49e519c77c59cf3700",
+    "newAbiExtraLogSha256": "d4075fc1684f80cca41482248f794241feaf792d497a35bced7eae72b7cbd8c1",
+    "subtitleFontRegression": {
+      "exitCode": 0,
+      "realLibassRendering": true,
+      "languageFontStyleCombinations": 18,
+      "missingGlyphWarnings": 0,
+      "silentFallbackWarnings": 0
+    },
+    "subtitleFontRegressionLogSha256": "a7242d5e1f21307c9b600f16ca7a499ac556402783073ffbe82b025bd3de47d4",
+    "providerCompatibility": {
+      "modernDomUtilsPredicates": true,
+      "modernBoolbaseDefault": true,
+      "modernCssSelectTokenEntry": true,
+      "latestEntitiesForHighLevelApi": "9.0.0",
+      "streamingParserEntities": "8.1.0",
+      "reason": "htmlparser2 12 and parse5 8 require streaming EntityDecoder/tree exports removed by entities 9; private compatible copies retained, covered by real QuickJS HTML/XML tests."
+    },
+    "npmAudit": {
+      "info": 0,
+      "low": 0,
+      "moderate": 0,
+      "high": 0,
+      "critical": 0,
+      "total": 0
+    },
+    "physicalPs5Verified": false
+  },
+  "usbNativeIoEvidence": {
+    "sourceCommit": "46f85494b91fa1049068da716434871bf2aa95f8",
+    "objects": [
+      {
+        "object": "gl_session_live_tv.cpp.o",
+        "sha256": "9cc11db3d75895006af14bd13176dbb6987a13eb73707a3b433371622e34211d",
+        "forbiddenImportsAbsent": [
+          "dup",
+          "fdopendir",
+          "fstatat",
+          "openat"
+        ],
+        "rawSyscallInstructions": 0
+      },
+      {
+        "object": "gl_usb_reader.cpp.o",
+        "sha256": "6fb5906db002d3e017f654cb9e166af17644f8577a34b2c0fd8969534053f60d",
+        "forbiddenImportsAbsent": [
+          "dup",
+          "fdopendir",
+          "fstatat",
+          "openat"
+        ],
+        "rawSyscallInstructions": 0
+      },
+      {
+        "object": "gl_update_channel.cpp.o",
+        "sha256": "4d50d80a97a333009d14c1222cd892477782eacff3920205c77cfd2cecc12894",
+        "forbiddenImportsAbsent": [
+          "dup",
+          "fdopendir",
+          "fstatat",
+          "openat"
+        ],
+        "rawSyscallInstructions": 0
+      },
+      {
+        "object": "nuvio-usb-reader.elf.o",
+        "sha256": "be51dae762bf8f78012b44ced9a26f1c7c3456c6c821b311937f6b0e84fb86db",
+        "forbiddenImportsAbsent": [
+          "dup",
+          "fdopendir",
+          "fstatat",
+          "openat"
+        ],
+        "rawSyscallInstructions": 0
+      },
+      {
+        "object": "gl_session.cpp.o",
+        "sha256": "44bc5a153f256c6010204df265441c20011c691c587215cb86c85b37561d5461",
+        "forbiddenImportsAbsent": [
+          "dup",
+          "fdopendir",
+          "fstatat",
+          "openat"
+        ],
+        "rawSyscallInstructions": 0
+      },
+      {
+        "object": "gl_session_profiles.cpp.o",
+        "sha256": "359a1bfdf715789c8c8938f72a8dad4df5e27b71af6582a72fe76327f6b26c2e",
+        "forbiddenImportsAbsent": [
+          "dup",
+          "fdopendir",
+          "fstatat",
+          "openat"
+        ],
+        "rawSyscallInstructions": 0
+      },
+      {
+        "object": "gl_session_browse.cpp.o",
+        "sha256": "12336563763d130813ddf2161bb3b0ec9f2b03eef3cb9e9233bbb1742a25cae9",
+        "forbiddenImportsAbsent": [
+          "dup",
+          "fdopendir",
+          "fstatat",
+          "openat"
+        ],
+        "rawSyscallInstructions": 0
+      },
+      {
+        "object": "gl_session_detail.cpp.o",
+        "sha256": "8d730f410c801d5fb315bd99377a3387c542c1aa49958c2a07010c6594b4a41a",
+        "forbiddenImportsAbsent": [
+          "dup",
+          "fdopendir",
+          "fstatat",
+          "openat"
+        ],
+        "rawSyscallInstructions": 0
+      },
+      {
+        "object": "gl_session_title_actions.cpp.o",
+        "sha256": "3c7a5411d0f933c72f8568bfe4d006f15943c1d93e280d48f9335f6db07f4ec4",
+        "forbiddenImportsAbsent": [
+          "dup",
+          "fdopendir",
+          "fstatat",
+          "openat"
+        ],
+        "rawSyscallInstructions": 0
+      },
+      {
+        "object": "gl_session_watch.cpp.o",
+        "sha256": "9ca8d79e03b1807df9e2182895d7ac133d8cc233ce56d13409b3ddb3d042d635",
+        "forbiddenImportsAbsent": [
+          "dup",
+          "fdopendir",
+          "fstatat",
+          "openat"
+        ],
+        "rawSyscallInstructions": 0
+      },
+      {
+        "object": "ui_detail.cpp.o",
+        "sha256": "872373babb15b2b7558ad42fe95539a5a2da9f5d069509b1d9b5228acf8968e8",
+        "forbiddenImportsAbsent": [
+          "dup",
+          "fdopendir",
+          "fstatat",
+          "openat"
+        ],
+        "rawSyscallInstructions": 0
+      },
+      {
+        "object": "src_tracking.cpp.o",
+        "sha256": "8cb8cff703e37a4ee1916d6184d76f63b572399f95df8927b719d5437936c8c1",
+        "forbiddenImportsAbsent": [
+          "dup",
+          "fdopendir",
+          "fstatat",
+          "openat"
+        ],
+        "rawSyscallInstructions": 0
+      },
+      {
+        "object": "src_feature_http.cpp.o",
+        "sha256": "e0c6794f149f78612261118bb41ee1068d53775ec4db0691d09b803fa8ac3b6b",
+        "forbiddenImportsAbsent": [
+          "dup",
+          "fdopendir",
+          "fstatat",
+          "openat"
+        ],
+        "rawSyscallInstructions": 0
+      },
+      {
+        "object": "src_stalker.cpp.o",
+        "sha256": "54626fbe052c915dad0c75a07e4d88a6bf7f2eea986c6926e2baac61e0b1dfe0",
+        "forbiddenImportsAbsent": [
+          "dup",
+          "fdopendir",
+          "fstatat",
+          "openat"
+        ],
+        "rawSyscallInstructions": 0
+      },
+      {
+        "object": "src_tvdb.cpp.o",
+        "sha256": "26be77deb0a2f867ef9a242dbd6d2599c27158738b368c1c0cff2445c9da5942",
+        "forbiddenImportsAbsent": [
+          "dup",
+          "fdopendir",
+          "fstatat",
+          "openat"
+        ],
+        "rawSyscallInstructions": 0
+      },
+      {
+        "object": "src_config_backup.cpp.o",
+        "sha256": "fdddc9205484072af5e758ebabea84be6d0ec19743c16492d43480f72030501f",
+        "forbiddenImportsAbsent": [
+          "dup",
+          "fdopendir",
+          "fstatat",
+          "openat"
+        ],
+        "rawSyscallInstructions": 0
+      },
+      {
+        "object": "src_config_drive.cpp.o",
+        "sha256": "623250b8425db0ab79baa89d9272ccdfab4cc69dec9c5cb0c632894c90513b0c",
+        "forbiddenImportsAbsent": [
+          "dup",
+          "fdopendir",
+          "fstatat",
+          "openat"
+        ],
+        "rawSyscallInstructions": 0
+      },
+      {
+        "object": "gl_session_backup.cpp.o",
+        "sha256": "e878e5026a8de003a81e8eecd0c6b13de9133a74e4a825f0f2b8c644fd76ff6e",
+        "forbiddenImportsAbsent": [
+          "dup",
+          "fdopendir",
+          "fstatat",
+          "openat"
+        ],
+        "rawSyscallInstructions": 0
+      },
+      {
+        "object": "gl_session_tvdb.cpp.o",
+        "sha256": "43582158d32790080a895f82743f8bbaa9f9d48f0636fe1e25c58f8d7ef45092",
+        "forbiddenImportsAbsent": [
+          "dup",
+          "fdopendir",
+          "fstatat",
+          "openat"
+        ],
+        "rawSyscallInstructions": 0
+      },
+      {
+        "object": "gl_session_iptv.cpp.o",
+        "sha256": "624f19ffb91fb316a3dacfca26b7fefa1a084711faa855714b9588e6a654c293",
+        "forbiddenImportsAbsent": [
+          "dup",
+          "fdopendir",
+          "fstatat",
+          "openat"
+        ],
+        "rawSyscallInstructions": 0
+      },
+      {
+        "object": "gl_session_multiview.cpp.o",
+        "sha256": "fd8290a575a2f85ab7c9efddbc7eab67458eb13eb9b4ef7a8853ff56de8df5c4",
+        "forbiddenImportsAbsent": [
+          "dup",
+          "fdopendir",
+          "fstatat",
+          "openat"
+        ],
+        "rawSyscallInstructions": 0
+      },
+      {
+        "object": "src_iptv_library.cpp.o",
+        "sha256": "b894f115bcd08a46814cca2acfe5b858a797db53cf1bdb30e87364516e6b3236",
+        "forbiddenImportsAbsent": [
+          "dup",
+          "fdopendir",
+          "fstatat",
+          "openat"
+        ],
+        "rawSyscallInstructions": 0
+      }
+    ],
+    "readerSha256": "986f059ac4fedce2f256790845e36dc98d5695eacdeee6f46ed8da83331ebeac",
+    "runtimeNote": "Pinned SDK startup prepares helper process capabilities/attributes and syscall address range; this is privileged; USB behavior was confirmed on build 1.0.0.16 only. Maxd credentials unchanged.",
+    "hardwareVerified": false
+  },
+  "seekGateEvidence": {
+    "controlledDemuxBoundaryRegression": true,
+    "oldCodeFailureLogSha256": "e22c8932d7c9a1a8b5a5de03bec4de9c52d4a793731152d8f439b77874617eb3",
+    "newCodeLogSha256": "cfeeb4bfc43ab8486e619f67daab28c183776376bce1b637719c83a1a4811908",
+    "ffmpeg9LifecycleLogSha256": "0fbed2ff53c020c32053abad2b570a5eeea96a2c7a8611223a1bb82ca6850f2e",
+    "ffmpeg8LifecycleLogSha256": "480bf45c640098b669def80a879d47de0b10b6f1412dfdf6e4922466d38d637b",
+    "ffmpeg8ControlledGateLogSha256": "b75ac8209457e2ba28ac30e65ee9e907313753a22d253ebb37e0c77c2089ca33",
+    "torrentRollbackDeadlineLogSha256": "08c5b45d69d68ea605aa46b1e6a59dc7727015bd9b83f2cb14d3e4fb04b05e56",
+    "httpHlsSeekLogSha256": "174faa34f2776dc18af90e92010307e9e4db43f245a210602b560a4608195530",
+    "bufferingRemainsActiveWhileDemuxSeeks": true,
+    "ioInterruptAndPresentationGatesSeparate": true,
+    "pausedAndSupersedingSeeksPassed": true,
+    "physicalPs5Verified": false
+  },
+  "catalogStaticScan": {
+    "errors": 0,
+    "warnings": 4,
+    "notices": 1,
+    "logSha256": "efdaef544bfe38777cc98231624a17b2963cd0cd841c0d155dedaffbb774cf53",
+    "helperApprovalRequired": true
+  },
+  "rendererPreviewEvidence": {
+    "count": 144,
+    "allGlErrorsZero": true,
+    "modes": [
+      "login",
+      "streams",
+      "title-actions",
+      "title-actions-movie",
+      "watched-confirm",
+      "de-title-actions",
+      "ar-title-actions",
+      "zh-Hans-title-actions",
+      "ja-title-actions",
+      "ko-title-actions",
+      "sports-settings",
+      "sports-settings-off",
+      "sports-hub",
+      "sports-all-nav",
+      "sports-menu",
+      "sports-picker",
+      "sports-teams",
+      "sports-channels",
+      "source-preferences",
+      "source-preferences-last",
+      "source-ranking",
+      "torrent-resume",
+      "torrent-settings",
+      "playback-recovery",
+      "diagnostic-summary",
+      "torrent-buffer",
+      "remote-remap",
+      "remote-learn",
+      "remote-timeout",
+      "torrents",
+      "torrents-all",
+      "live-guide",
+      "live-grid",
+      "live-grid-future",
+      "series-updates",
+      "library-search",
+      "library-search-empty",
+      "library-search-long",
+      "iptv",
+      "movie",
+      "series",
+      "seasons",
+      "player",
+      "tracks",
+      "chapters",
+      "chapters-menu",
+      "home",
+      "skip",
+      "skip-focused",
+      "recap-focused",
+      "credits-focused",
+      "next-focused",
+      "subtitle-preview",
+      "subtitle-preview-largest",
+      "subtitle-preview-high-contrast",
+      "release-notes",
+      "install-source",
+      "store-update",
+      "github-update",
+      "donation",
+      "audio-output",
+      "settings-categories",
+      "settings-lighting",
+      "profile-pin",
+      "cast",
+      "person",
+      "language",
+      "de-cast",
+      "de-person",
+      "de-language",
+      "de-usb-language",
+      "de-settings-categories",
+      "de-profile-pin",
+      "de-login",
+      "de-release-notes",
+      "de-movie",
+      "de-home",
+      "de-person-last",
+      "de-cast-last",
+      "es-language-picker",
+      "es-settings-categories",
+      "es-login",
+      "es-profile-pin",
+      "es-person",
+      "es-home",
+      "es-player",
+      "es-usb-language",
+      "es-release-notes",
+      "fr-language-picker",
+      "fr-settings-categories",
+      "fr-login",
+      "fr-profile-pin",
+      "fr-person",
+      "fr-home",
+      "fr-player",
+      "fr-usb-language",
+      "fr-release-notes",
+      "ar-language-picker",
+      "ar-settings-categories",
+      "ar-login",
+      "ar-profile-pin",
+      "ar-person",
+      "ar-home",
+      "ar-player",
+      "ar-usb-language",
+      "ar-release-notes",
+      "zh-Hans-language-picker",
+      "zh-Hans-settings-categories",
+      "zh-Hans-login",
+      "zh-Hans-profile-pin",
+      "zh-Hans-person",
+      "zh-Hans-home",
+      "zh-Hans-player",
+      "zh-Hans-usb-language",
+      "zh-Hans-release-notes",
+      "ja-language-picker",
+      "ja-settings-categories",
+      "ja-login",
+      "ja-profile-pin",
+      "ja-person",
+      "ja-home",
+      "ja-player",
+      "ja-usb-language",
+      "ja-release-notes",
+      "ko-language-picker",
+      "ko-settings-categories",
+      "ko-login",
+      "ko-profile-pin",
+      "ko-person",
+      "ko-home",
+      "ko-player",
+      "ko-usb-language",
+      "ko-release-notes",
+      "watched-movie",
+      "watched-movie-unmarked",
+      "watched-home",
+      "watched-person",
+      "de-watched-movie",
+      "es-watched-movie",
+      "fr-watched-movie",
+      "ar-watched-movie",
+      "zh-Hans-watched-movie",
+      "ja-watched-movie",
+      "ko-watched-movie"
+    ]
+  },
+  "watchedStateEvidence": {
+    "membershipCases": 43,
+    "historyCases": 33,
+    "activitySummariesExpanded": false,
+    "legacyCacheRetired": true,
+    "carouselPositionPreserved": true,
+    "previousVersionTesterConfirmation": "https://github.com/HandshakeHackin/Nuvio-maxd-releases/issues/22#issuecomment-6856470481",
+    "thisDependencyRefreshConsoleVerified": false
+  }
+}

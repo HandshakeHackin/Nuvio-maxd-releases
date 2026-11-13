@@ -1,0 +1,59 @@
+Nuvio Max'd 1.0.0.24 experimental — verification evidence
+
+Clean source 46f85494b91fa1049068da716434871bf2aa95f8, branch builds/v1.0.0.24, contentVersion 07.000.024.
+Complete PS5 app, USB reader and updater built in a fresh object directory.
+LLVM 23.1.5, PacBrew 0.41.1, OpenSSL 4.1.0, FFmpeg 9.0.2 and EVO 0.13.7.
+All 741 target dependency output hashes and SDK/GL/source/recipe/asset pins match.
+All seven FFmpeg archives match an independent clean rebuild byte-for-byte.
+Embedded libVLC 3.0.24 and 98 selected plugins compiled against the new target ABI.
+VLC console port 0.6.1 was reviewed; standalone app features are not embedded.
+
+Exact-source full host CI and 144 renderer previews: https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/43499580729/job/132141524579
+Real VLC file/HTTP/HLS/seek/cancellation CI: https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/43499580729/job/132141525094
+Both jobs passed. Raw logs are retained and hashed. Normalization removes only
+timestamps and 2 complete expected peer-reset traces in the passing TLS
+rejection fixture; no test/assertion failure is removed.
+
+A separate Linux OpenSSL4/curl8.23/FFmpeg9 graph completed all host checks and
+extra media-server/IME/VLC checks. The initial full run exposed a stale rapid-seek
+mock intercepting libcurl's new internal admin handles; the failure log is kept
+and hashed. After fixing the injection, all eight network cases and the remaining
+46 updater checks passed. New real-libass subtitle regressions first reproduced
+missing Arabic glyphs and silent Montserrat fallback; corrected family selection
+now passes all 18 language/font-style combinations without either warning.
+A subsequent CI paused-seek failure exposed a real race: old queued frames could
+release buffering while the demuxer was still seeking. A controlled blocked-demux
+regression reproduced the old position0.256, then passed after adding a separate
+in-progress presentation gate. Full lifecycle and controlled cases pass on
+FFmpeg8.0.1 and9.0.2; torrent rollback/deadline and HTTP/HLS seek checks also pass.
+The final exact-source GitHub full suite also passed. Test executables' runtime
+library versions were checked. Other host libraries retain their sysroot versions.
+123 feature-core checks exercise real backup crypto/private IO, TVDB identity,
+portal bounds and Drive conflicts. 88 HTTPS account tests, 43 membership and
+33 explicit watched-history regressions passed, including production Session
+revisit/restart/profile/source and unchanged carousel focus/scroll checks.
+Real QuickJS HTML/XML/selector/DOM/provider isolation and transport fixtures pass.
+Provider audit reports zero known advisories. Two streaming parsers deliberately
+retain private Entities8.1 because Entities9 removed their required decoder API.
+Modern DomUtils/Boolbase/CSS-select adapters are covered by provider regressions.
+New compiler/layout, MiniUPnP API and Matroska dependency compatibility are handled.
+Updated fonts/CA/STB are pinned; all eight language, shaping and glyph checks pass.
+
+Image has zero container errors/warnings; 164 extracted file hashes
+match the staged app and ZIP. ZIP entry/integrity checks passed. Matching source
+archive has 1029 verified file hashes at the same commit.
+USB/feature native object audit found no dup/fdopendir/fstatat/openat imports or
+raw syscall instructions. Bounded scans, private copies and profile isolation
+remain covered. Static catalog scan: zero errors, 4 warnings, 1 notices.
+Existing privileged reader/updater require catalog maintainer helper review;
+no helper approvals or unrelated catalog records were changed.
+
+Previous SDK/toolchain pins still validate. Original failed workspace, recovered
+downloads, previous branches/tags and release assets remain preserved. Temporary
+objects reclaimed for space have verified lossless archives and manifests.
+
+Physical PS5 compatibility of this dependency refresh remains UNCONFIRMED.
+The tester confirmed the preceding 1.0.0.23 watched/carousel fixes; issue22 closed.
+Preserve saved data and the previous build. See TESTING.txt for console checks.
+Live account/provider availability and console playback are not established by
+these fixtures. This report does not establish catalog submission or deployment.
