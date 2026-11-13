@@ -35,7 +35,9 @@ B=${BUILD_DIR:-$ROOT/build}/app
 OUT=${OUT_DIR:-$ROOT/dist}
 CXX="$SDK/bin/prospero-clang++"
 CC="$SDK/bin/prospero-clang"
-COMPILER_RT=${COMPILER_RT:-$("$CC" -print-resource-dir)/lib/linux/libclang_rt.builtins-x86_64.a}
+# LLVM 23 uses a target-triple resource directory; older distributions use lib/linux.
+COMPILER_RT=${COMPILER_RT:-$("$CC" -target x86_64-unknown-linux-gnu -rtlib=compiler-rt --print-libgcc-file-name)}
+[[ -f "$COMPILER_RT" ]] || { echo 'Selected compiler builtins archive is missing' >&2; exit 1; }
 
 [ -x "$TOOL" ] || (cd "$BP" && bash tools/build-host-tools.sh)
 

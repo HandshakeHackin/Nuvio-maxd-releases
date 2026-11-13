@@ -1,5 +1,13 @@
 # Native Nuvio Max'd for PS5
 
+## 1.0.0.24: experimental dependency refresh
+
+The app now builds with LLVM 23.1.5, PacBrew 0.41.1, FFmpeg 9.0.2 and
+OpenSSL 4.1.0, with refreshed EVO, provider, compression, networking and text
+dependencies. SDK 0.45 and OpenGL 1.0.2 remain pinned. Use the
+[isolated build instructions](DEPENDENCY_REFRESH_BUILD.txt) and
+[console checklist](TESTING-1.0.0.24.md). Console compatibility remains unconfirmed.
+
 ## 1.0.0.19: detail actions and controller hints
 
 Press **Options** on movie/series details to manage library membership, watched
@@ -37,7 +45,7 @@ thumbnails, descriptions and watch-progress indicators. Films show their poster
 beside metadata and stream cards. These layouts follow the artwork-focused
 approach in [Stremio-Plus](https://github.com/LoZazaMastro/Stremio-Plus).
 
-This folder contains the Nuvio Max'd source for the **v0.5.17 native experimental
+This folder contains the Nuvio Max'd source for the **v1.0.0.24 native experimental
 release**. The OpenGL
 interface, addon requests and player run together in one process and are
 packaged as a single FFPFSC image.
@@ -56,9 +64,9 @@ v0.5.17 adds subtitle styling with a live preview, custom D-pad and shoulder-but
 
 ## Experimental EVO video engine
 
-v0.5.15 includes the video decoder and presentation core from the latest EVO
-Player release, **0.12.0**, pinned to commit `9ee9a5420c73b5be448610e5f0a90a29a75592f3`.
-Choose **Settings → Playback engine → EVO Player 0.12.0 (experimental)**,
+The optional engine includes EVO Player **0.13.7**'s video decoder and
+presentation core, pinned to commit `08bcab5de76cb7507ecc0bc3e1d4bca9bea13788`.
+Choose **Settings → Playback engine → EVO Player 0.13.7 (experimental)**,
 then open a stream. The saved choice applies to the next stream; Nuvio native
 remains the default and can be selected again from the same menu.
 

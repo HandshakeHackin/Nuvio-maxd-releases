@@ -59,7 +59,7 @@ Cheerio fork's vulnerable nth-check 1.x dependency. All three provider module
 names (`cheerio`, `cheerio-without-node-native`, `react-native-cheerio`) retain
 the same exported object. HTML/XML parsing, nth selectors and malformed
 selectors are exercised in the production QuickJS bundle by tests/providers.sh.
-No forced major-version transitive overrides are used.
+The 1.0.0.24 refresh explicitly pins newer transitive packages with tested browser adapters; see the maintenance notes below.
 
 Run `npm audit --package-lock-only --ignore-scripts --audit-level=high` to
 check the resolved graph without installing or executing packages. The
@@ -76,3 +76,7 @@ verifies both pins before exercising the real QuickJS sandbox. Regression cases
 cover query/searchParams synchronization, non-special schemes, international
 host names and astral Unicode in URL credentials. Network destination and
 credential protections are unchanged.
+
+## 1.0.0.24 dependency refresh
+
+The browser bundle uses CSS-select 7, DomUtils 4 and Boolbase 2 through small local adapters that preserve Cheerio-select 2’s token entry point, DOM predicates and default export. Exact package aliases, integrity values and overrides are locked. Entities 9 serves high-level encode/decode consumers; htmlparser2 12 and parse5 8 retain private Entities 8.1 copies because the streaming EntityDecoder/tree API was removed in 9. Both paths run in the real QuickJS regression fixture. No Node filesystem, process or native networking API is exposed. Rebuild runtime.js and production notices after changing the graph.

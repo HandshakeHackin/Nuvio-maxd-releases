@@ -1,8 +1,8 @@
-# EVO Player 0.13.0 integration
+# EVO Player 0.13.7 integration
 
-Source: sainsaji/EVO-PLAYER-PS5, release v0.13.0, commit
-`2db44b5294657b12bf91666154a05f029ddb5aa2` (latest release when integrated).
-The files in UPSTREAM.json are unmodified copies, checked before every build.
+Source: sainsaji/EVO-PLAYER-PS5, release v0.13.7, commit
+`08bcab5de76cb7507ecc0bc3e1d4bca9bea13788` (latest release when integrated).
+Original release hashes and explicit Nuvio patch hashes in UPSTREAM.json are checked before every build.
 The upstream GPL-3.0 license is included here and in every app package.
 
 The selectable EVO backend compiles EVO's real video decoder dispatcher,
@@ -26,7 +26,7 @@ console test. Use Prefer 120 Hz for the existing compatible-film cadence test.
 
 `src/evo_runtime.cpp` sends EVO diagnostic messages to the existing Nuvio log
 and implements its host logging/breadcrumb hooks. EVO's Dolby Vision parser
-requires FFmpeg 7.1.1 private structures, so it is not linked against this app's
+requires upstream-private FFmpeg structures, so it is not linked against this app's
 different FFmpeg ABI. The compatibility hooks return no reshaping metadata,
 and Profile 5 is explicitly rejected before decoder creation. Compatible
 HDR10 base layers retain Nuvio's colour policy. Full Dolby Vision is not claimed.
@@ -38,7 +38,7 @@ Do not describe host validation as proof of console decoding, HDR, cadence or
 watchdog recovery.
 
 Nuvio native remains the default. Select Settings → Playback engine → EVO
-Player 0.13.0 (experimental); the choice applies to the next stream. Compare
+Player 0.13.7 (experimental); the choice applies to the next stream. Compare
 the same SDR and HDR10 streams, pause/resume, seeks/Skip Intro, audio/subtitle
 selection and next episode. The player log identifies the engine and actual
 hardware/software backend and retains shown-fps/drop/buffer statistics.

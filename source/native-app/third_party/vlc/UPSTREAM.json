@@ -5,7 +5,7 @@
   "libvlcVersion": "3.0.24",
   "sourceUrl": "https://download.videolan.org/pub/videolan/vlc/3.0.24/vlc-3.0.24.tar.xz",
   "sourceSha256": "e7cab503d1d7d5849b89d2cf0e1ee60d0ef6d012407791b644b9cfc0cc225fdf",
-  "ffmpeg": "SDK FFmpeg 7 (single ABI shared by Native/EVO/VLC)",
+  "ffmpeg": "9.0.2 (one ABI shared by Native/EVO/VLC; complete integration rebuild required)",
   "fileSha256": {
     "COPYING": "8177f97513213526df2cf6184d8ff986c675afb514d4e68a404010521b880643",
     "COPYING.LIB": "dc626520dcd53a22f727af3ee42c770e56c97a64fe3adb063799d8ab032fe551",
@@ -56,9 +56,9 @@
     "license": "LGPL-2.1-or-later"
   },
   "libebml": {
-    "version": "1.4.6",
-    "sourceUrl": "https://dl.matroska.org/downloads/libebml/libebml-1.4.6.tar.xz",
-    "sourceSha256": "d06cf1d5ad89390389eeb1eb7d50f70b55ac7538b19aeac8859eed3f2a9908dc",
+    "version": "1.4.7",
+    "sourceUrl": "https://dl.matroska.org/downloads/libebml/libebml-1.4.7.tar.xz",
+    "sourceSha256": "5b08214f929ee54c6187c370f84235fc9d0f2a2258c4d320d68eae6e2bdfd3f7",
     "license": "LGPL-2.1-or-later"
   },
   "libmatroska": {
@@ -68,9 +68,9 @@
     "license": "LGPL-2.1-or-later"
   },
   "utf8cpp": {
-    "version": "3.2.5",
-    "sourceUrl": "https://github.com/nemtrif/utfcpp/archive/refs/tags/v3.2.5.tar.gz",
-    "sourceSha256": "14fd1b3c466814cb4c40771b7f207b61d2c7a0aa6a5e620ca05c00df27f25afd",
+    "version": "4.2.1",
+    "sourceUrl": "https://github.com/nemtrif/utfcpp/archive/refs/tags/v4.2.1.tar.gz",
+    "sourceSha256": "6d6a5493a111884cc085ee31babfe6d9960c8fb08fc80a64852eaeea8323dbc1",
     "license": "BSL-1.0"
   },
   "appliedUpdates": {
@@ -87,5 +87,10 @@
     "commit": "1475f4c66202325ff5bfde9e715e1dca4420a248",
     "version": "0.5.18",
     "scope": "Reference-safe late-clock rebuffering, reject corrupted decoded pictures, restore configured frame discard after preroll; retain existing seek flush and shared FFmpeg ABI"
+  },
+  "auditedPortRelease": {
+    "version": "0.6.1",
+    "commit": "a94b313f38be3c5754e1349d218806ae77fca32c",
+    "scope": "Complete 0.6.0-to-0.6.1 review: embedded decoder/modules unchanged. Standalone playlist/UI/network changes are not linked into Maxd; retain Nuvio dimension/workspace guards."
   }
 }

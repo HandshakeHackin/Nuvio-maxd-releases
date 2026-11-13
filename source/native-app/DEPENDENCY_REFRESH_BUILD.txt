@@ -1,0 +1,56 @@
+1.0.0.24 isolated dependency build
+
+The tested work root is /workspace/nuvio-deps24. Use that path when reproducing
+the exact recorded metadata hashes. Preserve existing SDKs, toolchains, downloads,
+worktrees and published assets; choose a separate work root for experiments.
+
+Host prerequisites: Linux x86-64, Python 3.12, Git, make, Perl, CMake, patch,
+pkg-config, GNU autotools and the normal host C/C++ development headers.
+OpenGL SDK 1.0.2 and the pinned native boilerplate remain required by gl/build.sh.
+
+1. Create WORK/host-venv with python3 -m venv, then install
+   tools/dependency-refresh-host-requirements.txt into that environment.
+2. With that Python, run tools/prepare_dependency_refresh.py WORK. It downloads
+   and verifies SDK 0.45, PacBrew 0.41.1, LLVM 23.1.5 and every native source.
+   --base-sdk PATH can reuse a separate known SDK through a hardlink clone;
+   changed leaves are detached before replacement. --verify-only changes no SDK.
+3. Add WORK/llvm23/bin and WORK/host-venv/bin to PATH. Set LLVM_CONFIG to
+   WORK/llvm23/bin/llvm-config. LLVM 23's x86-64 builtins directory is discovered
+   by gl/build.sh rather than assuming the older compiler resource layout.
+4. Build the pinned gperf 3.3 source into WORK/host-tools using the host LLVM
+   compiler; add its bin directory to PATH. This is a host generator for the
+   updated fontconfig, not a console executable. Source URL/hash is recorded
+   under hostToolchain.gperf in dependencies.json.
+5. Run bash tools/build_dependency_refresh.sh WORK to build the complete
+   static PS5 library graph. Avoid host CPATH/LIBRARY_PATH contamination.
+   REFRESH_COMPONENTS is for developer iteration in an isolated work root;
+   production packaging always checks every recorded output hash.
+6. Run tools/validate_build_dependencies.py WORK/sdk OPENGL_SDK. The manifest
+   checks source/recipe/patch and asset pins, all rebuilt library/header outputs,
+   and the independent FFmpeg rebuild receipt. Dependency provenance is part
+   of the release. Never replace output hashes solely to hide a failed check.
+7. Export PS5_PAYLOAD_SDK=WORK/sdk, VLC_BUILD_ROOT=WORK/vlc, a unique BUILD_DIR
+   and OUT_DIR, the pinned boilerplate/OpenGL paths and the owner's private
+   NUVIO_PROVIDER_APPLICATIONS file. Run gl/build.sh PPSA99288 "Nuvio Max'd".
+
+The VLC build verifies its sources, compiles libebml 1.4.7/utf8cpp 4.2.1 with
+Matroska 1.7.2, and links all 98 selected plugins to the same FFmpeg 9 ABI.
+The existing Nuvio HTTP, decoder-dimension/workspace and cancellation patches stay.
+The private dependency view handles either single or double SDK path separators.
+
+Provider changes require rebuilding third_party/provider-runtime/runtime.js and
+LICENSES.txt, then sealing both bundle/lock hashes. The small version-locked
+adapters preserve Cheerio's API on modern DOM/selector packages. HTML streaming
+parsers require their private Entities 8.1 copies; replacing those with 9 is an
+API break, demonstrated by the real fixture. The provider sandbox exposes no
+Node filesystem, process or native networking access.
+
+The committed CJK/Hebrew faces preserve their recorded historical preparation
+provenance; current host maintenance uses FontTools 4.68. New Montserrat/Arabic
+faces, unchanged current Inter faces, all other fonts and CA data are hash-pinned.
+
+Before publication: use a clean source commit, run the complete host suite and
+renderer/VLC checks, compile the complete app, verify image/ZIP/source checksums,
+then tag and publish new immutable versioned assets. Follow AGENTS.md and
+RELEASING.md for the corresponding owner-fork catalog submission. This refresh
+remains experimental until console playback/network/profile tests are confirmed.

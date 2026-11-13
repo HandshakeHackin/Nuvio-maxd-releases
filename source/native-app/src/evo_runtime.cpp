@@ -32,10 +32,21 @@ int evo_dovi_stream_profile(const void* codecpar) {
     return r.dv_profile;
 }
 int evo_dovi_stream_needs_reshape(const void* p) { return evo_dovi_stream_profile(p) == 5; }
+// The shared public decoder was refreshed, while this host deliberately keeps
+// its HDR10 base-layer policy and does not expose FFmpeg's private RPU parser.
+int evo_dovi_stream_has_rpu(const void*) { return 0; }
+float evo_dovi_l1_max_nits(const void*) { return 0.0f; }
+void evo_dovi_params_map_only(evo_dovi_params* p, float peak) {
+    if (!p) return;
+    std::memset(p, 0, sizeof(*p));
+    p->lohi[0][3] = peak;
+    p->lohi[2][3] = EVO_DOVI_KIND_MAP_ONLY;
+}
 void evo_dovi_params_default(evo_dovi_params* p) { if (p) std::memset(p, 0, sizeof(*p)); }
 int evo_dovi_params_from_av(const void*, evo_dovi_params*) { return -1; }
 evo_dovi_parser* evo_dovi_parser_open(const void*) { return nullptr; }
 void evo_dovi_parser_close(evo_dovi_parser*) {}
 void evo_dovi_parser_flush(evo_dovi_parser*) {}
+void evo_dovi_parser_set_map_only(evo_dovi_parser*, int) {}
 int evo_dovi_parse_annexb(evo_dovi_parser*, const uint8_t*, int, evo_dovi_params*) { return -1; }
 }

@@ -1914,7 +1914,12 @@ void map_port() {
 	UPNPUrls urls;
 	IGDdatas data;
 	char lan[64] = "";
+#if MINIUPNPC_API_VERSION >= 18
+	char wan[64] = "";
+	int r = UPNP_GetValidIGD(devs, &urls, &data, lan, sizeof(lan), wan, sizeof(wan));
+#else
 	int r = UPNP_GetValidIGD(devs, &urls, &data, lan, sizeof(lan));
+#endif
 	freeUPNPDevlist(devs);
 	if (r != 1) {
 		dlog("upnp: no usable router (%d); only outgoing connections", r);

@@ -1,23 +1,23 @@
 {
   "repository": "https://github.com/sainsaji/EVO-PLAYER-PS5",
-  "version": "0.13.0",
-  "commit": "2db44b5294657b12bf91666154a05f029ddb5aa2",
+  "version": "0.13.7",
+  "commit": "08bcab5de76cb7507ecc0bc3e1d4bca9bea13788",
   "fileSha256": {
     "media/include/evo_vdec.h": "c3e9c8337a4914aa5ddd18608e12350675eb64c933c67adf4e5e3ec0d16c483b",
-    "media/include/evo_dovi.h": "45b469622a2c910e1721b8d74a701d117171b591200a7e0e86ac371c81ecb91c",
+    "media/include/evo_dovi.h": "e9aa0348b5c9d6a9a56e8ea3575ae4be03be799feaeb04b43616810ca8cb61a0",
     "media/include/sce/sce_videodec2.h": "93b7636683e53e4f00b9a329ffe922d5c5e26dcfad268b3306e70ac281746115",
     "media/src/evo_vdec_native.h": "4cfcd1b4123452245786d811ec19cbbd1fc291566b25f3a95e8796d61c5e3877",
-    "media/src/evo_vdec_native.c": "a883d3a0c0faec9ab06cff92b1279852c7cc30b178a7d457dd1f766ffb31d3c0",
-    "media/src/evo_vdec_ffmpeg.c": "492a567801e48c1bc6f4c8bbd07dea02510b2d3e95c63cc6d160497eccba0cbe",
+    "media/src/evo_vdec_native.c": "b57168e49f5883c600d05a70905a124e581fe06f0cce86d4dbd0b21e5efc92ed",
+    "media/src/evo_vdec_ffmpeg.c": "29f5e9a27fba2a3a5a25d56fb2fcb29ad323e38531734f44fe30223a56183459",
     "pp/include/pp_frame.h": "8ebf825955a7bf42bb6535da9c85214038bb5d7de01ce9ca81d2cca06450e76f",
     "pp/include/pp_clock.h": "0b9f0d5269bce81463d1730d7817ed158090a2fa7a3b0d44c3c155d346fdd233",
     "pp/include/pp_playback.h": "8bdb5bc988ef75b8035554944ce518cceabc111feb1dc59fcff6edf175291ef4",
     "pp/include/pp_stage_breadcrumb.h": "31accafddf934647892774dc6cdc4c467dca63dfd96abd2b92452e0699a5b0c8",
     "pp/src/pp_clock.c": "9e177f8fd328e05aa6ab0624fb9ef6067b1a0cc723189c7b694f176d5e911076",
     "pp/src/pp_playback.c": "3390473b7822f9ae81379240e886f2e9f94563c0ffbd7c765e8b6b7ff8b74153",
-    "include/evo_boot_log.h": "ea617ed0a53c92d20de989aa7c4ac8b59f2a148a2c84a2a56e42cf5b4699ef89",
+    "include/evo_boot_log.h": "086068d64412ff483f8c1209a972d8914aad033405ead9606865f7a707f0e4e2",
     "LICENSE": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
-    "VERSION": "f9a397ab92ada6170545b1faf0600dc4679a9d81b9ddaaf222b620a47c73863f"
+    "VERSION": "bb59df5709abc689534260dab413991cdae1768944a05d60de264891e326775e"
   },
   "localPatches": [
     {
@@ -27,6 +27,27 @@
     }
   ],
   "patchedFileSha256": {
-    "media/src/evo_vdec_native.c": "f300ae0f9b604cbbd398ca4575975cae80a76b5897cb9bc2a5b5ba2536e7f4f5"
+    "media/src/evo_vdec_native.c": "c3312d181b9d9ea533c4a3d819e46d58b92d1c09bc69c53aaf206ce8c02d1ec9"
+  },
+  "previousBase": {
+    "version": "0.13.0",
+    "commit": "2db44b5294657b12bf91666154a05f029ddb5aa2",
+    "fileSha256": {
+      "media/include/evo_vdec.h": "c3e9c8337a4914aa5ddd18608e12350675eb64c933c67adf4e5e3ec0d16c483b",
+      "media/include/evo_dovi.h": "45b469622a2c910e1721b8d74a701d117171b591200a7e0e86ac371c81ecb91c",
+      "media/include/sce/sce_videodec2.h": "93b7636683e53e4f00b9a329ffe922d5c5e26dcfad268b3306e70ac281746115",
+      "media/src/evo_vdec_native.h": "4cfcd1b4123452245786d811ec19cbbd1fc291566b25f3a95e8796d61c5e3877",
+      "media/src/evo_vdec_native.c": "a883d3a0c0faec9ab06cff92b1279852c7cc30b178a7d457dd1f766ffb31d3c0",
+      "media/src/evo_vdec_ffmpeg.c": "492a567801e48c1bc6f4c8bbd07dea02510b2d3e95c63cc6d160497eccba0cbe",
+      "pp/include/pp_frame.h": "8ebf825955a7bf42bb6535da9c85214038bb5d7de01ce9ca81d2cca06450e76f",
+      "pp/include/pp_clock.h": "0b9f0d5269bce81463d1730d7817ed158090a2fa7a3b0d44c3c155d346fdd233",
+      "pp/include/pp_playback.h": "8bdb5bc988ef75b8035554944ce518cceabc111feb1dc59fcff6edf175291ef4",
+      "pp/include/pp_stage_breadcrumb.h": "31accafddf934647892774dc6cdc4c467dca63dfd96abd2b92452e0699a5b0c8",
+      "pp/src/pp_clock.c": "9e177f8fd328e05aa6ab0624fb9ef6067b1a0cc723189c7b694f176d5e911076",
+      "pp/src/pp_playback.c": "3390473b7822f9ae81379240e886f2e9f94563c0ffbd7c765e8b6b7ff8b74153",
+      "include/evo_boot_log.h": "ea617ed0a53c92d20de989aa7c4ac8b59f2a148a2c84a2a56e42cf5b4699ef89",
+      "LICENSE": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+      "VERSION": "f9a397ab92ada6170545b1faf0600dc4679a9d81b9ddaaf222b620a47c73863f"
+    }
   }
 }

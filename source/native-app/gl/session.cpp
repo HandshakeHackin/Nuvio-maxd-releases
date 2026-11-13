@@ -761,7 +761,7 @@ void Session::refresh_settings()
         sx::i18n::tr("Follow the PS5's output resolution, or choose an override. Close and reopen Nuvio Max'd to apply a change."));
     set(kHdr, Kind::value, i18n::tr("HDR playback"), prefs_.native_hdr ? (prefs_.auto_hdr_fallback ? sx::i18n::tr("Auto (HDR or SDR fallback)") : sx::i18n::tr("Require native HDR10")) : sx::i18n::tr("Convert HDR to SDR"),
         sx::i18n::tr("Native HDR10 keeps PQ colour and highlights on a compatible TV. SDR conversion changes the colour range. Applies to the next stream."));
-    set(kPlaybackEngine, Kind::value, sx::i18n::tr("Playback engine"), prefs_.vlc_player ? i18n::tr("VLC 3.0.24 (experimental)") : prefs_.evo_player ? sx::i18n::tr("EVO Player 0.13.0 (experimental)") : sx::i18n::tr("Nuvio native"),
+    set(kPlaybackEngine, Kind::value, sx::i18n::tr("Playback engine"), prefs_.vlc_player ? i18n::tr("VLC 3.0.24 (experimental)") : prefs_.evo_player ? sx::i18n::tr("EVO Player 0.13.7 (experimental)") : sx::i18n::tr("Nuvio native"),
         sx::i18n::tr("Choose the video engine. Applies to the next stream; subtitles and Watch Progress stay available."));
     set(kReadAhead, Kind::value, sx::i18n::tr("Read-ahead (Native/EVO)"), std::to_string(prefs_.read_ahead_seconds) + " s",
         sx::i18n::tr("How far to buffer ahead. Memory limits may shorten the target. Applies to the next Native/EVO stream; VLC manages its own buffer."));
@@ -983,7 +983,7 @@ void Session::settings_activate(int row)
         });
         break;
     case kPlaybackEngine: {
-        std::vector<std::string> engines={sx::i18n::tr("Nuvio native"), sx::i18n::tr("EVO Player 0.13.0 (experimental)")};
+        std::vector<std::string> engines={sx::i18n::tr("Nuvio native"), sx::i18n::tr("EVO Player 0.13.7 (experimental)")};
         if(VlcBackend::available())engines.push_back("VLC 3.0.24 (experimental)");
         open_dropdown(sx::i18n::tr("Playback engine"), engines,
                       prefs_.vlc_player && VlcBackend::available() ? 2 : prefs_.evo_player ? 1 : 0, [this](int i) {

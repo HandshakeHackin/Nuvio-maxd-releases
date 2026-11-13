@@ -58,6 +58,21 @@ class DependencyUpdateTests(unittest.TestCase):
         self.assertTrue({key.lower() for key in pins['maintenanceLibraries']['sources']} <= names)
         self.assertTrue({'sdk', 'opengl', 'pacbrew', 'json', 'mkpfs', 'evo', 'vlc-ps5-port'} <= names)
 
+    def test_miniupnpc_never_uses_daemon_release_tags(self):
+        result = updates.evaluate('miniupnpc', 'miniupnp/miniupnp', '2.3.3', None,
+                                  [{'name': 'miniupnpd_2_3_11'}, {'name': 'miniupnpc_2_3_3'}])
+        self.assertEqual(result['selectedTag'], 'miniupnpc_2_3_3')
+        self.assertFalse(result['updateAvailable'])
+
+    def test_odd_xz_and_fontconfig_development_versions_are_not_stable(self):
+        self.assertIsNone(updates.version('v5.9.0', 'xz'))
+        self.assertIsNone(updates.version('2.18.90', 'fontconfig'))
+        self.assertEqual(updates.version('v5.8.4', 'xz'), (5, 8, 4))
+
+    def test_official_gnu_index_excludes_signatures_and_other_projects(self):
+        tags = updates.gnu_tags('<a href="libiconv-1.19.1.tar.gz">source</a><a href="libiconv-1.19.1.tar.gz.sig">sig</a><a href="other-9.0.tar.gz">other</a>')
+        self.assertEqual(tags, [{'name': '1.19.1'}])
+
 
 if __name__ == '__main__':
     unittest.main()

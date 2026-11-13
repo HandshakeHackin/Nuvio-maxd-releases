@@ -536,7 +536,7 @@
     "Convert HDR to SDR": "HDR in SDR umwandeln",
     "Native HDR10 keeps PQ colour and highlights on a compatible TV. SDR conversion changes the colour range. Applies to the next stream.": "Natives HDR10 erhält PQ-Farben und Spitzlichter auf kompatiblen Fernsehern. SDR-Umwandlung verändert den Farbbereich. Gilt für den nächsten Stream.",
     "Playback engine": "Wiedergabe-Engine",
-    "EVO Player 0.13.0 (experimental)": "EVO Player 0.13.0 (experimentell)",
+    "EVO Player 0.13.7 (experimental)": "EVO Player 0.13.7 (experimentell)",
     "Nuvio native": "Nuvio nativ",
     "Choose the video engine. Applies to the next stream; subtitles and Watch Progress stay available.": "Video-Engine auswählen. Gilt für den nächsten Stream; Untertitel und Fortschritt bleiben verfügbar.",
     "Read-ahead (Native/EVO)": "Vorausladen (Nativ/EVO)",

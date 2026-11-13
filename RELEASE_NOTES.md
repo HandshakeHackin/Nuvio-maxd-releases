@@ -1,3 +1,18 @@
+# Nuvio Max'd 1.0.0.24 experimental — component refresh
+
+- Rebuilt the app with LLVM 23.1.5 and PacBrew 0.41.1. Native, EVO and VLC now share FFmpeg 9.0.2; OpenSSL is 4.1.0. SDK 0.45 and OpenGL 1.0.2 remain pinned.
+- Updated EVO sources to 0.13.7 with Nuvio safeguards retained. Embedded libVLC stays 3.0.24; the 0.6.1 console port was reviewed.
+- Updated compression, networking, font/subtitle and Matroska dependencies, provider packages, CA trust data, STB, Montserrat and Arabic faces. Inter already matched its latest release.
+- Preserves the confirmed MDBList fixes from 1.0.0.23. HTML/XML streaming parsers retain compatible Entities 8.1 alongside the newer high-level package because version 9 removed their required decoder API.
+
+**Experimental dependency refresh; console compatibility is unconfirmed.** Please compare Native/EVO/VLC playback, seeking, subtitles, trackers, USB import and existing encrypted backups. Fully close Max’d before updating and preserve saved data and the previous build.
+
+Matching source, dependency provenance, complete package checks and regression evidence accompany this build. Standalone features from the reference apps are not bundled automatically.
+
+Previous release notes follow.
+
+---
+
 # Nuvio Max'd 1.0.0.23 experimental — explicit episode history and steady carousel
 
 - Corrects the 1.0.0.22 regression that treated MDBList show/season activity summaries as episode completion. Only explicit episode records set episode checks, even when a summary's watched/total counts match.

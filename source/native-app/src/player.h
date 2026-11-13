@@ -67,7 +67,7 @@ public:
 		int initial_audio_stream = -1; // retained only for a necessary seek reopen
 		bool start_paused = false;
 		bool vlc = false;
-		bool evo = false; // EVO Player 0.13.0 decoder and presentation core
+		bool evo = false; // EVO Player 0.13.7 decoder and presentation core
 	};
 	enum class State { Idle, Opening, Playing, Ended, Failed };
 

@@ -46,7 +46,7 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
     param = json.loads((extracted / 'sce_sys/param.json').read_text())
     display_profile = validate_display_metadata(param)
     assert param['titleId'] == 'PPSA99288'
-    assert param['contentVersion'] == '07.000.023'
+    assert param['contentVersion'] == '07.000.024'
     assert param['localizedParameters']['en-US']['titleName'] == "Nuvio Max'd"
     assert param['contentId'] == 'UP9000-PPSA99288_00-NUVIOPS5NAT00001'
     assert param['applicationCategoryType'] == 0
@@ -58,7 +58,7 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
     assert struct.unpack_from('<HH', data, elf + 16) == (0xFE10, 62)
     assert struct.unpack_from('<Q', data, elf + 24)[0] != 0
     info = json.loads((extracted / 'build-info.json').read_text())
-    assert info['version'] == '1.0.0.23-native-experimental'
+    assert info['version'] == '1.0.0.24-native-experimental'
     assert info['userExperienceUpdates']['optionalDonationQr']
     assert info['userExperienceUpdates']['installSourceSelector'] and info['userExperienceUpdates']['sourceAwareUpdateReminders']
     assert info['experimentalAv']['driverOwnedHdrSwitch'] and info['experimentalAv']['pcmDefault']
@@ -68,6 +68,14 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
     assert info['controllerLightbar']['sharedBootEnvelope'] and info['controllerLightbar']['systemResetOnClose']
     assert info['name'] == "Nuvio Max'd"
     assert info['releaseChannel']=='experimental'
+    dependencies = info['dependencies']
+    assert dependencies['sdk']['pacbrewVersion'] == '0.41.1'
+    assert dependencies['hostToolchain']['version'] == '23.1.5'
+    assert dependencies['maintenanceLibraries']['sources']['OpenSSL']['version'] == '4.1.0'
+    assert dependencies['maintenanceLibraries']['sources']['ffmpeg']['version'] == '9.0.2'
+    for path, digest in info['dependencyRefresh20261113']['assetSha256'].items():
+        if path.startswith('app/'):
+            assert actual[path[4:]] == digest, path
     assert info['interfaceLanguages']['available']==['en','de','es','fr','ar','zh-Hans','ja','ko'] and info['interfaceLanguages']['englishFallback']
     assert info['detailActions']['libraryMembership'] and info['detailActions']['controllerGlyphHints']
     assert info['mdblistMembershipFix']['rawRemoteReconciliation'] and info['mdblistMembershipFix']['boundedOffsetPagination']
@@ -91,9 +99,9 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
     assert actual['sce_module/libc.prx'] == info['dependencies']['boilerplate']['runtimeSha256']
     assert info['hardwareVerified'] is False
     assert info['playbackEngines']['default'] == 'native'
-    assert info['playbackEngines']['optional'] == ['EVO Player 0.13.0', 'VLC 3.0.24']
+    assert info['playbackEngines']['optional'] == ['EVO Player 0.13.7', 'VLC 3.0.24']
     evo = info['dependencies']['evoPlayer']
-    assert evo['version'] == '0.13.0' and evo['commit'] == '2db44b5294657b12bf91666154a05f029ddb5aa2'
+    assert evo['version'] == '0.13.7' and evo['commit'] == '08bcab5de76cb7507ecc0bc3e1d4bca9bea13788'
     for name in ('LICENSE', 'UPSTREAM.json', 'INTEGRATION.md'):
         assert 'licenses/evo-player/' + name in actual
     assert info['applicationDisplayProfile'] == display_profile

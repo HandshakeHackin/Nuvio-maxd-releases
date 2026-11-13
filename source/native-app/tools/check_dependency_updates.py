@@ -3,15 +3,24 @@ import json
 from pathlib import Path
 import re
 import subprocess
+import urllib.request
 
 
-def version(tag):
+def version(tag, component=None):
     # An entire release tag must match: pngmeta_1.11 is not libpng 1.11.
-    match = re.fullmatch(r'(?:v|n|openssl-|curl-|R_|VER-)?(\d+(?:[._-]\d+){1,2})', tag)
+    prefixes = {'miniupnpc': 'miniupnpc_', 'dht': 'dht-'}
+    prefix = re.escape(prefixes[component]) if component in prefixes else r'(?:v|n|openssl-|curl-|R_|VER-)?'
+    # Numeric recorded pins have no project prefix.
+    match = re.fullmatch(r'(?:' + prefix + r')?(\d+(?:[._-]\d+){1,2})', tag)
     if not match:
         return None
     parts = tuple(map(int, re.split(r'[._-]', match[1])))
-    return parts + (0,) * (3 - len(parts))
+    parts += (0,) * (3 - len(parts))
+    if component == 'xz' and parts[1] % 2:
+        return None
+    if component == 'fontconfig' and parts[2] >= 90:
+        return None
+    return parts
 
 
 def checks(pins):
@@ -26,12 +35,17 @@ def checks(pins):
         ('vlc-ps5-port', 'ZiZc3/VLC', pins['vlc']['auditedPortRelease']['version'], None),
     ]
     repositories = {
-        'openssl': ('openssl/openssl', (3, 5)), 'curl': ('curl/curl', None),
+        'openssl': ('openssl/openssl', version(sources['openssl']['version'])[:2]), 'curl': ('curl/curl', None),
         'expat': ('libexpat/libexpat', None), 'freetype': ('freetype/freetype', None),
         'libass': ('libass/libass', None), 'fribidi': ('fribidi/fribidi', None),
         'harfbuzz': ('harfbuzz/harfbuzz', None), 'libpng': ('pnggroup/libpng', None),
         'libwebp': ('webmproject/libwebp', None), 'libxml2': ('GNOME/libxml2', (2, 15)),
-        'ffmpeg': ('FFmpeg/FFmpeg', (7, 0)),
+        'ffmpeg': ('FFmpeg/FFmpeg', version(sources['ffmpeg']['version'])[:2]),
+        'zlib': ('madler/zlib', None), 'zstd': ('facebook/zstd', None),
+        'xz': ('tukaani-project/xz', None), 'libpsl': ('rockdaboot/libpsl', None),
+        'fontconfig': ('fontconfig/fontconfig', None),
+        'libiconv': ('https://ftp.gnu.org/pub/gnu/libiconv/', None),
+        'miniupnpc': ('miniupnp/miniupnp', None), 'dht': ('jech/dht', None),
     }
     for name, (repo, line) in repositories.items():
         result.append((name, repo, sources[name]['version'], line))
@@ -54,10 +68,10 @@ def decode_pages(raw):
 
 
 def evaluate(name, repo, current, line, tags):
-    pinned = version(current)
+    pinned = version(current, name)
     if pinned is None:
         raise ValueError('Invalid recorded version: ' + name)
-    stable = [(version(tag['name']), tag['name']) for tag in tags]
+    stable = [(version(tag['name'], name), tag['name']) for tag in tags]
     stable = [row for row in stable if row[0] is not None]
     selected = [row for row in stable if line is None or row[0][:len(line)] == line]
     if not selected:
@@ -68,7 +82,11 @@ def evaluate(name, repo, current, line, tags):
             'latestInSelectedLine': '.'.join(map(str, latest)), 'selectedTag': selected_tag,
             'updateAvailable': latest > pinned, 'latestStableTag': newest_tag,
             'newerReleaseOutsideSelectedLine': newest > latest,
-            'url': f'https://github.com/{repo}/tags'}
+            'url': repo if repo.startswith('https://') else f'https://github.com/{repo}/tags'}
+
+
+def gnu_tags(html):
+    return [{'name': name} for name in re.findall(r'href="libiconv-(\d+(?:\.\d+)+)\.tar\.gz"', html)]
 
 
 def main():
@@ -78,8 +96,16 @@ def main():
     for name, repo, current, line in checks(pins):
         # Tag-only projects have no releases/latest. All pages include older
         # supported branches; an incomplete read must fail rather than say current.
-        raw = subprocess.check_output(['gh', 'api', f'repos/{repo}/tags?per_page=100', '--paginate'], text=True)
-        result = evaluate(name, repo, current, line, decode_pages(raw))
+        if repo.startswith('https://'):
+            with urllib.request.urlopen(repo, timeout=30) as response:
+                data = response.read(1024 * 1024 + 1)
+            if len(data) > 1024 * 1024:
+                raise ValueError('Official source index exceeds bound')
+            tags = gnu_tags(data.decode('utf-8'))
+        else:
+            raw = subprocess.check_output(['gh', 'api', f'repos/{repo}/tags?per_page=100', '--paginate'], text=True)
+            tags = decode_pages(raw)
+        result = evaluate(name, repo, current, line, tags)
         results.append(result)
         if result['updateAvailable']:
             print(f'::warning title=Dependency update::{name}: {current} → {result["latestInSelectedLine"]}; review compatibility before changing pins')

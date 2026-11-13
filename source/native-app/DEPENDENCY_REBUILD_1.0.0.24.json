@@ -1,0 +1,50 @@
+{
+  "version": "1.0.0.24",
+  "reason": "Owner-authorized dependency refresh; FFmpeg9.0.2 compiled twice in fresh independent object directories with LLVM23.1.5 and no cache.",
+  "source": {
+    "version": "9.0.2",
+    "archive": "FFmpeg-n9.0.2.tar.gz",
+    "url": "https://github.com/FFmpeg/FFmpeg/archive/refs/tags/n9.0.2.tar.gz",
+    "sha256": "6e374ed621e48faa40639307dff48ba6fe574a509977956d2cce9669b7cc27e9",
+    "verification": "Official HTTPS source archive; record SHA-256 and immutable tag provenance"
+  },
+  "sourceDateEpoch": 1794528000,
+  "sdkPrefix": "/workspace/nuvio-maintenance-libs/sdk",
+  "actualSdkPrefix": "/workspace/nuvio-deps24/sdk",
+  "informationalPrefixRetainedForReproducibility": true,
+  "independentCleanRebuildsIdentical": true,
+  "outputs": {
+    "target/user/homebrew/lib/libavcodec.a": {
+      "sha256": "4b51aedbba2049e707d20dd6cd84a3fc0f476e4dc98764f79d6a1facace3426a",
+      "independentCleanBuildSha256": "4b51aedbba2049e707d20dd6cd84a3fc0f476e4dc98764f79d6a1facace3426a"
+    },
+    "target/user/homebrew/lib/libavformat.a": {
+      "sha256": "648d92554dd0bc13035812bc02c51181a724ba191de4ff2d4e756b6c5dd83978",
+      "independentCleanBuildSha256": "648d92554dd0bc13035812bc02c51181a724ba191de4ff2d4e756b6c5dd83978"
+    },
+    "target/user/homebrew/lib/libavutil.a": {
+      "sha256": "108b77005e48c74380f985e7ac36c1a11aa38736d11e526981acc68e5fee60d8",
+      "independentCleanBuildSha256": "108b77005e48c74380f985e7ac36c1a11aa38736d11e526981acc68e5fee60d8"
+    },
+    "target/user/homebrew/lib/libswscale.a": {
+      "sha256": "98dfd7ff0bea8e3af2edd470f4f7e61410055faafe1fd00a9c76a424552809f2",
+      "independentCleanBuildSha256": "98dfd7ff0bea8e3af2edd470f4f7e61410055faafe1fd00a9c76a424552809f2"
+    },
+    "target/user/homebrew/lib/libswresample.a": {
+      "sha256": "64181f5249bd8774d2aafe8cee777c32147df73a3dd21455ff64419945eddf67",
+      "independentCleanBuildSha256": "64181f5249bd8774d2aafe8cee777c32147df73a3dd21455ff64419945eddf67"
+    },
+    "target/user/homebrew/lib/libavfilter.a": {
+      "sha256": "ff42c8bfdc7993dfa1018975271e2609ad5cb03fb2bc5f7b80c43c57de47b877",
+      "independentCleanBuildSha256": "ff42c8bfdc7993dfa1018975271e2609ad5cb03fb2bc5f7b80c43c57de47b877"
+    },
+    "target/user/homebrew/lib/libavdevice.a": {
+      "sha256": "bbd4ef0a1a9442c9a3e1aecb5fe126828bc9e5e8144eea2f1b1caea148577948",
+      "independentCleanBuildSha256": "bbd4ef0a1a9442c9a3e1aecb5fe126828bc9e5e8144eea2f1b1caea148577948"
+    }
+  },
+  "llvmVersion": "23.1.5",
+  "nasmVersion": "NASM version 2.16.03",
+  "hardwareVerified": false,
+  "proofLogSha256": "99b19120caaaa68cda04768e60bf365dea523bc40b4f6f1c96046d75fc18ce1b"
+}
