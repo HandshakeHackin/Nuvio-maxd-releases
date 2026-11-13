@@ -17,9 +17,9 @@ int main(int argc,char** argv){
  s.choose(0);assert(s.title_action_busy_&&s.jobs.size()==1);s.detail_membership(false);assert(s.jobs.size()==1);
  s.complete();assert(last_add&&last_item["_id"]=="tt123"&&service=="nuvio"&&s.reloads==1&&!s.title_action_busy_);
  s.detail_actions();assert(s.dropdown.options[0]=="Remove from library");s.choose(0);s.complete();assert(!last_add&&s.library_["tt123"]["removed"]==true);
- s.detail_actions();s.choose(1);assert(s.watched_.empty());s.complete();assert(s.watched_.count("tt123")&&last_mark&&last_entries[0]["season"].is_null());
+ s.detail_actions();s.choose(1);assert(s.watched_.empty());s.complete();assert(s.watched_.count("tt123")&&s.detail.title.watched&&last_mark&&last_entries[0]["season"].is_null());
  s.detail_actions();s.choose(1);response.ok=false;s.complete();assert(s.watched_.count("tt123"));response.ok=true;
- s.detail_actions();s.choose(1);s.complete();assert(!s.watched_.count("tt123")&&!last_mark);
+ s.detail_actions();s.choose(1);s.complete();assert(!s.watched_.count("tt123")&&!s.detail.title.watched&&!last_mark);
  s.detail_actions();s.choose(2);assert(s.trailers==1);
  s.d_item_.type="series";s.d_meta_.name="Show";s.d_meta_.videos={Video{"native-a","One","","","2020-01-01",1,1},Video{"native-b","Two","","","2020-01-02",1,2},Video{"future","Future","","","2199-01-01",1,3},Video{"unknown","Unknown","","","",1,4},Video{"s2","Other","","","2020-01-03",2,1}};
  s.detail_actions();assert(s.dropdown.options.size()==7);s.choose(6);assert(s.tvdb_menus==1);s.detail_actions();capture("title-actions",s.dropdown);s.choose(3);capture("watched-confirm",s.dropdown);assert(s.jobs.empty());s.choose(0);assert(s.jobs.empty());

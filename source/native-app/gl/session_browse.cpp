@@ -2,6 +2,7 @@
 // The Board, Discover and the Library.
 
 #include "session.hpp"
+#include "watched_history.hpp"
 #include "continue_watching.hpp"
 #include "stream_json.hpp"
 #include "library_search.hpp"
@@ -75,18 +76,20 @@ Title Session::make_title(const Item &it, bool with_progress) const
             t.badge = episode_badge(it.video_id);
         if (it.duration > 0 && it.offset > 0)
             t.progress = static_cast<float>(std::max(0.02, std::min(1.0, it.offset / it.duration)));
-        t.watched = it.times_watched > 0 && it.offset <= 0;
+        if(it.type!="movie")t.watched = it.times_watched > 0 && it.offset <= 0;
     }
+    if(it.type=="movie")t.watched=watched_history::movie(it.type,it.id,watched_);
     if (it.type=="series") {
         const auto member=library_.find(it.id);
         if(member!=library_.end()&&!jbool(member->second,"removed")&&!jbool(member->second,"temp")) {
             const auto& state=jobj(member->second,"state");
             const auto in_progress=it.offset>0?it.video_id:jnum(state,"timeOffset")>0?jstr(state,"video_id"):std::string();
-            t.new_episode=series_updates_.badge(it.id,watched_,now_epoch_ms()/1000,series_history_ready_,in_progress);
+            t.new_episode=series_updates_.badge(it.id,watched_,now_epoch_ms()/1000,series_history_ready_,in_progress,watched_scopes_,watched_exclusions_);
         }
     }
     return t;
 }
+
 
 // ---------------------------------------------------------------------------
 // Details the library does not carry

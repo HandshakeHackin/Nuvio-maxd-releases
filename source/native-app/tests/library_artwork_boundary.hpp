@@ -55,6 +55,7 @@ struct Session {
     void library_clear_search();
     sx::SeriesUpdates series_updates_;
     std::set<std::string> watched_, series_updates_pending_;
+    std::map<std::string,int64_t> watched_scopes_,watched_exclusions_;
     std::shared_ptr<std::atomic<bool>> series_updates_cancel_;
     unsigned series_updates_generation_=0;
     int series_updates_inflight_=0;

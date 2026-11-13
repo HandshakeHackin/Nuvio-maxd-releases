@@ -358,6 +358,7 @@ class Session
     void save_prefs();
     void load_progress();
     void save_progress();
+    void refresh_watched_views();
     bool signed_in() const
     {
         return !prefs_.auth_key.empty();
@@ -697,6 +698,7 @@ class Session
     Prefs prefs_;
     std::map<std::string, Progress> progress_;
     std::set<std::string> watched_;
+    std::map<std::string,int64_t> watched_scopes_,watched_exclusions_;
     unsigned changed_ = 0;
     Page page_ = Page::board; // the page on show
     std::optional<Page> goto_;

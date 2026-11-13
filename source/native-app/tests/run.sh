@@ -4,6 +4,7 @@ ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 python3 "$ROOT/tools/validate_display_metadata.py" "$ROOT/app/sce_sys/param.json"
 mkdir -p "$ROOT/test-output"
 bash "$ROOT/tests/tracking.sh"
+bash "$ROOT/tests/watched_session.sh"
 bash "$ROOT/tests/features20.sh"
 bash "$ROOT/tests/tasks.sh"
 bash "$ROOT/tests/media_remote.sh"

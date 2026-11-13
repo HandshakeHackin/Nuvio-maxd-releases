@@ -9,6 +9,7 @@
 
 using tracking::Store;
 void mdblist_membership_cases();
+void mdblist_watched_cases();
 struct Fake {
     struct Call { std::string url; bool post; json body; std::vector<std::string> headers; };
     std::vector<Call> calls;
@@ -62,7 +63,7 @@ struct Fake {
                 {{"progress",999},{"movie",{{"runtime",100},{"ids",{{"imdb","ttbad"}}}}}}});
         } else if (url.find("/sync/watched/movies")!=std::string::npos) out=json::array({{{"movie",{{"ids",{{"imdb","tt123"}}}}}}});
         else if (url.find("/sync/watched/shows")!=std::string::npos) out=json::array();
-        else if (url.find("/sync/watched?")!=std::string::npos) out={{"movies",json::array({{{"movie",{{"ids",{{"imdb","tt123"}}}}}}})}};
+        else if (url.find("/sync/watched?")!=std::string::npos) out={{"movies",json::array({{{"movie",{{"ids",{{"imdb","tt123"}}}}}}})},{"shows",json::array()},{"seasons",json::array()},{"episodes",json::array()},{"pagination",{{"has_more",false}}}};
         else if (url.find("/scrobble/")!=std::string::npos || url.find("/sync/history")!=std::string::npos || url.find("/sync/watched")!=std::string::npos) { assert(body); out={{"action","pause"}}; }
         else { std::cerr<<"Unexpected fixture path "<<url<<"\n"; assert(false); }
         return {status,malformed ? "not json" : out.dump(),"","",0};
@@ -243,6 +244,7 @@ int main() {
     assert(unconfigured.status()["accounts"]["trakt"]["configured"]==false);
     error.clear();unconfigured.action("device_start",{{"provider","trakt"}},error);assert(error.find("no registered")!=std::string::npos);
     mdblist_membership_cases();
+    mdblist_watched_cases();
     std::filesystem::remove_all(root);
     std::cout<<"Tracker contracts passed: pairing, validation, refresh, sources, pagination, resume, scrobble, watched marks, offline retry, redaction, permissions and profile isolation\n";
 }

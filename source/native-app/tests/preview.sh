@@ -37,6 +37,8 @@ if [ -z "${PREVIEW_MODES:-}" ]; then
             modes+=("$language-$scene")
         done
     done
+    modes+=(watched-movie watched-movie-unmarked watched-home watched-person)
+    for language in de es fr ar zh-Hans ja ko;do modes+=("$language-watched-movie");done
 fi
 for mode in "${modes[@]}"; do
     EGL_PLATFORM=surfaceless LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=llvmpipe \

@@ -2,6 +2,7 @@
 #pragma once
 #include "airtime.hpp"
 #include "stremio.h"
+#include "watched_history.hpp"
 #include <algorithm>
 #include <map>
 #include <set>
@@ -49,7 +50,8 @@ public:
   }
   std::string badge(const std::string &id, const std::set<std::string> &watched,
                     int64_t now, bool history_ready,
-                    const std::string &in_progress = {}) const {
+                    const std::string &in_progress = {},const watched_history::Dates& scopes={},
+                    const watched_history::Dates& exclusions={}) const {
     if (!history_ready)
       return {};
     auto it = entries_.find(id);
@@ -60,15 +62,15 @@ public:
       return id + ":" + std::to_string(v.season) + ":" +
              std::to_string(v.number);
     };
+    auto marked=[&](const Episode& v){return watched_history::episode(watched,scopes,exclusions,id,v.id,v.season,v.number,v.released,now*1000);};
     for (const auto &v : it->second.episodes)
-      if (watched.count(v.id) || watched.count(canonical(v)))
+      if (marked(v))
         completed = std::max(completed, {v.season, v.number});
     if (completed.first <= 0)
       return {};
     const Episode *next = nullptr;
     for (const auto &v : it->second.episodes) {
-      if (std::pair{v.season, v.number} <= completed || watched.count(v.id) ||
-          watched.count(canonical(v)) || v.id == in_progress ||
+      if (std::pair{v.season, v.number} <= completed || marked(v) || v.id == in_progress ||
           canonical(v) == in_progress)
         continue;
       auto released = airtime::iso(v.released);

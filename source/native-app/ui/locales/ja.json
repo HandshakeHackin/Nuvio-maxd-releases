@@ -450,6 +450,7 @@
     "Restore configuration": "設定を復元",
     "Restore local encrypted backup": "暗号化したローカルバックアップから復元",
     "Sync configuration with Google Drive": "Google Drive と設定を同期",
-    "TheTVDB episode ordering": "TheTVDB のエピソード順"
+    "TheTVDB episode ordering": "TheTVDB のエピソード順",
+    "Watched": "視聴済み"
   }
 }

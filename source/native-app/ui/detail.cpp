@@ -343,9 +343,11 @@ void Detail::draw_info(hui::gfx::DrawList &list) const
         text(list,env_.fonts.regular,env_.fonts.regular.font->fit(t.genres,24,588),382,baseline,24,theme::ink_2);
         draw_imdb(list,env_,t.imdb,382,baseline+44);
         baseline = 580;
-        if (!content_->resume_label.empty())
+        if (!content_->resume_label.empty()||t.watched)
         {
-            draw_tag(list,env_,content_->resume_label,110,558,theme::surface,theme::ink);
+            float next=110;
+            if(!content_->resume_label.empty())next+=draw_tag(list,env_,env_.fonts.semibold.font->fit(content_->resume_label,20,550),next,558,theme::surface,theme::ink)+14;
+            if(t.watched)draw_tag(list,env_,sx::i18n::tr("Watched"),next,558,theme::watched,hui::gfx::Color::rgb(0xffffff));
             baseline = 618;
         }
         baseline = hui::ui::paragraph(list,env_.fonts.regular,t.synopsis,110,baseline,27,840,39,theme::ink_2,4) + 32;
@@ -397,9 +399,11 @@ void Detail::draw_info(hui::gfx::DrawList &list) const
     const float meta_w = text(list, env_.fonts.regular, meta, x, baseline, 26.0f, theme::ink_2);
     draw_imdb(list, env_, t.imdb, x + meta_w + 30.0f, baseline);
     baseline += 58.0f;
-    if (mode_ == Mode::streams && !content_->resume_label.empty())
+    if ((mode_ == Mode::streams && !content_->resume_label.empty())||t.watched)
     {
-        draw_tag(list,env_,content_->resume_label,x,baseline-10,theme::surface,theme::ink);
+        float next=x;
+        if(mode_==Mode::streams&&!content_->resume_label.empty())next+=draw_tag(list,env_,env_.fonts.semibold.font->fit(content_->resume_label,20,550),next,baseline-10,theme::surface,theme::ink)+14;
+        if(t.watched)draw_tag(list,env_,sx::i18n::tr("Watched"),next,baseline-10,theme::watched,hui::gfx::Color::rgb(0xffffff));
         baseline += 58;
     }
     baseline = hui::ui::paragraph(list, env_.fonts.regular, t.synopsis, x, baseline, 27.0f, w - 40.0f, 41.0f,

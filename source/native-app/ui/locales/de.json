@@ -1365,6 +1365,7 @@
     "Add an M3U playlist, Xtream account or Stalker portal to start watching.": "Füge eine M3U-Playlist, ein Xtream-Konto oder ein Stalker-Portal hinzu, um fernzusehen.",
     "Import a VOD-enabled Xtream account or Stalker/Ministra portal under Live TV.": "Importiere unter Live TV ein Xtream-Konto oder Stalker-/Ministra-Portal mit VOD-Unterstützung.",
     "Use your own M3U playlist, Xtream subscription or Stalker/Ministra portal. Sources, favorites and recent channels are saved locally for this profile. IPTV Library appears separately when the service provides movies or series.": "Verwende deine eigene M3U-Playlist, dein Xtream-Abonnement oder dein Stalker-/Ministra-Portal. Quellen, Favoriten und zuletzt gesehene Sender werden lokal für dieses Profil gespeichert. Die IPTV-Mediathek erscheint separat, wenn der Dienst Filme oder Serien bereitstellt.",
-    "Use at least 12 characters and at most 1024 bytes for the backup passphrase.": "Verwende für die Sicherungspassphrase mindestens 12 Zeichen und höchstens 1024 Bytes."
+    "Use at least 12 characters and at most 1024 bytes for the backup passphrase.": "Verwende für die Sicherungspassphrase mindestens 12 Zeichen und höchstens 1024 Bytes.",
+    "Watched": "Gesehen"
   }
 }

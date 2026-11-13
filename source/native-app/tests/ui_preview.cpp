@@ -324,7 +324,7 @@ int main(int argc, char** argv) {
         }
         player.snap(); player.draw(list);
     }
-    else if (mode == "home")
+    else if (mode == "home"||mode=="watched-home")
     {
         sx::BoardContent content;
         for (int r=0;r<2;++r) {
@@ -332,6 +332,7 @@ int main(int argc, char** argv) {
             for (int i=0;i<9;++i) {
                 sx::Title t; t.name="The Quiet Hours"; t.id=std::to_string(i); t.poster=poster_texture; t.backdrop=backdrop_texture;
                 t.year="2026"; t.synopsis="A quiet town, a familiar face, and a story waiting to be told.";
+                if(mode=="watched-home"){t.type="movie";t.watched=i%3==0;}
                 if (!r) { t.progress=0.36f; t.badge="S2 E5"; }
                 row.items.push_back(t);
             }
@@ -346,6 +347,7 @@ int main(int argc, char** argv) {
     {
         sx::DetailContent content;
         content.title.name = "The End of Oak Street"; content.title.year = "2026";
+        content.title.type="movie";content.title.watched=mode=="watched-movie"||mode=="watched-person";
         content.title.genres = "Drama  ·  Mystery";
         if (mode != "streams") {
             content.title.backdrop=backdrop_texture; content.title.poster=poster_texture;
@@ -388,6 +390,7 @@ int main(int argc, char** argv) {
             content.episode_hint=1;
         }
         sx::Detail detail(env); detail.set_content(&content); detail.enter();
+        if(mode=="watched-person")detail.toggle_cast();
         hui::InputFrame input;
         for (int i = 0; i < 120; ++i) detail.update(input,1.0f/60);
         if (mode == "seasons") { input.nav=hui::Direction::up; detail.update(input,1.0f/60); }

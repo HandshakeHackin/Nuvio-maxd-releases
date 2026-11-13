@@ -450,6 +450,7 @@
     "Restore configuration": "Restaurer les paramètres",
     "Restore local encrypted backup": "Restaurer une sauvegarde locale chiffrée",
     "Sync configuration with Google Drive": "Synchroniser les paramètres avec Google Drive",
-    "TheTVDB episode ordering": "Ordre des épisodes TheTVDB"
+    "TheTVDB episode ordering": "Ordre des épisodes TheTVDB",
+    "Watched": "Vu"
   }
 }

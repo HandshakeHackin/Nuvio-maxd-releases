@@ -450,6 +450,7 @@
     "Restore configuration": "설정 복원",
     "Restore local encrypted backup": "암호화된 로컬 백업 복원",
     "Sync configuration with Google Drive": "Google Drive와 설정 동기화",
-    "TheTVDB episode ordering": "TheTVDB 에피소드 순서"
+    "TheTVDB episode ordering": "TheTVDB 에피소드 순서",
+    "Watched": "시청 완료"
   }
 }

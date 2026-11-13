@@ -14,6 +14,10 @@ HttpResponse http_get(const std::string& url,long,const std::atomic<bool>*,const
 
 int main() {
     sx::Session s;
+    sx::Item movie;movie.id="tt9";movie.type="movie";movie.times_watched=1;
+    assert(!s.make_title(movie,false).watched&&!s.make_title(movie,true).watched);
+    s.watched_.insert("tt9");assert(s.make_title(movie,false).watched&&s.make_title(movie,true).watched);
+    s.watched_.erase("tt9");assert(!s.make_title(movie,true).watched); // manual unmark wins over old library counters
     for(auto base:{"https://no-poster.example","https://metadata.example"}) {
         auto a=std::make_unique<Addon>();a->base=base;a->types={"movie","series"};
         AddonResource r;r.name="meta";a->resources.push_back(r);s.addons_.push_back(std::move(a));

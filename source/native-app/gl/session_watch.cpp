@@ -926,6 +926,8 @@ void Session::watch_stop(bool ended)
     if (ended && trailers::records_history(w_trailer_,w_item_.type) && !w_video_id_.empty())
     {
         watched_.insert(w_video_id_);
+        const auto canonical=w_item_.type=="movie"?w_item_.id:w_item_.id+":"+std::to_string(w_season_)+":"+std::to_string(w_episode_number_);
+        watched_.insert(canonical);watched_exclusions_.erase(canonical);watched_exclusions_.erase(w_video_id_);
         save_progress();
     }
     ++w_gen_;
@@ -992,8 +994,11 @@ void Session::watch_save_progress(bool final, bool force_finished)
     p.up_next = finished ? next_episode_id() : std::string();
     p.duration = dur;
     p.updated = now_epoch_ms();
-    if (finished)
+    if (finished) {
         watched_.insert(w_video_id_);
+        const auto canonical=w_item_.type=="movie"?w_item_.id:w_item_.id+":"+std::to_string(w_season_)+":"+std::to_string(w_episode_number_);
+        watched_.insert(canonical);watched_exclusions_.erase(canonical);watched_exclusions_.erase(w_video_id_);
+    }
     save_progress();
 
     const double delta = w_last_saved_pos_ >= 0 ? std::max(0.0, std::min(pos - w_last_saved_pos_, kSaveEvery * 2)) : 0;

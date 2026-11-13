@@ -450,6 +450,7 @@
     "Restore configuration": "استعادة الإعدادات",
     "Restore local encrypted backup": "استعادة نسخة محلية مشفّرة",
     "Sync configuration with Google Drive": "مزامنة الإعدادات مع Google Drive",
-    "TheTVDB episode ordering": "ترتيب الحلقات من TheTVDB"
+    "TheTVDB episode ordering": "ترتيب الحلقات من TheTVDB",
+    "Watched": "تمت المشاهدة"
   }
 }

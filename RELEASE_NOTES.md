@@ -1,3 +1,15 @@
+# Nuvio Max'd 1.0.0.22 experimental — watched history and movie badges
+
+- Fixes MDBList episode-history nesting and reads all bounded offset/cursor pages before replacing local watched state.
+- Supports dated whole-season/show marks while excluding future/unknown episode dates; individual unmarks override unchanged parent marks.
+- Movie watched checks now follow watched history across Home, Library, Discover and Search, with a translated Watched badge on details. Manual toggles refresh immediately and keep resume positions.
+
+**Unconfirmed fix for the remaining watched-state problems in #22.** Please test episode checks after leaving/reopening a series and restarting, movie watched/unwatched badges, and the result on mdblist.com. The 1.0.0.21 library add/remove fix is retained and was confirmed by the reporter on firmware 7.00 ZIP installs.
+
+Previous release notes follow.
+
+---
+
 # Nuvio Max'd 1.0.0.21 experimental — MDBList library sync
 
 - Recognizes MDBList add/existing/remove confirmations separately from Trakt.

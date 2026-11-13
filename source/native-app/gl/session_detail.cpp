@@ -7,6 +7,7 @@
 #include "providers.h"
 #include "trailers.h"
 #include "stream_display.hpp"
+#include "watched_history.hpp"
 
 #include <algorithm>
 #include <cctype>
@@ -47,10 +48,11 @@ Stream stream_view(const ::Stream &st)
 
 bool Session::watched(const std::string &video_id) const
 {
-    if (watched_.count(video_id)) return true;
-    for (const auto& video : d_meta_.videos) if (video.id == video_id)
-        return watched_.count(d_item_.id + ":" + std::to_string(video.season) + ":" + std::to_string(video.episode)) > 0;
-    return false;
+    for (const auto& video : d_meta_.videos) if (video.id == video_id ||
+        d_item_.id+":"+std::to_string(video.season)+":"+std::to_string(video.episode)==video_id)
+        return watched_history::episode(watched_,watched_scopes_,watched_exclusions_,d_item_.id,video.id,
+            video.season,video.episode,video.released,now_epoch_ms());
+    return watched_.count(video_id)!=0;
 }
 
 void Session::detail_toggle_watched(int index)
@@ -239,6 +241,7 @@ void Session::detail_fill_title()
     const ::Meta &m = d_meta_;
     t.id = d_item_.id;
     t.type = d_item_.type;
+    t.watched=watched_history::movie(t.type,t.id,watched_);
     t.name = d_meta_loaded_ && !m.name.empty() ? m.name : d_item_.name;
     t.year = d_meta_loaded_ ? m.release_info : d_item_.release_info;
     t.runtime = d_meta_loaded_ ? m.runtime : d_item_.runtime;

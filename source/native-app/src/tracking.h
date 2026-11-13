@@ -39,6 +39,7 @@ private:
     bool flush(const std::string& p, std::string& error);
     bool read_library(json& items, std::string& error);
     bool read_mdblist(json& rows, std::string& error);
+    bool read_mdblist_watched(json& rows, std::string& error);
     bool flush_membership(const std::string& provider, std::string& error);
     bool read_progress(json& rows, std::string& error);
 };

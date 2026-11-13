@@ -3,6 +3,7 @@
 // history and source switches are scoped to the selected account/profile.
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "session.hpp"
+#include "watched_history.hpp"
 #include "nuvio_account.h"
 #include "config_backup.h"
 #include <algorithm>
@@ -67,7 +68,7 @@ void Session::clear_profile_views() {
     if (w_episode_cancel_) *w_episode_cancel_ = true;
     cancel_autoplay(); resuming_ = false; open_req_.reset(); want_streams_video_.clear();
     tracking_status_ = json::object(); ++tracking_generation_; ++library_generation_;
-    library_.clear(); progress_.clear(); watched_.clear(); addons_.clear(); board_.clear();
+    library_.clear(); progress_.clear(); watched_.clear();watched_scopes_.clear();watched_exclusions_.clear(); addons_.clear(); board_.clear();
     library_loaded_ = false; library_loading_ = false; addons_loading_ = false; title_action_busy_ = false;
     board_loading_ = false; disc_loading_ = false; disc_end_ = false;
     disc_items_.clear(); disc_types_.clear(); discover.items.clear();
@@ -197,6 +198,13 @@ void Session::profiles_menu(bool startup) {
         dropdown.message = sx::i18n::tr("History, addons and plugins belong to each profile. Shared sources follow your Nuvio profile settings.");
     }, true);
 }
+void Session::refresh_watched_views() {
+    refresh_board();refresh_library();
+    for(auto& t:discover.items)if(t.type=="movie")t.watched=watched_history::movie(t.type,t.id,watched_);
+    for(auto& row:search.rows)for(auto& t:row.items)if(t.type=="movie")t.watched=watched_history::movie(t.type,t.id,watched_);
+    if(d_open_) {detail.title.watched=watched_history::movie(d_item_.type,d_item_.id,watched_);detail_set_season(d_season_idx_);}
+    changed_|=kDiscover|kSearch|kDetail;
+}
 void Session::load_watched() {
     if (!signed_in() || !profile_ready_) return;
     const auto key = prefs_.auth_key;
@@ -205,17 +213,12 @@ void Session::load_watched() {
         if (revision != watched_revision_) return;
         if (!r.ok) { series_history_ready_=false;refresh_board();refresh_library();say(r.error, 8.0, true); return; }
         series_history_ready_=jbool(r.result,"synced");
-        std::set<std::string> remote;
-        for (const auto& entry : jobj(r.result, "entries")) {
-            auto id = jstr(entry, "content_id");
-            if (id.empty()) continue;
-            if (jobj(entry, "season").is_number() && jobj(entry, "episode").is_number())
-                id += ":" + std::to_string(int(jnum(entry, "season"))) + ":" + std::to_string(int(jnum(entry, "episode")));
-            remote.insert(id);
+        watched_history::Snapshot remote;
+        if(!watched_history::decode(jobj(r.result,"entries"),remote,watched_scopes_,watched_exclusions_)) {
+            series_history_ready_=false;say(i18n::tr("Watched history is unreadable; local marks retained"),8,true);return;
         }
-        watched_ = std::move(remote); save_progress();
-        refresh_board();refresh_library();
-        if (d_open_) detail_set_season(d_season_idx_);
+        watched_=std::move(remote.watched);watched_scopes_=std::move(remote.scopes);watched_exclusions_=std::move(remote.exclusions);save_progress();
+        refresh_watched_views();
     });
 }
 void Session::sync_watched_mark(const std::string& video, const std::string& title, bool watched,

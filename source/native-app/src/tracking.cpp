@@ -5,6 +5,7 @@
 #include <cmath>
 #include <cstdio>
 #include <set>
+#include <map>
 #include <mutex>
 #include <sys/stat.h>
 
@@ -767,6 +768,94 @@ bool Store::mark(const std::string& content, int season, int episode, bool watch
     json state{{"nuvioSeason",season}, {"nuvioEpisode",episode}, {"trackingWatched",watched}, {"duration",60000}, {"timeOffset",0}};
     return write(json::array({{{"_id",content}, {"type",episode > 0 ? "series" : "movie"}, {"state",state}}}), error);
 }
+bool Store::read_mdblist_watched(json& rows,std::string& error) {
+    json result=json::array();std::set<std::string> identities,cursors;
+    std::map<std::string,int> expected,received;
+    int offset=0;std::string cursor;
+    for(int page=0;page<100;++page) {
+        json data;
+        const auto query=cursor.empty()?"&offset="+std::to_string(offset):"&cursor="+url_encode(cursor);
+        if(!fetch("mdblist","/sync/watched?limit=100"+query,data,error))return false;
+        if(!data.is_object())break;
+        bool valid=true;int count=0;
+        for(const auto* bucket:{"movies","shows","seasons","episodes"}) {
+            const auto& items=jobj(data,bucket);
+            if(!items.is_array()||items.size()>100){valid=false;break;}
+            const std::string kind=bucket;
+            for(const auto& row:items) {
+                if(!row.is_object()){valid=false;break;}
+                const bool movie=kind=="movies",season_scope=kind=="seasons",show_scope=kind=="shows";
+                const auto& unit=jobj(row,movie?"movie":show_scope?"show":season_scope?"season":"episode");
+                const auto& media=(movie||show_scope)?unit:jobj(unit,"show").is_object()?unit["show"]:jobj(row,"show");
+                const auto id=content_id(media);
+                if(!unit.is_object()||id.empty()||id.size()>256){valid=false;break;}
+                int sn=-1,en=-1;
+                if(!movie&&!show_scope) {
+                    const auto& number=jobj(unit,season_scope?"number":"season");
+                    if(!number.is_number_integer()||number.get<double>()<0||number.get<double>()>100000){valid=false;break;}
+                    sn=int(number.get<double>());
+                }
+                if(kind=="episodes") {
+                    const auto& number=jobj(unit,"number").is_null()?jobj(unit,"episode"):unit["number"];
+                    if(!number.is_number_integer()||number.get<double>()<1||number.get<double>()>100000){valid=false;break;}
+                    en=int(number.get<double>());
+                }
+                const auto key=kind+":"+id+":"+std::to_string(sn)+":"+std::to_string(en);
+                if(!identities.insert(key).second){valid=false;break;}
+                const auto& stamp=jobj(row,"last_watched_at");
+                const bool marked=!row.contains("last_watched_at")||!stamp.is_null();
+                if(!stamp.is_null()&&!stamp.is_string()){valid=false;break;}
+                const int64_t when=stamp.is_string()?iso8601_to_ms(stamp.get<std::string>()):0;
+                if((stamp.is_string()&&when<=0)||(marked&&(season_scope||show_scope)&&when<=0)){valid=false;break;}
+                json aliases=json::array({id});
+                const auto& external=jobj(media,"ids");
+                for(const auto* provider:{"imdb","tmdb","tvdb","trakt","simkl"}) {
+                    const auto& value=jobj(external,provider);
+                    const auto alias=std::string(provider)=="imdb"?jstr(external,provider):
+                        value.is_number_integer()?std::string(provider)+":"+value.dump():"";
+                    if(!ids(alias).empty() && std::find(aliases.begin(),aliases.end(),json(alias))==aliases.end())aliases.push_back(alias);
+                }
+                json normalized{{"content_id",id},{"content_type",movie?"movie":"series"},
+                    {"season",sn<0?json(nullptr):json(sn)},{"episode",en<0?json(nullptr):json(en)},
+                    {"watched",marked},{"watched_at",when},{"aliases",aliases}};
+                if(show_scope||season_scope)normalized["scope"]=show_scope?"show":"season";
+                result.push_back(std::move(normalized));++count;++received[kind];
+                if(result.size()>45000){valid=false;break;}
+            }
+            if(!valid)break;
+        }
+        if(!valid)break;
+        const auto& pagination=jobj(data,"pagination");
+        if(data.contains("pagination")&&!pagination.is_object())break;
+        for(const auto* bucket:{"movies","shows","seasons","episodes"}) {
+            const auto name="total_"+std::string(bucket);
+            const auto& total=jobj(pagination,name.c_str());if(total.is_null())continue;
+            if(!total.is_number_integer()||total.get<double>()<0||total.get<double>()>45000 ||
+                (expected.count(bucket)&&expected[bucket]!=total.get<int>())){valid=false;break;}
+            expected[bucket]=total.get<int>();
+        }
+        if(!valid)break;
+        const auto& more=jobj(pagination,"has_more");
+        if(pagination.contains("has_more")&&!more.is_boolean())break;
+        const auto& next=jobj(pagination,"next_cursor");
+        if(!next.is_null()&&!next.is_string())break;
+        const auto next_cursor=next.is_string()?next.get<std::string>():"";
+        if(!next_cursor.empty()) {
+            if((more.is_boolean()&&!more.get<bool>())||count==0||next_cursor.size()>4096||!cursors.insert(next_cursor).second)break;
+            cursor=next_cursor;continue;
+        }
+        if(more.is_boolean()&&more.get<bool>()) {
+            const auto& limit=jobj(pagination,"limit");
+            if(!cursor.empty()||count==0||(!limit.is_null()&&(!limit.is_number_integer()||limit.get<double>()<1||limit.get<double>()>100)))break;
+            offset+=limit.is_number_integer()?limit.get<int>():100;continue;
+        }
+        if(!more.is_boolean()&&count>=100)break;
+        for(const auto& [bucket,total]:expected)if(received[bucket]!=total)valid=false;
+        if(!valid)break;
+        rows=std::move(result);return true;
+    }
+    error="MDBList returned incomplete or unreadable watched history; local marks retained";return false;
+}
 bool Store::watched(json& rows, std::string& error) {
     const auto p = source(true); if (p == "nuvio") return false;
     if (!flush(p,error)) return false;
@@ -801,21 +890,7 @@ bool Store::watched(json& rows, std::string& error) {
                 if (jstr(row,"status")=="completed" || !jstr(row,"last_watched_at").empty()) append(jobj(row,"movie"),-1,-1);
             } else show(row,jobj(row,std::string(type)=="shows" ? "show" : "anime"),true);
         }
-    } else {
-        std::string cursor; std::set<std::string> cursors;
-        for (int page=0;page<100;++page) {
-            if (!fetch(p,"/sync/watched?limit=100"+(cursor.empty()?"":"&cursor="+url_encode(cursor)),data,error) || !data.is_object()) return false;
-            if (jobj(data,"movies").is_array()) for (const auto& row : data["movies"]) append(jobj(row,"movie"),-1,-1);
-            if (jobj(data,"shows").is_array()) for (const auto& row : data["shows"]) show(row,jobj(row,"show"),false);
-            if (jobj(data,"episodes").is_array()) for (const auto& row : data["episodes"]) {
-                const auto& ep = jobj(row,"episode");
-                append(jobj(row,"show"),int(jnum(ep,"season",-1)),int(jnum(ep,"number",jnum(ep,"episode",-1))));
-            }
-            cursor = jstr(jobj(data,"pagination"),"next_cursor");
-            if (cursor.empty()) break;
-            if (!cursors.insert(cursor).second || page==99) { error="MDBList history pagination did not finish"; return false; }
-        }
-    }
+    } else return read_mdblist_watched(rows,error);
     rows=result; return true;
 }
 

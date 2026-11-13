@@ -450,6 +450,7 @@
     "Restore configuration": "恢复配置",
     "Restore local encrypted backup": "恢复本地加密备份",
     "Sync configuration with Google Drive": "与 Google Drive 同步配置",
-    "TheTVDB episode ordering": "TheTVDB 剧集排序"
+    "TheTVDB episode ordering": "TheTVDB 剧集排序",
+    "Watched": "已观看"
   }
 }
