@@ -1,230 +1,112 @@
-> **1.0.0.24 experimental:** refreshed compiler, SDK libraries, playback dependencies, provider bundle, certificates and fonts. Console compatibility testing is pending.
-
 <p align="center">
-  <img src="sce_sys/icon0.png" alt="MAX'D Nuvio edition app icon" width="176" height="176">
+  <img src="sce_sys/icon0.png" alt="Nuvio Max'd app icon" width="176" height="176">
 </p>
 
 <h1 align="center">Nuvio Max'd</h1>
 
-<p align="center"><strong>Your Nuvio library, profiles, addons and watch progress. On PS5.</strong></p>
+<p align="center"><strong>Your Nuvio library, live TV and watch progress — on PS5.</strong></p>
 
 <p align="center">
-  <a href="https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/download/v1.0.0.24-native-experimental/PPSA99288.zip"><img src="https://img.shields.io/badge/Download-ZIP_folder-00B8E8?style=for-the-badge" alt="Download the PS5 app as a ZIP folder"></a>
-  <a href="https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/download/v1.0.0.24-native-experimental/NuvioMaxd-1.0.0.24-native.ffpfsc"><img src="https://img.shields.io/badge/Download-FFPFSC_image-8B5CF6?style=for-the-badge" alt="Download the PS5 app as an FFPFSC image"></a>
-  <a href="https://prosperostore.net/app/PPSA99288/"><img src="https://img.shields.io/badge/ProsperoStore-Listing-22C55E?style=for-the-badge" alt="View the ProsperoStore listing; check its version before installing"></a>
-  <a href="https://ko-fi.com/handshakehackin"><img src="https://img.shields.io/badge/Ko--fi-Support-FF5E5B?style=for-the-badge&logo=kofi&logoColor=white" alt="Optional support on Ko-fi"></a>
+  <a href="https://prosperostore.net/app/PPSA99288/">Homebrew Store</a> ·
+  <a href="https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/tag/v1.0.0.24-native-experimental">Downloads and release notes</a> ·
+  <a href="https://github.com/HandshakeHackin/Nuvio-maxd-releases/issues">Report a problem</a>
 </p>
 
-<p align="center">
-  <strong>Experimental test build: 1.0.0.24</strong><br>
-  <a href="https://github.com/HandshakeHackin/Nuvio-maxd-releases/blob/builds/v1.0.0.24/USER_GUIDE.md">User guide</a> · <a href="https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/tag/v1.0.0.24-native-experimental">Downloads and release notes</a> · <a href="https://github.com/HandshakeHackin/Nuvio-maxd-releases/issues">Report a problem</a>
-</p>
+**Latest build: 1.0.0.24 experimental**, available on GitHub and Homebrew Store.
+Console confirmation for this build is still pending.
 
-Bring your Nuvio setup to the big screen. Sign in with your phone, choose a
-profile, browse addon catalogs and your saved library, and keep movie and episode
-progress in sync with your other Nuvio devices. The interface and integrated
-players run directly on the console; you do not need a PC running a companion server.
+Nuvio Max'd runs directly on a jailbroken PS5. Sign in with your phone or use
+Guest mode, then browse your library, addons, TV playlists and media servers.
+No companion PC app is required.
 
-## What’s new in 1.0.0.24 experimental
+## What's new
 
-- LLVM 23.1.5, PacBrew 0.41.1 and a rebuilt library graph, including FFmpeg 9.0.2, OpenSSL 4.1.0 and EVO 0.13.7.
-- Refreshed compression, networking, subtitle/font and Matroska dependencies; updated provider packages with tested Cheerio compatibility adapters.
-- Updated CA trust data, STB headers, Montserrat and Arabic fonts. Inter was verified against its latest release.
-- Retains the MDBList episode-history and carousel fixes confirmed in 1.0.0.23; [#22](https://github.com/HandshakeHackin/Nuvio-maxd-releases/issues/22) is closed.
+- **Better seeking**, including paused seeks and changing the seek target.
+- **Subtitle fixes**, updated fonts and correct Arabic font selection.
+- **Refreshed playback engines, providers and connection security.**
+- **MDBList fixes retained:** library syncing, watched indicators and episode-carousel position.
 
-This dependency refresh still needs console confirmation. See the [test checklist](source/native-app/TESTING-1.0.0.24.md) and [reproduction instructions](source/native-app/DEPENDENCY_REFRESH_BUILD.txt).
+See the [full release notes](https://github.com/HandshakeHackin/Nuvio-maxd-releases/blob/v1.0.0.24-native-experimental/RELEASE_NOTES.md) for the detailed changelog.
 
-## What’s new in 1.0.0.22 experimental
+## Library, profiles and discovery
 
-- Reads nested MDBList episode/season/show history and complete bounded pages before replacing watched state.
-- Keeps dated parent marks separate from explicit episode exceptions and future releases.
-- Movie watched checks appear on all normal grids and a translated Watched badge appears on details; resume positions stay independent.
+- **Profiles and sync:** up to six profiles, PIN entry, and library/watch progress synced across Nuvio devices.
+- **Title actions:** add/remove titles and mark movies or episodes watched. Season/show changes ask for confirmation.
+- **Trakt, SIMKL and MDBList:** separate library and watch-progress choices. SIMKL library browsing is read-only.
+- **People and trailers:** browse cast/crew biographies and credits, discover related titles and watch supported trailers.
+- **Search and sources:** library search, new-episode badges, stream details and saved source preferences.
 
-This is an unconfirmed fix for the remaining watched-state problems in [#22](https://github.com/HandshakeHackin/Nuvio-maxd-releases/issues/22). See the [test checklist](source/native-app/TESTING-1.0.0.22.md).
+## Live TV and your own media
 
-## What’s new in 1.0.0.21 experimental
+- **Live TV:** M3U/M3U8 playlists, Xtream Codes and Stalker/Ministra portals, with groups, search and favorites.
+- **USB import:** copy playlists into the selected profile. USB access may need the bundled helper and a compatible payload loader.
+- **TV guide:** Now/Next information from your provider or XMLTV.
+- **IPTV Library:** browse provider movies/series, search saved catalogs and resume locally.
+- **Optional Sports Hub:** follow leagues/teams, hide score spoilers and find possible matching TV channels.
+- **Experimental multiview:** four SDR channels at once, with one selected for sound. Requires four provider connections.
+- **Media servers:** connect Plex, Jellyfin or Emby.
+- **Addons and providers:** Nuvio manifests, supported JavaScript providers, and cached-file access through TorBox/Premiumize.
+- **Experimental torrents and Web Drop:** send magnet links or torrent files from a paired phone/PC browser. Enable torrent mode first; it is off by default.
 
-- MDBList confirmation parsing accepts scalar and per-media add/existing/remove receipts.
-- Pending library changes reconcile against the actual remote watchlist before retrying.
-- Bounded offset pagination and guarded ID-format compatibility address watchlist API differences.
+Addons, playlists and media access come from your own sources and accounts.
+Availability depends on the provider.
 
-This is an unconfirmed fix for [#22](https://github.com/HandshakeHackin/Nuvio-maxd-releases/issues/22). Please test movie and series add/remove, restart, and the result on mdblist.com. See the [testing checklist](source/native-app/TESTING-1.0.0.21.md).
+## Playback
 
-## What’s new in 1.0.0.20
+- **Three player choices:** Native is the default, with optional **EVO Player 0.13.7** and **VLC 3.0.24** engines.
+- **Audio and subtitles:** track/language selection, stereo or surround audio, volume/sync controls and subtitle styling.
+- **Episode controls:** IntroDB/AniSkip timings, Skip Intro/Recap/Credits and optional next-episode autoplay with an adjustable countdown.
+- **Chapters and seeking:** embedded chapter selection and custom seek intervals.
+- **Picture settings:** compatible 4K playback, experimental HDR10, HDR-to-SDR conversion and optional 120 Hz output.
+- **TVDB episode ordering:** choose supported alternate series orders using your own TVDB API access, while preserving watch-history identity.
 
-- **Encrypted configuration backup:** save/restore profile settings and private USB playlist copies; account sessions and playback history stay separate. Manual Google Drive sync reviews conflicts and protects concurrent updates. A suitable Google TV OAuth app registration is required and is not bundled.
-- **TheTVDB episode ordering:** use your own API key, then choose a per-series order from Options. Only verified one-to-one mappings are accepted; source searches follow the selected numbering while history and resume keep their original identity.
-- **Stalker/Ministra:** add a provider-assigned portal/MAC account in Live TV. Includes channel groups, playback links, guide data and available movie/series catalogs in the isolated IPTV Library.
-- **Eight menu languages:** the new entry labels are translated; advanced help can use English fallback.
+Optional engines, HDR and 120 Hz depend on your console, display and media.
+Full Dolby Vision and HDR10+ are not supported. See the
+[playback limits](https://github.com/HandshakeHackin/Nuvio-maxd-releases/blob/v1.0.0.24-native-experimental/source/native-app/PLAYBACK_QUALITY.md)
+for format details.
 
-The app and package checks cover these features with regression fixtures. Real Google/TVDB accounts, portal providers and physical PS5 behavior still need confirmation. Existing playback features retain their documented limits.
+## Languages, controls and backups
 
-See the [release notes](RELEASE_NOTES.md) and [testing checklist](source/native-app/TESTING-1.0.0.20.md). Install from either GitHub or ProsperoStore; check the store’s displayed version because catalog approval and deployment can lag GitHub.
-
-| Feature | What you can do |
-| --- | --- |
-| **Live TV** | Add your own M3U playlist, Xtream Codes server or Stalker/Ministra portal; browse groups, search channels, and save favorites/recent selections separately for each profile. Lists support up to 100,000 channels / 128 MiB. Now/Next uses Xtream short EPG, Stalker portal EPG or XMLTV (including playlist links or a manual URL). Guide refresh and on/off are in Live TV → Options. Recording and catch-up are not included; Xtream movies/shows use the separate IPTV Library tab. |
-| **IPTV Library** | A separate sidebar tab appears for VOD-capable Xtream accounts or Stalker/Ministra portals. Browse movie/show categories with A–Z navigation, search saved catalogs across the active profile’s providers, choose seasons/episodes and resume locally per profile. Saved catalogs survive provider outages. |
-| **Provider availability** | Guidance for server errors, missing titles, rejected access and request limits. Possible outages are distinguished from decoding failures. |
-| **Four-screen TV (experimental)** | Choose four SDR channels from Live TV’s sources/filters menu. D-pad focuses; Cross selects sound. Requires four provider connections; software previews are limited to 640×360. SD recommended. |
-| **Trailers** | Select Options → Watch trailer on movie/show details. Uses addon/TMDB metadata and supported public direct/YouTube formats; trailers do not update watch history or trackers. Some hosts/formats remain unavailable. |
-| **Anime skip timings** | Use AniSkip alongside IntroDB, with optional Anime-Skip client registration and conservative episode/timing validation. |
-| **Settings search** | Find settings by name, description or category and use their original controls. |
-| **Playback badges** | See resolution, HDR/SDR, selected audio channels, codecs and release types such as WEB-DL, Blu-ray and DVD-Rip. Actual playback facts override filename hints. |
-| **Recent sources** | See eligible cached sources while refreshing; Reload bypasses the bounded profile-specific session cache. |
-
-## Library, profiles and sources
-
-**Library search:** Triangle/Options or Search filters loaded titles from the active Library source. Combine with type/sort, then Clear Search or Circle to restore the list. **Series updates:** badges such as “New: S2 E3” use synchronized watched history and passed release dates; future, unknown and in-progress episodes are excluded.
-
-| Feature | What you can do |
-| --- | --- |
-| **Phone sign-in** | Scan the QR code to link your Nuvio account and keep the login between launches. Guest use is also available. |
-| **Multiple profiles** | Choose, import or create up to six account profiles. Switch through **Settings → Account & Services → Profiles** after stopping playback. Account-backed PIN checks require a connection. |
-| **Separate profile data** | Keep history, resume positions, source lists and preferences scoped to the selected profile. Addon/plugin repository lists and watched history sync; individual scraper switches remain local. Inherited sources are read-only here. |
-| **Nuvio library and progress** | Browse saved titles and resume movies or episodes across devices using the same account and selected profile. Offline progress waits to sync when you reconnect. Guest progress stays on the PS5. |
-| **Tracking accounts** | Optional Trakt, SIMKL and MDBList connections with separate Library Source and Watch Progress selections; Nuvio remains default. Trakt phone pairing uses the bundled Max’d registration. SIMKL requires its own application configuration. |
-| **Standard addons** | Load enabled addons from your Nuvio setup or add a manifest URL, including setups using AIOMetadata and AIOStreams. Compatibility depends on the addon. |
-| **Provider plugins** | Add raw Nuvio JavaScript provider repository manifests and enable individual scrapers. Android DEX/CS3 plugins are not supported. |
-| **Catalogs and search** | Browse artwork, search titles, choose seasons and read episode descriptions with thumbnails and progress bars. |
-| **Stream selection** | Compare advertised resolution, HDR, language, codec, audio and file size; filter by addon. Your selection stays focused as results arrive. |
-| **Connected services** | Connect TorBox or Premiumize, or explicitly import supported connections from Nuvio Sync, to resolve cached original files. Optional background link preparation reduces waiting after selection. |
-| **Playback sources** | Play compatible direct/addon HTTP links. Peer-to-peer torrent playback is available separately and is off by default. |
-
-To use a provider repository, open **Settings → Addons → Add addon or plugin URL**
-and enter its raw `manifest.json` URL. Then select the repository on the **Addons**
-page and enable a provider. Providers start disabled; try one first. A GitHub
-directory URL is not a manifest. Some providers need unsupported APIs, extra
-configuration or browser challenges, so installing a repository does not guarantee streams.
-
-## Video, audio and subtitles
-
-| Feature | What you get |
-| --- | --- |
-| **Native player by default** | Integrated playback for compatible H.264/HEVC and other supported media, with audio/subtitle track selection and playback details. |
-| **Optional EVO and VLC engines** | Choose **EVO Player 0.13.0** or **VLC 3.0.24** under **Settings → Video → Playback engine**. Both are experimental; the choice applies to the next stream. They retain their own compatibility limits. |
-| **Native-resolution GPU presentation** | Keep decoded picture dimensions, including compatible 4K sources, and convert YUV colour on the GPU. Source resolution is distinct from the actual HDMI signal. |
-| **Display choices** | Follow the configured PS5 resolution or choose an override. Request **60 Hz** or **Prefer 120 Hz** on compatible outputs; refresh changes require an app restart. |
-| **HDR choices** | Try experimental native HDR10 for compatible PQ/BT.2020 sources, or explicitly choose **Convert HDR to SDR**. Tone mapping preserves luminance and fits wide-gamut colours into SDR. HDR output needs console/TV confirmation. |
-| **Audio output** | Decoded PCM by default, with stereo or optional surround PCM. Auto/bitstream output for compatible AC-3, E-AC-3 and DTS core is experimental. TrueHD/DTS-HD remain decoded PCM. Keep surround off for optical stereo or TV speakers. |
-| **Volume and sync** | PCM volume/boost 50–300%, audio delay ±2 s and subtitle delay ±10 s. Set defaults in Settings or adjust from the playback Audio/Subtitles menu. Boost may clip loud peaks. |
-| **Preferred languages** | Set audio and subtitle language preferences. Automatic subtitles prefer suitable in-file tracks before addon subtitles; manual choices, including Off, are retained. |
-| **Subtitle rendering** | Styled ASS/SSA and bitmap/PGS subtitles, Unicode fallback fonts and text shaping. Adjust size (including 150%/200%), font, colour, outline/shadow, background and timing; text playback and previews share their size scale. |
-| **Embedded chapters** | On supported files, open Options/Up, choose Chapters and press Cross to jump. Includes timeline markers and the current chapter name; requires at least two valid chapters. |
-| **Playback recovery** | Retain audio/subtitle choices, pause, audio sync and PCM gain after supported reopen operations. Recover missing HEVC colour tags without overriding explicit container metadata. VLC-owned HTTP failures retain authentication/cancellation instead of falling back to another access handler. |
-| **Seeking and buffering** | Set D-pad and shoulder-button seek intervals separately. Native/EVO read-ahead choices are 30, 60, 120 or 300 seconds. Seeking and network-recovery changes include HLS handling, with remaining engine-specific limits. |
-
-**EVO is an integrated video engine here, not the entire standalone EVO app.**
-Nuvio retains its interface and, for Native/EVO, its audio output, OpenGL renderer
-and HDR composition. Choosing EVO alone does not replace the complete output path.
-VLC is an optional integrated engine and still needs console testing.
-
-Native HDR10 can be rejected by the console/output combination. HDR10+ dynamic
-metadata, full Dolby Vision processing and forwarding source mastering metadata
-are not supported. A source's HDR/audio badges do not prove that the TV or
-receiver is receiving those formats. 120 Hz can improve film cadence but does
-not add motion interpolation or guarantee smooth playback.
-
-## Watching and everyday use
-
-- **Skip Intro, Recap and Credits:** controller-button prompts appear when IntroDB
-  supplies episode timings. Known post-credit scenes are preserved; missing
-  timings leave playback unchanged.
-- **Next-episode autoplay:** prepare the next episode and offer a cancellable,
-  adjustable countdown when a matching stream is ready. Pause/buffering holds the
-  countdown, and autoplay can be turned off.
-- **Controller and Media Remote controls:** DualSense navigation plus supported
-  PS5 Media Remote/HDMI-CEC navigation and playback controls.
-- **Organized settings:** Account & Services, Video, Audio, Subtitles, Playback,
-  Appearance & Lighting, Addons, and App & Updates.
-- **Appearance and accessibility:** reduced motion, higher contrast, calmer
-  backgrounds and optional interface sounds. These settings do not change video colours.
-- **Logo-inspired lighting:** a slow teal → white → pink/purple controller-light
-  fade. Optional **Console light sync** follows it on supported systems, with
-  approximate colours and a disable switch that restores the previous state.
-  Unsupported systems leave console lighting unchanged.
-- **What's new:** a simple changelog after a version change, available again in Settings.
-- **Update reminders:** choose Homebrew Store, GitHub/manual, or Not sure as your
-  install source. Reminders direct you to the appropriate update location; this
-  is a saved choice, not automatic installer detection.
-- **In-app update checks:** check the public feed in Settings. Verified FFPFSC
-  installation through the bundled helper is experimental; ZIP installs use
-  manual replacement. Keep app data when updating.
-- **Playback diagnostics:** view log locations and collect playback, frame-timing,
-  startup and crash information for troubleshooting. Remove tokens, passwords,
-  authorization headers and stream URLs before sharing logs.
-- **Optional support:** a Ko-fi link and QR code in Settings. Donations are optional.
-
-## What changed in 1.0.0.5
-
-- Local Library title search with existing type/sort controls and profile/source isolation.
-- Live TV Now/Next from Xtream or XMLTV, with document reuse and guide controls.
-- New-episode badges backed by synchronized history and confirmed release dates.
-- Reporter-confirmed external subtitle sizing and Library cover fixes (#12 / #13).
-
-See [release notes](RELEASE_NOTES.md), [source](SOURCE.md) and
-[testing instructions](native-app/TESTING-1.0.0.5.md).
+- **Eight menu languages:** English, German, Spanish, French, Arabic, Simplified Chinese, Japanese and Korean. Change **Settings → App & Updates → Language**, then restart. Advanced help may use English.
+- **Controls:** DualSense, supported Media Remote/HDMI-CEC buttons and app-local remote remapping. System-intercepted buttons cannot be reassigned.
+- **Appearance:** settings search, reduced motion, higher contrast, interface sounds and controller lighting. Console light sync is optional on supported systems.
+- **Encrypted backups:** save profile settings and imported USB playlists, up to 16 MiB. Account sessions, watched history and resume are excluded.
+- **Google Drive:** optional manual backup sync with conflict review. Requires your own compatible Google app registration; none is bundled.
 
 ## Download and install
 
-You need a jailbroken PS5 and compatible homebrew payloads, including a suitable
-kstuff setup and [ShadowMount+](https://github.com/drakmor/ShadowMountPlus).
-Follow the loader's instructions for your firmware. The project targets firmware
-9.00 and above where those tools work; coverage is incomplete and firmware below
-9.00 needs further testing. Homebrew loader compatibility does not establish
-HDR/audio compatibility.
+You need a jailbroken PS5 and a compatible
+[ShadowMount+](https://github.com/drakmor/ShadowMountPlus) setup. Follow the
+loader's instructions for your firmware.
 
-| 1.0.0.20 download | Installation |
+| Download | Install |
 | --- | --- |
-| [**PPSA99288.zip**](https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/download/v1.0.0.24-native-experimental/PPSA99288.zip) | Extract and copy the complete `PPSA99288/` folder into a location scanned by ShadowMount+, such as `/data/homebrew/`. The executable should be `/data/homebrew/PPSA99288/eboot.bin`, with no extra folder level. |
-| [**NuvioMaxd-1.0.0.24-native.ffpfsc**](https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/download/v1.0.0.24-native-experimental/NuvioMaxd-1.0.0.24-native.ffpfsc) | Place the image in a homebrew folder on storage scanned by ShadowMount+. |
+| [**Homebrew Store**](https://prosperostore.net/app/PPSA99288/) | Find **Nuvio Max'd** and install the listed build. |
+| [**ZIP folder**](https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/download/v1.0.0.24-native-experimental/PPSA99288.zip) | Extract `PPSA99288/` into a folder scanned by ShadowMount+, such as `/data/homebrew/`. The app should be at `/data/homebrew/PPSA99288/eboot.bin`, without an extra folder level. |
+| [**FFPFSC image**](https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/download/v1.0.0.24-native-experimental/NuvioMaxd-1.0.0.24-native.ffpfsc) | Put the image in a homebrew location scanned by ShadowMount+. |
 
-Use one installation format at a time. Close the app before replacing an image
-or folder, preserve your app data, and let ShadowMount+ finish scanning before
-launching. The title ID remains **PPSA99288**. Downloads include matching source,
-checksums and validation evidence.
+Use one installation format at a time. Close Max'd before updating and keep your
+app data. GitHub downloads include matching source and checksums.
 
-After launch, scan the account QR code or continue as Guest. For cross-device
-resume, use the same Nuvio account/profile on each device and select Nuvio Sync
-as the progress source on the other device. Configure addons normally; connect
-TorBox/Premiumize separately if you want their cached-file resolution.
+After launch:
 
-The [published-build user guide](https://github.com/HandshakeHackin/Nuvio-maxd-releases/blob/builds/v1.0.0.24/USER_GUIDE.md)
-covers controls, setup and troubleshooting. Check the version on the
-[ProsperoStore listing](https://prosperostore.net/app/PPSA99288/): catalog submission,
-maintainer approval and live deployment happen separately from a GitHub release.
-The 1.0 store update is prepared; [submit the prefilled catalog pull request](store/README.md) because the integration cannot create it upstream.
+1. Scan the sign-in QR code and choose a profile, or continue as Guest.
+2. Set up your addons, TV sources or media-server connection.
+3. Choose something to watch. Adjust playback and language settings as needed.
 
-## Report a problem
+## Help and credits
 
-[Open an issue](https://github.com/HandshakeHackin/Nuvio-maxd-releases/issues) with
-your app version, firmware, playback engine, steps and expected/actual behavior.
-For provider-download failures, enable one provider, reproduce the problem and
-include the complete `provider: script download failed` log line. Shared logs
-must exclude credentials and stream URLs. Please reply to an existing matching
-issue rather than opening a duplicate.
+[Report a problem](https://github.com/HandshakeHackin/Nuvio-maxd-releases/issues)
+with your app version, PS5 firmware, install format, playback engine and what
+happened. Remove passwords, tokens and private stream URLs from shared logs.
 
-See the published [playback limits](https://github.com/HandshakeHackin/Nuvio-maxd-releases/blob/builds/v1.0.0.24/source/native-app/PLAYBACK_QUALITY.md)
-and [update guide](https://github.com/HandshakeHackin/Nuvio-maxd-releases/blob/builds/v1.0.0.24/source/native-app/UPDATING.md).
+Nuvio Max'd is an unofficial client and is not affiliated with Nuvio, Stremio or
+Sony. It builds on [Nuvio protocols](https://github.com/NuvioMedia/NuvioTVSmart),
+[Sp9nky's native Stremio port](https://github.com/Sp9nky/unofficial-stremio-ps5-port)
+and [BlackBearReloaded's Prospero UI](https://github.com/blackbearreloaded/ps5-homebrew-ui),
+with credited EVO/VLC and media libraries.
 
-## Source and credits
-
-Nuvio Max'd is an **unofficial client**, previously named Nuvio PS5. It is not
-affiliated with Nuvio, Stremio or Sony. The project is distributed under the
-[GPL-3.0 license](LICENSE); included components retain their own notices.
-
-Every published release includes its matching source archive. Browse the
-[1.0.0.24 source](https://github.com/HandshakeHackin/Nuvio-maxd-releases/tree/builds/v1.0.0.24/source/native-app),
-[build guide](https://github.com/HandshakeHackin/Nuvio-maxd-releases/blob/builds/v1.0.0.24/source/native-app/README.md)
-and [third-party notices](https://github.com/HandshakeHackin/Nuvio-maxd-releases/blob/builds/v1.0.0.24/source/native-app/THIRD_PARTY.md).
-Versioned delivery branches use `builds/v<VERSION>`. The homepage may describe
-newer local work; the release tag and matching source identify each public build.
-
-Nuvio branding and account protocols come from
-[NuvioTVSmart](https://github.com/NuvioMedia/NuvioTVSmart). The native UI and
-integrated player are adapted from
-[Sp9nky's unofficial Stremio port](https://github.com/Sp9nky/unofficial-stremio-ps5-port),
-using [BlackBearReloaded's Prospero UI](https://github.com/blackbearreloaded/ps5-homebrew-ui),
-the credited EVO/VLC and media libraries, and the other components listed in the
-notices. The 0.5.34 playback work also adapts ProsperoTube's scheduler and
-output-lifetime approach with its source and license attribution retained.
+[Matching source and build guide](https://github.com/HandshakeHackin/Nuvio-maxd-releases/tree/v1.0.0.24-native-experimental/source/native-app) ·
+[Third-party notices](https://github.com/HandshakeHackin/Nuvio-maxd-releases/blob/v1.0.0.24-native-experimental/source/native-app/THIRD_PARTY.md) ·
+[GPL-3.0 license](LICENSE) ·
+[Optional support on Ko-fi](https://ko-fi.com/handshakehackin)
