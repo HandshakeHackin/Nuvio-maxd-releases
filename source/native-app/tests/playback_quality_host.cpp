@@ -2,6 +2,7 @@
 #include "packet_storage.h"
 #include "subtitle_renderer.h"
 #include "subtitles.h"
+#include "util.h"
 #include <functional>
 #include <stdexcept>
 void require(bool ok,const char* why) { if(!ok) throw std::runtime_error(why); }
@@ -12,12 +13,14 @@ extern "C" {
 #include <algorithm>
 #include <atomic>
 #include <cstdarg>
+#include <cstdlib>
 #include <cstring>
 #include <thread>
 #include <chrono>
 #include <cstdio>
 #include <cmath>
 #include <fstream>
+#include <unistd.h>
 static std::atomic<int> mode{0},format_seen{-1},submitted{0};
 static std::atomic<bool> nonzero{false};
 extern "C" int sceAudioOutInit(){return 0;}
@@ -155,13 +158,28 @@ int main(int argc,char** argv) try {
         require(restored.w==widths[4],"seek lost largest subtitle size");
     });
     test("Arabic, CJK and Thai subtitles render with bundled font shaping",[&]{
+        // A .notdef box has pixels too. Check real libass warnings as well as
+        // the bitmap so a renamed/missing family cannot silently pass.
+        struct FontLog {
+            char path[40]="/tmp/nuvio-subtitle-font-XXXXXX";
+            FontLog() {int fd=mkstemp(path);require(fd>=0,"font log unavailable");close(fd);log_open(path);}
+            ~FontLog() {log_open("");std::remove(path);}
+        } font_log;
         SubtitleRenderer renderer; renderer.configure(argv[1]);
-        const char* texts[]={"مرحبا بالعالم","日本語 中文 한국어","ภาษาไทย"}; const char* langs[]={"ara","jpn","tha"};
-        for(int i=0;i<3;++i) {
+        const char* texts[]={"مرحبا بالعالم","زبان فارسی","اردو زبان","日本語 中文 한국어","ภาษาไทย","Subtitle font"};
+        const char* langs[]={"ara","fas","urd","jpn","tha","eng"};
+        for(int i=0;i<6;++i) {
             const std::string srt="1\n00:00:01,000 --> 00:00:03,000\n"+std::string(texts[i])+"\n";
             require(renderer.external(-2-i,srt,langs[i]),"language track failed");
-            auto o=renderer.render(-2-i,2,1920,1080,1,0); require(o.w>50 && o.h>10,"language subtitle empty");
+            for(int font=0;font<3;++font) {
+                auto o=renderer.render(-2-i,2,1920,1080,1,0,font);
+                require(o.w>50 && o.h>10,"language subtitle empty");
+            }
         }
+        std::ifstream input(font_log.path);
+        std::string messages((std::istreambuf_iterator<char>(input)),{});
+        require(messages.find("not found")==std::string::npos,"subtitle has missing glyphs");
+        require(messages.find("Using default font:")==std::string::npos,"subtitle family silently fell back");
     });
     test("PGS bitmap fits video and clear packets end the display",[&]{
         SubtitleRenderer renderer; renderer.configure(argv[1]);

@@ -42,7 +42,8 @@ void blend(uint8_t* dst,const uint8_t* src) {
 }
 const char* family(const std::string& lang) {
     const auto l=lower(lang);
-    if(starts_with(l,"ar")||starts_with(l,"fa")||starts_with(l,"per")||starts_with(l,"ur")) return "Noto Naskh Arabic UI";
+    // Version 2.021's embedded family dropped "UI"; file basenames stay stable.
+    if(starts_with(l,"ar")||starts_with(l,"fa")||starts_with(l,"per")||starts_with(l,"ur")) return "Noto Naskh Arabic";
     if(starts_with(l,"ja")||starts_with(l,"jp")||starts_with(l,"ko")||starts_with(l,"zh")||starts_with(l,"chi")||starts_with(l,"cmn")||starts_with(l,"yue")) return "Noto Sans CJK SC";
     if(l=="he"||l=="heb"||l=="iw"||starts_with(l,"he-")) return "Noto Sans Hebrew";
     if(starts_with(l,"th")) return "Noto Sans Thai";
@@ -112,7 +113,7 @@ void SubtitleRenderer::configure(const std::string& fonts) {
     d_->library=ass_library_init(); if(!d_->library) return;
     ass_set_message_cb(d_->library,ass_message,nullptr);
     // Bundle fonts: no system provider or redistributed console fonts required.
-    for(const char* name:{"Inter-Regular.ttf","Inter-SemiBold.ttf","NotoSans-Regular.ttf","NotoSans-Bold.ttf",
+    for(const char* name:{"Inter-Regular.ttf","Inter-SemiBold.ttf","Montserrat-Medium.ttf","NotoSans-Regular.ttf","NotoSans-Bold.ttf",
         "NotoSansHebrew-Regular.ttf","NotoSansHebrew-Bold.ttf",
         "NotoNaskhArabicUI-Regular.ttf","NotoNaskhArabicUI-Bold.ttf","NotoSansCJKsc-Regular.ttf","NotoSansThai-Regular.ttf"}) {
         std::ifstream f(fonts+"/"+name,std::ios::binary);
@@ -244,7 +245,7 @@ SubtitleOverlay SubtitleRenderer::render(int id,double seconds,int vw,int vh,dou
         if(!t.authored && (style!=d_->last_style || id!=d_->last_id)) for(int i=0;i<t.ass->n_styles;++i) {
             auto& st=t.ass->styles[i];
             const char* chosen=family(t.language);
-            if(std::strcmp(chosen,"Inter")==0) chosen=font==2 ? "Montserrat" : "Inter";
+            if(std::strcmp(chosen,"Inter")==0) chosen=font==2 ? "Montserrat Medium" : "Inter";
             free(st.FontName); st.FontName=strdup(chosen);
             st.FontSize=subtitle_size::height(size); st.Bold=font==1?1:0;
             st.PrimaryColour=colour==1?0xFFFF0000u:colour==2?0x00FFFF00u:0xFFFFFF00u;

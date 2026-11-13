@@ -48,6 +48,10 @@ Node filesystem, process or native networking access.
 The committed CJK/Hebrew faces preserve their recorded historical preparation
 provenance; current host maintenance uses FontTools 4.68. New Montserrat/Arabic
 faces, unchanged current Inter faces, all other fonts and CA data are hash-pinned.
+The Arabic face keeps its legacy filename but now identifies itself as Noto
+Naskh Arabic internally; libass selection uses that family. Montserrat is also
+registered for subtitle styling. Real rendering checks reject missing-glyph or
+silent default-family warnings across language and font-style combinations.
 
 Before publication: use a clean source commit, run the complete host suite and
 renderer/VLC checks, compile the complete app, verify image/ZIP/source checksums,

@@ -12,10 +12,15 @@
 
 static std::atomic<int> faults{0};
 static std::atomic<bool> rapid{false}, release_request{false};
-static std::atomic<int> opens{0};
+static std::atomic<bool> hold_next_init{false}, request_waiting{false};
 extern "C" CURL* __real_curl_easy_init();
 extern "C" CURL* __wrap_curl_easy_init() {
-    if(rapid && ++opens==2)while(!release_request)std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    // Newer static libcurl also creates private admin handles during the first
+    // perform. Arm after the first read, so only the requested reconnect pauses.
+    if(hold_next_init.exchange(false)) {
+        request_waiting=true;
+        while(!release_request)std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    }
     return __real_curl_easy_init();
 }
 extern "C" CURLcode __real_curl_easy_perform(CURL*);
@@ -44,10 +49,11 @@ int main(int argc, char** argv) {
             bool correct = true; for (int i = 0; i < 32; ++i) correct &= bytes[i] == uint8_t(i);
             result["correct"] = correct;
             if(rapid) {
+                hold_next_init=true;
                 stream.seek(0,SEEK_SET);
                 const auto until=std::chrono::steady_clock::now()+std::chrono::seconds(3);
-                while(opens<2 && std::chrono::steady_clock::now()<until)std::this_thread::sleep_for(std::chrono::milliseconds(1));
-                const bool pending=opens>=2;
+                while(!request_waiting && std::chrono::steady_clock::now()<until)std::this_thread::sleep_for(std::chrono::milliseconds(1));
+                const bool pending=request_waiting;
                 stream.seek(53,SEEK_SET);release_request=true;
                 n=stream.read(bytes,sizeof bytes);correct=pending && n==32;
                 for(int i=0;i<32;++i)correct &= bytes[i]==uint8_t(53+i);

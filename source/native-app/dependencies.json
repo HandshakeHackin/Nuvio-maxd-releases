@@ -1238,7 +1238,7 @@
       "pip": "26.3"
     },
     "physicalPs5Verified": false,
-    "status": "integrated; host/native/package verification in progress",
+    "status": "integrated candidate; completed verification is recorded in release evidence; console compatibility unconfirmed",
     "assetSha256": {
       "app/ca-bundle.crt": "427c064216761a1e72a8b30f0d954d08cb6e4435a82091fb865afd20c8497285",
       "third_party/stb_image.h": "deb4f18c9ca21b751a1323019031c94c0bf5ca1d2929ef5913cc56f00aab6e91",
@@ -1266,6 +1266,11 @@
       "streamingParserEntities": "8.1.0",
       "reason": "htmlparser2 12 and parse5 8 require streaming EntityDecoder/tree exports removed by entities 9; private compatible copies retained, covered by real QuickJS HTML/XML tests."
     },
-    "nativeLibraryComponents": 19
+    "nativeLibraryComponents": 19,
+    "subtitleFontFamilies": {
+      "arabic": "Noto Naskh Arabic",
+      "montserrat": "Montserrat Medium",
+      "realLibassMissingGlyphAndSilentFallbackRegression": true
+    }
   }
 }
