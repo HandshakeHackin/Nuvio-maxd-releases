@@ -115,7 +115,7 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
     assert info['hdrToSdr']['exposureGain'] == 1
     test_log = args.host_test_log.read_text()
     assert 'MDBList membership: 43 regression cases passed' in test_log
-    assert 'MDBList watched history: 27 regression cases passed' in test_log
+    assert 'MDBList watched history: 28 regression cases passed' in test_log
     assert 'Watched Session: production snapshot/revisit' in test_log
     assert all(mode+': GL error 0x0' in test_log for mode in ['watched-movie','watched-movie-unmarked','watched-home','watched-person','de-watched-movie','ar-watched-movie','ja-watched-movie','ko-watched-movie'])
     assert info['watchedStateFix']['datedSeasonShowScopes'] and info['watchedStateFix']['historyBasedMovieIndicators']

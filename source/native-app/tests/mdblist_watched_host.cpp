@@ -91,6 +91,12 @@ void mdblist_watched_cases() {
         json::array({{{"content_id","tt1"},{"scope","show"},{"season",nullptr},{"episode",nullptr},{"watched_at",1e100}}})}) {
         ++cases;sx::watched_history::Snapshot s;s.watched.insert("keep");assert(!sx::watched_history::decode(bad,s)&&s.watched.count("keep"));
     }
+    {++cases;std::set<std::string> watched;sx::watched_history::Dates excluded{{"tt123:1:1",1}};
+     sx::watched_history::completed(watched,excluded,"series","tt123","unknown-native",-1,-1);
+     assert(watched==std::set<std::string>{"unknown-native"}&&excluded.count("tt123:1:1"));
+     sx::watched_history::completed(watched,excluded,"series","tt123","native",1,1);
+     assert(watched.count("tt123:1:1")&&!excluded.count("tt123:1:1"));
+     sx::watched_history::completed(watched,excluded,"movie","tt456","movie-native",-1,-1);assert(watched.count("tt456"));}
     std::filesystem::remove_all(root);
     std::cout<<"MDBList watched history: "<<cases<<" regression cases passed\n";
 }

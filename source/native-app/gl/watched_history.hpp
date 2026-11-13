@@ -7,6 +7,13 @@
 #include <set>
 namespace sx::watched_history {
 using Dates=std::map<std::string,int64_t>;
+inline void completed(std::set<std::string>& watched,Dates& exclusions,const std::string& type,
+                      const std::string& content,const std::string& native,int season,int number) {
+    if(!native.empty()){watched.insert(native);exclusions.erase(native);}
+    const auto key=type=="movie"?content:season>=0&&season<=100000&&number>0&&number<=100000?
+        content+":"+std::to_string(season)+":"+std::to_string(number):"";
+    if(!content.empty()&&!key.empty()){watched.insert(key);exclusions.erase(key);}
+}
 inline std::string scope_key(const std::string& id,int season=-1) {
     return id+(season<0?":*":":"+std::to_string(season)+":*");
 }
