@@ -1,0 +1,57 @@
+Nuvio Max'd 1.0.0.22 experimental — verification evidence
+
+Source: 94c4fbae4f4b01c8023d16829c072651aa29c17d, clean builds/v1.0.0.22. ContentVersion 07.000.022.
+Complete native app, USB reader and updater compiled in a fresh object directory.
+43 MDBList membership regression cases passed: provider-specific payloads and
+receipts, raw remote reconciliation, bounded offset/cursor pagination, guarded
+ID-format fallback, offline restart and account/profile/cancellation isolation.
+The new watched-state fixes remain UNCONFIRMED on live accounts and PS5.
+28 watched-history regressions and production Session tests cover nested episodes,
+dated season/show scopes, future/unknown dates, explicit unmark exceptions, full
+pagination, aliases, partial failures, revisit/restart, all movie views and resume.
+The previous library membership fix was confirmed by the tester on1.0.0.21/FW7ZIP.
+All 522 maintenance output hashes and SDK/GL/provider pins verified; no pinned
+dependencies changed. Original failed workspace and earlier releases preserved.
+
+Exact-source full host suite and 144 native renderer previews:
+https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/43342988602/job/131615533090
+Real VLC file/HTTP/HLS/seek/cancellation suite:
+https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/43342988602/job/131615533491
+All jobs concluded success at this source commit. Raw CI logs are retained and
+hashed. Verification removes timestamps and 2 expected peer-reset traces
+only inside the passing untrusted-certificate rejection test; no assertion or
+test failures are removed.
+
+123 feature-core checks exercise real AES-256-GCM/PBKDF2 and private file IO,
+wrong keys/tampering/foreign scopes/invalid payloads, atomic restore/recovery,
+TVDB canonical identity versus alternate source/next-episode/watched numbering,
+portal auth/guide/VOD pagination and repeated-page rejection, private opaque-ID
+caches and cross-series resume isolation, Drive OAuth scope and three-way conflict
+planning, If-Match protection and refusal of unconditional cloud overwrites.
+88 account HTTPS tests include actual restore context retirement, foreign-profile
+and stale-review rejection, bounded HTTP methods, ETags and credential-redirect
+protection, plus existing library/watched/tracker/resume/profile regressions.
+All eight languages cover 450 core messages; English/German cover all 1365
+catalog entries. Twelve catalog regressions and 3834 glyph rasters passed.
+
+Image: zero container errors/warnings; 163 extracted
+file hashes match the staged app and ZIP. ZIP entry/integrity checks passed.
+Source archive: 1013 file hashes match this source commit.
+Native audit: 22 USB/feature objects
+contain no dup/fdopendir/fstatat/openat imports or raw syscall instructions.
+Existing helper capability/startup scope is retained; app credentials unchanged.
+Static catalog scan: zero errors, 4 warnings, 1 notices. Existing
+reader/updater still need maintainer helper review; no approval records changed.
+
+Live Google/TVDB/portal account behavior and physical PS5 operation of the three
+new integrations remain UNCONFIRMED. Google Drive requires a suitable OAuth TV
+application registration, not bundled in this build. TVDB requires the user's
+own appropriate API access. Portal access requires provider-assigned credentials.
+TVDB supports only verified one-to-one mappings; split/combined or ambiguous
+orders retain provider order. Drive sync is manual with conflict review. Encrypted
+configuration backups are limited to 16 MiB plaintext and exclude account sessions,
+watched history and resume positions. Existing USB behavior was confirmed on
+1.0.0.16; this build retains its validated private-copy and diagnostic boundaries.
+
+This report does not establish catalog submission, maintainer acceptance or live
+store deployment. TESTING.txt contains the console/account/provider checklist.
