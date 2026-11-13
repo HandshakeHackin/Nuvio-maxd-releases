@@ -601,7 +601,7 @@ class Session
     void next_preparation_update();
     // detail
     void detail_apply_meta();
-    void detail_set_season(int index);
+    void detail_set_season(int index,bool reset_focus=true);
     void detail_load_streams(const std::string &video_id, const std::string &heading,
                              const std::vector<::Stream>* prefetched = nullptr);
     void detail_refresh_streams();
@@ -698,7 +698,6 @@ class Session
     Prefs prefs_;
     std::map<std::string, Progress> progress_;
     std::set<std::string> watched_;
-    std::map<std::string,int64_t> watched_scopes_,watched_exclusions_;
     unsigned changed_ = 0;
     Page page_ = Page::board; // the page on show
     std::optional<Page> goto_;

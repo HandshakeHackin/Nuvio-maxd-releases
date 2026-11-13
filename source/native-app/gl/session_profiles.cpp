@@ -68,7 +68,7 @@ void Session::clear_profile_views() {
     if (w_episode_cancel_) *w_episode_cancel_ = true;
     cancel_autoplay(); resuming_ = false; open_req_.reset(); want_streams_video_.clear();
     tracking_status_ = json::object(); ++tracking_generation_; ++library_generation_;
-    library_.clear(); progress_.clear(); watched_.clear();watched_scopes_.clear();watched_exclusions_.clear(); addons_.clear(); board_.clear();
+    library_.clear(); progress_.clear(); watched_.clear(); addons_.clear(); board_.clear();
     library_loaded_ = false; library_loading_ = false; addons_loading_ = false; title_action_busy_ = false;
     board_loading_ = false; disc_loading_ = false; disc_end_ = false;
     disc_items_.clear(); disc_types_.clear(); discover.items.clear();
@@ -202,7 +202,7 @@ void Session::refresh_watched_views() {
     refresh_board();refresh_library();
     for(auto& t:discover.items)if(t.type=="movie")t.watched=watched_history::movie(t.type,t.id,watched_);
     for(auto& row:search.rows)for(auto& t:row.items)if(t.type=="movie")t.watched=watched_history::movie(t.type,t.id,watched_);
-    if(d_open_) {detail.title.watched=watched_history::movie(d_item_.type,d_item_.id,watched_);detail_set_season(d_season_idx_);}
+    if(d_open_) {detail.title.watched=watched_history::movie(d_item_.type,d_item_.id,watched_);detail_set_season(d_season_idx_,false);}
     changed_|=kDiscover|kSearch|kDetail;
 }
 void Session::load_watched() {
@@ -214,10 +214,10 @@ void Session::load_watched() {
         if (!r.ok) { series_history_ready_=false;refresh_board();refresh_library();say(r.error, 8.0, true); return; }
         series_history_ready_=jbool(r.result,"synced");
         watched_history::Snapshot remote;
-        if(!watched_history::decode(jobj(r.result,"entries"),remote,watched_scopes_,watched_exclusions_)) {
+        if(!watched_history::decode(jobj(r.result,"entries"),remote)) {
             series_history_ready_=false;say(i18n::tr("Watched history is unreadable; local marks retained"),8,true);return;
         }
-        watched_=std::move(remote.watched);watched_scopes_=std::move(remote.scopes);watched_exclusions_=std::move(remote.exclusions);save_progress();
+        watched_=std::move(remote.watched);save_progress();
         refresh_watched_views();
     });
 }

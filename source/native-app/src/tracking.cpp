@@ -784,14 +784,18 @@ bool Store::read_mdblist_watched(json& rows,std::string& error) {
             const std::string kind=bucket;
             for(const auto& row:items) {
                 if(!row.is_object()){valid=false;break;}
-                const bool movie=kind=="movies",season_scope=kind=="seasons",show_scope=kind=="shows";
-                const auto& unit=jobj(row,movie?"movie":show_scope?"show":season_scope?"season":"episode");
-                const auto& media=(movie||show_scope)?unit:jobj(unit,"show").is_object()?unit["show"]:jobj(row,"show");
+                // Summaries carry activity, not individual completion. Count
+                // them for pagination without interpreting their identities,
+                // timestamps or aggregate watched/total episode counts.
+                if(kind=="shows"||kind=="seasons"){++count;++received[kind];continue;}
+                const bool movie=kind=="movies";
+                const auto& unit=jobj(row,movie?"movie":"episode");
+                const auto& media=movie?unit:jobj(unit,"show").is_object()?unit["show"]:jobj(row,"show");
                 const auto id=content_id(media);
                 if(!unit.is_object()||id.empty()||id.size()>256){valid=false;break;}
                 int sn=-1,en=-1;
-                if(!movie&&!show_scope) {
-                    const auto& number=jobj(unit,season_scope?"number":"season");
+                if(!movie) {
+                    const auto& number=jobj(unit,"season");
                     if(!number.is_number_integer()||number.get<double>()<0||number.get<double>()>100000){valid=false;break;}
                     sn=int(number.get<double>());
                 }
@@ -802,11 +806,12 @@ bool Store::read_mdblist_watched(json& rows,std::string& error) {
                 }
                 const auto key=kind+":"+id+":"+std::to_string(sn)+":"+std::to_string(en);
                 if(!identities.insert(key).second){valid=false;break;}
+                ++count;++received[kind];
                 const auto& stamp=jobj(row,"last_watched_at");
                 const bool marked=!row.contains("last_watched_at")||!stamp.is_null();
                 if(!stamp.is_null()&&!stamp.is_string()){valid=false;break;}
                 const int64_t when=stamp.is_string()?iso8601_to_ms(stamp.get<std::string>()):0;
-                if((stamp.is_string()&&when<=0)||(marked&&(season_scope||show_scope)&&when<=0)){valid=false;break;}
+                if(stamp.is_string()&&when<=0){valid=false;break;}
                 json aliases=json::array({id});
                 const auto& external=jobj(media,"ids");
                 for(const auto* provider:{"imdb","tmdb","tvdb","trakt","simkl"}) {
@@ -818,8 +823,7 @@ bool Store::read_mdblist_watched(json& rows,std::string& error) {
                 json normalized{{"content_id",id},{"content_type",movie?"movie":"series"},
                     {"season",sn<0?json(nullptr):json(sn)},{"episode",en<0?json(nullptr):json(en)},
                     {"watched",marked},{"watched_at",when},{"aliases",aliases}};
-                if(show_scope||season_scope)normalized["scope"]=show_scope?"show":"season";
-                result.push_back(std::move(normalized));++count;++received[kind];
+                result.push_back(std::move(normalized));
                 if(result.size()>45000){valid=false;break;}
             }
             if(!valid)break;

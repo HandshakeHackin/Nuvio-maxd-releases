@@ -84,7 +84,7 @@ Title Session::make_title(const Item &it, bool with_progress) const
         if(member!=library_.end()&&!jbool(member->second,"removed")&&!jbool(member->second,"temp")) {
             const auto& state=jobj(member->second,"state");
             const auto in_progress=it.offset>0?it.video_id:jnum(state,"timeOffset")>0?jstr(state,"video_id"):std::string();
-            t.new_episode=series_updates_.badge(it.id,watched_,now_epoch_ms()/1000,series_history_ready_,in_progress,watched_scopes_,watched_exclusions_);
+            t.new_episode=series_updates_.badge(it.id,watched_,now_epoch_ms()/1000,series_history_ready_,in_progress);
         }
     }
     return t;

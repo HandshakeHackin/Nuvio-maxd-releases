@@ -1,3 +1,16 @@
+# Nuvio Max'd 1.0.0.23 experimental — explicit episode history and steady carousel
+
+- Corrects the 1.0.0.22 regression that treated MDBList show/season activity summaries as episode completion. Only explicit episode records set episode checks, even when a summary's watched/total counts match.
+- Retires the old read-side scope cache locally without changing explicit marks, resume positions or tracker write queues.
+- Watched-only refreshes preserve the current episode, season focus and carousel scroll position.
+- Retains the confirmed library sync and movie watched indicators.
+
+**Unconfirmed fix for the latest #22 report.** Please test individual episode marks, later seasons, revisiting/restarting and marking a card after scrolling right. Matching source, complete app/package checks and regression results accompany the build.
+
+Previous release notes follow.
+
+---
+
 # Nuvio Max'd 1.0.0.22 experimental — watched history and movie badges
 
 - Fixes MDBList episode-history nesting and reads all bounded offset/cursor pages before replacing local watched state.

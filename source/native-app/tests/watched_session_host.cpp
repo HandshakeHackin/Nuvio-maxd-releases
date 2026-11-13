@@ -22,17 +22,29 @@ int main() {
  response.ok=true;response.result["entries"]=json::array({{{"season",1}}});s.load_watched();s.complete();assert(s.watched_.count("keep"));
  response.result["entries"]=json::array({{{"content_id","stale"}}});s.load_watched();++s.watched_revision_;s.complete();assert(!s.watched_.count("stale"));
  s.load_watched();++s.profile_generation_;s.complete();assert(!s.watched_.count("stale"));
- // Season/show scopes use canonical aired coordinates, including alternate addon video IDs.
- const auto cutoff=iso8601_to_ms("2025-10-15T20:00:00Z");
- response.result["entries"]=json::array({{{"content_id","tt456"},{"scope","season"},{"season",1},{"episode",nullptr},{"watched_at",cutoff}}});
- s.d_item_.id="tt456";s.d_item_.type="series";
- s.d_meta_.videos={Video{"custom","One","","","2025-01-01",1,1},Video{"later","Two","","","2026-01-01",1,2},Video{"unknown","Three","","","",1,3}};
- s.load_watched();s.complete();assert(s.watched("custom")&&s.watched("tt456:1:1")&&!s.watched("later")&&!s.watched("unknown"));
- s.watched_exclusions_["tt456:1:1"]=cutoff+1000;s.save_progress();assert(!s.watched("custom"));
- sx::Session again;again.profile_dir_=root;again.d_item_=s.d_item_;again.d_meta_=s.d_meta_;again.load_progress();assert(!again.watched("custom")&&!again.watched_scopes_.empty());
- s.load_watched();s.complete();assert(!s.watched("custom")); // Same broad receipt cannot resurrect an explicit unmark.
- tracking::selected="nuvio";sx::Session other_source;other_source.profile_dir_=root;other_source.load_progress();assert(other_source.watched_.empty()&&other_source.watched_scopes_.empty());
- const auto other=root+"/other";std::filesystem::create_directory(other);tracking::selected="mdblist";sx::Session other_profile;other_profile.profile_dir_=other;other_profile.load_progress();assert(other_profile.watched_.empty()&&other_profile.watched_scopes_.empty());
+ // Only explicitly returned episodes are watched; a mark refresh does not
+ // issue a new focus hint, even when the first unwatched episode changes.
+ s.d_item_.id="tt456";s.d_item_.type="series";s.d_seasons_={1,2};s.d_meta_.videos.clear();
+ for(int season=1;season<=2;++season)for(int n=1;n<=30;++n)s.d_meta_.videos.push_back(Video{"native-"+std::to_string(season)+"-"+std::to_string(n),"Episode","","","2020-01-01",season,n});
+ s.watched_.clear();s.detail_set_season(0);const auto serial=s.detail.hint_serial;const int hint=s.detail.episode_hint;
+ response.result["entries"]=json::array();for(int n=1;n<=3;++n)response.result["entries"].push_back({{"content_id","tt456"},{"season",1},{"episode",n}});
+ s.load_watched();s.complete();assert(s.watched("native-1-3")&&!s.watched("native-1-4")&&!s.watched("native-2-1"));
+ assert(s.detail.episodes[2].watched&&!s.detail.episodes[3].watched&&s.detail.hint_serial==serial&&s.detail.episode_hint==hint);
+ response.result["entries"].push_back({{"content_id","tt456"},{"season",1},{"episode",4}});s.load_watched();s.complete();
+ assert(s.detail.episodes[3].watched&&s.detail.hint_serial==serial&&s.detail.episode_hint==hint);
+ s.detail_set_season(1);assert(s.detail.hint_serial==serial+1&&s.detail.season==1&&!s.detail.episodes[0].watched);
+ // Remove 1.0.0.22's read-side scope cache without network requests or changes
+ // to explicit marks, resume data, unrelated cache values or tracker write queues.
+ json disk;assert(load_json(root+"/progress-mdblist.json",disk));
+ disk["watchedScopes"]={{"tt456:*",iso8601_to_ms("2026-11-01T00:00:00Z")}};
+ disk["watchedExclusions"]={{"tt456:1:1",1}};disk["unrelated"]="keep";assert(save_json(root+"/progress-mdblist.json",disk));
+ assert(write_file(root+"/tracking.json","private-queue-sentinel"));
+ sx::Session again;again.profile_dir_=root;again.d_item_=s.d_item_;again.d_meta_=s.d_meta_;again.load_progress();
+ assert(again.watched("native-1-1")&&!again.watched("native-1-5")&&!again.watched("native-2-1")&&again.progress_["tt123"].time==900);
+ assert(load_json(root+"/progress-mdblist.json",disk)&&!disk.contains("watchedScopes")&&!disk.contains("watchedExclusions")&&disk["unrelated"]=="keep");
+ std::string untouched;assert(read_file(root+"/tracking.json",untouched)&&untouched=="private-queue-sentinel");
+ tracking::selected="nuvio";sx::Session other_source;other_source.profile_dir_=root;other_source.load_progress();assert(other_source.watched_.empty());
+ const auto other=root+"/other";std::filesystem::create_directory(other);tracking::selected="mdblist";sx::Session other_profile;other_profile.profile_dir_=other;other_profile.load_progress();assert(other_profile.watched_.empty());
  std::filesystem::remove_all(root);
- std::cout<<"Watched Session: production snapshot/revisit, all movie grids/detail, restart, resume preservation, partial failures, canonical scopes and stale profile/source guards passed\n";
+ std::cout<<"Watched Session: production snapshot/revisit, all movie grids/detail, restart, resume preservation, partial failures, explicit episodes, legacy cache retirement, unchanged focus hints and stale profile/source guards passed\n";
 }

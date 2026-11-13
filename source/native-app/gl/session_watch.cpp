@@ -926,7 +926,7 @@ void Session::watch_stop(bool ended)
     if(w_started_ && ended && iptv::library_type(w_item_.type))iptv_progress(true);
     if (ended && trailers::records_history(w_trailer_,w_item_.type) && !w_video_id_.empty())
     {
-        watched_history::completed(watched_,watched_exclusions_,w_item_.type,w_item_.id,w_video_id_,w_season_,w_episode_number_);
+        watched_history::completed(watched_,w_item_.type,w_item_.id,w_video_id_,w_season_,w_episode_number_);
         save_progress();
     }
     ++w_gen_;
@@ -994,7 +994,7 @@ void Session::watch_save_progress(bool final, bool force_finished)
     p.duration = dur;
     p.updated = now_epoch_ms();
     if (finished) {
-        watched_history::completed(watched_,watched_exclusions_,w_item_.type,w_item_.id,w_video_id_,w_season_,w_episode_number_);
+        watched_history::completed(watched_,w_item_.type,w_item_.id,w_video_id_,w_season_,w_episode_number_);
     }
     save_progress();
 

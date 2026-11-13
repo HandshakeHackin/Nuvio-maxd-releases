@@ -320,7 +320,6 @@ void Session::save_prefs()
 
 void Session::load_progress()
 {
-    watched_scopes_.clear();watched_exclusions_.clear();
     json j;
     const auto selected_source = jstr(tracking::Store(profile_dir_).status(), "progressPreferred", "nuvio");
     progress_file_ = tracking::provider(selected_source) ? "progress-"+selected_source+".json" : "progress.json";
@@ -348,11 +347,11 @@ void Session::load_progress()
         for (const auto &v : w)
             if (v.is_string())
                 watched_.insert(v.get<std::string>());
-    if(selected_source=="mdblist")for(const auto* field:{"watchedScopes","watchedExclusions"}) {
-        const auto& values=jobj(j,field);if(!values.is_object()||values.size()>225000)continue;
-        auto& out=std::string(field)=="watchedScopes"?watched_scopes_:watched_exclusions_;
-        for(const auto& value:values.items())if(value.key().size()<=300&&value.value().is_number_integer()&&
-            value.value().get<double>()>=0&&value.value().get<double>()<=253402300799999.)out[value.key()]=value.value().get<int64_t>();
+    if(selected_source=="mdblist"&&(j.contains("watchedScopes")||j.contains("watchedExclusions"))) {
+        // Retire the faulty read-side cache only. Preserve explicit marks,
+        // resume data and the independent tracker write queue, even offline.
+        j.erase("watchedScopes");j.erase("watchedExclusions");
+        if(profile_ready_)save_json(profile_dir_+"/"+progress_file_,j);
     }
 }
 
@@ -368,7 +367,6 @@ void Session::save_progress()
                                {"stream_video", kv.second.stream_video_id}, {"up_next", kv.second.up_next}};
     j["items"] = items;
     j["watched"] = json(std::vector<std::string>(watched_.begin(), watched_.end()));
-    j["watchedScopes"]=watched_scopes_;j["watchedExclusions"]=watched_exclusions_;
     if (profile_ready_) save_json(profile_dir_ + "/"+progress_file_, j);
 }
 

@@ -50,8 +50,7 @@ public:
   }
   std::string badge(const std::string &id, const std::set<std::string> &watched,
                     int64_t now, bool history_ready,
-                    const std::string &in_progress = {},const watched_history::Dates& scopes={},
-                    const watched_history::Dates& exclusions={}) const {
+                    const std::string &in_progress = {}) const {
     if (!history_ready)
       return {};
     auto it = entries_.find(id);
@@ -62,7 +61,7 @@ public:
       return id + ":" + std::to_string(v.season) + ":" +
              std::to_string(v.number);
     };
-    auto marked=[&](const Episode& v){return watched_history::episode(watched,scopes,exclusions,id,v.id,v.season,v.number,v.released,now*1000);};
+    auto marked=[&](const Episode& v){return watched_history::episode(watched,id,v.id,v.season,v.number);};
     for (const auto &v : it->second.episodes)
       if (marked(v))
         completed = std::max(completed, {v.season, v.number});

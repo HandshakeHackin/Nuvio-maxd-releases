@@ -40,13 +40,10 @@ void mdblist_watched_cases() {
         p=page();p[season?"seasons":"shows"].push_back({{season?"season":"show",season?json{{"number",1},{"show",media()}}:media()},
             {"last_watched_at","2025-10-15T20:00:00Z"}});
         value(p,true,[&](const auto& rows,int){sx::watched_history::Snapshot s;assert(sx::watched_history::decode(rows,s));
-            const auto now=iso8601_to_ms("2026-11-01T00:00:00Z");
-            assert(sx::watched_history::episode(s.watched,s.scopes,s.exclusions,"tt123","native",1,1,"2025-01-01",now));
-            assert(!sx::watched_history::episode(s.watched,s.scopes,s.exclusions,"tt123","native",1,2,"2026-01-01",now));
-            assert(!sx::watched_history::episode(s.watched,s.scopes,s.exclusions,"tt123","native",1,2,"",now));});
+            assert(rows.empty()&&s.watched.empty());});
     }
     p=page();auto unmarked=episode();unmarked["last_watched_at"]=nullptr;p["episodes"].push_back(unmarked);
-    value(p,true,[&](const auto& rows,int){sx::watched_history::Snapshot s;assert(sx::watched_history::decode(rows,s)&&s.watched.empty()&&s.exclusions.count("tt123:1:1"));});
+    value(p,true,[&](const auto& rows,int){sx::watched_history::Snapshot s;assert(sx::watched_history::decode(rows,s)&&s.watched.empty());});
     value(page(),true,[&](const auto& rows,int){assert(rows.empty());});
     run([](const auto& url,int){auto out=page();const bool second=url.find("offset=100")!=std::string::npos;
         for(int i=second?101:1;i<=(second?101:100);++i)out["episodes"].push_back(episode(i));
@@ -68,35 +65,42 @@ void mdblist_watched_cases() {
         if(mode==7)p["pagination"]["total_episodes"]=2;
         if(mode==8)p["pagination"]["has_more"]=true; // next page repeats the same identity
         if(mode==9)p["pagination"]["next_cursor"]=1;
-        if(mode==10){p["shows"].push_back({{"show",media()}});} // no cutoff: cannot mark future episodes safely
+        if(mode==10){p["shows"].push_back({{"show",media()}});} // activity summary without a date is irrelevant to explicit history
         if(mode==11){p["pagination"]["has_more"]=true;p["pagination"]["limit"]=0;}
-        value(p,false);
+        value(p,mode==10);
     }
     run([](const auto&,int){auto out=page();out["pagination"]["has_more"]=true;return out;},false,[&](const auto&,int n){assert(n==1);});
     run([](const auto&,int n){auto out=page();out["episodes"].push_back(episode(n));out["pagination"]["has_more"]=true;out["pagination"]["limit"]=1;return out;},false,
         [&](const auto&,int n){assert(n==100);});
-    // Validate compact-scope precedence and local unmark preservation until a newer remote mark.
-    {++cases;using namespace sx::watched_history;
-        const auto cutoff=iso8601_to_ms("2025-10-15T20:00:00Z");
-        json rows=json::array({{{"content_id","tt123"},{"scope","show"},{"season",nullptr},{"episode",nullptr},{"watched_at",cutoff}},
-            {{"content_id","tt123"},{"season",1},{"episode",1},{"watched_at",cutoff}}});
-        Snapshot before;assert(decode(rows,before));
-        Snapshot after;Dates local{{"tt123:1:1",cutoff+1000}};
-        assert(decode(rows,after,before.scopes,local));assert(!after.watched.count("tt123:1:1")&&after.exclusions.count("tt123:1:1"));
-        assert(!episode(after.watched,after.scopes,after.exclusions,"tt123","native",1,1,"2020-01-01",now_epoch_ms()));
-        rows[1]["watched_at"]=cutoff+2000;assert(decode(rows,after,before.scopes,local));assert(after.watched.count("tt123:1:1")&&!after.exclusions.count("tt123:1:1"));
-        rows[0]["watched_at"]=cutoff+3000;rows.erase(rows.begin()+1);assert(decode(rows,after,before.scopes,local)&&after.exclusions.empty());
+    // Sanitized real-response shapes from #22: activity counts are never evidence
+    // of episode identity, including a summary whose counts happen to be equal.
+    for(const auto& [marked,total]:{std::pair{3,19},std::pair{1,512},std::pair{2,34},std::pair{8,8}}) {
+        p=page();auto show=media();show["watched_episodes"]=marked;show["total_aired_episodes"]=total;
+        p["shows"].push_back({{"show",show},{"last_watched_at","2026-11-01T00:00:00Z"}});
+        p["seasons"].push_back({{"season",{{"number",1},{"show",media()}}},{"last_watched_at","2026-11-01T00:00:00Z"}});
+        for(int n=1;n<=marked;++n)p["episodes"].push_back(episode(n));
+        value(p,true,[&](const auto& rows,int){sx::watched_history::Snapshot snapshot;assert(sx::watched_history::decode(rows,snapshot));
+            assert(rows.size()==std::size_t(marked));
+            for(int n=1;n<=marked;++n)assert(sx::watched_history::episode(snapshot.watched,"tt123","custom",1,n));
+            assert(!sx::watched_history::episode(snapshot.watched,"tt123","custom",1,marked+1));
+            assert(!sx::watched_history::episode(snapshot.watched,"tt123","custom",2,1));
+            assert(!snapshot.watched.count("tt123"));});
     }
+    {++cases;sx::watched_history::Snapshot snapshot;
+     assert(sx::watched_history::decode(json::array({{{"content_id","tt123"},{"scope","show"}},{{"content_id","tt123"},{"scope","season"},{"season",1}}}),snapshot)&&snapshot.watched.empty());}
+    p=page();p["shows"].push_back({{"show",{{"watched_episodes",1},{"total_aired_episodes",512}}}});
+    p["seasons"].push_back({{"season",{{"number",1}}}});p["episodes"].push_back(episode());
+    value(p,true,[&](const auto& rows,int){assert(rows.size()==1&&rows[0]["episode"]==1);});
     for(auto bad:std::vector<json>{json::object(),json::array({json::object()}),json::array({{{"content_id","tt1"},{"season",1},{"episode",nullptr}}}),
-        json::array({{{"content_id","tt1"},{"scope","show"},{"season",nullptr},{"episode",nullptr},{"watched_at",1e100}}})}) {
+        json::array({{{"content_id","tt1"},{"season",1},{"episode",1},{"watched_at",1e100}}})}) {
         ++cases;sx::watched_history::Snapshot s;s.watched.insert("keep");assert(!sx::watched_history::decode(bad,s)&&s.watched.count("keep"));
     }
-    {++cases;std::set<std::string> watched;sx::watched_history::Dates excluded{{"tt123:1:1",1}};
-     sx::watched_history::completed(watched,excluded,"series","tt123","unknown-native",-1,-1);
-     assert(watched==std::set<std::string>{"unknown-native"}&&excluded.count("tt123:1:1"));
-     sx::watched_history::completed(watched,excluded,"series","tt123","native",1,1);
-     assert(watched.count("tt123:1:1")&&!excluded.count("tt123:1:1"));
-     sx::watched_history::completed(watched,excluded,"movie","tt456","movie-native",-1,-1);assert(watched.count("tt456"));}
+    {++cases;std::set<std::string> watched;
+     sx::watched_history::completed(watched,"series","tt123","unknown-native",-1,-1);
+     assert(watched==std::set<std::string>{"unknown-native"});
+     sx::watched_history::completed(watched,"series","tt123","native",1,1);
+     assert(watched.count("tt123:1:1"));
+     sx::watched_history::completed(watched,"movie","tt456","movie-native",-1,-1);assert(watched.count("tt456"));}
     std::filesystem::remove_all(root);
     std::cout<<"MDBList watched history: "<<cases<<" regression cases passed\n";
 }

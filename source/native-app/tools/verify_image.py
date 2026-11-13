@@ -46,7 +46,7 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
     param = json.loads((extracted / 'sce_sys/param.json').read_text())
     display_profile = validate_display_metadata(param)
     assert param['titleId'] == 'PPSA99288'
-    assert param['contentVersion'] == '07.000.022'
+    assert param['contentVersion'] == '07.000.023'
     assert param['localizedParameters']['en-US']['titleName'] == "Nuvio Max'd"
     assert param['contentId'] == 'UP9000-PPSA99288_00-NUVIOPS5NAT00001'
     assert param['applicationCategoryType'] == 0
@@ -58,7 +58,7 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
     assert struct.unpack_from('<HH', data, elf + 16) == (0xFE10, 62)
     assert struct.unpack_from('<Q', data, elf + 24)[0] != 0
     info = json.loads((extracted / 'build-info.json').read_text())
-    assert info['version'] == '1.0.0.22-native-experimental'
+    assert info['version'] == '1.0.0.23-native-experimental'
     assert info['userExperienceUpdates']['optionalDonationQr']
     assert info['userExperienceUpdates']['installSourceSelector'] and info['userExperienceUpdates']['sourceAwareUpdateReminders']
     assert info['experimentalAv']['driverOwnedHdrSwitch'] and info['experimentalAv']['pcmDefault']
@@ -115,10 +115,12 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
     assert info['hdrToSdr']['exposureGain'] == 1
     test_log = args.host_test_log.read_text()
     assert 'MDBList membership: 43 regression cases passed' in test_log
-    assert 'MDBList watched history: 28 regression cases passed' in test_log
+    assert 'MDBList watched history: 33 regression cases passed' in test_log
     assert 'Watched Session: production snapshot/revisit' in test_log
+    assert 'legacy cache retirement, unchanged focus hints' in test_log
+    assert 'watched_refresh_keeps_carousel_position: PASS' in test_log
     assert all(mode+': GL error 0x0' in test_log for mode in ['watched-movie','watched-movie-unmarked','watched-home','watched-person','de-watched-movie','ar-watched-movie','ja-watched-movie','ko-watched-movie'])
-    assert info['watchedStateFix']['datedSeasonShowScopes'] and info['watchedStateFix']['historyBasedMovieIndicators']
+    assert info['watchedStateFix']['explicitEpisodesOnly'] and not info['watchedStateFix']['activitySummariesExpanded'] and info['watchedStateFix']['legacyScopeCacheRetired'] and info['watchedStateFix']['watchedRefreshPreservesFocus'] and info['watchedStateFix']['historyBasedMovieIndicators']
     assert 'Remote remapping: learning, consumed capture' in test_log
     assert 'Remote Session: action selection, assign/edit/remove/reset' in test_log
     assert info['mediaRemote']['buttonRemapping'] and info['mediaRemote']['appLocalOnly']
@@ -155,7 +157,7 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
     assert 'Traceback (most recent call last)' not in test_log
     assert 'AssertionError' not in test_log
     assert 'UI navigation: 12 tests, 0 failures' in test_log
-    assert 'Stream presentation and navigation: 15 tests, 0 failures' in test_log
+    assert 'Stream presentation and navigation: 16 tests, 0 failures' in test_log
     assert 'Hardware decoder setup and HEVC base-layer filtering: 11 tests, 0 failures' in test_log
     assert 'Video packing and GPU presentation: 24 tests, 0 failures' in test_log
     assert 'Display refresh lifecycle: 6 tests, 0 failures' in test_log

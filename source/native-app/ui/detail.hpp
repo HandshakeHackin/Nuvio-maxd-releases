@@ -60,6 +60,7 @@ class Detail
     void toggle_cast(){if(mode_==Mode::people)set_mode(cast_previous_);else{cast_previous_=mode_;set_mode(Mode::people);}}
 
   private:
+    friend struct DetailTestAccess;
     hui::gfx::Rect episode_rect(int index, bool final_position) const;
     hui::gfx::Rect season_rect(int index, bool final_position) const;
     float season_width(int index) const;

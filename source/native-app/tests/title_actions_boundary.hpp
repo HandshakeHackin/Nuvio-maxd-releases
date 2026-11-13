@@ -12,7 +12,7 @@ struct Session {
  bool d_open_=true,watching=false,resuming_=false,title_action_busy_=false,d_meta_loaded_=true,profile_ready_=true,library_loading_=false,authenticated=true;
  unsigned profile_generation_=1,watched_revision_=0;int d_meta_gen_=1,tracking_generation_=0,library_generation_=0,d_season_idx_=0;
  DetailContent detail;Prefs prefs_;Item d_item_;Meta d_meta_;std::vector<int>d_seasons_{1};std::vector<const Video*>d_season_videos_;
- std::map<std::string,json>library_;std::set<std::string>watched_;std::map<std::string,int64_t>watched_exclusions_;json tracking_status_;
+ std::map<std::string,json>library_;std::set<std::string>watched_;json tracking_status_;
  DropdownState dropdown;std::function<void(int)>pick;std::deque<std::function<void()>>jobs;std::vector<std::string>messages;
  int saves=0,refreshes=0,reloads=0,trailers=0,tvdb_menus=0;
  void detail_actions();void detail_membership(bool);void detail_apply_marks(const json&,bool);void detail_toggle_watched(int);
@@ -22,7 +22,7 @@ struct Session {
  void open_dropdown(const std::string& title,const std::vector<std::string>& choices,int,std::function<void(int)> cb,bool=false){dropdown.title=title;dropdown.options=choices;pick=cb;}
  void detail_tvdb_menu() {++tvdb_menus;}
     void detail_trailers(){++trailers;}
- void save_progress(){++saves;}void refresh_board(){++refreshes;}void refresh_library(){++refreshes;}void detail_set_season(int){}
+ void save_progress(){++saves;}void refresh_board(){++refreshes;}void refresh_library(){++refreshes;}void detail_set_season(int,bool=true){}
  void refresh_watched_views(){refresh_board();refresh_library();detail.title.watched=d_item_.type=="movie"&&watched_.count(d_item_.id);}
  void load_library(){++reloads;}void load_watched(){++reloads;}
  template<class T>void bg(std::function<T()> work,std::function<void(T&)> done){jobs.push_back([work,done]{auto r=work();done(r);});}

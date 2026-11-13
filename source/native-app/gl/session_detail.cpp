@@ -50,8 +50,7 @@ bool Session::watched(const std::string &video_id) const
 {
     for (const auto& video : d_meta_.videos) if (video.id == video_id ||
         d_item_.id+":"+std::to_string(video.season)+":"+std::to_string(video.episode)==video_id)
-        return watched_history::episode(watched_,watched_scopes_,watched_exclusions_,d_item_.id,video.id,
-            video.season,video.episode,video.released,now_epoch_ms());
+        return watched_history::episode(watched_,d_item_.id,video.id,video.season,video.episode);
     return watched_.count(video_id)!=0;
 }
 
@@ -364,7 +363,7 @@ void Session::detail_apply_meta()
     art_dirty_ = true;
 }
 
-void Session::detail_set_season(int index)
+void Session::detail_set_season(int index,bool reset_focus)
 {
     if (d_seasons_.empty())
         return;
@@ -402,8 +401,10 @@ void Session::detail_set_season(int index)
         if (!e.watched && first_unwatched < 0)
             first_unwatched = static_cast<int>(i);
     }
-    detail.episode_hint = first_unwatched >= 0 ? first_unwatched : 0;
-    ++detail.hint_serial;
+    if(reset_focus) {
+        detail.episode_hint = first_unwatched >= 0 ? first_unwatched : 0;
+        ++detail.hint_serial;
+    }
     detail.episodes_status = detail.episodes.empty() ? sx::i18n::tr("No episodes in this season.") : "";
     changed_ |= kDetail;
     art_dirty_ = true;

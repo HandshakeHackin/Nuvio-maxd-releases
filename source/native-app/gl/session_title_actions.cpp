@@ -72,8 +72,8 @@ void Session::detail_apply_marks(const json& entries,bool marking) {
     if(title_action_busy_||!d_open_||watching||resuming_||!entries.is_array()||entries.empty())return;
     const auto apply=[this,entries,marking]{
         for(const auto& row:entries){const auto canonical=title_actions::video_id(row),native=jstr(row,"video_id");
-            if(marking){watched_.insert(canonical);watched_exclusions_.erase(canonical);watched_exclusions_.erase(native);}
-            else{watched_.erase(canonical);watched_.erase(native);watched_exclusions_[canonical]=now_epoch_ms();}}
+            if(marking)watched_.insert(canonical);
+            else{watched_.erase(canonical);watched_.erase(native);}}
         save_progress();refresh_watched_views();
         say(i18n::tr(marking?"Marked as watched":"Marked as not watched"));
     };
