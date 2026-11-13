@@ -1,0 +1,848 @@
+{
+  "auditDate": "2026-11-13",
+  "appSourceCommit": "072b11458f3c13ce16f751c1f2c86b5fa3892988",
+  "appVersion": "1.0.0.23-native-experimental",
+  "issue22": {
+    "state": "closed",
+    "stateReason": "completed",
+    "ownerAuthorizedClosure": true,
+    "testerConfirmation": "https://github.com/HandshakeHackin/Nuvio-maxd-releases/issues/22#issuecomment-6856470481",
+    "closureComment": "https://github.com/HandshakeHackin/Nuvio-maxd-releases/issues/22#issuecomment-6859728680",
+    "verifiedScope": "PS5 firmware 7.00, ZIP folder install, MDBList; both episode and carousel fixes confirmed; library/movie badges retained."
+  },
+  "pinIntegrity": {
+    "sdkArchiveSha256": "5fac64093d0e3e69f2584ce7935f24f703f622d9681f1495c85b9f00d1291a2c",
+    "sdkArchiveHashVerified": true,
+    "sdkCoreAndOpenGlManifestVerified": true,
+    "maintenanceTargetFileHashesVerified": 522,
+    "maintenanceRecipesSourcesPatchesAndProviderPinsVerified": true,
+    "actualExternalStaticArchiveHashesRecorded": 28,
+    "runtimeDependencyPinsChanged": false
+  },
+  "selectedVersionedComponents": [
+    {
+      "component": "sdk",
+      "pinned": "0.45",
+      "latestInSelectedLine": "0.45.0",
+      "selectedTag": "v0.45",
+      "updateAvailable": false,
+      "latestStableTag": "v0.45",
+      "newerReleaseOutsideSelectedLine": false,
+      "url": "https://github.com/ps5-payload-dev/sdk/tags"
+    },
+    {
+      "component": "pacbrew",
+      "pinned": "0.40.2",
+      "latestInSelectedLine": "0.41.1",
+      "selectedTag": "v0.41.1",
+      "updateAvailable": true,
+      "latestStableTag": "v0.41.1",
+      "newerReleaseOutsideSelectedLine": false,
+      "url": "https://github.com/ps5-payload-dev/pacbrew-repo/tags"
+    },
+    {
+      "component": "opengl",
+      "pinned": "1.0.2",
+      "latestInSelectedLine": "1.0.2",
+      "selectedTag": "v1.0.2",
+      "updateAvailable": false,
+      "latestStableTag": "v1.0.2",
+      "newerReleaseOutsideSelectedLine": false,
+      "url": "https://github.com/LedyBacer/ps5-opengl/tags"
+    },
+    {
+      "component": "json",
+      "pinned": "3.12.0",
+      "latestInSelectedLine": "3.12.0",
+      "selectedTag": "v3.12.0",
+      "updateAvailable": false,
+      "latestStableTag": "v3.12.0",
+      "newerReleaseOutsideSelectedLine": false,
+      "url": "https://github.com/nlohmann/json/tags"
+    },
+    {
+      "component": "mkpfs",
+      "pinned": "1.1.0",
+      "latestInSelectedLine": "1.1.0",
+      "selectedTag": "1.1.0",
+      "updateAvailable": false,
+      "latestStableTag": "1.1.0",
+      "newerReleaseOutsideSelectedLine": false,
+      "url": "https://github.com/PSBrew/MkPFS/tags"
+    },
+    {
+      "component": "evo",
+      "pinned": "0.13.0",
+      "latestInSelectedLine": "0.13.7",
+      "selectedTag": "v0.13.7",
+      "updateAvailable": true,
+      "latestStableTag": "v0.13.7",
+      "newerReleaseOutsideSelectedLine": false,
+      "url": "https://github.com/sainsaji/EVO-PLAYER-PS5/tags"
+    },
+    {
+      "component": "vlc-ps5-port",
+      "pinned": "0.6.0",
+      "latestInSelectedLine": "0.6.1",
+      "selectedTag": "v0.6.1",
+      "updateAvailable": true,
+      "latestStableTag": "v0.6.1",
+      "newerReleaseOutsideSelectedLine": false,
+      "url": "https://github.com/ZiZc3/VLC/tags"
+    },
+    {
+      "component": "openssl",
+      "pinned": "3.5.9",
+      "latestInSelectedLine": "3.5.9",
+      "selectedTag": "openssl-3.5.9",
+      "updateAvailable": false,
+      "latestStableTag": "openssl-4.1.0",
+      "newerReleaseOutsideSelectedLine": true,
+      "url": "https://github.com/openssl/openssl/tags"
+    },
+    {
+      "component": "curl",
+      "pinned": "8.23.0",
+      "latestInSelectedLine": "8.23.0",
+      "selectedTag": "curl-8_23_0",
+      "updateAvailable": false,
+      "latestStableTag": "curl-8_23_0",
+      "newerReleaseOutsideSelectedLine": false,
+      "url": "https://github.com/curl/curl/tags"
+    },
+    {
+      "component": "expat",
+      "pinned": "2.10.0",
+      "latestInSelectedLine": "2.10.0",
+      "selectedTag": "R_2_10_0",
+      "updateAvailable": false,
+      "latestStableTag": "R_2_10_0",
+      "newerReleaseOutsideSelectedLine": false,
+      "url": "https://github.com/libexpat/libexpat/tags"
+    },
+    {
+      "component": "freetype",
+      "pinned": "2.15.0",
+      "latestInSelectedLine": "2.15.0",
+      "selectedTag": "VER-2-15-0",
+      "updateAvailable": false,
+      "latestStableTag": "VER-2-15-0",
+      "newerReleaseOutsideSelectedLine": false,
+      "url": "https://github.com/freetype/freetype/tags"
+    },
+    {
+      "component": "libass",
+      "pinned": "0.17.5",
+      "latestInSelectedLine": "0.17.5",
+      "selectedTag": "0.17.5",
+      "updateAvailable": false,
+      "latestStableTag": "0.17.5",
+      "newerReleaseOutsideSelectedLine": false,
+      "url": "https://github.com/libass/libass/tags"
+    },
+    {
+      "component": "fribidi",
+      "pinned": "1.0.18",
+      "latestInSelectedLine": "1.0.18",
+      "selectedTag": "v1.0.18",
+      "updateAvailable": false,
+      "latestStableTag": "v1.0.18",
+      "newerReleaseOutsideSelectedLine": false,
+      "url": "https://github.com/fribidi/fribidi/tags"
+    },
+    {
+      "component": "harfbuzz",
+      "pinned": "15.1.0",
+      "latestInSelectedLine": "15.1.0",
+      "selectedTag": "15.1.0",
+      "updateAvailable": false,
+      "latestStableTag": "15.1.0",
+      "newerReleaseOutsideSelectedLine": false,
+      "url": "https://github.com/harfbuzz/harfbuzz/tags"
+    },
+    {
+      "component": "libpng",
+      "pinned": "1.6.59",
+      "latestInSelectedLine": "1.6.59",
+      "selectedTag": "v1.6.59",
+      "updateAvailable": false,
+      "latestStableTag": "v1.6.59",
+      "newerReleaseOutsideSelectedLine": false,
+      "url": "https://github.com/pnggroup/libpng/tags"
+    },
+    {
+      "component": "libwebp",
+      "pinned": "1.6.0",
+      "latestInSelectedLine": "1.6.0",
+      "selectedTag": "v1.6.0",
+      "updateAvailable": false,
+      "latestStableTag": "v1.6.0",
+      "newerReleaseOutsideSelectedLine": false,
+      "url": "https://github.com/webmproject/libwebp/tags"
+    },
+    {
+      "component": "libxml2",
+      "pinned": "2.15.4",
+      "latestInSelectedLine": "2.15.4",
+      "selectedTag": "v2.15.4",
+      "updateAvailable": false,
+      "latestStableTag": "v2.15.4",
+      "newerReleaseOutsideSelectedLine": false,
+      "url": "https://github.com/GNOME/libxml2/tags"
+    },
+    {
+      "component": "ffmpeg",
+      "pinned": "7.0.3",
+      "latestInSelectedLine": "7.0.3",
+      "selectedTag": "n7.0.3",
+      "updateAvailable": false,
+      "latestStableTag": "n9.0.2",
+      "newerReleaseOutsideSelectedLine": true,
+      "url": "https://github.com/FFmpeg/FFmpeg/tags"
+    }
+  ],
+  "linkedLibraryUpdateCandidates": [
+    {
+      "component": "zlib",
+      "current": "1.3.2",
+      "latestStable": "1.4",
+      "source": "https://github.com/madler/zlib/tags",
+      "compatibilityRequirement": "Rebuild and test every static consumer; review the new 1.4 release.",
+      "applied": false
+    },
+    {
+      "component": "zstd",
+      "current": "1.5.6",
+      "latestStable": "1.5.7",
+      "source": "https://github.com/facebook/zstd/tags",
+      "compatibilityRequirement": "Patch update candidate; rebuild curl and test compressed responses.",
+      "applied": false
+    },
+    {
+      "component": "liblzma",
+      "current": "5.4.6",
+      "latestStable": "5.8.4",
+      "source": "https://github.com/tukaani-project/xz/tags",
+      "compatibilityRequirement": "Rebuild FFmpeg/VLC consumers; retain PS5 platform adaptations.",
+      "applied": false
+    },
+    {
+      "component": "libpsl",
+      "current": "0.21.5",
+      "latestStable": "0.23.3",
+      "source": "https://github.com/rockdaboot/libpsl/tags",
+      "compatibilityRequirement": "Review curl integration and Public Suffix List data changes.",
+      "applied": false
+    },
+    {
+      "component": "fontconfig",
+      "current": "2.15.0",
+      "latestStable": "2.18.3",
+      "source": "https://github.com/fontconfig/fontconfig/tags",
+      "compatibilityRequirement": "Keep bundled-font selection and subtitle profile isolation; test fonts.",
+      "applied": false
+    },
+    {
+      "component": "libiconv",
+      "current": "1.17",
+      "latestStable": "1.19.1",
+      "source": "https://ftp.gnu.org/pub/gnu/libiconv/",
+      "compatibilityRequirement": "Official GNU index lists 1.19.1; review VLC/XML text conversion.",
+      "applied": false
+    },
+    {
+      "component": "miniupnpc",
+      "current": "2.2.4",
+      "latestStable": "2.3.3",
+      "source": "https://github.com/miniupnp/miniupnp/tags",
+      "compatibilityRequirement": "Test bounded UPnP discovery, failure and cancellation in torrent paths.",
+      "applied": false
+    },
+    {
+      "component": "dht",
+      "current": "0.27",
+      "latestStable": "0.28",
+      "source": "https://github.com/jech/dht/tags",
+      "compatibilityRequirement": "Current version is from the preserved PacBrew 0.40.2 recipe; test torrent lifecycle.",
+      "applied": false
+    },
+    {
+      "component": "libebml",
+      "current": "1.4.6",
+      "latestStable": "1.4.7",
+      "source": "https://github.com/Matroska-Org/libebml/tags",
+      "compatibilityRequirement": "Patch update candidate; rebuild Matroska/VLC and test real MKV playback.",
+      "applied": false
+    },
+    {
+      "component": "utf8cpp",
+      "current": "3.2.5",
+      "latestStable": "4.2.1",
+      "source": "https://github.com/nemtrif/utfcpp/tags",
+      "compatibilityRequirement": "Major version change; check legacy libmatroska/VLC build compatibility.",
+      "applied": false
+    }
+  ],
+  "abiAndPlatformReview": [
+    {
+      "component": "FFmpeg",
+      "current": "7.0.3",
+      "sameCodecAbiReviewCandidate": "7.1.5",
+      "latestStable": "9.0.2",
+      "applied": false,
+      "reason": "Native, EVO and libVLC share the FFmpeg 7 libavcodec 61 ABI. Rebuild and test the complete graph before adopting 7.1; 9.x changes the ABI."
+    },
+    {
+      "component": "OpenSSL",
+      "current": "3.5.9",
+      "latestStable": "4.1.0",
+      "applied": false,
+      "reason": "3.5.9 is current in the selected 3.5 LTS line. 4.1 is a feature/compatibility migration, not an automatic patch."
+    },
+    {
+      "component": "PacBrew",
+      "current": "0.40.2",
+      "latestStable": "0.41.1",
+      "applied": false,
+      "reason": "Whole image replacement includes graphics/SDL changes and can overwrite the verified maintenance overlay. Review isolated consumers first."
+    },
+    {
+      "component": "LLVM host tools",
+      "current": "19.1.7",
+      "latestStable": "23.1.5",
+      "applied": false,
+      "reason": "Retain the working SDK wrappers, compiler runtime, sysroot and linker as one tested toolchain. New toolchain requires separate build verification."
+    }
+  ],
+  "assetsAndVendoredUpdates": {
+    "caBundle": {
+      "bundled": {
+        "count": 121,
+        "sha256": "11163db462ffae3918afdf46c70a8db70cfcbaa8077352290b62a9c03c36fe6c",
+        "dataDate": "Sun Aug 23 14:46:28 2026 GMT",
+        "cryptoParserWarnings": 6,
+        "opensslLoadPassed": true
+      },
+      "upstream": {
+        "count": 118,
+        "sha256": "427c064216761a1e72a8b30f0d954d08cb6e4435a82091fb865afd20c8497285",
+        "dataDate": "Thu Nov  5 04:12:01 2026 GMT",
+        "cryptoParserWarnings": 6,
+        "opensslLoadPassed": true
+      },
+      "added": 0,
+      "removed": 3,
+      "upstreamChecksumMatches": true
+    },
+    "stbImage": {
+      "current": "2.30",
+      "latestReviewed": "2.32",
+      "commit": "9f755b604db3492df2cbeb39bf84b81e3e3932e3",
+      "applied": false,
+      "requirement": "Test artwork decode dimensions, malformed inputs, cancellation and private request boundaries."
+    },
+    "stbHostFontTools": {
+      "stbTruetype": [
+        "1.26",
+        "1.28"
+      ],
+      "stbImageWrite": [
+        "1.16",
+        "1.18"
+      ],
+      "applied": false,
+      "requirement": "These vendored headers serve host tools; test font baking and preview fixtures before replacing."
+    },
+    "qrC": {
+      "currentCBlob": "34f1002501fa2bcb0a054f4311795b8cbb977f5b",
+      "currentHeaderBlob": "6bbc15762a8af18c792a344632e2e538974df1a0",
+      "bothMatchUpstream": true,
+      "note": "Recent QR repository activity changes other language implementations, not the embedded C blobs."
+    },
+    "fontCandidates": [
+      {
+        "name": "Inter",
+        "current": "4.001",
+        "latestRelease": "4.1",
+        "applied": false
+      },
+      {
+        "name": "Montserrat",
+        "current": "7.200",
+        "latestRelease": "7.222",
+        "applied": false
+      },
+      {
+        "name": "Noto Naskh Arabic UI",
+        "current": "1.08 uh",
+        "modernDifferentFaceRelease": "NotoNaskhArabic-v2.021",
+        "applied": false,
+        "note": "Modern non-UI face is not a direct replacement; compare metrics and Arabic shaping."
+      }
+    ],
+    "fontNotes": "13 bundled font files inventoried. Noto Sans 2.015 matches latest release; Hebrew/Thai source-directory activity predates this build. CJK source path has no newer modification. Google Fonts Noto Emoji is 3.002, older than bundled 3.005: do not downgrade or substitute a color-font release.",
+    "emojiComparison": {
+      "bundledVersion": "3.005",
+      "latestFontVersion": "Version 3.002",
+      "sourceBlob": "c2c26ab612a88a8610ff9cfbb89299bf2aea6c7a",
+      "sha256": "de6c18832938afc99caf132b39d6a30a19bac7f2e812e28db2535b4608d27551",
+      "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/notoemoji/NotoEmoji%5Bwght%5D.ttf"
+    },
+    "fontValidationRequired": "Glyph coverage, Arabic shaping/RTL, all eight menu languages and renderer previews after any font replacement."
+  },
+  "playbackAndUpstreamReview": {
+    "evo": {
+      "currentVendoredBase": "0.13.0",
+      "latestAppRelease": "0.13.7",
+      "fullOldAndNewTreesCompared": true,
+      "vendoredFileComparison": [
+        {
+          "path": "media/include/evo_vdec.h",
+          "oldBlob": "86e9db8137dbf7f7e6432986c365e4fd681eb094",
+          "newBlob": "86e9db8137dbf7f7e6432986c365e4fd681eb094",
+          "changed": false
+        },
+        {
+          "path": "media/include/evo_dovi.h",
+          "oldBlob": "9261e0be4552a691f1ae243451be76d179dce416",
+          "newBlob": "749a6de126cc0e4a5015a36e37e23d37bf92b80c",
+          "changed": true
+        },
+        {
+          "path": "media/include/sce/sce_videodec2.h",
+          "oldBlob": "8f9b139fc5a6547c5eb72e631117d3e52be879c0",
+          "newBlob": "8f9b139fc5a6547c5eb72e631117d3e52be879c0",
+          "changed": false
+        },
+        {
+          "path": "media/src/evo_vdec_native.h",
+          "oldBlob": "0118fd8780564c4d7790379f081562a10e098a60",
+          "newBlob": "0118fd8780564c4d7790379f081562a10e098a60",
+          "changed": false
+        },
+        {
+          "path": "media/src/evo_vdec_native.c",
+          "oldBlob": "120fbb301e6e87767f03115d2604fba8ffc18200",
+          "newBlob": "eb04f3cbedc64a745bb40cf895317818f07404c4",
+          "changed": true
+        },
+        {
+          "path": "media/src/evo_vdec_ffmpeg.c",
+          "oldBlob": "e7c0fd2a533689c186c84c34391de0e76f5cd2ae",
+          "newBlob": "f7bdcd40459955547f676c5e9275ec97d760aebe",
+          "changed": true
+        },
+        {
+          "path": "pp/include/pp_frame.h",
+          "oldBlob": "e2f618cc0bd9cad3ccf8e63f95044f708ebf4cc9",
+          "newBlob": "e2f618cc0bd9cad3ccf8e63f95044f708ebf4cc9",
+          "changed": false
+        },
+        {
+          "path": "pp/include/pp_clock.h",
+          "oldBlob": "a7e99da436b63dcccedaa42db9de06d288f82c73",
+          "newBlob": "a7e99da436b63dcccedaa42db9de06d288f82c73",
+          "changed": false
+        },
+        {
+          "path": "pp/include/pp_playback.h",
+          "oldBlob": "f2c2cde15bf4c01642504237664bfb8d0634a249",
+          "newBlob": "f2c2cde15bf4c01642504237664bfb8d0634a249",
+          "changed": false
+        },
+        {
+          "path": "pp/include/pp_stage_breadcrumb.h",
+          "oldBlob": "98a22c1e814b86dfd44c81cc2dc7d73520de7e40",
+          "newBlob": "98a22c1e814b86dfd44c81cc2dc7d73520de7e40",
+          "changed": false
+        },
+        {
+          "path": "pp/src/pp_clock.c",
+          "oldBlob": "1839f63dead94891fe53c2444f1299df0e7140ce",
+          "newBlob": "1839f63dead94891fe53c2444f1299df0e7140ce",
+          "changed": false
+        },
+        {
+          "path": "pp/src/pp_playback.c",
+          "oldBlob": "dbfd1bae9e3f29ce768aea4c53d89b68b8773eff",
+          "newBlob": "dbfd1bae9e3f29ce768aea4c53d89b68b8773eff",
+          "changed": false
+        },
+        {
+          "path": "include/evo_boot_log.h",
+          "oldBlob": "229060bf4010cdf27f66480f70e39ac2a5a9ab7d",
+          "newBlob": "640c70774158994ce303b7999829f93e683f036f",
+          "changed": true
+        }
+      ],
+      "finding": "Embedded pp_clock and pp_playback blobs are unchanged. Changed decoder files add Dolby Vision RPU peak mapping and need Nuvio-specific integration; standalone casting/UI fixes are not an embedded-library upgrade."
+    },
+    "vlc": {
+      "libvlcCurrent": "3.0.24",
+      "latestStable3Series": "3.0.24",
+      "portPreviouslyAudited": "0.6.0",
+      "latestPort": "0.6.1",
+      "finding": "Complete 37-file 0.6.0-to-0.6.1 compare has no embedded decoder/module change. Changes concern standalone app playlist/UI/network/build paths."
+    },
+    "ui": {
+      "latestCommit": "bbe19054ee2e7ec069254775273aeb8846c4bd3e",
+      "finding": "Latest paragraph-layout change is already selectively integrated."
+    },
+    "nativeBase": {
+      "latestCommit": "b8444a661b0b304d1298463151065297840c15e9",
+      "finding": "Latest HLS compatibility fix is already selectively integrated."
+    },
+    "stremioPlus": {
+      "latestCommit": "d313f1982fc2eb2c3235349ee524f3db5e09fa51",
+      "finding": "Latest reviewed 0.6.00 reference already recorded; no newer default-branch commit."
+    },
+    "prosperoTv": {
+      "latestVersion": "01.000.110",
+      "candidateCommit": "13f0b8f43ddffb51438cc86d3d4b24e10bb344e3",
+      "finding": "Padded 10-bit decoder-pitch presentation fix is a comparison candidate; renderer-specific integration needs testing."
+    },
+    "referenceApps": {
+      "NuvioTV": "1.1.0",
+      "NuvioTVSmart": "1.4.1",
+      "NuvioReSeqHead": "3c7bd94dd1ae596fef6ff983518b121b5e261040",
+      "note": "App/source references are design and selective-backport inputs, not linked packages. Review per behavior before importing changes."
+    },
+    "repositoryMoves": {
+      "ProsperoTV": "ThatGuyKalvin/ProsperoTV",
+      "ProsperoLight": "LedyBacer/ProsperoLight",
+      "ProsperoEden": "LedyBacer/ProsperoEden"
+    },
+    "boilerplate": {
+      "newerCommits": 21,
+      "finding": "Latest comparison includes macOS tooling and updater-example/helper changes. Preserve Nuvio native runtime and private update transaction; review selected changes only."
+    }
+  },
+  "providerPackages": {
+    "uniquePackageNamesComparedToRegistry": 68,
+    "lockfileDependencyNodesAudited": 112,
+    "knownNpmAdvisories": {
+      "info": 0,
+      "low": 0,
+      "moderate": 0,
+      "high": 0,
+      "critical": 0,
+      "total": 0
+    },
+    "directRuntimeAndEsbuildPackagesCurrent": true,
+    "transitiveNamesWithNewerReleases": 20,
+    "newerTransitives": [
+      {
+        "name": "boolbase",
+        "installedVersions": [
+          "1.0.0"
+        ],
+        "latestStable": "2.0.0",
+        "engines": {
+          "node": ">=20.19.0"
+        },
+        "deprecated": null,
+        "source": "https://registry.npmjs.org/boolbase/latest"
+      },
+      {
+        "name": "css-select",
+        "installedVersions": [
+          "5.2.2"
+        ],
+        "latestStable": "7.0.0",
+        "engines": {
+          "node": ">=20.19.0"
+        },
+        "deprecated": null,
+        "source": "https://registry.npmjs.org/css-select/latest"
+      },
+      {
+        "name": "dom-serializer",
+        "installedVersions": [
+          "2.0.0"
+        ],
+        "latestStable": "3.1.1",
+        "engines": {
+          "node": ">=20.19.0"
+        },
+        "deprecated": null,
+        "source": "https://registry.npmjs.org/dom-serializer/latest"
+      },
+      {
+        "name": "domelementtype",
+        "installedVersions": [
+          "2.3.0"
+        ],
+        "latestStable": "3.0.0",
+        "engines": {
+          "node": ">=20.19.0"
+        },
+        "deprecated": null,
+        "source": "https://registry.npmjs.org/domelementtype/latest"
+      },
+      {
+        "name": "entities",
+        "installedVersions": [
+          "4.5.0",
+          "6.0.1",
+          "7.0.1"
+        ],
+        "latestStable": "9.0.0",
+        "engines": {
+          "node": ">=20.19.0"
+        },
+        "deprecated": null,
+        "source": "https://registry.npmjs.org/entities/latest"
+      },
+      {
+        "name": "css-what",
+        "installedVersions": [
+          "6.2.2"
+        ],
+        "latestStable": "8.0.0",
+        "engines": {
+          "node": ">=20.19.0"
+        },
+        "deprecated": null,
+        "source": "https://registry.npmjs.org/css-what/latest"
+      },
+      {
+        "name": "domutils",
+        "installedVersions": [
+          "3.2.2"
+        ],
+        "latestStable": "4.0.2",
+        "engines": {
+          "node": ">=20.19.0"
+        },
+        "deprecated": null,
+        "source": "https://registry.npmjs.org/domutils/latest"
+      },
+      {
+        "name": "domhandler",
+        "installedVersions": [
+          "5.0.3"
+        ],
+        "latestStable": "6.0.1",
+        "engines": {
+          "node": ">=20.19.0"
+        },
+        "deprecated": null,
+        "source": "https://registry.npmjs.org/domhandler/latest"
+      },
+      {
+        "name": "nth-check",
+        "installedVersions": [
+          "2.1.1"
+        ],
+        "latestStable": "3.0.1",
+        "engines": {
+          "node": ">=20.19.0"
+        },
+        "deprecated": null,
+        "source": "https://registry.npmjs.org/nth-check/latest"
+      },
+      {
+        "name": "parse5",
+        "installedVersions": [
+          "7.3.0"
+        ],
+        "latestStable": "8.1.1",
+        "engines": null,
+        "deprecated": null,
+        "source": "https://registry.npmjs.org/parse5/latest"
+      },
+      {
+        "name": "encoding-sniffer",
+        "installedVersions": [
+          "0.2.1"
+        ],
+        "latestStable": "1.0.2",
+        "engines": {
+          "node": ">=20.19.0"
+        },
+        "deprecated": null,
+        "source": "https://registry.npmjs.org/encoding-sniffer/latest"
+      },
+      {
+        "name": "iconv-lite",
+        "installedVersions": [
+          "0.6.3"
+        ],
+        "latestStable": "0.7.3",
+        "engines": {
+          "node": ">=0.10.0"
+        },
+        "deprecated": null,
+        "source": "https://registry.npmjs.org/iconv-lite/latest"
+      },
+      {
+        "name": "htmlparser2",
+        "installedVersions": [
+          "10.1.0"
+        ],
+        "latestStable": "12.0.0",
+        "engines": {
+          "node": ">=20.19.0"
+        },
+        "deprecated": null,
+        "source": "https://registry.npmjs.org/htmlparser2/latest"
+      },
+      {
+        "name": "parse5-htmlparser2-tree-adapter",
+        "installedVersions": [
+          "7.1.0"
+        ],
+        "latestStable": "8.0.2",
+        "engines": null,
+        "deprecated": null,
+        "source": "https://registry.npmjs.org/parse5-htmlparser2-tree-adapter/latest"
+      },
+      {
+        "name": "parse5-parser-stream",
+        "installedVersions": [
+          "7.1.2"
+        ],
+        "latestStable": "8.1.1",
+        "engines": null,
+        "deprecated": null,
+        "source": "https://registry.npmjs.org/parse5-parser-stream/latest"
+      },
+      {
+        "name": "safe-buffer",
+        "installedVersions": [
+          "5.1.2"
+        ],
+        "latestStable": "5.2.1",
+        "engines": null,
+        "deprecated": null,
+        "source": "https://registry.npmjs.org/safe-buffer/latest"
+      },
+      {
+        "name": "readable-stream",
+        "installedVersions": [
+          "3.6.2"
+        ],
+        "latestStable": "4.8.0",
+        "engines": {
+          "node": "^12.22.0 || ^14.17.0 || >=16.0.0"
+        },
+        "deprecated": null,
+        "source": "https://registry.npmjs.org/readable-stream/latest"
+      },
+      {
+        "name": "undici",
+        "installedVersions": [
+          "7.30.2"
+        ],
+        "latestStable": "8.12.4",
+        "engines": {
+          "node": ">=22.19.0"
+        },
+        "deprecated": null,
+        "source": "https://registry.npmjs.org/undici/latest"
+      },
+      {
+        "name": "string_decoder",
+        "installedVersions": [
+          "1.1.1"
+        ],
+        "latestStable": "1.3.0",
+        "engines": null,
+        "deprecated": null,
+        "source": "https://registry.npmjs.org/string_decoder/latest"
+      },
+      {
+        "name": "whatwg-mimetype",
+        "installedVersions": [
+          "4.0.0"
+        ],
+        "latestStable": "5.0.0",
+        "engines": {
+          "node": ">=20"
+        },
+        "deprecated": null,
+        "source": "https://registry.npmjs.org/whatwg-mimetype/latest"
+      }
+    ],
+    "note": "Parent packages constrain many old transitives. Do not override them solely to match latest; the bundle executes inside QuickJS, not Node. npm advisory results do not cover native C/C++ sources."
+  },
+  "hostPythonTools": [
+    {
+      "name": "mkpfs",
+      "installed": "1.1.0",
+      "latestStable": "1.1.0",
+      "requiresPython": ">=3.9",
+      "source": "https://pypi.org/pypi/mkpfs/json"
+    },
+    {
+      "name": "fonttools",
+      "installed": "4.61.1",
+      "latestStable": "4.68.0",
+      "requiresPython": ">=3.11",
+      "source": "https://pypi.org/pypi/fonttools/json"
+    },
+    {
+      "name": "pillow",
+      "installed": "13.0.0",
+      "latestStable": "13.0.0",
+      "requiresPython": ">=3.11",
+      "source": "https://pypi.org/pypi/pillow/json"
+    },
+    {
+      "name": "zstandard",
+      "installed": "0.25.0",
+      "latestStable": "0.25.0",
+      "requiresPython": ">=3.9",
+      "source": "https://pypi.org/pypi/zstandard/json"
+    },
+    {
+      "name": "customtkinter",
+      "installed": "6.0.0",
+      "latestStable": "6.0.0",
+      "requiresPython": ">=3.7",
+      "source": "https://pypi.org/pypi/customtkinter/json"
+    },
+    {
+      "name": "cryptography",
+      "installed": "50.0.2",
+      "latestStable": "50.0.2",
+      "requiresPython": "!=3.9.0,!=3.9.1,>=3.9",
+      "source": "https://pypi.org/pypi/cryptography/json"
+    },
+    {
+      "name": "click",
+      "installed": "8.4.2",
+      "latestStable": "8.5.1",
+      "requiresPython": ">=3.10",
+      "source": "https://pypi.org/pypi/click/json"
+    },
+    {
+      "name": "numpy",
+      "installed": "2.3.5",
+      "latestStable": "2.5.4",
+      "requiresPython": ">=3.12",
+      "source": "https://pypi.org/pypi/numpy/json"
+    },
+    {
+      "name": "pip",
+      "installed": "25.0.1",
+      "latestStable": "26.3",
+      "requiresPython": ">=3.10",
+      "source": "https://pypi.org/pypi/pip/json"
+    }
+  ],
+  "workflow": {
+    "checkoutLatest": "v7.0.1",
+    "checkoutSha": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+    "floatingV7CurrentlyMatchesPinnedAuditAction": true,
+    "checkerRegressionTestsPassed": 8,
+    "checkerComponentsBefore": 13,
+    "checkerComponentsAfter": 18,
+    "fix": "Reject unrelated pngmeta and prerelease tags; expose releases outside selected compatibility lines; test pagination and source coverage."
+  },
+  "nextUpload": {
+    "performedByThisAudit": false,
+    "recommendation": "Prioritize the verified CA data refresh and STB review, then isolated linked-library updates. Keep ABI migrations separate from the confirmed watched-state fix. Any changed runtime component must pass complete app, host, ZIP/image/source verification before upload.",
+    "previousPublishedAssetsTagsBranchesToolchainsPreserved": true
+  }
+}
