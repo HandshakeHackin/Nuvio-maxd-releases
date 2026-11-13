@@ -73,8 +73,11 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
     assert dependencies['hostToolchain']['version'] == '23.1.5'
     assert dependencies['maintenanceLibraries']['sources']['OpenSSL']['version'] == '4.1.0'
     assert dependencies['maintenanceLibraries']['sources']['ffmpeg']['version'] == '9.0.2'
+    # These retained source faces are not loaded or packaged by gl/build.sh.
+    source_only_fonts = {'app/fonts/NotoSans-Italic.ttf',
+                         'app/fonts/NotoEmoji-VariableFont_wght.ttf'}
     for path, digest in info['dependencyRefresh20261113']['assetSha256'].items():
-        if path.startswith('app/'):
+        if path.startswith('app/') and path not in source_only_fonts:
             assert actual[path[4:]] == digest, path
     assert info['interfaceLanguages']['available']==['en','de','es','fr','ar','zh-Hans','ja','ko'] and info['interfaceLanguages']['englishFallback']
     assert info['detailActions']['libraryMembership'] and info['detailActions']['controllerGlyphHints']
