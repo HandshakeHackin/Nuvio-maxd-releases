@@ -230,6 +230,7 @@ private:
 	std::mutex seek_m_;
 	bool seek_req_ = false;
 	std::atomic<bool> seek_pending_{false};
+	std::atomic<bool> seek_in_progress_{false};
 	std::atomic<bool> demux_reading_{false};
 	std::atomic<bool> seek_refill_{false};
 	std::atomic<double> reopen_target_{-1};

@@ -207,10 +207,12 @@
       "arabic": "Noto Naskh Arabic",
       "montserrat": "Montserrat Medium",
       "realLibassMissingGlyphAndSilentFallbackRegression": true
-    }
+    },
+    "seekInProgressPresentationGate": true
   },
   "preservation": "Separate SDK, compiler and build work directories; previous published assets/tags and original workspaces preserved. Historical temporary objects retained in verified lossless archives.",
   "consoleVerified": false,
   "verificationEvidence": "See the published native-validation.json and TEST_RESULTS.txt for the exact source commit and completed checks.",
-  "hostFixtureCompatibility": "Rapid-seek mock arms only after the initial read, so static libcurl internal admin handles cannot block startup."
+  "hostFixtureCompatibility": "Rapid-seek mock arms only after the initial read, so static libcurl internal admin handles cannot block startup.",
+  "seekGateFix": "Separate in-progress presentation/buffering gate prevents old queued frames from resuming during demux I/O. Read-interrupt semantics stay separate; paused and newer seek overrides have controlled regression coverage."
 }

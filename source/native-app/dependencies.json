@@ -1271,6 +1271,7 @@
       "arabic": "Noto Naskh Arabic",
       "montserrat": "Montserrat Medium",
       "realLibassMissingGlyphAndSilentFallbackRegression": true
-    }
+    },
+    "seekInProgressPresentationGate": true
   }
 }

@@ -199,7 +199,7 @@ void Player::open(const Options& opts) {
 	have_picture_ = false;
 	video_lead_ = 0;
 	seek_req_ = false;
-	seek_pending_ = demux_reading_ = seek_refill_ = false;
+	seek_pending_ = seek_in_progress_ = demux_reading_ = seek_refill_ = false;
 	reopen_target_ = -1; displayed_serial_ = -1;
 	seek_started_at_ = 0; seek_first_picture_ms_ = -1;
 	vdrop_ = adrop_ = opts.start > 0 ? opts.start : -1;
@@ -588,14 +588,24 @@ void Player::demux_run() {
 	int errors = 0;
 	while (!abort_) {
 		double target = -1;
+		bool claimed_seek = false;
+		struct SeekCompletion {
+			std::atomic<bool>& active;
+			bool& claimed;
+			~SeekCompletion() { if (claimed) active = false; }
+		} seek_completion{seek_in_progress_, claimed_seek};
 		{
 			std::lock_guard<std::mutex> lock(seek_m_);
 			if (seek_req_) {
+				claimed_seek = true;
+				seek_in_progress_ = true;
 				target = seek_target_;
 				seek_req_ = false;
                 // Retire the finished timeline before releasing the UI seek gate.
                 // do_seek can block on I/O while the old queues still look drained.
                 eof_ = false;
+				// Release the I/O interrupt so this seek can read its index.
+				// The separate presentation gate covers the blocking transition.
 				seek_pending_ = false;
 			}
 		}
@@ -643,6 +653,11 @@ void Player::demux_run() {
 			}
 		}
 		if (target >= 0) do_seek(target);
+		if (claimed_seek) {
+			seek_in_progress_ = false;
+			claimed_seek = false;
+			apply_run_state(); // A refused seek may have resumed the old timeline.
+		}
 
 		update_buffering();
 
@@ -1418,7 +1433,7 @@ void Player::set_clock_running(bool running) {
 }
 
 void Player::apply_run_state() {
-	bool run = !paused_ && !buffering_ && !seek_pending_ && reopen_target_ < 0 && vdrop_ < 0 && state_ == State::Playing;
+	bool run = !paused_ && !buffering_ && !seek_pending_ && !seek_in_progress_ && reopen_target_ < 0 && vdrop_ < 0 && state_ == State::Playing;
 	pcm_.pause(!run);
 	set_clock_running(run);
 }
@@ -1432,11 +1447,11 @@ void Player::set_paused(bool p) {
 bool Player::buffering(int* percent) const {
 	if(vlc_) return vlc_->buffering(percent);
 	if (percent) *percent = buffer_percent_;
-	return state_ == State::Opening || (state_ == State::Playing && buffering_);
+	return state_ == State::Opening || (state_ == State::Playing && (buffering_ || seek_in_progress_));
 }
 
 void Player::update_buffering() {
-	if (state_ != State::Playing || recovering_ || seek_pending_ || reopen_target_ >= 0) return;
+	if (state_ != State::Playing || recovering_ || seek_pending_ || seek_in_progress_ || reopen_target_ >= 0) return;
     if(AudioPort::shutdown_failed) {
         fail("The audio output could not be released safely. Close and reopen the app before playing again.");return;
     }
@@ -1530,7 +1545,7 @@ void Player::set_audio_delay(double seconds) {
 const Player::Picture* Player::present() {
 	if(vlc_) return vlc_->present();
 	const double reopen = reopen_target_.exchange(-1);
-	if (reopen >= 0 && !seek_pending_ && !abort_) {
+	if (reopen >= 0 && !seek_pending_ && !seek_in_progress_ && !abort_) {
 		Options o = opts_; o.start = reopen; o.start_paused = paused_;
         const int requested=audio_switch_.load();
         o.initial_audio_stream = requested>=0?requested:audio_stream_.load();
@@ -1541,7 +1556,7 @@ const Player::Picture* Player::present() {
 	}
 	const Picture* out = nullptr;
 	if (state_ == State::Playing) update_buffering();
-	if ((state_ == State::Playing || state_ == State::Ended) && !seek_pending_) {
+	if ((state_ == State::Playing || state_ == State::Ended) && !seek_pending_ && !seek_in_progress_) {
 		double clk;
 		{
 			std::lock_guard<std::mutex> lock(clock_m_);
@@ -1767,7 +1782,7 @@ nlohmann::json Player::diagnostic_snapshot() {
             {"queuedAudioSeconds",queued_audio_seconds()},{"videoSerial",vq_.serial()},{"displayedVideoSerial",displayed_serial_.load()},
             {"videoDropUntil",vdrop_.load()},{"audioDropUntil",adrop_.load()},
             {"eof",eof_.load()},{"audioDrained",audio_drained_.load()},{"videoDrained",video_drained_.load()},
-            {"seekPending",seek_pending_.load()},{"seekRefill",seek_refill_.load()},{"reopenTarget",reopen_target_.load()}};
+            {"seekPending",seek_pending_.load()},{"seekInProgress",seek_in_progress_.load()},{"seekRefill",seek_refill_.load()},{"reopenTarget",reopen_target_.load()}};
     if(diagnostic_time_>0 && now-diagnostic_time_>.1) context["shownFps"]=std::max(0,shown-diagnostic_shown_)/(now-diagnostic_time_);
     diagnostic_time_=now; diagnostic_shown_=shown; return context;
 }

@@ -184,6 +184,7 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
     for preview in ('install-source', 'store-update', 'github-update', 'donation', 'audio-output'):
         assert preview + ': GL error 0x0' in test_log
     assert 'Playback lifecycle: open, pause, sample-trimmed forward/back seek passed' in test_log
+    assert 'Seek gate: blocked demux keeps buffering, paused target and newer seek override passed' in test_log
     assert 'Playback lifecycle: bitstream pause/seek and failed-port recovery to PCM passed' in test_log
     assert 'Playback lifecycle: hardware failure reseek to software without an A/V wait cycle passed' in test_log
     assert 'PS5 display output: 27 display output selection and probe-lifecycle assertions' in test_log
