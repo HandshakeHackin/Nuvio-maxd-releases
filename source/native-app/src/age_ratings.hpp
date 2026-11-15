@@ -1,6 +1,7 @@
 // Display-only TMDB certifications. Never infer ages or filter playback.
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
+#include "age_rating_types.hpp"
 #include "json.hpp"
 #include <algorithm>
 #include <array>
@@ -9,7 +10,6 @@
 #include <vector>
 
 namespace age_ratings {
-struct Rating { std::string country, label; };
 struct Country { const char* code; const char* name; };
 inline constexpr std::array<Country,32> countries{{
  {"US","United States"},{"GB","United Kingdom"},{"ES","Spain"},

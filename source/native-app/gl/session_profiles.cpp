@@ -6,6 +6,7 @@
 #include "watched_history.hpp"
 #include "nuvio_account.h"
 #include "config_backup.h"
+#include "age_ratings.hpp"
 #include <algorithm>
 
 namespace sx {

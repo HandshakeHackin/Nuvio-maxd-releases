@@ -6,7 +6,7 @@
 #include <cstdint>
 #include "../src/chapters.hpp"
 #include "subtitle_style.hpp"
-#include "../src/age_ratings.hpp"
+#include "../src/age_rating_types.hpp"
 #include <string>
 #include <vector>
 

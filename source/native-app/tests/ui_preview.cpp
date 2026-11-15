@@ -8,6 +8,7 @@
 #include "settings.hpp"
 #include "person.hpp"
 #include "i18n.hpp"
+#include "age_ratings.hpp"
 #include "board.hpp"
 #include "library.hpp"
 #include "addons.hpp"
