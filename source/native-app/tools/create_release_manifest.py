@@ -40,6 +40,9 @@ def create(app, public_key, private_key=None):
             stream.seek(0)
             digest = hashlib.file_digest(stream, 'sha256').hexdigest()
         files.append({'path': name, 'size': size, 'sha256': digest})
+    # Path ordering compares components, which differs from byte ordering for
+    # pairs such as licenses/libass.txt and licenses/libass/README.md.
+    files.sort(key=lambda record: record['path'])
     if len(files) > 512 or not REQUIRED <= {f['path'] for f in files}:
         raise ValueError('Release is missing required files or credits')
     if any(f['path'] in REQUIRED and not f['size'] for f in files):

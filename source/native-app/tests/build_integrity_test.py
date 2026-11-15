@@ -69,6 +69,13 @@ class IntegrityTests(unittest.TestCase):
         result = self.result()
         self.assertEqual(result, {'status': 1, 'reason': 0, 'files': 7, 'credits': True})
         self.assertEqual(producer.verify(self.app, self.public), 7)
+    def test_nested_notice_paths_use_the_runtime_lexical_order(self):
+        (self.app / 'licenses/libass').mkdir(parents=True)
+        (self.app / 'licenses/libass/README.md').write_text('Fixture library details')
+        (self.app / 'licenses/libass.txt').write_text('Fixture library license')
+        self.sign()
+        self.assertEqual(self.result(), {'status': 1, 'reason': 0, 'files': 9, 'credits': True})
+        self.assertEqual(producer.verify(self.app, self.public), 9)
     def test_original_compiled_public_key_matches_tracked_key(self):
         der = subprocess.check_output(['openssl', 'pkey', '-pubin', '-in', str(ROOT / 'release-public-key.pem'), '-outform', 'DER'], stderr=subprocess.DEVNULL)
         self.assertEqual(subprocess.check_output([str(EXECUTABLE), 'embedded-key']), der[-32:])
