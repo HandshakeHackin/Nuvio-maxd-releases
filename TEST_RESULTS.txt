@@ -1,0 +1,32 @@
+Nuvio Max'd 1.0.0.26 — official release verification
+
+Clean source 34b331f2345cf1939766723ed3b8ddd826229525, branch builds/v1.0.0.26, contentVersion 07.000.025.
+App version 1.0.0.26-native; stable release channel.
+Complete PS5 app, USB reader and updater compiled/linked. Changed sources
+were rebuilt; object hashes are compared with the fresh 4d906f2 build.
+All 741 pinned dependency outputs and SDK/GL/source/recipe/asset receipts match.
+The dependency graph is unchanged from 1.0.0.24.
+Age-rating fixtures cover movie/TV certifications, country selection and US
+fallback, omission, bounds/encoding, identity/cancellation, no extra requests,
+profile persistence, failed-save rollback and encrypted configuration backups.
+An initial standalone UI compile exposed an unwanted JSON header dependency;
+the rating data model was separated and its regression check now passes.
+
+Exact-source full host CI and 154 renderer previews: https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/43670266858/job/132678546413
+Real VLC playback, HTTP/HLS, seeking and cancellation: https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/43670266858/job/132678546025
+Both jobs passed. Raw logs are retained and hashed. Log normalization removes
+timestamps and 2 complete expected peer-reset traces in the passing TLS
+rejection fixture only. All renderer previews report GL error zero.
+The suite includes the blocked-demux seek regression, 126 feature-core checks,
+88 HTTPS account tests, 43 MDBList membership and 33 watched-history cases.
+
+Image verification: zero container errors/warnings; 164 extracted file
+hashes match the staged app and ZIP. ZIP integrity/entry/permission checks pass.
+Matching source archive: 1036 file hashes verified at the same commit.
+Native object audit: no dup/fdopendir/fstatat/openat imports or raw syscall
+instructions in the audited app/USB/feature objects. Profile isolation, bounded
+scanning and private copies are retained.
+Catalog scan: zero errors, 4 warnings and 1 notices. Existing privileged
+reader/updater helpers require catalog maintainer review; approvals unchanged.
+This report records host, compilation and package verification. Hardware test
+coverage is recorded separately in native-validation.json. See TESTING.txt.
