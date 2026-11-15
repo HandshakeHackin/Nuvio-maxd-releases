@@ -87,7 +87,7 @@ enum SettingIndex
     kRemoteButtons,
     kSourceOptions,
     kSportsEnable,kSportsOpen,kSportsRegion,kSportsBrowse,kSportsFollowing,kSportsScores,kSportsChannels,kSportsClock,
-    kUiLanguage,kTvdb,kConfigBackup,
+    kUiLanguage,kTvdb,kConfigBackup,kAgeRatingCountry,
     kSettingCount
 };
 
@@ -729,6 +729,8 @@ void Session::refresh_settings()
         r.on = on;
     };
     using Kind = SettingRow::Kind;
+    set(kAgeRatingCountry,Kind::value,i18n::tr("Age-rating country"),prefs_.age_rating_country,
+        i18n::tr("Choose the country for title certifications. US ratings are used when unavailable. The badge shows its country. Saved for this profile; display only."));
     set(kUiLanguage,Kind::value,i18n::tr("Language"),i18n::native_name(prefs_.ui_language),i18n::tr("Use the app menus in your preferred language. Restart Max'd to apply.")+std::string(" ")+i18n::tr("Some help and status messages may appear in English."));
     set(kMediaServers, SettingRow::Kind::action, sx::i18n::tr("Media servers (experimental)"), std::to_string(media_accounts_.size())+" connected", sx::i18n::tr("Connect Jellyfin, Emby or Plex. Browse server libraries and resume playback separately from addons."));
     set(kAccount, Kind::value, sx::i18n::tr("Nuvio account"), signed_in() ? prefs_.user_email : sx::i18n::tr("Not signed in"),
@@ -829,7 +831,7 @@ void Session::refresh_settings()
     const auto group = [&](const char* name,std::initializer_list<int> ids) {
         for(int id:ids) settings.rows[id].category=name;
     };
-    group("Account & Services", {kAccount,kProfiles,kTracking,kLibrarySource,kConnectedServices,kServer,kMediaServers});
+    group("Account & Services", {kAccount,kProfiles,kTracking,kLibrarySource,kConnectedServices,kServer,kMediaServers,kAgeRatingCountry});
     group("Video", {kDisplay,kRefresh,kHdr,kPlaybackEngine});
     group("Audio", {kAudioMode,kAudioOutput,kAudioLangs,kAudioGain,kAudioDelay,kNightMode,kLfeMix});
     group("Subtitles", {kSubLangs,kAutoSubs,kSubSize,kSubFont,kSubColour,kSubEffect,kSubBackground,kSubtitleDelay,kSubtitleAutoSync});
@@ -860,6 +862,7 @@ void Session::settings_activate(int row)
     if(backup_busy_){say(i18n::tr("Backup operation in progress..."));return;}
     if(row==kTvdb){tvdb_menu();return;}
     if(row==kConfigBackup){backup_menu();return;}
+    if(row==kAgeRatingCountry){age_rating_country_menu();return;}
     if(row==kUiLanguage){
         std::vector<std::string> names,codes;for(const auto& locale:i18n::locales()){names.emplace_back(locale.native_name);codes.emplace_back(locale.code);}
         open_dropdown(i18n::tr("Language"),names,int(i18n::index(prefs_.ui_language)),[this,codes](int n){

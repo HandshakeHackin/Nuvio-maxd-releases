@@ -19,6 +19,7 @@ void Session::load_profile_settings() {
     prefs_.subtitle_langs = "eng"; prefs_.audio_langs.clear(); prefs_.auto_subtitles = true;
     json j;
     load_json(profile_dir_ + "/profile-settings.json", j);
+    prefs_.age_rating_country=age_ratings::load_preference(j);
     if (jobj(j, "extra_addons").is_array())
         for (const auto& u : j["extra_addons"]) if (u.is_string()) prefs_.extra_addons.push_back(u.get<std::string>());
     if (jobj(j, "provider_enabled").is_object()) prefs_.provider_enabled = j["provider_enabled"];
@@ -41,6 +42,7 @@ void Session::save_profile_settings() {
     if (!profile_ready_ || profile_dir_.empty()) return;
     json j;
     load_json(profile_dir_ + "/profile-settings.json", j);
+    age_ratings::save_preference(j,prefs_.age_rating_country);
     source_policy::save(j,prefs_.source_preferences);
     sports::save(j,sports_prefs_);
     j["extra_addons"] = prefs_.extra_addons;

@@ -38,6 +38,7 @@ if [ -z "${PREVIEW_MODES:-}" ]; then
         done
     done
     modes+=(watched-movie watched-movie-unmarked watched-home watched-person)
+    modes+=(age-movie age-series age-fallback age-missing age-country ar-age-country ar-age-movie zh-Hans-age-series ja-age-movie ko-age-series)
     for language in de es fr ar zh-Hans ja ko;do modes+=("$language-watched-movie");done
 fi
 for mode in "${modes[@]}"; do

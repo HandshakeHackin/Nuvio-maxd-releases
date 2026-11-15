@@ -223,6 +223,7 @@ class Session
     PersonContent person;
     bool person_open=false;
     void cast_load();
+    void age_rating_country_menu();
     bool person_show(int member);
     void detail_browse_people(){resume_play_=false;cancel_autoplay();}
     void person_retry();

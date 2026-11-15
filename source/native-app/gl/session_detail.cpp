@@ -246,6 +246,7 @@ void Session::detail_fill_title()
     t.runtime = d_meta_loaded_ ? m.runtime : d_item_.runtime;
     t.genres = join(d_meta_loaded_ ? m.genres : d_item_.genres, ", ");
     t.imdb = d_meta_loaded_ ? m.imdb_rating : d_item_.imdb_rating;
+    t.certification=age_ratings::badge(detail.certifications,prefs_.age_rating_country);
     t.synopsis = d_meta_loaded_ ? m.description : d_item_.description;
     if (d_meta_loaded_)
     {

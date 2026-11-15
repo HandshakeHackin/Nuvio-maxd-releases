@@ -46,6 +46,7 @@ struct Progress
 
 struct Prefs : ExperiencePreferences
 {
+    std::string age_rating_country="US"; // profile-local; independent of UI language
     source_policy::Preferences source_preferences;
     std::vector<RemoteBinding> remote_bindings;
     bool onboarding_done = false;

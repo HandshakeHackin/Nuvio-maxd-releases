@@ -6,6 +6,7 @@
 #include <cstdint>
 #include "../src/chapters.hpp"
 #include "subtitle_style.hpp"
+#include "../src/age_ratings.hpp"
 #include <string>
 #include <vector>
 
@@ -28,6 +29,7 @@ struct Title
     bool watched = false;   // finished: a green check on its poster
     std::uint32_t poster = 0;   // GL texture, 0 until the artwork has arrived
     std::uint32_t backdrop = 0; // GL texture, 0 until the artwork has arrived
+    std::string certification{}; // Published country + label; detail page only
 };
 
 struct Row
@@ -154,6 +156,7 @@ struct Stream
 
 struct DetailContent
 {
+    std::vector<age_ratings::Rating> certifications;
     struct PersonCard {std::string id,name,role,photo_url;std::uint32_t photo=0;bool crew=false;std::string character{};};
     std::vector<PersonCard> people;
     std::string people_status;

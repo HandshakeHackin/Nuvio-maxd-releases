@@ -32,6 +32,17 @@ constexpr float kStreamPitch = 184.0f;
 constexpr float kStreamViewH = 682.0f;
 constexpr float kEpisodeViewW = 1750.0f;
 
+float title_metadata(hui::gfx::DrawList& list,const Env& env,const Title& title,
+                     const std::string& meta,float x,float baseline,float width) {
+    const auto badge=env.fonts.semibold.font->fit(title.certification,20,220);
+    const float badge_width=badge.empty()?0:env.fonts.semibold.measure(badge,20)+48;
+    const auto fitted=env.fonts.regular.font->fit(meta,26,std::max(0.0f,width-badge_width));
+    const float text_width=text(list,env.fonts.regular,fitted,x,baseline,26,theme::ink_2);
+    if(!badge.empty())
+        return text_width+18+draw_tag(list,env,badge,x+text_width+18,baseline-10,theme::surface,theme::ink);
+    return text_width;
+}
+
 } // namespace
 
 Rect Detail::episode_rect(int index, bool final_position) const
@@ -310,8 +321,8 @@ void Detail::draw_info(hui::gfx::DrawList &list) const
             text(list, env_.fonts.display, env_.fonts.display.font->fit(line,66,1500),110,baseline,66,theme::ink);
             baseline += 74;
         }
-        const std::string meta = t.year + (t.genres.empty() ? "" : "   ·   " + t.genres);
-        text(list,env_.fonts.regular,env_.fonts.regular.font->fit(meta,26,1250),110,328,26,theme::ink_2);
+        const std::string meta = t.year + (t.runtime.empty()?"":"   ·   "+t.runtime) + (t.genres.empty() ? "" : "   ·   " + t.genres);
+        title_metadata(list,env_,t,meta,110,328,1250);
         draw_imdb(list,env_,t.imdb,1430,328);
         const Episode *selected = content_->episodes.empty() ? nullptr : &content_->episodes[episode_];
         const std::string heading = selected ? sx::i18n::tr("Episode ") + std::to_string(selected->number) + "  ·  " + selected->title : sx::i18n::tr("Episodes");
@@ -338,7 +349,7 @@ void Detail::draw_info(hui::gfx::DrawList &list) const
             baseline += 64;
         }
         baseline += 10;
-        text(list,env_.fonts.regular,t.year + (t.runtime.empty() ? "" : "   ·   " + t.runtime),382,baseline,26,theme::ink_2);
+        title_metadata(list,env_,t,t.year + (t.runtime.empty() ? "" : "   ·   " + t.runtime),382,baseline,588);
         baseline += 40;
         text(list,env_.fonts.regular,env_.fonts.regular.font->fit(t.genres,24,588),382,baseline,24,theme::ink_2);
         draw_imdb(list,env_,t.imdb,382,baseline+44);
@@ -395,8 +406,7 @@ void Detail::draw_info(hui::gfx::DrawList &list) const
     if (!t.genres.empty())
         meta += "   \xC2\xB7   " + t.genres;
     // The rating badge follows the line, so the line leaves room for it before the panel.
-    meta = env_.fonts.regular.font->fit(meta, 26.0f, t.imdb.empty() ? w : w - 190.0f);
-    const float meta_w = text(list, env_.fonts.regular, meta, x, baseline, 26.0f, theme::ink_2);
+    const float meta_w = title_metadata(list,env_,t,meta,x,baseline,t.imdb.empty()?w:w-190.0f);
     draw_imdb(list, env_, t.imdb, x + meta_w + 30.0f, baseline);
     baseline += 58.0f;
     if ((mode_ == Mode::streams && !content_->resume_label.empty())||t.watched)

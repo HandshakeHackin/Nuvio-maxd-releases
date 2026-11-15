@@ -2,6 +2,7 @@
 #include "feature_http.h"
 #include "live_tv.h"
 #include "util.h"
+#include "age_ratings.hpp"
 #include <algorithm>
 #include <cerrno>
 #include <fcntl.h>
@@ -59,7 +60,7 @@ Json project(const Json &j, const char *file) {
     for (const auto *k :
          {"extra_addons", "provider_enabled", "provider_settings",
           "subtitle_languages", "audio_languages", "auto_subtitles",
-          "source_preferences", "sports_hub"})
+          "source_preferences", "sports_hub", "age_rating_country"})
       if (j.contains(k))
         out[k] = j[k];
   } else if (std::string(file) == "live-tv.json") {
@@ -97,6 +98,11 @@ bool valid_file(const std::string &name, const std::string &bytes,
     return false;
   }
   if (name == "profile-settings.json") {
+    if(j.contains("age_rating_country") &&
+       (!j["age_rating_country"].is_string() ||
+        age_ratings::preference(j["age_rating_country"].get<std::string>())!=j["age_rating_country"].get<std::string>())) {
+      error="Invalid age-rating country.";return false;
+    }
     for (const auto *k : {"provider_enabled", "provider_settings",
                           "source_preferences", "sports_hub"})
       if (j.contains(k) && !j[k].is_object()) {

@@ -1,12 +1,19 @@
 # Native Nuvio Max'd for PS5
 
-## 1.0.0.25: official release
+## 1.0.0.26: age ratings
+
+Movie and series details show published TMDB certifications beside their metadata.
+Choose **Settings → Account & Services → Age-rating country**. The badge names
+its country; US is the fallback and missing ratings stay hidden. The preference
+is saved per profile. See [behavior and checks](AGE_RATINGS.md).
+
+## Component versions
 
 The app now builds with LLVM 23.1.5, PacBrew 0.41.1, FFmpeg 9.0.2 and
 OpenSSL 4.1.0, with refreshed EVO, provider, compression, networking and text
 dependencies. SDK 0.45 and OpenGL 1.0.2 remain pinned. Use the
 [isolated build instructions](DEPENDENCY_REFRESH_BUILD.txt) and
-[release checklist](TESTING-1.0.0.25.md).
+[release checklist](TESTING-1.0.0.26.md).
 
 ## 1.0.0.19: detail actions and controller hints
 
@@ -45,7 +52,7 @@ thumbnails, descriptions and watch-progress indicators. Films show their poster
 beside metadata and stream cards. These layouts follow the artwork-focused
 approach in [Stremio-Plus](https://github.com/LoZazaMastro/Stremio-Plus).
 
-This folder contains the Nuvio Max'd source for the **v1.0.0.25 official
+This folder contains the Nuvio Max'd source for the **v1.0.0.26 official
 release**. The OpenGL
 interface, addon requests and player run together in one process and are
 packaged as a single FFPFSC image.

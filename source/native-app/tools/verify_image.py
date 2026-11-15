@@ -46,7 +46,7 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
     param = json.loads((extracted / 'sce_sys/param.json').read_text())
     display_profile = validate_display_metadata(param)
     assert param['titleId'] == 'PPSA99288'
-    assert param['contentVersion'] == '07.000.025'
+    assert param['contentVersion'] == '07.000.026'
     assert param['localizedParameters']['en-US']['titleName'] == "Nuvio Max'd"
     assert param['contentId'] == 'UP9000-PPSA99288_00-NUVIOPS5NAT00001'
     assert param['applicationCategoryType'] == 0
@@ -58,7 +58,7 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
     assert struct.unpack_from('<HH', data, elf + 16) == (0xFE10, 62)
     assert struct.unpack_from('<Q', data, elf + 24)[0] != 0
     info = json.loads((extracted / 'build-info.json').read_text())
-    assert info['version'] == '1.0.0.25-native'
+    assert info['version'] == '1.0.0.26-native'
     assert info['userExperienceUpdates']['optionalDonationQr']
     assert info['userExperienceUpdates']['installSourceSelector'] and info['userExperienceUpdates']['sourceAwareUpdateReminders']
     assert info['experimentalAv']['driverOwnedHdrSwitch'] and info['experimentalAv']['pcmDefault']
@@ -68,6 +68,10 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
     assert info['controllerLightbar']['sharedBootEnvelope'] and info['controllerLightbar']['systemResetOnClose']
     assert info['name'] == "Nuvio Max'd"
     assert info['releaseChannel']=='stable'
+    assert info['ageRatings']['detailPage'] and info['ageRatings']['profileLocal']
+    assert info['ageRatings']['countryChoices']==32 and info['ageRatings']['fallbackCountry']=='US'
+    assert info['ageRatings']['badgeIncludesCountry'] and info['ageRatings']['hideWhenMissing']
+    assert not info['ageRatings']['extraTitleRequests'] and not info['ageRatings']['parentalFiltering']
     dependencies = info['dependencies']
     assert dependencies['sdk']['pacbrewVersion'] == '0.41.1'
     assert dependencies['hostToolchain']['version'] == '23.1.5'
@@ -188,6 +192,8 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
     assert 'Playback lifecycle: bitstream pause/seek and failed-port recovery to PCM passed' in test_log
     assert 'Playback lifecycle: hardware failure reseek to software without an A/V wait cycle passed' in test_log
     assert 'PS5 display output: 27 display output selection and probe-lifecycle assertions' in test_log
+    assert 'Age ratings: movie/TV parsing' in test_log
+    assert 'Age-rating Session: current preference on completion' in test_log
     report = {
         'name': info['name'], 'version': info['version'], 'sourceCommit': info['sourceCommit'],
         'contentVersion': param['contentVersion'],
@@ -202,6 +208,7 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
         'hostRemoteRemappingTestsPassed': True, 'hostRemoteSettingsTestsPassed': True,
         'mediaRemote': info['mediaRemote'],
         'detailActions': info['detailActions'],
+        'ageRatings': info['ageRatings'], 'hostAgeRatingRegressionsPassed': True,
         'hostTitleActionsTestsPassed': True,
         'torrentHub': info['torrentHub'],
         'hostConnectedServicesTestsPassed': 19, 'connectedServices': info['connectedServices'],

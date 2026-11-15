@@ -50,8 +50,9 @@ std::string image(const std::string& s,bool portrait){
 }
 Cast fetch_cast(const Meta& m,const std::string& key,const std::string& language,const std::atomic<bool>* cancel,const Request& request){
  Cast out;if(m.type!="movie"&&m.type!="series"){out.error="Cast photos are unavailable for this title.";return out;}Fetch f{key,cancel,request};auto media=media_id(m,f);if(media.empty()){out.error="Cast photos are unavailable for this title.";return out;}
- auto kind=m.type=="movie"?"movie":"tv";auto j=f.get(std::string(kind)+"/"+media+"?append_to_response="+(m.type=="movie"?"credits":"aggregate_credits")+"&language="+lang(language));
+ auto kind=m.type=="movie"?"movie":"tv";auto j=f.get(std::string(kind)+"/"+media+"?append_to_response="+(m.type=="movie"?"credits,release_dates":"aggregate_credits,content_ratings")+"&language="+lang(language));
  if(id(j)!=media){out.error="Cast photos are unavailable for this title.";return out;}
+ out.certifications=age_ratings::parse(j,m.type=="movie");
  auto c=jobj(j,m.type=="movie"?"credits":"aggregate_credits");std::set<std::string> seen;
  auto crew=jobj(c,"crew");if(crew.is_array())for(size_t n=0;n<crew.size()&&n<512;++n){
   bool director=jstr(crew[n],"job")=="Director";auto jobs=jobj(crew[n],"jobs");

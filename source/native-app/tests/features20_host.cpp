@@ -35,6 +35,7 @@ int main(int argc, char **argv) {
                 J{{"extra_addons",
                    J::array({"https://addon.invalid/manifest.json"})},
                   {"provider_settings", {{"private-key", "secret-fixture"}}},
+                  {"age_rating_country", "ES"},
                   {"account_session", "never-back-up"}}
                     .dump()),
             "write profile fixture");
@@ -73,7 +74,8 @@ int main(int argc, char **argv) {
     auto decrypted = config_backup::decrypt(encrypted.bytes, pass, scope);
     require(decrypted.error.empty() &&
                 decrypted.snapshot == captured.snapshot &&
-                decrypted.hash == captured.hash,
+                decrypted.hash == captured.hash &&
+                J::parse(decrypted.snapshot["files"]["profile-settings.json"].get<std::string>())["age_rating_country"]=="ES",
             "encrypted round trip");
     require(!config_backup::decrypt(encrypted.bytes, "wrong backup passphrase",
                                     scope)
@@ -104,6 +106,12 @@ int main(int argc, char **argv) {
     require(config_backup::capture(dir, scope, &cancelled).error == "Cancelled",
             "backup cancellation");
     auto invalid = captured.snapshot;
+    for(const auto& country:{J(42),J("ZZ"),J("ES?private=1")}) {
+      auto malformed=captured.snapshot;
+      malformed["files"]["profile-settings.json"]=J{{"age_rating_country",country}}.dump();
+      std::string reason;
+      require(!config_backup::validate(malformed,scope,reason),"invalid certification country rejected in backup");
+    }
     invalid["files"]["../outside"] = "{}";
     std::string error;
     require(!config_backup::restore(dir, invalid, scope, error),

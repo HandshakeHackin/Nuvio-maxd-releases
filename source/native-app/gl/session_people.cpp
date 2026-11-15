@@ -15,6 +15,8 @@ void Session::cast_load(){
  const bool had_tmdb=!meta.tmdb_id.empty();
  bg<people::Cast>([meta,cancel,language]{return providers::title_people(meta,cancel.get(),language);},[this,cancel,generation,meta_generation,had_tmdb](auto& result){
   if(*cancel||generation!=cast_generation_||meta_generation!=d_meta_gen_||!d_open_)return;
+  detail.certifications=result.certifications;
+  detail.title.certification=age_ratings::badge(detail.certifications,prefs_.age_rating_country);
   detail.people.clear();for(const auto& m:result.members)detail.people.push_back({m.id,m.name,m.role,m.photo,0,m.crew,m.character});
   detail.people_loading=false;detail.people_status=i18n::tr(result.error);changed_|=kDetail;art_dirty_=true;
   if(detail.people.empty()&&!had_tmdb&&d_meta_loaded_&&people::valid_id(d_meta_.tmdb_id))cast_load();

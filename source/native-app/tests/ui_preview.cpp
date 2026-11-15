@@ -76,7 +76,25 @@ int main(int argc, char** argv) {
     };
     const auto backdrop_texture=artwork(1920,1080,0);
     const auto poster_texture=artwork(480,720,3);
-    if(mode=="title-actions"||mode=="title-actions-movie"||mode=="watched-confirm") {
+    if(mode=="age-country") {
+        sx::DropdownState d;d.title=sx::i18n::tr("Age-rating country");
+        for(const auto& country:age_ratings::countries)d.options.push_back(std::string(country.code)+" — "+sx::i18n::tr(country.name));
+        d.selected=d.active=int(age_ratings::country_index("ES"));sx::draw_dropdown(list,env,d,1);
+    }
+    else if(mode.starts_with("age-")) {
+        sx::DetailContent content;content.series=mode=="age-series";
+        content.title.name=content.series?"A series with age certification":"A movie with age certification";
+        content.title.year="2026";content.title.runtime="2h 08m";content.title.genres="Drama, Adventure";
+        content.title.imdb="8.2";content.title.poster=poster_texture;
+        content.certifications={{"ES","12"},{"US",content.series?"TV-14":"PG-13"}};
+        if(mode=="age-missing")content.certifications.clear();
+        content.title.certification=age_ratings::badge(content.certifications,mode=="age-fallback"?"GB":"ES");
+        content.title.synopsis="Published certifications are displayed with their country. Missing certifications do not create a badge.";
+        if(content.series){content.seasons={"Season 1"};content.episodes={{1,"An episode","52m","A synopsis",false,0,poster_texture}};}
+        sx::Detail page(env);page.set_content(&content);hui::InputFrame in;
+        for(int n=0;n<120;++n)page.update(in,1.f/60);hui::gfx::BackdropSpec bg;page.draw(list,bg);
+    }
+    else if(mode=="title-actions"||mode=="title-actions-movie"||mode=="watched-confirm") {
         std::ifstream input(root+"/test-output/title-actions/previews.json");nlohmann::json scenes;input>>scenes;
         const auto& scene=scenes.at(mode);sx::DropdownState d;
         d.title=sx::i18n::tr(scene.at("title").get<std::string>());

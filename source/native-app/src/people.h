@@ -3,12 +3,13 @@
 #pragma once
 #include "stremio.h"
 #include "http.h"
+#include "age_ratings.hpp"
 #include <functional>
 namespace people {
 constexpr size_t max_members=80, max_titles=256, max_body=2u<<20;
 struct Member {std::string id,name,role,photo;bool crew=false;std::string character{};};
 struct Credit {std::string id,type,name,poster,overview,year,role;};
-struct Cast {std::vector<Member> members;std::string error;};
+struct Cast {std::vector<Member> members;std::string error;std::vector<age_ratings::Rating> certifications{};};
 struct Person {std::string id,name,biography,birthday,deathday,birthplace,known_for,photo;std::vector<Credit> movies,series;bool crew=false;std::string error;};
 struct Resolved {std::string id,type,error;};
 using Request=std::function<HttpResponse(const std::string&,const std::atomic<bool>*)>;
