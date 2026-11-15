@@ -15,8 +15,9 @@ int main() {
  ratings=parse(tv,false);assert(badge(ratings,"ES")=="ES 16"&&badge(ratings,"KR")=="KR 15세이상관람가");
  assert(badge(ratings,"GB")=="US TV-MA");
  assert(parse(movie,false).empty()&&parse(tv,true).empty());
- assert(badge({{"ES","12"}},"GB").empty()&&badge({},"US").empty());
- assert(badge({{"US","NR"}},"ES")=="US NR");
+ const std::vector<Rating> spain_only{{"ES","12"}},no_ratings,unrated{{"US","NR"}};
+ assert(badge(spain_only,"GB").empty()&&badge(no_ratings,"US").empty());
+ assert(badge(unrated,"ES")=="US NR");
  for(const auto& value:{json(),json::array(),json("bad"),json{{"content_ratings",false}},json{{"content_ratings",{{"results",false}}}}})assert(parse(value,false).empty());
  for(const auto& entry:{json(false),json{{"iso_3166_1","USA"},{"rating","18"}},json{{"iso_3166_1","US"},{"rating",18}},json{{"iso_3166_1","US"},{"rating",""}},json{{"iso_3166_1","US"},{"rating","https://private.invalid"}}})
   assert(parse(json{{"content_ratings",{{"results",json::array({entry})}}}},false).empty());
