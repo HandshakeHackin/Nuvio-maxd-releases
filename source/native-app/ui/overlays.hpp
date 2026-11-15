@@ -27,7 +27,7 @@ void draw_boot_mark(hui::gfx::DrawList &list, const Env &env, float glow, float 
 
 struct DropdownState
 {
-    enum class Purpose {generic,usb_scan,usb_import,torrent_files};
+    enum class Purpose {generic,usb_scan,usb_import,torrent_files,build_integrity};
     Purpose purpose=Purpose::generic;
     std::string title;
     std::vector<std::string> options;
@@ -38,6 +38,7 @@ struct DropdownState
     // A question about a title, in the middle of the screen: its poster, how far it is watched, and the
     // choices as large buttons (see draw_dialog). Without it the list drops from the top, for long lists.
     bool dialog = false;
+    bool wide = false; // Informational notices with a project URL and credits
     std::uint32_t poster = 0; // GL texture, 0 for none
     float progress = -1.0f;   // 0..1, negative for none
 };

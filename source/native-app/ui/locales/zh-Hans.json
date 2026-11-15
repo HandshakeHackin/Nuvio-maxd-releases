@@ -486,6 +486,16 @@
     "Taiwan": "台湾",
     "United Arab Emirates": "阿联酋",
     "United Kingdom": "英国",
-    "United States": "美国"
+    "United States": "美国",
+    "Verified release files": "发行文件已验证",
+    "Unverified build": "未经验证的版本",
+    "Checking release files...": "正在检查发行文件...",
+    "Nuvio Max'd — HandshakeHackin. Based on work by Nuvio, BlackBearReloaded, Sp9nky, Husam Osman and the credited library authors.": "Nuvio Max'd — HandshakeHackin。基于 Nuvio、BlackBearReloaded、Sp9nky、Husam Osman 和所列库作者的工作。",
+    "GPL-3.0. Forks and redistribution are allowed under the license. See LICENSE and THIRD_PARTY.md for notices.": "GPL-3.0。许可证允许派生版本和再分发。声明详见 LICENSE 和 THIRD_PARTY.md。",
+    "Some release files or credits could not be verified. This may be a modified build or a damaged installation.": "部分发行文件或署名无法验证。此版本可能已被修改，或安装文件已损坏。",
+    "Verification runs offline. You can continue using the app.": "验证在本机离线进行。您仍可继续使用应用。",
+    "Build authenticity & credits": "版本真实性与署名",
+    "Recheck release files": "重新检查发行文件",
+    "Verify release files and required credits offline. This check does not block playback.": "离线检查发行文件和必要的署名。检查不会阻止播放。"
   }
 }

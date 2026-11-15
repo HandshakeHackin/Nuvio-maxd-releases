@@ -9,6 +9,7 @@
 #include "person.hpp"
 #include "i18n.hpp"
 #include "age_ratings.hpp"
+#include "build_integrity_text.hpp"
 #include "board.hpp"
 #include "library.hpp"
 #include "addons.hpp"
@@ -77,7 +78,17 @@ int main(int argc, char** argv) {
     };
     const auto backdrop_texture=artwork(1920,1080,0);
     const auto poster_texture=artwork(480,720,3);
-    if(mode=="age-country") {
+    if(mode=="integrity-warning"||mode=="integrity-credits"||mode=="integrity-verified") {
+        sx::DropdownState d;d.wide=true;d.active=-1;
+        if(mode=="integrity-warning") {
+            d.title=sx::i18n::tr("Unverified build");d.options={sx::i18n::tr("Continue")};d.message=sx::integrity_warning();
+        }else{
+            d.title=sx::i18n::tr("Build authenticity & credits");d.options={sx::i18n::tr("Recheck release files"),sx::i18n::tr("Close")};d.selected=1;
+            d.message=sx::integrity_credits(mode=="integrity-verified"?build_integrity::Status::verified:build_integrity::Status::unverified);
+        }
+        sx::draw_dropdown(list,env,d,1);
+    }
+    else if(mode=="age-country") {
         sx::DropdownState d;d.title=sx::i18n::tr("Age-rating country");
         for(const auto& country:age_ratings::countries)d.options.push_back(std::string(country.code)+" — "+sx::i18n::tr(country.name));
         d.selected=d.active=int(age_ratings::country_index("ES"));sx::draw_dropdown(list,env,d,1);

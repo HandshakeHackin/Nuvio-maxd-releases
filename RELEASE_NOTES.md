@@ -1,3 +1,13 @@
+# Next build: Nuvio Max'd 1.0.0.27 — offline release-file checks
+
+- Verify signed release files and required credits locally at startup or from Settings → App & Updates → Build authenticity & credits.
+- Show one dismissible warning for unverified files; normal browsing, playback and profile switching remain available.
+- Keep project and contributor credits accessible in all eight menu languages. No device identification or network reporting is added.
+
+Development builds remain buildable without the owner's signing key. The published 1.0.0.26 release and its assets are unchanged.
+
+---
+
 # Nuvio Max'd 1.0.0.26 — age ratings
 
 - Movie and series details now show TMDB age certifications alongside year, runtime and genres.

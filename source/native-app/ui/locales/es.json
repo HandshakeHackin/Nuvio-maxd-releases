@@ -486,6 +486,16 @@
     "Taiwan": "Taiwán",
     "United Arab Emirates": "Emiratos Árabes Unidos",
     "United Kingdom": "Reino Unido",
-    "United States": "Estados Unidos"
+    "United States": "Estados Unidos",
+    "Verified release files": "Archivos de la versión verificados",
+    "Unverified build": "Versión no verificada",
+    "Checking release files...": "Comprobando archivos...",
+    "Nuvio Max'd — HandshakeHackin. Based on work by Nuvio, BlackBearReloaded, Sp9nky, Husam Osman and the credited library authors.": "Nuvio Max'd — HandshakeHackin. Basado en trabajos de Nuvio, BlackBearReloaded, Sp9nky, Husam Osman y los autores de las bibliotecas acreditadas.",
+    "GPL-3.0. Forks and redistribution are allowed under the license. See LICENSE and THIRD_PARTY.md for notices.": "GPL-3.0. Se permiten las versiones derivadas y la redistribución bajo la licencia. Avisos en LICENSE y THIRD_PARTY.md.",
+    "Some release files or credits could not be verified. This may be a modified build or a damaged installation.": "No se pudieron verificar algunos archivos o créditos. Puede ser una versión modificada o una instalación dañada.",
+    "Verification runs offline. You can continue using the app.": "La verificación es local y sin conexión. Puedes seguir usando la aplicación.",
+    "Build authenticity & credits": "Autenticidad y créditos",
+    "Recheck release files": "Volver a verificar archivos",
+    "Verify release files and required credits offline. This check does not block playback.": "Verifica los archivos y créditos sin conexión. Esta comprobación no bloquea la reproducción."
   }
 }

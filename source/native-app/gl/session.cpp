@@ -9,6 +9,7 @@
 #include "release_notes.hpp"
 #include "settings_navigation.hpp"
 #include "i18n.hpp"
+#include "build_integrity_text.hpp"
 
 #include "http.h"
 #include "providers.h"
@@ -87,7 +88,7 @@ enum SettingIndex
     kRemoteButtons,
     kSourceOptions,
     kSportsEnable,kSportsOpen,kSportsRegion,kSportsBrowse,kSportsFollowing,kSportsScores,kSportsChannels,kSportsClock,
-    kUiLanguage,kTvdb,kConfigBackup,kAgeRatingCountry,
+    kUiLanguage,kTvdb,kConfigBackup,kAgeRatingCountry,kBuildIntegrity,
     kSettingCount
 };
 
@@ -171,6 +172,7 @@ bool Session::init(const std::string &base_dir, const std::string &data_dir, hui
     NetStream::set_cache_dir(data_dir_);
 
     load_prefs();
+    integrity_start();
     bt::Engine::get().set_cache_bytes(int64_t(prefs_.torrent_cache_gb)<<30);
     bt::Engine::get().set_enabled(prefs_.builtin_torrents);
     release_notes_version=nuvio_update::current_version;
@@ -223,6 +225,7 @@ bool Session::init(const std::string &base_dir, const std::string &data_dir, hui
 
 void Session::shutdown()
 {
+    if(integrity_cancel_)*integrity_cancel_=true;
     person_leave();*cast_cancel_=true;
     sports_reset();
     profile_pin_cancel();
@@ -729,6 +732,8 @@ void Session::refresh_settings()
         r.on = on;
     };
     using Kind = SettingRow::Kind;
+    set(kBuildIntegrity,Kind::action,i18n::tr("Build authenticity & credits"),integrity_status(integrity_result_.status),
+        i18n::tr("Verify release files and required credits offline. This check does not block playback."));
     set(kAgeRatingCountry,Kind::value,i18n::tr("Age-rating country"),prefs_.age_rating_country,
         i18n::tr("Choose the country for title certifications. US ratings are used when unavailable. The badge shows its country. Saved for this profile; display only."));
     set(kUiLanguage,Kind::value,i18n::tr("Language"),i18n::native_name(prefs_.ui_language),i18n::tr("Use the app menus in your preferred language. Restart Max'd to apply.")+std::string(" ")+i18n::tr("Some help and status messages may appear in English."));
@@ -853,7 +858,7 @@ void Session::refresh_settings()
     group("Controls",{kRemoteButtons});
     set(kTvdb,Kind::action,i18n::tr("TheTVDB episode ordering"),"",i18n::tr("Use your TVDB API key, then choose an episode order from a series title menu."));
     set(kConfigBackup,Kind::action,i18n::tr("Configuration backup and sync"),"",i18n::tr("Encrypted profile configuration backups. Account sessions and playback history are excluded."));
-    group("App & Updates", {kTvdb,kConfigBackup,kUiLanguage,kReleaseNotes,kDiagnostics,kMetadataCredits,kDonation,kInstallSource,kUpdates,kExit});
+    group("App & Updates", {kTvdb,kConfigBackup,kUiLanguage,kBuildIntegrity,kReleaseNotes,kDiagnostics,kMetadataCredits,kDonation,kInstallSource,kUpdates,kExit});
     changed_ |= kSettings;
 }
 
@@ -862,6 +867,7 @@ void Session::settings_activate(int row)
     if(backup_busy_){say(i18n::tr("Backup operation in progress..."));return;}
     if(row==kTvdb){tvdb_menu();return;}
     if(row==kConfigBackup){backup_menu();return;}
+    if(row==kBuildIntegrity){integrity_menu();return;}
     if(row==kAgeRatingCountry){age_rating_country_menu();return;}
     if(row==kUiLanguage){
         std::vector<std::string> names,codes;for(const auto& locale:i18n::locales()){names.emplace_back(locale.native_name);codes.emplace_back(locale.code);}
@@ -1459,6 +1465,7 @@ void Session::update(float dt, const Cursor &cursor)
         boot_done_ = true;
         dlog("boot: ready after %.1f s", now - boot_start_);
     }
+    integrity_maybe_warn();
     if (toast_open && now > toast_until_)
         toast_open = false;
     // Played from Continue Watching on the Board: the title's page was open behind it only to play.

@@ -34,6 +34,7 @@
 #include "torrent/engine.h"
 #include "media_server.h"
 #include "plex.h"
+#include "build_integrity.h"
 #include <mutex>
 #include "audio/cues.hpp"
 #include "core/input.hpp"
@@ -224,6 +225,9 @@ class Session
     bool person_open=false;
     void cast_load();
     void age_rating_country_menu();
+    void integrity_start();
+    void integrity_menu();
+    void integrity_maybe_warn();
     bool person_show(int member);
     void detail_browse_people(){resume_play_=false;cancel_autoplay();}
     void person_retry();
@@ -687,6 +691,9 @@ class Session
     void want_meta(const Item &item);
 
     std::string base_dir_, data_dir_, profile_dir_;
+    build_integrity::Result integrity_result_;
+    std::shared_ptr<std::atomic<bool>> integrity_cancel_=std::make_shared<std::atomic<bool>>(false);
+    bool integrity_checking_=false,integrity_warning_pending_=false,integrity_warning_shown_=false;
     json profiles_ = json::array(), active_profile_ = json::object();
     std::set<std::string> source_attempted_;
     unsigned profile_generation_ = 0, watched_revision_ = 0;

@@ -486,6 +486,16 @@
     "Taiwan": "تايوان",
     "United Arab Emirates": "الإمارات العربية المتحدة",
     "United Kingdom": "المملكة المتحدة",
-    "United States": "الولايات المتحدة"
+    "United States": "الولايات المتحدة",
+    "Verified release files": "ملفات الإصدار موثقة",
+    "Unverified build": "إصدار غير موثق",
+    "Checking release files...": "جارٍ التحقق من الملفات...",
+    "Nuvio Max'd — HandshakeHackin. Based on work by Nuvio, BlackBearReloaded, Sp9nky, Husam Osman and the credited library authors.": "Nuvio Max'd — HandshakeHackin. مبني على أعمال Nuvio وBlackBearReloaded وSp9nky وHusam Osman ومؤلفي المكتبات المذكورين.",
+    "GPL-3.0. Forks and redistribution are allowed under the license. See LICENSE and THIRD_PARTY.md for notices.": "GPL-3.0. يُسمح بالتفرع وإعادة التوزيع وفق الرخصة. راجع LICENSE وTHIRD_PARTY.md للإشعارات.",
+    "Some release files or credits could not be verified. This may be a modified build or a damaged installation.": "تعذر توثيق بعض ملفات الإصدار أو بيانات النسب. قد يكون الإصدار معدلًا أو التثبيت تالفًا.",
+    "Verification runs offline. You can continue using the app.": "التحقق محلي ودون اتصال. يمكنك متابعة استخدام التطبيق.",
+    "Build authenticity & credits": "توثيق الإصدار والمساهمون",
+    "Recheck release files": "إعادة التحقق من الملفات",
+    "Verify release files and required credits offline. This check does not block playback.": "تحقق من ملفات الإصدار وبيانات النسب دون اتصال. لا يمنع هذا الفحص تشغيل الوسائط."
   }
 }

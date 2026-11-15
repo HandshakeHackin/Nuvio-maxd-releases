@@ -486,6 +486,16 @@
     "Taiwan": "대만",
     "United Arab Emirates": "아랍에미리트",
     "United Kingdom": "영국",
-    "United States": "미국"
+    "United States": "미국",
+    "Verified release files": "배포 파일 확인 완료",
+    "Unverified build": "확인되지 않은 빌드",
+    "Checking release files...": "배포 파일 확인 중...",
+    "Nuvio Max'd — HandshakeHackin. Based on work by Nuvio, BlackBearReloaded, Sp9nky, Husam Osman and the credited library authors.": "Nuvio Max'd — HandshakeHackin. Nuvio, BlackBearReloaded, Sp9nky, Husam Osman 및 명시된 라이브러리 제작자의 작업을 기반으로 합니다.",
+    "GPL-3.0. Forks and redistribution are allowed under the license. See LICENSE and THIRD_PARTY.md for notices.": "GPL-3.0. 라이선스에 따라 포크와 재배포가 허용됩니다. 고지는 LICENSE와 THIRD_PARTY.md를 참고하세요.",
+    "Some release files or credits could not be verified. This may be a modified build or a damaged installation.": "일부 배포 파일이나 제작자 표기를 확인하지 못했습니다. 수정된 빌드이거나 설치 파일이 손상되었을 수 있습니다.",
+    "Verification runs offline. You can continue using the app.": "확인은 오프라인으로 수행됩니다. 앱을 계속 사용할 수 있습니다.",
+    "Build authenticity & credits": "빌드 확인 및 제작자",
+    "Recheck release files": "배포 파일 다시 확인",
+    "Verify release files and required credits offline. This check does not block playback.": "배포 파일과 필수 제작자 표기를 오프라인으로 확인합니다. 재생을 차단하지 않습니다."
   }
 }

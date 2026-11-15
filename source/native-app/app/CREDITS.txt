@@ -1,0 +1,19 @@
+Nuvio Max'd
+Maintained by HandshakeHackin.
+Original project: https://github.com/HandshakeHackin/Nuvio-maxd-releases
+
+Nuvio Max'd is an unofficial native PS5 client, licensed under GPL-3.0.
+Forking and redistribution are permitted under the license. Required copyright,
+license notices and corresponding-source obligations still apply.
+
+This work builds on Nuvio, BlackBearReloaded's native app boilerplate,
+Prospero UI and OpenGL toolkit, Sp9nky's unofficial-stremio-ps5-port,
+Husam Osman's Nuvio PS5 work, and the credited EVO, VLC, FFmpeg, provider,
+font and other library authors. Their work retains its own licenses.
+
+See LICENSE, THIRD_PARTY.md and licenses/ for the full component notices.
+Nuvio Max'd is not affiliated with or endorsed by Nuvio, Sony or Stremio.
+
+Release-file verification runs offline. It identifies whether packaged files
+match a signed release; it does not identify users or redistributors, report
+installations, or restrict playback. Modified source can remove these checks.

@@ -1,5 +1,6 @@
 """Record the source and dependency pins used for a native image."""
 import json
+import os
 import hashlib
 from pathlib import Path
 import subprocess
@@ -35,8 +36,9 @@ language_registry=json.loads((root/'ui/locales/languages.json').read_text())
 language_counts={item['code']:len(json.loads((root/'ui/locales'/(item['code']+'.json')).read_text())['strings']) for item in language_registry}
 info = {
     'name': "Nuvio Max'd",
-    'version': '1.0.0.26-native',
+    'version': '1.0.0.27-native',
     'releaseChannel': 'stable',
+    'buildIntegrity': {'offline': True, 'signature': 'Ed25519', 'fileHashes': 'SHA-256', 'signedRelease': bool(os.environ.get('NUVIO_RELEASE_SIGNING_KEY')), 'creditsRequired': True, 'warningOnly': True, 'startupAndManualChecks': True, 'noDeviceIdentifiers': True, 'noNetworkReporting': True, 'maxManifestBytes': 131072, 'maxFiles': 512, 'maxFileBytes': 134217728, 'maxTotalBytes': 268435456, 'deadlineSeconds': 30, 'hardwareVerified': False},
     'ageRatings': {'source': 'TMDB', 'detailPage': True, 'countryChoices': 32, 'defaultCountry': 'US', 'fallbackCountry': 'US', 'badgeIncludesCountry': True, 'profileLocal': True, 'profileBackup': True, 'hideWhenMissing': True, 'extraTitleRequests': False, 'parentalFiltering': False, 'countryScanLimit': 256, 'releaseScanLimit': 256, 'maxLabelBytes': 48, 'hardwareVerified': False},
     'watchedStateFix': {'mdblistNestedEpisodes': True, 'boundedHistoryPagination': True, 'activitySummariesExpanded': False, 'explicitEpisodesOnly': True, 'legacyScopeCacheRetired': True, 'watchedRefreshPreservesFocus': True, 'historyBasedMovieIndicators': True, 'localMarksRetainedOnIncompleteRead': True, 'liveAccountVerified': False},
     'mdblistMembershipFix': {'scalarAndMediaReceipts': True, 'removedReceipt': True, 'rawRemoteReconciliation': True, 'boundedOffsetPagination': True, 'guardedIdShapeCompatibility': True, 'liveAccountVerified': False},
@@ -75,7 +77,7 @@ info = {
     'experimentalAv': {'driverOwnedHdrSwitch': True, 'pcmDefault': True, 'audioModes': ['pcm','auto','bitstream'], 'bitstreamCodecs': ['AC3','EAC3','DTS core'], 'trueHdDtsHd': 'decoded PCM; S16 output preferred for compatibility', 'autoHonorsStereo': True, 'hardwareVerified': False, 'driverPatchSha256': hashlib.sha256((root/'gl/scanout_driver_extension.inc').read_bytes()).hexdigest(), 'driverObjectSha256': hashlib.sha256(Path(sys.argv[3]).read_bytes()).hexdigest()},
     'consoleLightSync': {'default': True, 'setting': 'Appearance & Lighting', 'channels': ['blue','white','amber'], 'approximateLogoColours': True, 'backgroundWorker': True, 'maxUpdatesPerSecond': 5, 'restoreOnDisableAndExit': True, 'respectSystemOwnership': True, 'hardwareVerified': False},
     'settingsCategories': True,
-    'localTestBuild': {'revision': '1.0.0.26', 'multiviewExperimental': True, 'hardwareVerified': False},
+    'localTestBuild': {'revision': '1.0.0.27', 'multiviewExperimental': True, 'hardwareVerified': False},
     'playbackBadges': {'sourceResolution': True, 'sourceHdr': True, 'selectedAudioChannels': True, 'releaseType': True, 'codecs': True, 'decodedFactsOverrideFilename': True, 'hardwareVerified': False},
     'settingsSearch': {'allCategories': True, 'caseInsensitive': True, 'hardwareVerified': False},
     'liveTv': {'sources': ['M3U', 'Xtream Codes'], 'groups': True, 'search': True, 'favorites': True, 'profileLocal': True, 'usbPlaylistNativeIoFix': True, 'usbMountDiagnostics': True, 'usbReaderHelper': {'explicitChoice': True, 'roots': 8, 'readOnly': True, 'changesAppCredentials': False, 'payloadRuntimePreparesOwnCapabilities': True, 'extraListener': False, 'loader': '127.0.0.1:9021', 'oneRequestPerLaunch': True, 'profileWritesInApp': True, 'hardwareVerified': False}, 'usbDirectoryTypeFallback': 'picker hints only; import metadata required', 'usbPlaylistImport': True, 'usbImportedCopyProfileLocal': True, 'usbPlaylistHardwareVerified': False, 'nowNextGuide': True, 'optionalTimeGrid': True, 'maxListingsPerChannel': 96, 'xmltv': True, 'xtreamShortEpg': True, 'profileLocalGuideToggle': True, 'guideDocumentMaxBytes': 33554432, 'recording': False, 'catchup': False, 'hardwareVerified': False},

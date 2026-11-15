@@ -325,16 +325,17 @@ void draw_dropdown(hui::gfx::DrawList &list, const Env &env, const DropdownState
     scrim(list, t, 0.72f);
     const int count = static_cast<int>(s.options.size());
     // A confirmation has a line under its title (what it is about).
-    auto message_lines=s.message.empty()?std::vector<std::string>{}:env.fonts.regular.font->wrap(s.message,26.0f,532.0f);
-    const size_t max_lines=count>5?3:8;
+    const float width=s.wide?860.0f:620.0f;
+    auto message_lines=s.message.empty()?std::vector<std::string>{}:env.fonts.regular.font->wrap(s.message,26.0f,width-88.0f);
+    const size_t max_lines=count>5?3:(s.wide?12:8);
     if(message_lines.size()>max_lines) {
         message_lines.resize(max_lines);
-        message_lines.back()=env.fonts.regular.font->fit(message_lines.back()+" …",26.0f,532.0f);
+        message_lines.back()=env.fonts.regular.font->fit(message_lines.back()+" …",26.0f,width-88.0f);
     }
     const float extra=message_lines.empty()?0.0f:14.0f+32.0f*float(message_lines.size());
     const auto window = dropdown_window(count, s.selected, extra);
     const float footer = window.visible < count ? 28.0f : 0.0f;
-    const Rect r{theme::kScreenW * 0.5f - 310.0f, 130.0f, 620.0f,
+    const Rect r{theme::kScreenW * 0.5f - width*0.5f, 130.0f, width,
                  150.0f + extra + static_cast<float>(window.visible) * 76.0f + footer};
     list.push_opacity(t);
     list.push_transform(0.96f + 0.04f * t, r.cx(), r.y, 0.0f, 0.0f);

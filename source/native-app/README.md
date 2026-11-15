@@ -1,5 +1,14 @@
 # Native Nuvio Max'd for PS5
 
+## Next build: 1.0.0.27 — offline release checks
+
+Signed package metadata and file hashes identify changes to release files,
+including credits and license notices. Verification runs locally in a background
+worker; a dismissible warning preserves normal playback and profile settings.
+See **Settings → App & Updates → Build authenticity & credits** and
+[implementation, signing and limits](BUILD_INTEGRITY.md).
+
+
 ## 1.0.0.26: age ratings
 
 Movie and series details show published TMDB certifications beside their metadata.

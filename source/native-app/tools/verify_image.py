@@ -46,7 +46,7 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
     param = json.loads((extracted / 'sce_sys/param.json').read_text())
     display_profile = validate_display_metadata(param)
     assert param['titleId'] == 'PPSA99288'
-    assert param['contentVersion'] == '07.000.026'
+    assert param['contentVersion'] == '07.000.027'
     assert param['localizedParameters']['en-US']['titleName'] == "Nuvio Max'd"
     assert param['contentId'] == 'UP9000-PPSA99288_00-NUVIOPS5NAT00001'
     assert param['applicationCategoryType'] == 0
@@ -58,7 +58,7 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
     assert struct.unpack_from('<HH', data, elf + 16) == (0xFE10, 62)
     assert struct.unpack_from('<Q', data, elf + 24)[0] != 0
     info = json.loads((extracted / 'build-info.json').read_text())
-    assert info['version'] == '1.0.0.26-native'
+    assert info['version'] == '1.0.0.27-native'
     assert info['userExperienceUpdates']['optionalDonationQr']
     assert info['userExperienceUpdates']['installSourceSelector'] and info['userExperienceUpdates']['sourceAwareUpdateReminders']
     assert info['experimentalAv']['driverOwnedHdrSwitch'] and info['experimentalAv']['pcmDefault']
@@ -68,6 +68,10 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
     assert info['controllerLightbar']['sharedBootEnvelope'] and info['controllerLightbar']['systemResetOnClose']
     assert info['name'] == "Nuvio Max'd"
     assert info['releaseChannel']=='stable'
+    assert info['buildIntegrity']['offline'] and info['buildIntegrity']['warningOnly']
+    assert info['buildIntegrity']['signature']=='Ed25519' and info['buildIntegrity']['signedRelease']
+    assert info['buildIntegrity']['noNetworkReporting'] and info['buildIntegrity']['creditsRequired']
+    subprocess.run(['python3', str(Path(__file__).resolve().parent/'create_release_manifest.py'), str(extracted), '--verify'],check=True,capture_output=True)
     assert info['ageRatings']['detailPage'] and info['ageRatings']['profileLocal']
     assert info['ageRatings']['countryChoices']==32 and info['ageRatings']['fallbackCountry']=='US'
     assert info['ageRatings']['badgeIncludesCountry'] and info['ageRatings']['hideWhenMissing']
