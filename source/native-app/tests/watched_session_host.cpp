@@ -12,7 +12,7 @@ int main() {
  response.result={{"synced",true},{"entries",json::array({{{"content_id","tt123"},{"season",nullptr},{"episode",nullptr}}})}};
  s.load_watched();s.complete();assert(s.watched_.count("tt123")&&s.detail.title.watched&&s.discover.items[0].watched&&s.search.rows[0].items[0].watched);
  assert(s.board.rows[0].items[0].watched&&s.library.items[0].watched);
- s.detail.title.watched=false;s.detail_fill_title();assert(s.detail.title.watched);
+ s.detail.title.watched=false;s.detail.title.certification="ES 12";s.detail_fill_title();assert(s.detail.title.watched&&s.detail.title.certification=="ES 12");
  // A saved snapshot survives restart and a detail revisit; resume is independent.
  sx::Progress progress;progress.time=900;progress.duration=3600;progress.video_id="tt123";s.progress_["tt123"]=progress;s.save_progress();
  sx::Session restored;restored.profile_dir_=root;restored.load_progress();assert(restored.watched_.count("tt123")&&restored.progress_["tt123"].time==900);
