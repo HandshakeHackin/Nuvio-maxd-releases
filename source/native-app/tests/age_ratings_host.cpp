@@ -23,6 +23,9 @@ int main() {
   assert(parse(json{{"content_ratings",{{"results",json::array({entry})}}}},false).empty());
  for(const auto& value:{std::string(""),std::string("  "),std::string(49,'x'),std::string("PG\n13"),std::string("PG\0secret",9),std::string("\xc0\xaf"),std::string("\xed\xa0\x80"),std::string("\xe2\x80\xaePG"),std::string("N/A"),std::string("<18>")})assert(label(value).empty());
  assert(label("普遍級")=="普遍級"&&label("R15+")=="R15+"&&label("TV-Y7-FV")=="TV-Y7-FV");
+ assert(label("M/12")=="M/12"&&label("U/A 16+")=="U/A 16+"&&label("//private.invalid").empty());
+ auto portugal=movie;portugal["release_dates"]["results"].push_back({{"iso_3166_1","PT"},{"release_dates",json::array({{{"type",3},{"certification","M/12"}}})}});
+ assert(badge(parse(portugal,true),"PT")=="PT M/12");
  auto bad_type=movie;for(auto& release:bad_type["release_dates"]["results"][0]["release_dates"])release["type"]=true;
  assert(badge(parse(bad_type,true),"ES")=="US PG-13");
  auto bounded=tv;bounded["content_ratings"]["results"]=json::array();

@@ -50,7 +50,7 @@ inline std::string label(std::string value) {
  value=value.substr(first,last-first+1);
  for(std::size_t i=0;i<value.size();) {
   auto c=static_cast<unsigned char>(value[i++]);unsigned cp=c;int extra=0;
-  if(c<0x80){if(c<32||c==127||std::string_view("<>/:?&#\\").find(char(c))!=std::string_view::npos)return {};continue;}
+  if(c<0x80){if(c<32||c==127||std::string_view("<>:?&#\\").find(char(c))!=std::string_view::npos)return {};continue;}
   if(c>=0xc2&&c<=0xdf){extra=1;cp=c&31;}
   else if(c>=0xe0&&c<=0xef){extra=2;cp=c&15;}
   else if(c>=0xf0&&c<=0xf4){extra=3;cp=c&7;}else return {};
@@ -59,7 +59,7 @@ inline std::string label(std::string value) {
   if((extra==2&&cp<0x800)||(extra==3&&cp<0x10000)||cp>0x10ffff||
      (cp>=0xd800&&cp<=0xdfff)||cp<0xa0||(cp>=0x2000&&cp<=0x206f)||cp==0xfeff)return {};
  }
- if(value=="-"||value=="?")return {};
+ if(value=="-"||value=="?"||value=="N/A"||value=="n/a"||value.front()=='/'||value.find("//")!=std::string::npos)return {};
  return value;
 }
 inline std::string field(const nlohmann::json& j,const char* key) {
