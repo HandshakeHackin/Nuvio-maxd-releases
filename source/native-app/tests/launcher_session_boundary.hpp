@@ -16,7 +16,7 @@ inline bool save(const std::string& path,const std::string& bytes) {if(failed_li
 }
 namespace sx {
 struct Session {
- Prefs prefs_;json live_state_=json::object();std::string profile_dir_,live_source_="a",live_group_,live_query_,live_filter_;
+ Prefs prefs_;json live_state_=json::object();std::string profile_dir_,live_source_="a",live_group_,live_query_,live_filter_,live_guide_window_;
  bool profile_ready_=true,backup_busy_=false,watching=false,resuming_=false,launch_open=false,live_loading_=false,sports_visible=true,fail_profile_write=false;
  unsigned profile_generation_=1,live_generation_=1,changed_=0;int w_gen_=0,live_view_=0,source_menus=0,stops=0,refreshes=0;
  size_t live_page_=0;enum {kLive=2048};

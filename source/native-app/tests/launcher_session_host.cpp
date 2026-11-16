@@ -11,11 +11,12 @@ int main(int argc,char** argv) {
  s.live_channel_menu(1);s.choose(1);s.type("My news");assert(s.live_content.items[1].name=="My news");
  assert(s.live_content.items[1].identity==key&&s.live_channels_[0].name=="News HD");
  s.live_query_="My news";s.live_build();assert(s.live_indices_.size()==1);s.live_query_="News HD";s.live_build();assert(s.live_indices_.size()==1);s.live_query_.clear();s.live_build();
- s.live_channel_menu(1);s.choose(2);assert(s.live_indices_.size()==1);
+ s.live_guide_window_="previous-window";
+ s.live_channel_menu(1);s.choose(2);assert(s.live_indices_.size()==1&&s.live_guide_window_.empty());
  s.live_hidden_channels();assert(s.choices.size()==2&&s.choices[1]=="My news");s.choose(1);assert(s.live_indices_.size()==2);
  s.live_channel_menu(1);s.choose(2);s.live_channel_menu(1);s.choose(2);assert(s.live_indices_.empty());
  s.live_hidden_channels();s.choose(0);assert(s.live_indices_.size()==2&&s.live_content.items[1].name=="My news");
- const auto before=s.live_state_;failed_live_write=true;s.live_channel_menu(1);s.choose(1);s.type("Lost edit");assert(s.live_state_==before&&s.live_content.items[1].name=="My news");failed_live_write=false;
+ const auto before=s.live_state_;s.live_guide_window_="retained-window";failed_live_write=true;s.live_channel_menu(1);s.choose(1);s.type("Lost edit");assert(s.live_state_==before&&s.live_content.items[1].name=="My news"&&s.live_guide_window_=="retained-window");failed_live_write=false;
  s.live_channel_menu(1);s.choose(1);auto stale=s.enter;++s.profile_generation_;stale("Other profile");assert(s.live_state_==before);
  s.live_channel_menu(1);s.choose(1);stale=s.enter;++s.live_generation_;stale("Reloaded list");assert(s.live_state_==before);
  const bool hidden=true;assert(live_channel_prefs::set(s.live_state_,"a",live_channel_prefs::key("a",second),nullptr,&hidden));

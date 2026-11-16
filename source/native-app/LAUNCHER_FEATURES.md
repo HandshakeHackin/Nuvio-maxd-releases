@@ -44,6 +44,8 @@ at most 32 distinct URL/header pairs. It requires explicit selection.
 New edits roll back in memory when private atomic saving fails. Dialog and text
 callbacks reject stale profile/source/list generations. Backup selection also
 checks the active playback generation before stopping or replacing a stream.
+Successful channel edits invalidate the visible guide window so newly exposed
+channels are parsed from the cached bounded guide document on the next tick.
 The startup destination is scheduled only after profile selection succeeds.
 No new filesystem syscalls, device identifiers, services or dependencies are added.
 

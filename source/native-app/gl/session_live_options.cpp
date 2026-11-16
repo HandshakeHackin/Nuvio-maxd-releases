@@ -6,6 +6,9 @@
 namespace sx {
 bool Session::live_edit_commit(const json& previous) {
  if(!live_save()){live_state_=previous;return false;}
+ // Hiding/restoring can reveal channels outside the previous 500-row window.
+ // The guide worker reuses its bounded raw document when this window changes.
+ live_guide_window_.clear();
  live_build();return true;
 }
 void Session::live_channel_menu(int index) {
