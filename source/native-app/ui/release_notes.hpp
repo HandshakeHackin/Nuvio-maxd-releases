@@ -7,9 +7,9 @@ inline bool should_show_release_notes(std::string_view seen, std::string_view cu
     return !current.empty() && seen != current;
 }
 inline constexpr std::array<const char*,4> release_note_items = {
-    "1.0.0.26: age ratings on movie and series detail pages.",
-    "Choose Age-rating country in Settings > Account & Services. Saved separately for each profile.",
-    "The badge names its country. US is the fallback; missing ratings do not create a badge.",
-    "Ratings are display only. Eight menu languages and previous playback, library and watched fixes are retained.",
+    "1.0.0.28: choose your start page in Settings > App & Updates.",
+    "Live TV remembers each source's group. Options on a channel lets you rename or hide it.",
+    "Choose backup copies from your current playlist. Restore hidden channels in Sources & filters.",
+    "Signed release files and credits are checked offline. Warnings are dismissible; playback remains available.",
 };
 }

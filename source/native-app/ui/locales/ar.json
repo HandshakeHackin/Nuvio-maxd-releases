@@ -515,6 +515,10 @@
     "Reload this playlist to choose backup channels.": "أعد تحميل هذه القائمة لاختيار قنوات بديلة.",
     "No other copies were found in the current playlist.": "لم يتم العثور على نسخ أخرى في قائمة التشغيل الحالية.",
     "Choose another copy from the current playlist. Hidden channels are included. Playback changes only after you choose a channel.": "اختر نسخة أخرى من القائمة الحالية، بما فيها القنوات المخفية. لا يتغير التشغيل إلا بعد اختيار قناة.",
-    "X: watch · Square: favorite · Options: channel settings": "X: مشاهدة · مربع: مفضلة · Options: إعدادات القناة"
+    "X: watch · Square: favorite · Options: channel settings": "X: مشاهدة · مربع: مفضلة · Options: إعدادات القناة",
+    "1.0.0.28: choose your start page in Settings > App & Updates.": "1.0.0.28: اختر صفحة البدء من الإعدادات > التطبيق والتحديثات.",
+    "Live TV remembers each source's group. Options on a channel lets you rename or hide it.": "يتذكر البث المباشر مجموعة كل مصدر. اضغط Options على قناة لإعادة تسميتها أو إخفائها.",
+    "Choose backup copies from your current playlist. Restore hidden channels in Sources & filters.": "اختر نسخًا بديلة من قائمتك الحالية. أظهر القنوات المخفية من المصادر والفلاتر.",
+    "Signed release files and credits are checked offline. Warnings are dismissible; playback remains available.": "تُفحص ملفات الإصدار الموقعة وبيانات النسب دون اتصال. يمكنك إغلاق التنبيه ومواصلة التشغيل."
   }
 }

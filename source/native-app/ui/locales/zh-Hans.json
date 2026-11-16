@@ -515,6 +515,10 @@
     "Reload this playlist to choose backup channels.": "请重新加载此列表以选择备用频道。",
     "No other copies were found in the current playlist.": "当前播放列表中未找到其他版本。",
     "Choose another copy from the current playlist. Hidden channels are included. Playback changes only after you choose a channel.": "从当前播放列表选择其他版本，包含隐藏频道。选择频道后才会切换播放。",
-    "X: watch · Square: favorite · Options: channel settings": "X：观看 · 方块：收藏 · Options：频道设置"
+    "X: watch · Square: favorite · Options: channel settings": "X：观看 · 方块：收藏 · Options：频道设置",
+    "1.0.0.28: choose your start page in Settings > App & Updates.": "1.0.0.28：在设置 > 应用与更新中选择启动页面。",
+    "Live TV remembers each source's group. Options on a channel lets you rename or hide it.": "直播电视会记住每个来源的分组。对频道按 Options 可重命名或隐藏。",
+    "Choose backup copies from your current playlist. Restore hidden channels in Sources & filters.": "从当前播放列表选择备用版本。在来源和筛选中恢复隐藏频道。",
+    "Signed release files and credits are checked offline. Warnings are dismissible; playback remains available.": "离线校验已签名的发布文件和署名。警告可以关闭，仍可继续播放。"
   }
 }

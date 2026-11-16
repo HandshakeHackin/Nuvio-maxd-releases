@@ -515,6 +515,10 @@
     "Reload this playlist to choose backup channels.": "代替チャンネルを選ぶにはプレイリストを再読み込みしてください。",
     "No other copies were found in the current playlist.": "現在のプレイリストに別の配信は見つかりませんでした。",
     "Choose another copy from the current playlist. Hidden channels are included. Playback changes only after you choose a channel.": "現在のリストから別の配信を選びます。非表示のチャンネルも含みます。選択後に再生が切り替わります。",
-    "X: watch · Square: favorite · Options: channel settings": "X: 視聴 · □: お気に入り · Options: チャンネル設定"
+    "X: watch · Square: favorite · Options: channel settings": "X: 視聴 · □: お気に入り · Options: チャンネル設定",
+    "1.0.0.28: choose your start page in Settings > App & Updates.": "1.0.0.28: 設定 > アプリと更新で開始ページを選べます。",
+    "Live TV remembers each source's group. Options on a channel lets you rename or hide it.": "ライブTVはソースごとのグループを記憶します。チャンネルでOptionsを押すと名前変更や非表示にできます。",
+    "Choose backup copies from your current playlist. Restore hidden channels in Sources & filters.": "現在のプレイリストから代替配信を選べます。非表示チャンネルはソースとフィルターで戻せます。",
+    "Signed release files and credits are checked offline. Warnings are dismissible; playback remains available.": "署名付き配信ファイルとクレジットをオフラインで確認します。警告は閉じることができ、再生も続けられます。"
   }
 }

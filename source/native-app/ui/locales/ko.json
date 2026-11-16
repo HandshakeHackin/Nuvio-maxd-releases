@@ -515,6 +515,10 @@
     "Reload this playlist to choose backup channels.": "대체 채널을 선택하려면 이 재생목록을 다시 불러오세요.",
     "No other copies were found in the current playlist.": "현재 재생목록에서 다른 버전을 찾지 못했습니다.",
     "Choose another copy from the current playlist. Hidden channels are included. Playback changes only after you choose a channel.": "숨긴 채널을 포함해 현재 목록에서 다른 버전을 고르세요. 채널을 선택한 후에만 재생이 전환됩니다.",
-    "X: watch · Square: favorite · Options: channel settings": "X: 시청 · 네모: 즐겨찾기 · Options: 채널 설정"
+    "X: watch · Square: favorite · Options: channel settings": "X: 시청 · 네모: 즐겨찾기 · Options: 채널 설정",
+    "1.0.0.28: choose your start page in Settings > App & Updates.": "1.0.0.28: 설정 > 앱 및 업데이트에서 시작 화면을 선택하세요.",
+    "Live TV remembers each source's group. Options on a channel lets you rename or hide it.": "라이브 TV가 소스별 그룹을 기억합니다. 채널에서 Options를 눌러 이름을 바꾸거나 숨길 수 있습니다.",
+    "Choose backup copies from your current playlist. Restore hidden channels in Sources & filters.": "현재 재생목록에서 대체 버전을 선택하세요. 소스 및 필터에서 숨긴 채널을 복원할 수 있습니다.",
+    "Signed release files and credits are checked offline. Warnings are dismissible; playback remains available.": "서명된 배포 파일과 크레딧을 오프라인으로 확인합니다. 경고를 닫고 계속 재생할 수 있습니다."
   }
 }
