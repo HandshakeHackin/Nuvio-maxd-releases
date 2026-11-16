@@ -17,3 +17,7 @@ Nuvio Max'd is not affiliated with or endorsed by Nuvio, Sony or Stremio.
 Release-file verification runs offline. It identifies whether packaged files
 match a signed release; it does not identify users or redistributors, report
 installations, or restrict playback. Modified source can remove these checks.
+
+Start-page and Live TV usability features are inspired by Br0ck25/NuvioTVLauncher,
+NuvioMedia/NuvioTV and homelessbrian/NuvioPlusIPTV. See
+licenses/nuvio-tv-launcher/NOTICE.txt and UPSTREAM.json for the reviewed source.

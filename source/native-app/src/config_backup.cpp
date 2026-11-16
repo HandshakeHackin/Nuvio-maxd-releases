@@ -3,6 +3,8 @@
 #include "live_tv.h"
 #include "util.h"
 #include "age_ratings.hpp"
+#include "../ui/start_page.hpp"
+#include "live_channel_prefs.hpp"
 #include <algorithm>
 #include <cerrno>
 #include <fcntl.h>
@@ -60,12 +62,12 @@ Json project(const Json &j, const char *file) {
     for (const auto *k :
          {"extra_addons", "provider_enabled", "provider_settings",
           "subtitle_languages", "audio_languages", "auto_subtitles",
-          "source_preferences", "sports_hub", "age_rating_country"})
+          "source_preferences", "sports_hub", "age_rating_country", "start_page"})
       if (j.contains(k))
         out[k] = j[k];
   } else if (std::string(file) == "live-tv.json") {
     for (const auto *k : {"sources", "selected", "favorites", "recent",
-                          "guide_enabled", "guide_grid"})
+                          "guide_enabled", "guide_grid", "channel_edits", "last_groups"})
       if (j.contains(k))
         out[k] = j[k];
   } else if (std::string(file) == "tvdb.json")
@@ -98,6 +100,7 @@ bool valid_file(const std::string &name, const std::string &bytes,
     return false;
   }
   if (name == "profile-settings.json") {
+    if(j.contains("start_page")&&(!j["start_page"].is_string()||!sx::start_page::valid(j["start_page"].get_ref<const std::string&>()))) {error="Invalid start page.";return false;}
     if(j.contains("age_rating_country") &&
        (!j["age_rating_country"].is_string() ||
         age_ratings::preference(j["age_rating_country"].get<std::string>())!=j["age_rating_country"].get<std::string>())) {
@@ -151,6 +154,7 @@ bool valid_file(const std::string &name, const std::string &bytes,
         }
   }
   if (name == "live-tv.json") {
+    if(!live_channel_prefs::valid(j)){error="Invalid channel customizations.";return false;}
     if (j.contains("sources")) {
       if (!j["sources"].is_array() || j["sources"].size() > 16) {
         error = "Invalid Live TV sources.";

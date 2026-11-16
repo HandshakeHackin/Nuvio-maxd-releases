@@ -1,0 +1,12 @@
+{
+  "project": "NuvioTVLauncher",
+  "repository": "https://github.com/Br0ck25/NuvioTVLauncher",
+  "reviewedCommit": "7867b98484a6fb2c4af4914abe494c825c2fc541",
+  "reviewed": "2026-11-16",
+  "license": "GPL-3.0",
+  "implementation": "Independent native C++ adaptation of documented start-page, remembered-group, channel rename/hide and backup-channel behavior. No Android/Kotlin code imported.",
+  "upstreams": [
+    "https://github.com/NuvioMedia/NuvioTV",
+    "https://github.com/homelessbrian/NuvioPlusIPTV"
+  ]
+}

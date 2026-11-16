@@ -75,3 +75,6 @@ native/tube_frame_pacing.h at that commit. HDR switching and GPU lifetime
 safeguards follow the in-place VideoOut and frame-retirement approach,
 adapted to Nuvio's OpenGL renderer. The matching source archive contains
 the scheduler and adaptations; the GPL license is included in this package.
+
+NuvioTVLauncher feature inspiration (GPL-3.0): native C++ start-page and Live TV
+controls. Credits and reviewed source: nuvio-tv-launcher/NOTICE.txt, UPSTREAM.json.

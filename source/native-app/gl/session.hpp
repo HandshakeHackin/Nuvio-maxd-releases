@@ -209,6 +209,12 @@ class Session
     void live_search();
     void live_cycle();
     void live_activate(int index, bool favorite = false);
+    void live_channel_menu(int index);
+    void live_backups(const std::string& key);
+    void live_hidden_channels();
+    bool live_edit_commit(const json& previous);
+    void start_page_menu();
+    void start_page_apply();
     AddonsContent torrents_content;
     bool torrents_visible = false;
     void torrent_menu(bool settings_only = false);
@@ -510,7 +516,7 @@ class Session
     std::string sports_query_,sports_notice_;
     double sports_next_feed_=0,sports_next_tick_=0,sports_next_score_=0;
     void live_load();
-    void live_save();
+    bool live_save();
     void live_build();
     void live_guide_reset();
     void live_guide_update(int focus);

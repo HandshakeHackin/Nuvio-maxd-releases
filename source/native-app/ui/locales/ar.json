@@ -496,6 +496,25 @@
     "Verification runs offline. You can continue using the app.": "التحقق محلي ودون اتصال. يمكنك متابعة استخدام التطبيق.",
     "Build authenticity & credits": "توثيق الإصدار والمساهمون",
     "Recheck release files": "إعادة التحقق من الملفات",
-    "Verify release files and required credits offline. This check does not block playback.": "تحقق من ملفات الإصدار وبيانات النسب دون اتصال. لا يمنع هذا الفحص تشغيل الوسائط."
+    "Verify release files and required credits offline. This check does not block playback.": "تحقق من ملفات الإصدار وبيانات النسب دون اتصال. لا يمنع هذا الفحص تشغيل الوسائط.",
+    "Open Max'd on": "فتح Max'd على",
+    "Could not save the start page. Try again.": "تعذر حفظ صفحة البدء. حاول مرة أخرى.",
+    "Choose the page to open after selecting this profile. Disabled Sports falls back to Home. Playback does not start automatically.": "اختر الصفحة بعد تحديد هذا الملف الشخصي. عند تعطيل الرياضة تُفتح الرئيسية. لا يبدأ التشغيل تلقائيًا.",
+    "Watch channel": "مشاهدة القناة",
+    "Rename channel": "إعادة تسمية القناة",
+    "Hide channel": "إخفاء القناة",
+    "Backup channels": "قنوات بديلة",
+    "Channel preferences limit reached": "تم بلوغ الحد الأقصى لتخصيص القنوات",
+    "Channel hidden. Restore it in Live TV sources & filters.": "تم إخفاء القناة. يمكنك إظهارها من مصادر وفلاتر البث المباشر.",
+    "Use a shorter name on a single line.": "استخدم اسمًا أقصر في سطر واحد.",
+    "Channel name (empty restores the provider name)": "اسم القناة (اتركه فارغًا لاستعادة اسم المزود)",
+    "Show all hidden channels": "إظهار جميع القنوات المخفية",
+    "Hidden channels": "القنوات المخفية",
+    "No hidden channels in the current playlist.": "لا توجد قنوات مخفية في قائمة التشغيل الحالية.",
+    "Select a channel to show it again. Up to 200 are listed; Show all restores every hidden channel in this playlist.": "اختر قناة لإظهارها. تُعرض حتى 200 قناة؛ إظهار الكل يستعيد جميع القنوات المخفية في هذه القائمة.",
+    "Reload this playlist to choose backup channels.": "أعد تحميل هذه القائمة لاختيار قنوات بديلة.",
+    "No other copies were found in the current playlist.": "لم يتم العثور على نسخ أخرى في قائمة التشغيل الحالية.",
+    "Choose another copy from the current playlist. Hidden channels are included. Playback changes only after you choose a channel.": "اختر نسخة أخرى من القائمة الحالية، بما فيها القنوات المخفية. لا يتغير التشغيل إلا بعد اختيار قناة.",
+    "X: watch · Square: favorite · Options: channel settings": "X: مشاهدة · مربع: مفضلة · Options: إعدادات القناة"
   }
 }

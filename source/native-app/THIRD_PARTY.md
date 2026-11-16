@@ -230,3 +230,11 @@ The isolated build uses LLVM 23.1.5, Payload SDK 0.45 and the PacBrew 0.41.1 lib
 The refresh includes zlib 1.4, zstd 1.5.7, XZ 5.8.4, libpsl 0.23.3, fontconfig 2.18.3, libiconv 1.19.1, miniupnpc 2.3.3, dht 0.28, libebml 1.4.7 and utf8cpp 4.2.1. Original component licenses and new notices are preserved. The packaged CA data is the checksum-verified November 5 Mozilla/curl bundle. STB image, truetype and image-write headers are updated at their recorded upstream commit.
 
 Montserrat is 7.222. Noto Naskh Arabic 2.021 hinted faces replace legacy Arabic UI faces while retaining the loader filenames; their OFL notice ships with them. Existing Inter faces already match release 4.1. Other bundled font sources remain pinned. All eight menu languages retain their existing translations. Provider package integrity, compatibility adapters and notices are recorded in third_party/provider-runtime.
+
+## NuvioTVLauncher feature inspiration
+
+The native start-page, remembered TV groups, channel customization and backup
+selection behavior was inspired by Br0ck25/NuvioTVLauncher (GPL-3.0), reviewed at
+7867b98484a6fb2c4af4914abe494c825c2fc541. Max'd uses independent C++ implementations.
+See app/licenses/nuvio-tv-launcher/ for credits and source provenance, including
+NuvioMedia/NuvioTV and homelessbrian/NuvioPlusIPTV. Android-specific code is not bundled.

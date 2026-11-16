@@ -496,6 +496,25 @@
     "Verification runs offline. You can continue using the app.": "検証はオフラインで行います。アプリの使用は続けられます。",
     "Build authenticity & credits": "ビルドの検証とクレジット",
     "Recheck release files": "配布ファイルを再確認",
-    "Verify release files and required credits offline. This check does not block playback.": "配布ファイルと必要なクレジットをオフラインで確認します。再生は制限されません。"
+    "Verify release files and required credits offline. This check does not block playback.": "配布ファイルと必要なクレジットをオフラインで確認します。再生は制限されません。",
+    "Open Max'd on": "Max'd の開始ページ",
+    "Could not save the start page. Try again.": "開始ページを保存できませんでした。再試行してください。",
+    "Choose the page to open after selecting this profile. Disabled Sports falls back to Home. Playback does not start automatically.": "プロフィール選択後に開くページを選びます。スポーツが無効ならホームを開きます。再生は自動開始しません。",
+    "Watch channel": "チャンネルを視聴",
+    "Rename channel": "チャンネル名を変更",
+    "Hide channel": "チャンネルを非表示",
+    "Backup channels": "代替チャンネル",
+    "Channel preferences limit reached": "チャンネル設定の上限に達しました",
+    "Channel hidden. Restore it in Live TV sources & filters.": "チャンネルを非表示にしました。ライブTVのソースとフィルターで戻せます。",
+    "Use a shorter name on a single line.": "短い名前を1行で入力してください。",
+    "Channel name (empty restores the provider name)": "チャンネル名（空欄で配信元の名前に戻す）",
+    "Show all hidden channels": "非表示の全チャンネルを表示",
+    "Hidden channels": "非表示のチャンネル",
+    "No hidden channels in the current playlist.": "現在のプレイリストに非表示のチャンネルはありません。",
+    "Select a channel to show it again. Up to 200 are listed; Show all restores every hidden channel in this playlist.": "チャンネルを選ぶと再表示します。最大200件を表示します。「すべて表示」でこのリストの全非表示チャンネルを戻せます。",
+    "Reload this playlist to choose backup channels.": "代替チャンネルを選ぶにはプレイリストを再読み込みしてください。",
+    "No other copies were found in the current playlist.": "現在のプレイリストに別の配信は見つかりませんでした。",
+    "Choose another copy from the current playlist. Hidden channels are included. Playback changes only after you choose a channel.": "現在のリストから別の配信を選びます。非表示のチャンネルも含みます。選択後に再生が切り替わります。",
+    "X: watch · Square: favorite · Options: channel settings": "X: 視聴 · □: お気に入り · Options: チャンネル設定"
   }
 }

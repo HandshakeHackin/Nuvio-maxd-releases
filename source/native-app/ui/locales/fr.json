@@ -496,6 +496,25 @@
     "Verification runs offline. You can continue using the app.": "La vérification se fait hors ligne. Vous pouvez continuer à utiliser l’application.",
     "Build authenticity & credits": "Authenticité et crédits",
     "Recheck release files": "Vérifier à nouveau les fichiers",
-    "Verify release files and required credits offline. This check does not block playback.": "Vérifie les fichiers et crédits hors ligne. Cette vérification ne bloque pas la lecture."
+    "Verify release files and required credits offline. This check does not block playback.": "Vérifie les fichiers et crédits hors ligne. Cette vérification ne bloque pas la lecture.",
+    "Open Max'd on": "Ouvrir Max'd sur",
+    "Could not save the start page. Try again.": "Impossible d'enregistrer la page de démarrage. Réessayez.",
+    "Choose the page to open after selecting this profile. Disabled Sports falls back to Home. Playback does not start automatically.": "Choisissez la page après la sélection du profil. Si Sports est désactivé, l'accueil s'ouvre. La lecture ne démarre pas automatiquement.",
+    "Watch channel": "Regarder la chaîne",
+    "Rename channel": "Renommer la chaîne",
+    "Hide channel": "Masquer la chaîne",
+    "Backup channels": "Chaînes alternatives",
+    "Channel preferences limit reached": "Limite de personnalisation des chaînes atteinte",
+    "Channel hidden. Restore it in Live TV sources & filters.": "Chaîne masquée. Rétablissez-la dans les sources et filtres de TV en direct.",
+    "Use a shorter name on a single line.": "Utilisez un nom plus court sur une seule ligne.",
+    "Channel name (empty restores the provider name)": "Nom de la chaîne (vide pour rétablir celui du fournisseur)",
+    "Show all hidden channels": "Afficher toutes les chaînes masquées",
+    "Hidden channels": "Chaînes masquées",
+    "No hidden channels in the current playlist.": "Aucune chaîne masquée dans la liste actuelle.",
+    "Select a channel to show it again. Up to 200 are listed; Show all restores every hidden channel in this playlist.": "Sélectionnez une chaîne à rétablir. La liste affiche jusqu'à 200 chaînes ; Tout afficher rétablit toutes les chaînes masquées.",
+    "Reload this playlist to choose backup channels.": "Rechargez cette liste pour choisir des chaînes alternatives.",
+    "No other copies were found in the current playlist.": "Aucune autre version trouvée dans la liste actuelle.",
+    "Choose another copy from the current playlist. Hidden channels are included. Playback changes only after you choose a channel.": "Choisissez une autre version dans la liste actuelle, chaînes masquées comprises. La lecture change après votre sélection.",
+    "X: watch · Square: favorite · Options: channel settings": "X : regarder · Carré : favori · Options : réglages de la chaîne"
   }
 }

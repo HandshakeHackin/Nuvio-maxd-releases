@@ -1407,6 +1407,25 @@
     "Verification runs offline. You can continue using the app.": "Die Prüfung erfolgt offline. Du kannst die App weiterverwenden.",
     "Build authenticity & credits": "Build-Prüfung und Mitwirkende",
     "Recheck release files": "Release-Dateien erneut prüfen",
-    "Verify release files and required credits offline. This check does not block playback.": "Release-Dateien und Urheberhinweise offline prüfen. Die Wiedergabe wird dadurch nicht gesperrt."
+    "Verify release files and required credits offline. This check does not block playback.": "Release-Dateien und Urheberhinweise offline prüfen. Die Wiedergabe wird dadurch nicht gesperrt.",
+    "Open Max'd on": "Max'd öffnen mit",
+    "Could not save the start page. Try again.": "Die Startseite konnte nicht gespeichert werden. Erneut versuchen.",
+    "Choose the page to open after selecting this profile. Disabled Sports falls back to Home. Playback does not start automatically.": "Seite nach der Profilwahl auswählen. Ist Sport deaktiviert, öffnet sich die Startseite. Die Wiedergabe startet nicht automatisch.",
+    "Watch channel": "Sender ansehen",
+    "Rename channel": "Sender umbenennen",
+    "Hide channel": "Sender ausblenden",
+    "Backup channels": "Alternative Sender",
+    "Channel preferences limit reached": "Limit für Senderanpassungen erreicht",
+    "Channel hidden. Restore it in Live TV sources & filters.": "Sender ausgeblendet. Unter Live-TV-Quellen und Filter wieder einblenden.",
+    "Use a shorter name on a single line.": "Einen kürzeren Namen ohne Zeilenumbruch verwenden.",
+    "Channel name (empty restores the provider name)": "Sendername (leer stellt den Anbieternamen wieder her)",
+    "Show all hidden channels": "Alle ausgeblendeten Sender anzeigen",
+    "Hidden channels": "Ausgeblendete Sender",
+    "No hidden channels in the current playlist.": "Keine ausgeblendeten Sender in dieser Wiedergabeliste.",
+    "Select a channel to show it again. Up to 200 are listed; Show all restores every hidden channel in this playlist.": "Sender zum Einblenden auswählen. Bis zu 200 werden aufgelistet; Alle anzeigen stellt alle ausgeblendeten Sender dieser Liste wieder her.",
+    "Reload this playlist to choose backup channels.": "Diese Wiedergabeliste neu laden, um alternative Sender auszuwählen.",
+    "No other copies were found in the current playlist.": "Keine weiteren Varianten in dieser Wiedergabeliste gefunden.",
+    "Choose another copy from the current playlist. Hidden channels are included. Playback changes only after you choose a channel.": "Andere Variante aus dieser Liste auswählen. Ausgeblendete Sender sind enthalten. Die Wiedergabe wechselt erst nach der Senderwahl.",
+    "X: watch · Square: favorite · Options: channel settings": "X: ansehen · Quadrat: Favorit · Options: Sendereinstellungen"
   }
 }

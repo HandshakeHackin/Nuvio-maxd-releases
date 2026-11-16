@@ -1,4 +1,17 @@
-# Next build: Nuvio Max'd 1.0.0.27 — offline release-file checks
+# Next build: Nuvio Max'd 1.0.0.28 — easier TV browsing
+
+- Choose Home, Discover, Library, Live TV or Sports as this profile's start page.
+- Live TV remembers the last group for each source.
+- Rename or hide channels from Options. Restore them in Sources & filters → Hidden channels.
+- Choose backup copies from the current playlist, including hidden copies, from a channel or playback options.
+- New controls use all eight menu languages and are included in encrypted configuration backups.
+- Includes the previous signed-file warning work. Features inspired by Br0ck25/NuvioTVLauncher are credited in the app and source.
+
+Prepared development build; the published 1.0.0.26 release remains unchanged.
+
+---
+
+# 1.0.0.27 development changes — offline release-file checks
 
 - Verify signed release files and required credits locally at startup or from Settings → App & Updates → Build authenticity & credits.
 - Show one dismissible warning for unverified files; normal browsing, playback and profile switching remain available.

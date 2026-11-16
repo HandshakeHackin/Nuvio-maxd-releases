@@ -1,6 +1,14 @@
 # Native Nuvio Max'd for PS5
 
-## Next build: 1.0.0.27 — offline release checks
+## Next build: 1.0.0.28 — start page and TV controls
+
+Choose a start page for each profile in Settings → App & Updates. Live TV now
+remembers each source's last group. Press Options on a channel to rename it,
+hide it or choose another copy; restore hidden channels in Sources & filters.
+The new settings are translated and included in encrypted backups.
+See [details and credits](LAUNCHER_FEATURES.md) and [test checklist](TESTING-1.0.0.28.md).
+
+## Offline release checks
 
 Signed package metadata and file hashes identify changes to release files,
 including credits and license notices. Verification runs locally in a background

@@ -1281,10 +1281,10 @@ void Session::watch_options(int selected) {
     if(!watching || launch_open)return;
     playing.menu=false;
     const auto profile=profile_generation_;const int generation=w_gen_;
-    open_dropdown(sx::i18n::tr("Playback options"),{sx::i18n::tr("Choose another source"),sx::i18n::tr("Choose another torrent file"),sx::i18n::tr("Subtitle appearance"),sx::i18n::tr("Audio sync: -0.10 s"),sx::i18n::tr("Audio sync: +0.10 s"),sx::i18n::tr("Audio sync: -0.20 s"),sx::i18n::tr("Audio sync: +0.20 s"),sx::i18n::tr("Reset audio sync")},selected,
+    open_dropdown(sx::i18n::tr("Playback options"),{w_item_.type=="tv"&&w_item_.id.rfind("live:",0)==0?sx::i18n::tr("Backup channels"):sx::i18n::tr("Choose another source"),sx::i18n::tr("Choose another torrent file"),sx::i18n::tr("Subtitle appearance"),sx::i18n::tr("Audio sync: -0.10 s"),sx::i18n::tr("Audio sync: +0.10 s"),sx::i18n::tr("Audio sync: -0.20 s"),sx::i18n::tr("Audio sync: +0.20 s"),sx::i18n::tr("Reset audio sync")},selected,
         [this,profile,generation](int pick){
         if(profile!=profile_generation_ || generation!=w_gen_ || !watching)return;
-        if(pick==0){watch_sources();return;}
+        if(pick==0){if(w_item_.type=="tv"&&w_item_.id.rfind("live:",0)==0)live_backups(w_item_.id.substr(5));else watch_sources();return;}
         if(pick==1){
             if(!prefs_.builtin_torrents || w_stream_.info_hash.empty() || !TorrentStream::is_url(t_stats_url_)){
                 say(sx::i18n::tr("File selection needs an active built-in torrent stream."),6);return;

@@ -1,4 +1,5 @@
 #include "../ui/i18n.hpp"
+#include "start_page.hpp"
 #include "../src/subtitle_size.hpp"
 // The session's core: setup, the account, addons, the library, settings, the
 // pop-ups and the artwork. The Board, Discover and Library are session_browse.cpp,
@@ -88,7 +89,7 @@ enum SettingIndex
     kRemoteButtons,
     kSourceOptions,
     kSportsEnable,kSportsOpen,kSportsRegion,kSportsBrowse,kSportsFollowing,kSportsScores,kSportsChannels,kSportsClock,
-    kUiLanguage,kTvdb,kConfigBackup,kAgeRatingCountry,kBuildIntegrity,
+    kUiLanguage,kTvdb,kConfigBackup,kAgeRatingCountry,kBuildIntegrity,kStartPage,
     kSettingCount
 };
 
@@ -212,6 +213,7 @@ bool Session::init(const std::string &base_dir, const std::string &data_dir, hui
     refresh_library();
     refresh_addons();
     profile_ready_ = !signed_in();
+    start_page_apply();
     if (signed_in()) {
         board.status = sx::i18n::tr("Choose your Nuvio profile to load your catalogs and history.");
         profile_prompt_pending_ = true;
@@ -737,6 +739,7 @@ void Session::refresh_settings()
     set(kAgeRatingCountry,Kind::value,i18n::tr("Age-rating country"),prefs_.age_rating_country,
         i18n::tr("Choose the country for title certifications. US ratings are used when unavailable. The badge shows its country. Saved for this profile; display only."));
     set(kUiLanguage,Kind::value,i18n::tr("Language"),i18n::native_name(prefs_.ui_language),i18n::tr("Use the app menus in your preferred language. Restart Max'd to apply.")+std::string(" ")+i18n::tr("Some help and status messages may appear in English."));
+    set(kStartPage,Kind::value,i18n::tr("Open Max'd on"),i18n::tr(start_page::choices[start_page::index(prefs_.start_page)].label),i18n::tr("Choose the page to open after selecting this profile. Disabled Sports falls back to Home. Playback does not start automatically."));
     set(kMediaServers, SettingRow::Kind::action, sx::i18n::tr("Media servers (experimental)"), std::to_string(media_accounts_.size())+" connected", sx::i18n::tr("Connect Jellyfin, Emby or Plex. Browse server libraries and resume playback separately from addons."));
     set(kAccount, Kind::value, sx::i18n::tr("Nuvio account"), signed_in() ? prefs_.user_email : sx::i18n::tr("Not signed in"),
         signed_in() ? (confirm_sign_out_ ? sx::i18n::tr("Press Cross again to sign out.") : sx::i18n::tr("Press Cross to sign out."))
@@ -858,7 +861,7 @@ void Session::refresh_settings()
     group("Controls",{kRemoteButtons});
     set(kTvdb,Kind::action,i18n::tr("TheTVDB episode ordering"),"",i18n::tr("Use your TVDB API key, then choose an episode order from a series title menu."));
     set(kConfigBackup,Kind::action,i18n::tr("Configuration backup and sync"),"",i18n::tr("Encrypted profile configuration backups. Account sessions and playback history are excluded."));
-    group("App & Updates", {kTvdb,kConfigBackup,kUiLanguage,kBuildIntegrity,kReleaseNotes,kDiagnostics,kMetadataCredits,kDonation,kInstallSource,kUpdates,kExit});
+    group("App & Updates", {kStartPage,kTvdb,kConfigBackup,kUiLanguage,kBuildIntegrity,kReleaseNotes,kDiagnostics,kMetadataCredits,kDonation,kInstallSource,kUpdates,kExit});
     changed_ |= kSettings;
 }
 
@@ -868,6 +871,7 @@ void Session::settings_activate(int row)
     if(row==kTvdb){tvdb_menu();return;}
     if(row==kConfigBackup){backup_menu();return;}
     if(row==kBuildIntegrity){integrity_menu();return;}
+    if(row==kStartPage){start_page_menu();return;}
     if(row==kAgeRatingCountry){age_rating_country_menu();return;}
     if(row==kUiLanguage){
         std::vector<std::string> names,codes;for(const auto& locale:i18n::locales()){names.emplace_back(locale.native_name);codes.emplace_back(locale.code);}

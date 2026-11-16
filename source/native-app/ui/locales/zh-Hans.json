@@ -496,6 +496,25 @@
     "Verification runs offline. You can continue using the app.": "验证在本机离线进行。您仍可继续使用应用。",
     "Build authenticity & credits": "版本真实性与署名",
     "Recheck release files": "重新检查发行文件",
-    "Verify release files and required credits offline. This check does not block playback.": "离线检查发行文件和必要的署名。检查不会阻止播放。"
+    "Verify release files and required credits offline. This check does not block playback.": "离线检查发行文件和必要的署名。检查不会阻止播放。",
+    "Open Max'd on": "Max'd 启动页面",
+    "Could not save the start page. Try again.": "无法保存启动页面，请重试。",
+    "Choose the page to open after selecting this profile. Disabled Sports falls back to Home. Playback does not start automatically.": "选择此个人资料后打开的页面。体育功能关闭时返回主页，不会自动播放。",
+    "Watch channel": "观看频道",
+    "Rename channel": "重命名频道",
+    "Hide channel": "隐藏频道",
+    "Backup channels": "备用频道",
+    "Channel preferences limit reached": "已达到频道自定义数量上限",
+    "Channel hidden. Restore it in Live TV sources & filters.": "频道已隐藏，可在直播来源和筛选中恢复。",
+    "Use a shorter name on a single line.": "请使用较短的单行名称。",
+    "Channel name (empty restores the provider name)": "频道名称（留空恢复提供商名称）",
+    "Show all hidden channels": "显示所有隐藏频道",
+    "Hidden channels": "隐藏的频道",
+    "No hidden channels in the current playlist.": "当前播放列表中没有隐藏的频道。",
+    "Select a channel to show it again. Up to 200 are listed; Show all restores every hidden channel in this playlist.": "选择频道可重新显示。最多列出200个频道；显示全部会恢复此列表中所有隐藏频道。",
+    "Reload this playlist to choose backup channels.": "请重新加载此列表以选择备用频道。",
+    "No other copies were found in the current playlist.": "当前播放列表中未找到其他版本。",
+    "Choose another copy from the current playlist. Hidden channels are included. Playback changes only after you choose a channel.": "从当前播放列表选择其他版本，包含隐藏频道。选择频道后才会切换播放。",
+    "X: watch · Square: favorite · Options: channel settings": "X：观看 · 方块：收藏 · Options：频道设置"
   }
 }

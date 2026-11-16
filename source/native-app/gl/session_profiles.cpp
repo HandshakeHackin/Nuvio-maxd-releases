@@ -7,6 +7,7 @@
 #include "nuvio_account.h"
 #include "config_backup.h"
 #include "age_ratings.hpp"
+#include "start_page.hpp"
 #include <algorithm>
 
 namespace sx {
@@ -21,6 +22,7 @@ void Session::load_profile_settings() {
     json j;
     load_json(profile_dir_ + "/profile-settings.json", j);
     prefs_.age_rating_country=age_ratings::load_preference(j);
+    prefs_.start_page=start_page::choices[start_page::index(jstr(j,"start_page"))].id;
     if (jobj(j, "extra_addons").is_array())
         for (const auto& u : j["extra_addons"]) if (u.is_string()) prefs_.extra_addons.push_back(u.get<std::string>());
     if (jobj(j, "provider_enabled").is_object()) prefs_.provider_enabled = j["provider_enabled"];
@@ -44,6 +46,7 @@ void Session::save_profile_settings() {
     json j;
     load_json(profile_dir_ + "/profile-settings.json", j);
     age_ratings::save_preference(j,prefs_.age_rating_country);
+    j["start_page"]=prefs_.start_page;
     source_policy::save(j,prefs_.source_preferences);
     sports::save(j,sports_prefs_);
     j["extra_addons"] = prefs_.extra_addons;
@@ -108,6 +111,7 @@ void Session::profile_apply(const json& result) {
     changed_ |= kDiscover | kDiscoverNew | kSearch | kSearchNew;
     board.status = sx::i18n::tr("Loading this profile's catalogs...");
     load_addons(); if (signed_in()) load_library();
+    start_page_apply();
 }
 void Session::profile_choose(int id, bool locked) {
     if (watching || resuming_) { say(sx::i18n::tr("Stop playback before switching profiles"), 6.0); return; }

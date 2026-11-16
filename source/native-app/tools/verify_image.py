@@ -46,7 +46,7 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
     param = json.loads((extracted / 'sce_sys/param.json').read_text())
     display_profile = validate_display_metadata(param)
     assert param['titleId'] == 'PPSA99288'
-    assert param['contentVersion'] == '07.000.027'
+    assert param['contentVersion'] == '07.000.028'
     assert param['localizedParameters']['en-US']['titleName'] == "Nuvio Max'd"
     assert param['contentId'] == 'UP9000-PPSA99288_00-NUVIOPS5NAT00001'
     assert param['applicationCategoryType'] == 0
@@ -58,7 +58,7 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
     assert struct.unpack_from('<HH', data, elf + 16) == (0xFE10, 62)
     assert struct.unpack_from('<Q', data, elf + 24)[0] != 0
     info = json.loads((extracted / 'build-info.json').read_text())
-    assert info['version'] == '1.0.0.27-native'
+    assert info['version'] == '1.0.0.28-native'
     assert info['userExperienceUpdates']['optionalDonationQr']
     assert info['userExperienceUpdates']['installSourceSelector'] and info['userExperienceUpdates']['sourceAwareUpdateReminders']
     assert info['experimentalAv']['driverOwnedHdrSwitch'] and info['experimentalAv']['pcmDefault']
@@ -71,6 +71,10 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
     assert info['buildIntegrity']['offline'] and info['buildIntegrity']['warningOnly']
     assert info['buildIntegrity']['signature']=='Ed25519' and info['buildIntegrity']['signedRelease']
     assert info['buildIntegrity']['noNetworkReporting'] and info['buildIntegrity']['creditsRequired']
+    assert all(info['launcherUsability'][k] for k in ['preferredStartPage','profileLocal','rememberGroupPerSource','renameChannels','hideAndRestoreChannels','originalChannelIdentityRetained','backupChannels','headersKeptPerChannel','encryptedConfigurationBackup'])
+    assert not info['launcherUsability']['automaticSwitching'] and not info['launcherUsability']['automaticPlayback']
+    assert info['launcherUsability']['customChannelLimit']==1000 and info['launcherUsability']['backupLimit']==32
+    assert 'licenses/nuvio-tv-launcher/UPSTREAM.json' in actual and 'licenses/nuvio-tv-launcher/NOTICE.txt' in actual
     subprocess.run(['python3', str(Path(__file__).resolve().parent/'create_release_manifest.py'), str(extracted), '--verify'],check=True,capture_output=True)
     assert info['ageRatings']['detailPage'] and info['ageRatings']['profileLocal']
     assert info['ageRatings']['countryChoices']==32 and info['ageRatings']['fallbackCountry']=='US'
@@ -198,6 +202,8 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
     assert 'PS5 display output: 27 display output selection and probe-lifecycle assertions' in test_log
     assert 'Age ratings: movie/TV parsing' in test_log
     assert 'Age-rating Session: current preference on completion' in test_log
+    assert 'Launcher feature cores: stable identities' in test_log and 'Launcher Session: production channel lists/actions' in test_log
+    assert all(mode+': GL error 0x0' in test_log for mode in ['start-page','channel-options','backup-channels','hidden-channels']+[lang+'-'+scene for lang in ['de','es','fr','ar','zh-Hans','ja','ko'] for scene in ['start-page','channel-options','backup-channels','hidden-channels']])
     report = {
         'name': info['name'], 'version': info['version'], 'sourceCommit': info['sourceCommit'],
         'contentVersion': param['contentVersion'],
@@ -212,6 +218,8 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
         'hostRemoteRemappingTestsPassed': True, 'hostRemoteSettingsTestsPassed': True,
         'mediaRemote': info['mediaRemote'],
         'detailActions': info['detailActions'],
+        'launcherUsability': info['launcherUsability'],
+        'hostLauncherUsabilityRegressionsPassed': True,
         'ageRatings': info['ageRatings'], 'hostAgeRatingRegressionsPassed': True,
         'hostTitleActionsTestsPassed': True,
         'torrentHub': info['torrentHub'],

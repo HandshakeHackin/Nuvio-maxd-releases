@@ -10,6 +10,7 @@
 #include "i18n.hpp"
 #include "age_ratings.hpp"
 #include "build_integrity_text.hpp"
+#include "start_page.hpp"
 #include "board.hpp"
 #include "library.hpp"
 #include "addons.hpp"
@@ -78,7 +79,26 @@ int main(int argc, char** argv) {
     };
     const auto backdrop_texture=artwork(1920,1080,0);
     const auto poster_texture=artwork(480,720,3);
-    if(mode=="integrity-warning"||mode=="integrity-credits"||mode=="integrity-verified") {
+    if(mode=="start-page"||mode=="channel-options"||mode=="backup-channels"||mode=="hidden-channels") {
+        sx::DropdownState d;d.active=-1;
+        if(mode=="start-page") {
+            d.title=sx::i18n::tr("Open Max'd on");
+            for(const auto& choice:sx::start_page::choices)d.options.emplace_back(sx::i18n::tr(choice.label));
+            d.active=d.selected=3;
+            d.message=sx::i18n::tr("Choose the page to open after selecting this profile. Disabled Sports falls back to Home. Playback does not start automatically.");
+        } else if(mode=="channel-options") {
+            d.title="My news";
+            d.options={sx::i18n::tr("Watch channel"),sx::i18n::tr("Rename channel"),sx::i18n::tr("Hide channel"),sx::i18n::tr("Backup channels"),sx::i18n::tr("Live TV sources & filters")};
+        } else if(mode=="backup-channels") {
+            d.title=sx::i18n::tr("Backup channels");d.options={"News FHD · News","News SD · News"};
+            d.message=sx::i18n::tr("Choose another copy from the current playlist. Hidden channels are included. Playback changes only after you choose a channel.");
+        } else {
+            d.title=sx::i18n::tr("Hidden channels");d.options={sx::i18n::tr("Show all hidden channels"),"My news","Family TV"};
+            d.message=sx::i18n::tr("Select a channel to show it again. Up to 200 are listed; Show all restores every hidden channel in this playlist.");
+        }
+        sx::draw_dropdown(list,env,d,1);
+    }
+    else if(mode=="integrity-warning"||mode=="integrity-credits"||mode=="integrity-verified") {
         sx::DropdownState d;d.wide=true;d.active=-1;
         if(mode=="integrity-warning") {
             d.title=sx::i18n::tr("Unverified build");d.options={sx::i18n::tr("Continue")};d.message=sx::integrity_warning();

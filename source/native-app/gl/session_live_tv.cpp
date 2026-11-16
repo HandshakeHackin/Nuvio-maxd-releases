@@ -5,6 +5,7 @@
 #include "session.hpp"
 #include "stalker.h"
 #include "config_backup.h"
+#include "live_channel_prefs.hpp"
 #include <algorithm>
 #include <cstdio>
 #include <fcntl.h>
@@ -14,7 +15,7 @@
 namespace sx {
 namespace {
 std::string channel_key(const std::string &source, const live_tv::Channel &c) {
-  return std::to_string(fnv1a(source + "\n" + c.id + "\n" + c.name));
+  return live_channel_prefs::key(source,c);
 }
 std::string label(const std::string &s) {
   std::string o;
@@ -64,17 +65,21 @@ void Session::live_load() {
     live_state_["favorites"] = json::array();
   if (!jobj(live_state_, "recent").is_array())
     live_state_["recent"] = json::array();
+  live_channel_prefs::normalise(live_state_);
   live_source_ = jstr(live_state_, "selected");
+  live_group_=live_channel_prefs::last_group(live_state_,live_source_);
   iptv_load();
   live_build();
 }
-void Session::live_save() {
+bool Session::live_save() {
   if (!profile_ready_ || profile_dir_.empty())
-    return;
+    return false;
   live_state_["selected"] = live_source_;
   const auto path = profile_dir_ + "/live-tv.json";
-  if(!config_backup::save(path,live_state_.dump(1,'\t')))
-    say(sx::i18n::tr("Could not save Live TV settings"),7,true);
+  if(!config_backup::save(path,live_state_.dump(1,'\t'))) {
+    say(sx::i18n::tr("Could not save Live TV settings"),7,true);return false;
+  }
+  return true;
 }
 void Session::live_build() {
   live_content.items.clear();
@@ -109,10 +114,11 @@ void Session::live_build() {
   const auto query = lower(live_query_);
   for (size_t i = 0; i < live_channels_.size(); ++i) {
     const auto &c = live_channels_[i];
+    if(live_channel_prefs::hidden(live_state_,live_source_,c))continue;
     if (!c.in_group(live_group_))
       continue;
     if (!query.empty() &&
-        lower(c.name).find(query) == std::string::npos)
+        lower(live_channel_prefs::name(live_state_,live_source_,c)).find(query) == std::string::npos && lower(c.name).find(query)==std::string::npos)
       continue;
     const auto key = live_view_ ? channel_key(live_source_, c) : std::string();
     if (live_view_ == 1 && !contains(live_state_["favorites"], key))
@@ -147,13 +153,13 @@ void Session::live_build() {
     const auto &c = live_channels_[i];
     sx::Addon row;
     const auto key = channel_key(live_source_, c);
-    row.name = c.name;
+    row.name = live_channel_prefs::name(live_state_,live_source_,c);
     row.version = c.group;
     row.types =
         contains(live_state_["favorites"], key) ? sx::i18n::tr("Favorite Live") : sx::i18n::tr("Live");
     row.initial = std::to_string(live_indices_.size() + 1);
     row.colour = 0x0ea5a4;
-    row.description = sx::i18n::tr("X: watch channel · Square: toggle favorite");
+    row.description = sx::i18n::tr("X: watch · Square: favorite · Options: channel settings");
     if(live_content.guide_grid && jbool(live_state_,"guide_enabled",true)) {
       const live_guide::Listings* listings=nullptr;
       auto xml=live_guide_xml_.channels.find(c.epg_id.empty()?c.id:c.epg_id);
@@ -223,6 +229,7 @@ void Session::live_reload() {
         }
         live_guide_auto_url_ = r.guide_url;
         live_channels_ = std::move(r.channels);
+        if(!live_group_.empty()&&std::none_of(live_channels_.begin(),live_channels_.end(),[this](const auto& c){return c.in_group(live_group_);}))live_group_.clear();
         live_build();
         say(sx::i18n::tr("Live TV channels loaded"));
       });
@@ -236,10 +243,14 @@ void Session::live_groups() {
       if (seen.insert(group).second) groups.push_back(group);
   }
   const auto generation = live_generation_;
-  open_dropdown(sx::i18n::tr("Live TV groups"), groups, 0, [this, groups, generation](int i) {
+  const auto current=std::find(groups.begin()+1,groups.end(),live_group_);
+  open_dropdown(sx::i18n::tr("Live TV groups"), groups,current==groups.end()?0:int(current-groups.begin()), [this, groups, generation](int i) {
     if (generation != live_generation_ || i < 0 || size_t(i) >= groups.size())
       return;
+    const auto previous=live_state_;const auto old=live_group_;
     live_group_ = i ? groups[i] : "";
+    live_channel_prefs::remember_group(live_state_,live_source_,live_group_);
+    if(!live_save()){live_state_=previous;live_group_=old;}
     live_build();
   });
 }
@@ -302,7 +313,7 @@ void Session::live_play(const live_tv::Channel& channel) {
   // Live channels never enter title Continue Watching, Trakt or episode flows.
   d_item_ = Item{};
   d_item_.id = "live:" + key;
-  d_item_.name = channel.name;
+  d_item_.name = live_channel_prefs::name(live_state_,live_source_,channel);
   d_item_.type = "tv";
   d_meta_ = Meta{};
   d_meta_loaded_ = false;
@@ -310,7 +321,7 @@ void Session::live_play(const live_tv::Channel& channel) {
   detail = DetailContent{};
   ::Stream stream;
   stream.url = channel.url;
-  stream.name = channel.name;
+  stream.name = d_item_.name;
   stream.addon = sx::i18n::tr("Live TV");
   stream.request_headers = channel.headers;
   play_stream(stream, false);
@@ -394,9 +405,11 @@ void Session::live_menu() {
       sx::i18n::tr("All channels"),      sx::i18n::tr("Favorites"),
       sx::i18n::tr("Recent channels"),   sx::i18n::tr("Remove current source"),
       sx::i18n::tr("Next channel page"), sx::i18n::tr("Previous channel page"), sx::i18n::tr("Four-screen TV (experimental)"), sx::i18n::tr("Check IPTV Library availability"), sx::i18n::tr("Set XMLTV guide URL"), sx::i18n::tr("Refresh programme guide"), jbool(live_state_,"guide_enabled",true)?sx::i18n::tr("Programme guide: On"):sx::i18n::tr("Programme guide: Off"), sx::i18n::tr("Correct provider guide clock"), jbool(live_state_,"guide_grid",false)?sx::i18n::tr("Guide layout: Time grid"):sx::i18n::tr("Guide layout: Channel tiles"), sx::i18n::tr("Import playlist from USB"), sx::i18n::tr("Replace current USB playlist"),sx::i18n::tr("Add Stalker / Ministra portal")};
+  options.push_back(i18n::tr("Hidden channels"));
   open_dropdown(sx::i18n::tr("Live TV"), options, 0, [this, generation](int i) {
     if (generation != profile_generation_)
       return;
+    if(i==22){live_hidden_channels();return;}
     if(i==21){live_add(json{{"type","stalker"}},0);return;}
     if(i==19||i==20){live_usb_import(i==20);return;}
     if(i==18){live_state_["guide_grid"]=!jbool(live_state_,"guide_grid",false);live_save();live_build();return;}
@@ -427,7 +440,7 @@ void Session::live_menu() {
                         return;
                       live_source_ = ids[n];
                       live_channels_.clear();
-                      live_group_.clear();
+                      live_group_=live_channel_prefs::last_group(live_state_,live_source_);
                       live_query_.clear();
                       live_view_ = 0;
                       live_save();
@@ -448,9 +461,11 @@ void Session::live_menu() {
       return;
     }
     if (i >= 6 && i <= 8) {
+      const auto previous=live_state_;const auto old_group=live_group_;
       live_view_ = i - 6;
       live_group_.clear();
       live_query_.clear();
+      if(i==6){live_channel_prefs::remember_group(live_state_,live_source_,"");if(!live_save()){live_state_=previous;live_group_=old_group;}}
       live_build();
       return;
     }
@@ -492,8 +507,10 @@ void Session::live_menu() {
                                          }),
                           sources.end());
             live_source_ = sources.empty() ? "" : jstr(sources[0], "id");
+            if(live_state_.contains("channel_edits"))live_state_["channel_edits"].erase(source);
+            if(live_state_.contains("last_groups"))live_state_["last_groups"].erase(source);
             live_channels_.clear();
-            live_group_.clear();
+            live_group_=live_channel_prefs::last_group(live_state_,live_source_);
             live_query_.clear();
             live_view_ = 0;
             live_save();

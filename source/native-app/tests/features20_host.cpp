@@ -36,6 +36,7 @@ int main(int argc, char **argv) {
                    J::array({"https://addon.invalid/manifest.json"})},
                   {"provider_settings", {{"private-key", "secret-fixture"}}},
                   {"age_rating_country", "ES"},
+                  {"start_page", "livetv"},
                   {"account_session", "never-back-up"}}
                     .dump()),
             "write profile fixture");
@@ -44,7 +45,9 @@ int main(int argc, char **argv) {
                 J{{"sources", J::array({J{{"type", "usb"},
                                           {"id", "123"},
                                           {"name", "Private fixture"}}})},
-                  {"favorites", J::array()}}
+                  {"favorites", J::array()},
+                  {"last_groups", {{"123", "News"}}},
+                  {"channel_edits", {{"123", {{"12345", {{"name", "My news"}, {"hidden", true}}}}}}}}
                     .dump()),
             "write Live TV fixture");
     const std::string playlist = "#EXTM3U\n#EXTINF:-1,Fixture\nhttps://"
@@ -75,7 +78,10 @@ int main(int argc, char **argv) {
     require(decrypted.error.empty() &&
                 decrypted.snapshot == captured.snapshot &&
                 decrypted.hash == captured.hash &&
-                J::parse(decrypted.snapshot["files"]["profile-settings.json"].get<std::string>())["age_rating_country"]=="ES",
+                J::parse(decrypted.snapshot["files"]["profile-settings.json"].get<std::string>())["age_rating_country"]=="ES" &&
+                J::parse(decrypted.snapshot["files"]["profile-settings.json"].get<std::string>())["start_page"]=="livetv" &&
+                J::parse(decrypted.snapshot["files"]["live-tv.json"].get<std::string>())["channel_edits"]["123"]["12345"]["name"]=="My news" &&
+                J::parse(decrypted.snapshot["files"]["live-tv.json"].get<std::string>())["last_groups"]["123"]=="News",
             "encrypted round trip");
     require(!config_backup::decrypt(encrypted.bytes, "wrong backup passphrase",
                                     scope)
@@ -111,6 +117,14 @@ int main(int argc, char **argv) {
       malformed["files"]["profile-settings.json"]=J{{"age_rating_country",country}}.dump();
       std::string reason;
       require(!config_backup::validate(malformed,scope,reason),"invalid certification country rejected in backup");
+    }
+    for(const auto& value:{J(42),J("settings"),J("https://private.invalid")}) {
+      auto malformed=captured.snapshot;malformed["files"]["profile-settings.json"]=J{{"start_page",value}}.dump();
+      std::string reason;require(!config_backup::validate(malformed,scope,reason),"invalid start page rejected before restore");
+    }
+    for(const auto& edits:{J::array(),J{{"../source",J::object()}},J{{"123",{{"12345",{{"hidden","yes"}}}}}},J{{"123",{{"12345",{{"name",std::string(161,'x')}}}}}}}) {
+      auto malformed=captured.snapshot;malformed["files"]["live-tv.json"]=J{{"channel_edits",edits}}.dump();
+      std::string reason;require(!config_backup::validate(malformed,scope,reason),"invalid channel edits rejected before restore");
     }
     invalid["files"]["../outside"] = "{}";
     std::string error;

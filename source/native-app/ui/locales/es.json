@@ -496,6 +496,25 @@
     "Verification runs offline. You can continue using the app.": "La verificación es local y sin conexión. Puedes seguir usando la aplicación.",
     "Build authenticity & credits": "Autenticidad y créditos",
     "Recheck release files": "Volver a verificar archivos",
-    "Verify release files and required credits offline. This check does not block playback.": "Verifica los archivos y créditos sin conexión. Esta comprobación no bloquea la reproducción."
+    "Verify release files and required credits offline. This check does not block playback.": "Verifica los archivos y créditos sin conexión. Esta comprobación no bloquea la reproducción.",
+    "Open Max'd on": "Abrir Max'd en",
+    "Could not save the start page. Try again.": "No se pudo guardar la página de inicio. Inténtalo de nuevo.",
+    "Choose the page to open after selecting this profile. Disabled Sports falls back to Home. Playback does not start automatically.": "Elige la página tras seleccionar este perfil. Si Deportes está desactivado, se abre Inicio. La reproducción no comienza automáticamente.",
+    "Watch channel": "Ver canal",
+    "Rename channel": "Cambiar nombre del canal",
+    "Hide channel": "Ocultar canal",
+    "Backup channels": "Canales alternativos",
+    "Channel preferences limit reached": "Se alcanzó el límite de canales personalizados",
+    "Channel hidden. Restore it in Live TV sources & filters.": "Canal oculto. Restáuralo en Fuentes y filtros de TV en directo.",
+    "Use a shorter name on a single line.": "Usa un nombre más corto en una sola línea.",
+    "Channel name (empty restores the provider name)": "Nombre del canal (vacío restaura el del proveedor)",
+    "Show all hidden channels": "Mostrar todos los canales ocultos",
+    "Hidden channels": "Canales ocultos",
+    "No hidden channels in the current playlist.": "No hay canales ocultos en la lista actual.",
+    "Select a channel to show it again. Up to 200 are listed; Show all restores every hidden channel in this playlist.": "Selecciona un canal para mostrarlo. Se listan hasta 200; Mostrar todos restaura todos los canales ocultos de esta lista.",
+    "Reload this playlist to choose backup channels.": "Recarga esta lista para elegir canales alternativos.",
+    "No other copies were found in the current playlist.": "No se encontraron otras versiones en la lista actual.",
+    "Choose another copy from the current playlist. Hidden channels are included. Playback changes only after you choose a channel.": "Elige otra versión de la lista actual, incluidos los canales ocultos. La reproducción cambia solo al seleccionar un canal.",
+    "X: watch · Square: favorite · Options: channel settings": "X: ver · Cuadrado: favorito · Options: ajustes del canal"
   }
 }

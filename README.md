@@ -14,7 +14,7 @@
 
 **Official release: 1.0.0.26**
 
-**Development branch: 1.0.0.27** — adds offline checks for signed release files and required credits, with a dismissible warning. The downloads below remain the published 1.0.0.26 release.
+**Development branch: 1.0.0.28** — adds a choice of start page, remembered TV groups, channel rename/hide controls and backup channel selection, alongside offline release-file checks. Published downloads below remain 1.0.0.26.
 
 Nuvio Max'd runs directly on a jailbroken PS5. Sign in with your phone or use
 Guest mode, then browse your library, addons, TV playlists and media servers.

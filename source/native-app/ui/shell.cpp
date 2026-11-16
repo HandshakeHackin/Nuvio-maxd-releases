@@ -388,7 +388,7 @@ void Shell::route_page(const hui::InputFrame &input, float dt)
             if(confirm)s_.live_activate(live_tv_.cursor_index());
             else if(input.is_pressed(Action::west))s_.live_activate(live_tv_.cursor_index(),true);
             else if(input.is_pressed(Action::north))s_.live_search();
-            else if(input.is_pressed(Action::menu))s_.live_menu();
+            else if(input.is_pressed(Action::menu))s_.live_channel_menu(live_tv_.cursor_index());
             else if(input.is_pressed(Action::page_prev))s_.live_groups();
             else if(input.is_pressed(Action::page_next))s_.live_cycle();
             if(!input.is_pressed(Action::back))return;

@@ -3,6 +3,7 @@ set -euo pipefail
 ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 python3 "$ROOT/tools/validate_display_metadata.py" "$ROOT/app/sce_sys/param.json"
 bash "$ROOT/tests/build_integrity.sh"
+bash "$ROOT/tests/launcher_features.sh"
 # Exercise age-rating metadata, standalone UI and refresh integration first.
 bash "$ROOT/tests/people.sh"
 bash "$ROOT/tests/settings_categories.sh"

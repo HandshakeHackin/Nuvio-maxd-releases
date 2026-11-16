@@ -496,6 +496,25 @@
     "Verification runs offline. You can continue using the app.": "확인은 오프라인으로 수행됩니다. 앱을 계속 사용할 수 있습니다.",
     "Build authenticity & credits": "빌드 확인 및 제작자",
     "Recheck release files": "배포 파일 다시 확인",
-    "Verify release files and required credits offline. This check does not block playback.": "배포 파일과 필수 제작자 표기를 오프라인으로 확인합니다. 재생을 차단하지 않습니다."
+    "Verify release files and required credits offline. This check does not block playback.": "배포 파일과 필수 제작자 표기를 오프라인으로 확인합니다. 재생을 차단하지 않습니다.",
+    "Open Max'd on": "Max'd 시작 화면",
+    "Could not save the start page. Try again.": "시작 화면을 저장하지 못했습니다. 다시 시도하세요.",
+    "Choose the page to open after selecting this profile. Disabled Sports falls back to Home. Playback does not start automatically.": "프로필 선택 후 열 화면을 고르세요. 스포츠가 꺼져 있으면 홈을 엽니다. 자동으로 재생하지 않습니다.",
+    "Watch channel": "채널 시청",
+    "Rename channel": "채널 이름 변경",
+    "Hide channel": "채널 숨기기",
+    "Backup channels": "대체 채널",
+    "Channel preferences limit reached": "채널 맞춤 설정 한도에 도달했습니다",
+    "Channel hidden. Restore it in Live TV sources & filters.": "채널을 숨겼습니다. 라이브 TV 소스 및 필터에서 복원하세요.",
+    "Use a shorter name on a single line.": "더 짧은 이름을 한 줄로 입력하세요.",
+    "Channel name (empty restores the provider name)": "채널 이름 (비워두면 제공업체 이름 복원)",
+    "Show all hidden channels": "숨긴 채널 모두 표시",
+    "Hidden channels": "숨긴 채널",
+    "No hidden channels in the current playlist.": "현재 재생목록에 숨긴 채널이 없습니다.",
+    "Select a channel to show it again. Up to 200 are listed; Show all restores every hidden channel in this playlist.": "채널을 선택해 다시 표시하세요. 최대 200개를 나열하며 모두 표시를 선택하면 이 목록의 숨긴 채널을 전부 복원합니다.",
+    "Reload this playlist to choose backup channels.": "대체 채널을 선택하려면 이 재생목록을 다시 불러오세요.",
+    "No other copies were found in the current playlist.": "현재 재생목록에서 다른 버전을 찾지 못했습니다.",
+    "Choose another copy from the current playlist. Hidden channels are included. Playback changes only after you choose a channel.": "숨긴 채널을 포함해 현재 목록에서 다른 버전을 고르세요. 채널을 선택한 후에만 재생이 전환됩니다.",
+    "X: watch · Square: favorite · Options: channel settings": "X: 시청 · 네모: 즐겨찾기 · Options: 채널 설정"
   }
 }
