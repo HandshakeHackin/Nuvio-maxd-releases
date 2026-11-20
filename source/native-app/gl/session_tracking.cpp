@@ -91,7 +91,7 @@ void Session::tracker_menu(const std::string& p) {
             ask_text([this,p](const auto& text) { if (!trim(text).empty()) tracking_action("key",{{"provider",p},{"api_key",trim(text)}},true); });
         } else if (i == 1) tracking_action("import_sync",{{"provider",p}},true);
         else if (i == 2 && p != "mdblist") {
-            say(sx::i18n::tr("Enter the client ID from your ")+tracking::name(p)+sx::i18n::tr(" developer application"), 10.0);
+            say(sx::i18n::tr("Enter the client ID from your ")+tracking::name(p)+(p=="simkl" ? " AUTH V2" : "")+sx::i18n::tr(" developer application"), 10.0);
             ask_text([this,p](const auto& id) {
                 if (trim(id).empty()) return;
                 tracking_action("configure",{{"provider",p},{"client_id",trim(id)}});
@@ -124,7 +124,7 @@ void Session::tracker_login_start(const std::string& p) {
         sign_in.code = jstr(result.result,"code"); const auto url = jstr(result.result,"url"); sign_in.link = url.substr(8);
         device_code_.device_code = "active";
         std::uint8_t temp[qrcodegen_BUFFER_LEN_MAX], qr[qrcodegen_BUFFER_LEN_MAX];
-        if (qrcodegen_encodeText(url.c_str(),temp,qr,qrcodegen_Ecc_MEDIUM,qrcodegen_VERSION_MIN,20,qrcodegen_Mask_AUTO,true)) {
+        if (qrcodegen_encodeText(jstr(result.result,"qr_url",url).c_str(),temp,qr,qrcodegen_Ecc_MEDIUM,qrcodegen_VERSION_MIN,20,qrcodegen_Mask_AUTO,true)) {
             sign_in.qr_size = qrcodegen_getSize(qr); sign_in.qr_modules.resize(sign_in.qr_size*sign_in.qr_size);
             for (int y=0;y<sign_in.qr_size;++y) for (int x=0;x<sign_in.qr_size;++x)
                 sign_in.qr_modules[y*sign_in.qr_size+x] = qrcodegen_getModule(qr,x,y);
@@ -145,7 +145,7 @@ void Session::tracker_login_poll() {
         if (!result.ok) { sign_in.status = result.error; device_code_ = {}; return; }
         if (jbool(result.result,"pending")) {
             if (jbool(result.result,"slow")) login_interval_ = std::min(60,login_interval_+5);
-            login_next_poll_ = now_seconds()+login_interval_; return;
+            login_next_poll_ = now_seconds()+jnum(result.result,"interval",login_interval_); return;
         }
         tracking_status_ = result.result; sign_in_cancel(); refresh_settings();
         say(tracking::name(p)+sx::i18n::tr(" connected. Choose it under Library Source or Watch Progress."),10.0);

@@ -7,6 +7,7 @@
 #include <set>
 #include <map>
 #include <mutex>
+#include <unordered_map>
 #include <sys/stat.h>
 
 namespace tracking {
@@ -17,6 +18,31 @@ const char* providers[]{"trakt", "simkl", "mdblist"};
 json parsed(const HttpResponse& h) { return json::parse(h.body, nullptr, false); }
 bool credential(const std::string& value) {
     return !value.empty() && value.size() <= 4096 && std::all_of(value.begin(), value.end(), [](unsigned char c) { return c >= 33 && c <= 126; });
+}
+constexpr const char* simkl_device_grant = "urn:ietf:params:oauth:grant-type:device_code";
+constexpr const char* simkl_pin_url = "https://simkl.com/pin";
+bool simkl_v2(const json& account) { return starts_with(jstr(account, "access_token"), "simkl_at_"); }
+bool simkl_write_scope(const json& token) {
+    const auto scopes = split(jstr(token, "scope"), ' ');
+    return std::find(scopes.begin(), scopes.end(), "media:write") != scopes.end();
+}
+bool simkl_user_code(const std::string& code) {
+    return code.size() == 9 && code[4] == '-' && std::all_of(code.begin(), code.end(), [](unsigned char c) {
+        return c == '-' || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9');
+    }) && std::count(code.begin(), code.end(), '-') == 1;
+}
+bool apply_simkl_token(json& account, const json& token) {
+    const auto access = jstr(token, "access_token"), refresh = jstr(token, "refresh_token");
+    const auto ttl = jnum(token, "expires_in");
+    if (!starts_with(access, "simkl_at_") || !starts_with(refresh, "simkl_rt_") ||
+        !credential(access) || !credential(refresh) || !std::isfinite(ttl) || ttl <= 0 || !simkl_write_scope(token)) return false;
+    account["access_token"] = access;
+    account["refresh_token"] = refresh;
+    account["expires_at"] = double(now_epoch_ms()) / 1000 + ttl;
+    return true;
+}
+bool simkl_rejected(const HttpResponse& response) {
+    return response.status == 401 || (response.status == 403 && jstr(parsed(response), "error") == "insufficient_scope");
 }
 std::string failure(const std::string& p, const HttpResponse& h) {
     // Never echo URL, response body, error buffers, tokens or account data.
@@ -217,7 +243,12 @@ HttpResponse Store::request(const std::string& p, const std::string& path, const
     std::string url = base + path;
     std::vector<std::string> headers{"Accept: application/json"};
     if (p == "trakt") { headers.push_back("trakt-api-version: 2"); headers.push_back("trakt-api-key: " + jstr(account, "client_id")); }
-    if (p == "simkl") headers.push_back("simkl-api-key: " + jstr(account, "client_id"));
+    if (p == "simkl" && auth) {
+        if (simkl_v2(account))
+            url += (url.find('?') == std::string::npos ? "?client_id=" : "&client_id=") +
+                url_encode(jstr(account, "client_id")) + "&app-name=nuvio-maxd&app-version=1.0";
+        else headers.push_back("simkl-api-key: " + jstr(account, "client_id"));
+    }
     if (auth) {
         if (p == "mdblist") url += (url.find('?') == std::string::npos ? "?apikey=" : "&apikey=") + url_encode(jstr(account, "api_key"));
         else headers.push_back("Authorization: Bearer " + jstr(account, "access_token"));
@@ -225,11 +256,28 @@ HttpResponse Store::request(const std::string& p, const std::string& path, const
     std::string encoded = body ? body->dump() : "";
     return transport_(url, body ? &encoded : nullptr, headers);
 }
-bool Store::refresh(const std::string& p, std::string& error) {
-    if (p != "trakt") return true;
+bool Store::refresh(const std::string& p, std::string& error, bool force) {
     auto& a = state_["accounts"][p];
+    const bool v2 = p == "simkl" && simkl_v2(a);
+    if (p != "trakt" && !v2) return true;
     const double expires = jnum(a, "expires_at");
-    if (expires <= 0 || expires > double(now_epoch_ms()) / 1000 + 120) return true;
+    if (!force && (expires <= 0 || expires > double(now_epoch_ms()) / 1000 + 120)) return true;
+    if (v2) {
+        const json body{{"refresh_token", jstr(a, "refresh_token")}, {"client_id", jstr(a, "client_id")}, {"grant_type", "refresh_token"}};
+        const auto response = request(p, "/oauth2/token", &body, false);
+        const auto token = parsed(response);
+        if (response.ok() && apply_simkl_token(a, token)) {
+            a["error"] = "";
+            return save(error);
+        }
+        const auto reason = jstr(token, "error");
+        const bool reconnect = reason == "invalid_grant" || reason == "invalid_client" ||
+            (response.ok() && jstr(token, "scope") != "" && !simkl_write_scope(token));
+        if (reconnect) a["reconnect"] = true;
+        error = reconnect ? "Reconnect SIMKL to restore watch sync." : "SIMKL could not refresh the connection. Try again later.";
+        a["error"] = error;
+        std::string ignored; save(ignored); return false;
+    }
     // This is a public TV client using device authorization, not a browser
     // authorization-code exchange. It has no client secret or redirect URI.
     json body{{"refresh_token", jstr(a, "refresh_token")}, {"client_id", jstr(a, "client_id")}, {"grant_type", "refresh_token"}};
@@ -242,18 +290,105 @@ bool Store::refresh(const std::string& p, std::string& error) {
     a["expires_at"] = jnum(token, "created_at", double(now_epoch_ms()) / 1000) + jnum(token, "expires_in");
     return save(error);
 }
+bool Store::request_with_refresh(const std::string& p, const std::string& path, const json* body, HttpResponse& response, std::string& error) {
+    response = request(p, path, body);
+    if (response.status == 401 && p == "simkl" && simkl_v2(state_["accounts"][p])) {
+        if (!refresh(p, error, true)) return false;
+        response = request(p, path, body); // At most one retry for a rejected access token.
+    }
+    return true;
+}
+bool Store::simkl_library_snapshot(json& out, std::string& error) {
+    constexpr const char* key = "simkl_v2_library";
+    constexpr const char* path = "/sync/all-items?extended=full&episode_watched_at=yes&include_all_episodes=original";
+    const auto load = [&](const std::string& url, json& data) {
+        HttpResponse response;
+        if (!request_with_refresh("simkl", url, nullptr, response, error)) return false;
+        data = parsed(response);
+        if (response.ok() && data.is_object()) return true;
+        auto& a = state_["accounts"]["simkl"];
+        if (simkl_rejected(response)) a["reconnect"] = true;
+        error = a["error"] = failure("simkl", response);
+        std::string ignored; save(ignored); return false;
+    };
+    const auto saved = jobj(state_, key);
+    const auto checked = jnum(saved, "checked"), now = now_seconds();
+    if (checked > 0 && now >= checked && now-checked < 30 && jobj(saved, "items").is_object()) {
+        out = saved["items"]; return true;
+    }
+    json snapshot;
+    if (!load("/sync/activities", snapshot)) return false;
+    const auto prior = jobj(saved, "activities");
+    const auto since = jstr(prior, "all");
+    auto items = jobj(saved, "items");
+    bool fetch_items = !items.is_object(), reconcile = false;
+    for (auto type : {"movies", "tv_shows", "anime"}) {
+        const auto& before = jobj(prior, type);
+        const auto& after = jobj(snapshot, type);
+        for (auto status : {"watching", "plantowatch", "hold", "completed", "dropped", "notinteresting"})
+            if (jobj(before, status) != jobj(after, status)) fetch_items = true;
+        if (jobj(before, "removed_from_list") != jobj(after, "removed_from_list")) reconcile = true;
+    }
+    if (!items.is_object() || (since.empty() && snapshot != prior)) {
+        if (!load(path, items)) return false;
+    } else {
+        const auto id = [](const json& row, const char* media) {
+            return jnum(jobj(jobj(row, media), "ids"), "simkl");
+        };
+        if (fetch_items) {
+            json delta;
+            if (!load(std::string(path)+"&date_from="+url_encode(since), delta)) return false;
+            for (auto type : {"movies", "shows", "anime"}) {
+                const auto& rows = jobj(delta, type);
+                if (!rows.is_array() || rows.empty()) continue;
+                const char* media = std::string(type)=="movies" ? "movie" : std::string(type)=="shows" ? "show" : "anime";
+                auto& list = items[type];
+                if (!list.is_array()) list = json::array();
+                std::unordered_map<double, size_t> index;
+                for (size_t i=0; i<list.size(); ++i) if (const auto n=id(list[i],media); n>0) index[n]=i;
+                for (const auto& row : rows) {
+                    const auto n = id(row, media);
+                    if (n <= 0) continue;
+                    if (const auto it=index.find(n); it!=index.end()) list[it->second]=row;
+                    else { index[n]=list.size(); list.push_back(row); }
+                }
+            }
+        }
+        if (reconcile) {
+            json current;
+            if (!load("/sync/all-items?extended=simkl_ids_only", current)) return false;
+            for (auto type : {"movies", "shows", "anime"}) {
+                if (!jobj(items, type).is_array()) continue;
+                const char* media = std::string(type)=="movies" ? "movie" : std::string(type)=="shows" ? "show" : "anime";
+                const auto& rows = jobj(current, type);
+                std::set<double> ids;
+                if (rows.is_array()) for (const auto& row : rows) if (const auto n=id(row,media); n>0) ids.insert(n);
+                auto& list=items[type];
+                list.erase(std::remove_if(list.begin(),list.end(),[&](const auto& row){return ids.count(id(row,media))==0;}),list.end());
+            }
+        }
+    }
+    // Advance the cursor only after all data anchored by that snapshot was fetched.
+    state_[key] = {{"checked", now}, {"activities", snapshot}, {"items", items}};
+    state_["accounts"]["simkl"]["error"] = "";
+    out = std::move(items);
+    return save(error);
+}
 bool Store::fetch(const std::string& p, const std::string& path, json& out, std::string& error) {
     if (!connected(p)) { error = "Connect " + name(p) + " first"; return false; }
     if (!refresh(p, error)) return false;
+    if (p == "simkl" && starts_with(path, "/sync/all-items?") && simkl_v2(state_["accounts"][p]))
+        return simkl_library_snapshot(out, error);
     if (p=="simkl" && starts_with(path,"/sync/")) {
         const double checked=jnum(state_,"simkl_checked"), now=now_seconds();
         if (checked<=0 || now<checked || now-checked>=30) {
             const json empty=json::object();
-            auto activities=request(p,"/sync/activities",&empty);
+            HttpResponse activities;
+            if (!request_with_refresh(p, "/sync/activities", simkl_v2(state_["accounts"][p]) ? nullptr : &empty, activities, error)) return false;
             auto snapshot=parsed(activities);
             if (!activities.ok() || !snapshot.is_object() || snapshot.empty()) {
                 error=failure(p,activities);
-                if(activities.status==401) state_["accounts"][p]["reconnect"]=true;
+                if(simkl_rejected(activities)) state_["accounts"][p]["reconnect"]=true;
                 state_["accounts"][p]["error"]=error;
                 std::string ignored;save(ignored);return false;
             }
@@ -264,10 +399,12 @@ bool Store::fetch(const std::string& p, const std::string& path, json& out, std:
             out=state_["simkl_cache"][path];return true;
         }
     }
-    auto response = request(p, path); out = parsed(response);
+    HttpResponse response;
+    if (!request_with_refresh(p, path, nullptr, response, error)) return false;
+    out = parsed(response);
     if (!response.ok() || out.is_discarded()) {
         error = failure(p, response); auto& a = state_["accounts"][p]; a["error"] = error;
-        if (response.status == 401) a["reconnect"] = true;
+        if (response.status == 401 || (p == "simkl" && simkl_rejected(response))) a["reconnect"] = true;
         std::string ignored; save(ignored); return false;
     }
     state_["accounts"][p]["error"] = "";
@@ -278,7 +415,7 @@ bool Store::fetch(const std::string& p, const std::string& path, json& out, std:
 }
 bool Store::validate(const std::string& p, std::string& error) {
     const json empty = json::object();
-    const auto response = request(p, p == "mdblist" ? "/user" : "/users/settings", p == "simkl" ? &empty : nullptr);
+    const auto response = request(p, p == "mdblist" ? "/user" : "/users/settings", p == "simkl" && !simkl_v2(state_["accounts"][p]) ? &empty : nullptr);
     const auto user = parsed(response);
     if (!response.ok() || !user.is_object() || (p == "mdblist" ? jnum(user, "user_id") <= 0 : !jobj(user, "user").is_object())) { error = failure(p, response); return false; }
     return true;
@@ -312,7 +449,7 @@ json Store::action(const std::string& operation, const json& args, std::string& 
             remove((dir_+"/native-library-"+p+".json").c_str());
             remove((dir_+"/progress-"+p+".json").c_str());
             for (const auto* field : {"library", "progress"}) if (jstr(state_, field) == p) state_[field] = "nuvio";
-            if(p=="simkl") {state_.erase("simkl_cache");state_.erase("simkl_activities");state_.erase("simkl_checked");}
+            if(p=="simkl") {state_.erase("simkl_cache");state_.erase("simkl_activities");state_.erase("simkl_checked");state_.erase("simkl_v2_library");}
             state_.erase(("pending_"+p)); state_.erase("failed_"+p); state_.erase("cache_"+p); state_.erase("pairing_"+p);
             state_.erase("membership_pending_"+p); state_.erase("library_cache_"+p);
         } else if (operation == "key") {
@@ -327,6 +464,10 @@ json Store::action(const std::string& operation, const json& args, std::string& 
             auto previous = a;
             if (!imported.is_object() || !credential(jstr(imported, p == "mdblist" ? "api_key" : "access_token")) ||
                 (p != "mdblist" && !credential(jstr(imported, "client_id")))) { error = "No compatible synced " + name(p) + " connection found"; return {}; }
+            if (p == "simkl" && simkl_v2(imported)) {
+                error = "Connect SIMKL with your phone on this PS5 instead. Each device needs its own SIMKL connection.";
+                return {};
+            }
             a = json::object();
             for (const auto* field : {"api_key", "access_token", "refresh_token", "client_id", "client_secret"})
                 if (credential(jstr(imported, field))) a[field] = imported[field];
@@ -337,43 +478,95 @@ json Store::action(const std::string& operation, const json& args, std::string& 
             if (connected(p)) { error="Disconnect the current tracker before connecting another account"; return {}; }
             if (p == "mdblist" || !credential(jstr(a, "client_id"))) { error = "Phone pairing is unavailable: this build has no registered "+name(p)+" application. A normal tracker account is sufficient once Max'd supplies its application registration; you do not need a developer account."; return {}; }
             dlog("tracking: %s pairing start; application configured",p.c_str());
-            json body{{"client_id", jstr(a, "client_id")}};
-            auto response = p == "trakt" ? request(p, "/oauth/device/code", &body, false) : request(p, "/oauth/pin?client_id="+url_encode(jstr(a, "client_id")), nullptr, false);
-            auto code = parsed(response);
-            if (!response.ok() || !credential(jstr(code, "user_code")) || jnum(code, "expires_in") <= 0 || (p == "trakt" && !credential(jstr(code, "device_code")))) { error = failure(p, response); return {}; }
-            state_["pairing_"+p] = {{"code", p == "trakt" ? jstr(code, "device_code") : jstr(code, "user_code")},
-                {"expires", now_seconds()+std::clamp(jnum(code, "expires_in"), 1.0, 3600.0)}};
+            state_.erase("pairing_"+p);
             if (!save(error)) return {};
-            // Fixed vendor verification origins prevent QR substitution.
-            return {{"code", jstr(code, "user_code")}, {"url", p == "trakt" ? "https://auth.trakt.tv/activate" : "https://simkl.com/pin"},
-                {"interval", std::clamp(jnum(code, "interval", 5), 2.0, 60.0)}, {"expires_in", std::clamp(jnum(code, "expires_in"), 1.0, 3600.0)}};
-        } else if (operation == "device_poll") {
-            const auto pair = jobj(state_, ("pairing_"+p).c_str());
-            if (jstr(pair, "code").empty() || jnum(pair, "expires") <= now_seconds()) { error = "Code expired; connect again"; return {}; }
-            json body{{"code", jstr(pair, "code")}, {"client_id", jstr(a, "client_id")}};
-            auto response = p == "trakt" ? request(p, "/oauth/device/token", &body, false) : request(p, "/oauth/pin/"+url_encode(jstr(pair, "code"))+"?client_id="+url_encode(jstr(a, "client_id")), nullptr, false);
-            dlog("tracking: %s pairing token HTTP %ld",p.c_str(),response.status);
-            auto token = parsed(response);
-            if(p=="trakt" && (response.status==404 || response.status==409 || response.status==410 || response.status==418)) {
-                state_.erase("pairing_"+p);std::string ignored;save(ignored);
-                error=response.status==418 ? "Trakt connection was declined. Connect again to request a new code."
-                    : response.status==409 ? "Trakt code was already used. Connect again to request a new code."
-                    : "Trakt code expired or is invalid. Connect again to request a new code.";
+            auto client_id = jstr(a, "client_id");
+            if (p == "simkl" && !jstr(a, "access_token").empty() && !simkl_v2(a)) {
+                std::lock_guard<std::mutex> guard(applications_mutex);
+                client_id = jstr(jobj(applications, "simkl"), "client_id", client_id);
+            }
+            json body{{"client_id", client_id}};
+            if (p == "simkl") body["scope"] = "media:read media:write";
+            auto response = request(p, p == "trakt" ? "/oauth/device/code" : "/oauth2/device", &body, false);
+            const auto code = parsed(response);
+            const auto user_code = jstr(code, "user_code");
+            const auto device_code = jstr(code, "device_code");
+            if (!response.ok() || !credential(user_code) || !credential(device_code) ||
+                jnum(code, "expires_in") <= 0 || (p == "simkl" && !simkl_user_code(user_code))) {
+                error = p == "simkl" && jstr(code, "error") == "invalid_client"
+                    ? "SIMKL phone pairing needs a registered AUTH V2 client ID. Disconnect on this PS5 to restore the bundled ID."
+                    : failure(p, response);
                 return {};
             }
-            if ((p == "trakt" && (response.status == 400 || response.status == 429)) || (p == "simkl" && jstr(token, "result") == "KO"))
+            const int interval = int(std::clamp(std::ceil(jnum(code, "interval", 5)), 2.0, 3600.0));
+            const double expires = std::clamp(jnum(code, "expires_in"), 1.0, 3600.0);
+            const double now = now_seconds();
+            state_["pairing_"+p] = {{"code", device_code}, {"client_id", client_id}, {"protocol", p == "simkl" ? 2 : 1}, {"expires", now+expires},
+                {"interval", interval}, {"next_poll", now+interval}};
+            if (!save(error)) return {};
+            // Never use URLs returned by the API or put the private device code in the QR.
+            const std::string url = p == "trakt" ? "https://auth.trakt.tv/activate" : simkl_pin_url;
+            return {{"code", user_code}, {"url", url}, {"qr_url", p == "simkl" ? url+"?user_code="+url_encode(user_code) : url},
+                {"interval", interval}, {"expires_in", expires}};
+        } else if (operation == "device_poll") {
+            const auto pair_key = "pairing_"+p;
+            const auto pair = jobj(state_, pair_key.c_str());
+            const bool v2 = p == "simkl";
+            const auto stop = [&](const std::string& message) -> json {
+                state_.erase(pair_key);
+                if (save(error)) error = message;
+                return {};
+            };
+            if (jstr(pair, "code").empty() || jnum(pair, "expires") <= now_seconds() || (v2 && jnum(pair, "protocol") != 2))
+                return stop("Code expired; connect again");
+            const auto interval = jnum(pair, "interval", 5);
+            const auto remaining = jnum(pair, "next_poll")-now_seconds();
+            if (v2 && remaining > 0) return {{"pending", true}, {"interval", std::ceil(remaining)}};
+            json body{{"client_id", jstr(pair, "client_id", jstr(a, "client_id"))}};
+            if (v2) { body["grant_type"] = simkl_device_grant; body["device_code"] = jstr(pair, "code"); }
+            else body["code"] = jstr(pair, "code");
+            auto response = request(p, v2 ? "/oauth2/token" : "/oauth/device/token", &body, false);
+            dlog("tracking: %s pairing token HTTP %ld", p.c_str(), response.status);
+            auto token = parsed(response);
+            if (v2 && !response.ok()) {
+                const auto reason = jstr(token, "error");
+                const bool slow = reason == "slow_down" || response.status == 429 || response.status == 0 || response.status >= 500;
+                if (reason == "authorization_pending" || slow) {
+                    const double delay = slow ? std::min(3600.0, interval+5) : interval;
+                    state_[pair_key]["interval"] = delay;
+                    state_[pair_key]["next_poll"] = now_seconds()+delay;
+                    if (!save(error)) return {};
+                    return {{"pending", true}, {"interval", delay}};
+                }
+                if (reason == "access_denied") return stop("SIMKL connection was declined. Connect again to request a new code.");
+                if (reason == "expired_token") return stop("SIMKL code expired. Connect again to request a new code.");
+                return stop(failure(p, response));
+            }
+            if (p == "trakt" && (response.status == 404 || response.status == 409 || response.status == 410 || response.status == 418))
+                return stop(response.status == 418 ? "Trakt connection was declined. Connect again to request a new code."
+                    : response.status == 409 ? "Trakt code was already used. Connect again to request a new code."
+                    : "Trakt code expired or is invalid. Connect again to request a new code.");
+            if (p == "trakt" && (response.status == 400 || response.status == 429))
                 return {{"pending", true}, {"slow", response.status == 429}};
-            if (!response.ok() || !credential(jstr(token, "access_token")) || (p=="trakt" && !credential(jstr(token,"refresh_token")))) { error = failure(p, response); return {}; }
-            auto previous = a; a["access_token"] = token["access_token"];
-            if (p == "trakt") {
+            const auto previous = a;
+            if (v2) {
+                if (!simkl_write_scope(token)) return stop("SIMKL did not grant permission to update watch history. Connect again and approve watch access.");
+                if (!apply_simkl_token(a, token)) return stop("SIMKL returned an incomplete connection. Connect again.");
+                a["client_id"] = body["client_id"];
+                a.erase("client_secret");
+            } else {
+                if (!response.ok() || !credential(jstr(token, "access_token")) || !credential(jstr(token, "refresh_token"))) {
+                    error = failure(p, response); return {};
+                }
+                a["access_token"] = token["access_token"];
                 a["refresh_token"] = jstr(token, "refresh_token");
                 a["expires_at"] = jnum(token, "created_at", double(now_epoch_ms())/1000)+jnum(token, "expires_in");
             }
-            if (!validate(p, error)) { a = previous; return {}; }
+            if (!v2 && !validate(p, error)) { a = previous; return {}; }
             a["verified"] = true; a["reconnect"] = false; a["error"] = ""; state_.erase("pairing_"+p);
             state_.erase("pending_"+p); state_.erase("failed_"+p);
             state_.erase("membership_pending_"+p); state_.erase("library_cache_"+p);
-            if(p=="simkl") {state_.erase("simkl_cache");state_.erase("simkl_activities");state_.erase("simkl_checked");}
+            if(p=="simkl") {state_.erase("simkl_cache");state_.erase("simkl_activities");state_.erase("simkl_checked");state_.erase("simkl_v2_library");}
             remove((dir_+"/native-library-"+p+".json").c_str());
             remove((dir_+"/progress-"+p+".json").c_str());
         } else { error = "Unknown tracker action"; return {}; }
@@ -588,7 +781,7 @@ bool Store::read_library(json& items, std::string& error) {
         }
         error = "Trakt watchlist exceeds the 10,000 item limit"; return false;
     } else if (p == "simkl") {
-        if (!fetch(p, "/sync/all-items?extended=full", response, error) || !response.is_object() || (!response.contains("movies") && !response.contains("shows") && !response.contains("anime"))) {
+        if (!fetch(p, "/sync/all-items?extended=full", response, error) || !response.is_object() ) {
             if (error.empty()) error = "SIMKL returned an unreadable library";
             return false;
         }
@@ -670,11 +863,14 @@ bool Store::flush(const std::string& p, std::string& error) {
             }
             body=json::object();if(!movies.empty())body["movies"]=movies;if(!shows.empty())body["shows"]=shows;
         }
-        auto response = request(p, path, &body);
+        HttpResponse response;
+        if (!request_with_refresh(p, path, &body, response, error)) return false;
         auto reply=parsed(response);
         const auto batch_missing=[&]{const auto& m=jobj(reply,"not_found");if(m.is_number())return m.get<double>()>0;if(m.is_object())for(const auto& v:m)if((v.is_array()&&!v.empty())||(v.is_number()&&v.get<double>()>0))return true;return false;};
         if(count>1&&(response.status==400||response.status==404||response.status==422||batch_missing())) {
-            count=1;body=single_body;response=request(p,path,&body);reply=parsed(response);
+            count=1;body=single_body;
+            if (!request_with_refresh(p, path, &body, response, error)) return false;
+            reply=parsed(response);
         }
         if(s.contains("trackingWatched") && response.ok() && (!reply.is_object()||reply.empty()||reply.contains("error"))) {
             error=name(p)+" did not confirm watched changes; they remain saved on this PS5";return false;
@@ -698,11 +894,14 @@ bool Store::flush(const std::string& p, std::string& error) {
         // A duplicate completed scrobble is already represented in watch history.
         if (!response.ok() && !((p == "trakt" || p == "simkl") && path == "/scrobble/stop" && response.status == 409)) {
             error = failure(p, response); state_["accounts"][p]["error"] = error;
-            if (response.status == 401) state_["accounts"][p]["reconnect"] = true;
+            if (response.status == 401 || (p == "simkl" && simkl_rejected(response))) state_["accounts"][p]["reconnect"] = true;
             std::string ignored; save(ignored);
             return false;
         }
-        if(p=="simkl") {state_.erase("simkl_cache");state_.erase("simkl_checked");}
+        if(p=="simkl") {
+            state_.erase("simkl_cache");state_.erase("simkl_checked");
+            if (jobj(state_, "simkl_v2_library").is_object()) state_["simkl_v2_library"].erase("checked");
+        }
         state_[field].erase(state_[field].begin(),state_[field].begin()+count);
         if (!save(error)) return false;
     }
