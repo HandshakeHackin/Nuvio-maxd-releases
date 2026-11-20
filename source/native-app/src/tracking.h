@@ -33,7 +33,9 @@ private:
     bool connected(const std::string& p) const;
     HttpResponse request(const std::string& p, const std::string& path, const json* body = nullptr, bool auth = true);
     bool validate(const std::string& p, std::string& error);
-    bool refresh(const std::string& p, std::string& error);
+    bool refresh(const std::string& p, std::string& error, bool force = false);
+    bool request_with_refresh(const std::string& p, const std::string& path, const json* body, HttpResponse& response, std::string& error);
+    bool simkl_library_snapshot(json& out, std::string& error);
     bool fetch(const std::string& p, const std::string& path, json& out, std::string& error);
     bool flush(const std::string& p, std::string& error);
     bool read_library(json& items, std::string& error);
