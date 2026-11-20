@@ -33,9 +33,12 @@ users do not need a developer account or a Client Secret. TV pairing uses the
 device-code flow, including secret-free token exchange and refresh rotation.
 Approving a connection does not change your selected library/progress sources.
 
-**SIMKL:** phone pairing still requires an owner-registered SIMKL client ID.
-Until one is included, use a compatible synced connection or the advanced
-application client ID setting. Regular users should not have to register apps.
+**SIMKL:** choose Connect with phone / QR code. Scan the QR code or open
+https://simkl.com/pin and enter the displayed code. Approve watch access with
+your regular SIMKL account. The app includes a public AUTH V2 client ID for its
+device flow; no developer account, client secret, or redirect is needed. A legacy
+connection keeps its original client ID until it is replaced. Connect each PS5
+separately, rather than importing or copying a V2 session from another device.
 
 The default public registrations are in `app/tracker-applications.json`.
 `NUVIO_TRACKER_APPLICATIONS` can override that file at build time. The validator
@@ -51,14 +54,15 @@ not implement browser authorization or forward authorization codes.
 
 Import connection from Nuvio Sync is a read-only, explicit copy of a compatible
 credential record from the selected Nuvio profile. MDBList uses the synced
-`mdblist` / `api_key` record. Trakt/SIMKL import requires a compatible token and
-application ID record; not all Nuvio clients sync their OAuth credentials. If none
-is available, connect locally. Source choices remain local and default to Nuvio.
+`mdblist` / `api_key` record. Trakt/legacy SIMKL import requires a compatible token
+and application ID record; not all Nuvio clients sync their OAuth credentials.
+For SIMKL V2, or when no compatible record is available, connect locally. Source choices remain local and default to Nuvio.
 
 ## Failure handling and limits
 
 A failed library/progress read uses Nuvio for that read and displays a fallback
-message. A rejected tracker token requires reconnecting. A transient outage does
+message. SIMKL V2 refreshes expired access automatically and retries a rejected request
+once. If SIMKL no longer authorizes sync, reconnect with your phone. A transient outage does
 not erase the preferred source; retry on the next library refresh. Progress writes
 remain on this PS5 for their original selected tracker and retry later; they are
 not silently uploaded to another tracker or account. The UI retains recent local
@@ -78,7 +82,8 @@ The UI status and error messages omit tokens, response bodies and request URLs.
 
 Official API references checked for this implementation:
 - https://trakt.docs.apiary.io/
-- https://simkl.docs.apiary.io/
+- https://api.simkl.org/api-reference/oauth2-device
+- https://api.simkl.org/guides/sync
 - https://api.mdblist.com/docs/ (OpenAPI `/schema/`)
 
 ## Testing
