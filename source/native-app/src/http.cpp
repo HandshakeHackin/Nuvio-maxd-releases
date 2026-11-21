@@ -1,6 +1,9 @@
 #include "http.h"
 
 #include <curl/curl.h>
+#include <algorithm>
+#include <chrono>
+#include <limits>
 
 #include "util.h"
 
@@ -42,12 +45,18 @@ void http_setup_handle(void* curl) {
 #endif
 }
 
+struct BodySink {
+	std::string* body;
+	size_t limit;
+	bool oversized=false;
+};
 static size_t write_cb(char* ptr, size_t size, size_t nmemb, void* userdata) {
-	auto* out = static_cast<std::string*>(userdata);
-	out->append(ptr, size * nmemb);
-	// Refuse absurd responses (a catalog or a poster is never this large).
-	if (out->size() > 64u * 1024 * 1024) return 0;
-	return size * nmemb;
+	auto& sink = *static_cast<BodySink*>(userdata);
+	if (size && nmemb > std::numeric_limits<size_t>::max() / size) return 0;
+	const size_t bytes = size * nmemb;
+	if (bytes > sink.limit - sink.body->size()) { sink.oversized=true; return 0; }
+	sink.body->append(ptr, bytes);
+	return bytes;
 }
 
 static size_t header_cb(char* ptr, size_t size, size_t nmemb, void* userdata) {
@@ -71,14 +80,17 @@ static int progress_cb(void* clientp, curl_off_t, curl_off_t, curl_off_t, curl_o
 
 static HttpResponse perform(const std::string& url, const std::string* post_body, long timeout_s,
                             const std::atomic<bool>* cancel, const std::vector<std::string>& headers, bool https_only = false,
-                            const std::string& content_type = "application/json", bool redirects = true) {
+                            const std::string& content_type = "application/json", bool redirects = true,
+                            bool subtitle = false) {
 	HttpResponse r;
+	if (cancel && cancel->load()) { r.error="cancelled"; return r; }
 	CURL* c = curl_easy_init();
 	if (!c) {
 		r.error = "curl_easy_init failed";
 		return r;
 	}
 	char errbuf[CURL_ERROR_SIZE] = {0};
+	BodySink sink{&r.body, subtitle ? 8u * 1024 * 1024 : 64u * 1024 * 1024};
 	struct curl_slist* hdrs = nullptr;
 	for (auto& h : headers) hdrs = curl_slist_append(hdrs, h.c_str());
 	if (post_body) hdrs = curl_slist_append(hdrs, ("Content-Type: " + content_type).c_str());
@@ -90,12 +102,12 @@ static HttpResponse perform(const std::string& url, const std::string* post_body
 	curl_easy_setopt(c, CURLOPT_PROTOCOLS_STR, https_only ? "https" : "http,https");
 	curl_easy_setopt(c, CURLOPT_REDIR_PROTOCOLS_STR, https_only ? "https" : "http,https");
 	curl_easy_setopt(c, CURLOPT_ACCEPT_ENCODING, "");  // whatever curl was built with (gzip, br)
-	curl_easy_setopt(c, CURLOPT_CONNECTTIMEOUT, 10L);
+	curl_easy_setopt(c, CURLOPT_CONNECTTIMEOUT, subtitle ? 30L : 10L);
 	curl_easy_setopt(c, CURLOPT_TIMEOUT, timeout_s);
 	curl_easy_setopt(c, CURLOPT_NOSIGNAL, 1L);
 	curl_easy_setopt(c, CURLOPT_ERRORBUFFER, errbuf);
 	curl_easy_setopt(c, CURLOPT_WRITEFUNCTION, write_cb);
-	curl_easy_setopt(c, CURLOPT_WRITEDATA, &r.body);
+	curl_easy_setopt(c, CURLOPT_WRITEDATA, &sink);
 	curl_easy_setopt(c, CURLOPT_HEADERFUNCTION, header_cb);
 	curl_easy_setopt(c, CURLOPT_HEADERDATA, &r);
 	if (!g_ca_bundle.empty() && file_exists(g_ca_bundle)) curl_easy_setopt(c, CURLOPT_CAINFO, g_ca_bundle.c_str());
@@ -112,9 +124,28 @@ static HttpResponse perform(const std::string& url, const std::string* post_body
 		curl_easy_setopt(c, CURLOPT_POSTFIELDSIZE, long(post_body->size()));
 	}
 
-	CURLcode rc = curl_easy_perform(c);
+	CURLcode rc = CURLE_OK;
+	const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(timeout_s);
+	for (int attempt=0; attempt<(subtitle ? 2 : 1); ++attempt) {
+		if (cancel && cancel->load()) { rc=CURLE_ABORTED_BY_CALLBACK; break; }
+		if (subtitle) {
+			const auto remaining=std::chrono::duration_cast<std::chrono::milliseconds>(deadline-std::chrono::steady_clock::now()).count();
+			if (remaining<=0) { rc=CURLE_OPERATION_TIMEDOUT; break; }
+			curl_easy_setopt(c, CURLOPT_TIMEOUT_MS, long(remaining));
+			curl_easy_setopt(c, CURLOPT_CONNECTTIMEOUT_MS, long(std::min<int64_t>(30000,remaining)));
+			// A failed name lookup must be retried through the resolver, not a
+			// cached negative result on the same easy handle.
+			curl_easy_setopt(c, CURLOPT_DNS_CACHE_TIMEOUT, 0L);
+		}
+		r = HttpResponse{}; sink.oversized=false; errbuf[0]='\0';
+		rc = curl_easy_perform(c);
+		curl_easy_getinfo(c, CURLINFO_RESPONSE_CODE, &r.status);
+		const bool transient = rc==CURLE_COULDNT_RESOLVE_HOST || rc==CURLE_COULDNT_CONNECT || rc==CURLE_OPERATION_TIMEDOUT;
+		if (!subtitle || rc==CURLE_OK || !transient || r.status!=0 || !r.body.empty() || (cancel && cancel->load())) break;
+	}
 	if (rc != CURLE_OK) {
-		r.error = errbuf[0] ? errbuf : curl_easy_strerror(rc);
+		// Curl's detailed buffer may include a private subtitle URL/hostname.
+		r.error = subtitle ? (sink.oversized ? "Subtitle file is too large" : curl_easy_strerror(rc)) : (errbuf[0] ? errbuf : curl_easy_strerror(rc));
 		if (cancel && cancel->load()) r.error = "cancelled";
 		char* ip = nullptr;
 		curl_easy_getinfo(c, CURLINFO_PRIMARY_IP, &ip);
@@ -131,6 +162,10 @@ static HttpResponse perform(const std::string& url, const std::string* post_body
 HttpResponse http_get(const std::string& url, long timeout_s, const std::atomic<bool>* cancel,
                       const std::vector<std::string>& headers) {
 	return perform(url, nullptr, timeout_s, cancel, headers);
+}
+
+HttpResponse http_get_subtitle(const std::string& url, const std::atomic<bool>* cancel) {
+	return perform(url, nullptr, 60, cancel, {}, false, "application/json", true, true);
 }
 
 HttpResponse http_post_json(const std::string& url, const std::string& body, long timeout_s,

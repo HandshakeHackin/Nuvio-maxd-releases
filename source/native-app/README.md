@@ -1,5 +1,12 @@
 # Native Nuvio Max'd for PS5
 
+## Subtitle test fix (#25)
+
+The next test build keeps more embedded subtitle packets during multilingual
+read-ahead bursts and gives subtitle downloads a longer connection window with
+one retry. Downloads remain bounded and cancel when leaving the video.
+See [test details](TESTING-ISSUE25.md). PS5 confirmation is still needed.
+
 ## Next build: 1.0.0.28 — start page and TV controls
 
 Choose a start page for each profile in Settings → App & Updates. Live TV now

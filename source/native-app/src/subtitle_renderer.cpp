@@ -21,6 +21,10 @@ extern "C" {
 namespace {
 constexpr int W=1920, H=1080;
 constexpr size_t kBitmapBudget=32u<<20;
+// A multilingual Matroska read-ahead burst can contain hundreds of small
+// packets before the next render. Keep a bounded burst window as well as the
+// byte budget; 256 packets across all languages discarded current captions.
+constexpr size_t kPendingPacketLimit=4096;
 struct Tile { int x=0,y=0,w=0,h=0; std::vector<uint8_t> rgba; };
 struct Event { double start=0,end=0; std::vector<Tile> tiles; size_t bytes=0; };
 struct SubtitlePacket {
@@ -184,9 +188,12 @@ void SubtitleRenderer::packet(int id,const AVPacket* p,double pts,double duratio
 
         job.bytes+=e.bytes;job.bitmap=std::move(e);
     }
+    // Charge queued container storage too; many tiny bitmap rectangles or
+    // empty clear packets must not bypass the byte budget.
+    job.bytes+=sizeof(SubtitlePacket)+job.chunks.capacity()*sizeof(decltype(job.chunks)::value_type)+job.bitmap.tiles.capacity()*sizeof(Tile);
     if(job.bytes>kBitmapBudget)return;
     std::lock_guard<std::mutex> lock(d_->pending_mutex);
-    while(!d_->pending.empty() && (d_->pending.size()>=256 || d_->pending_bytes+job.bytes>kBitmapBudget)) {
+    while(!d_->pending.empty() && (d_->pending.size()>=kPendingPacketLimit || d_->pending_bytes+job.bytes>kBitmapBudget)) {
         d_->pending_bytes-=d_->pending.front().bytes;d_->pending.pop_front();
     }
     d_->pending_bytes+=job.bytes;d_->pending.push_back(std::move(job));

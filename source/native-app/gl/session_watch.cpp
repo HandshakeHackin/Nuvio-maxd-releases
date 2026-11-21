@@ -1490,6 +1490,7 @@ void Session::watch_select_sub(int index)
         ws.failed = false;
         const std::string url = ws.url, lang = ws.lang;
         const int gen = w_gen_;
+        const auto cancel = w_episode_cancel_;
         struct Res
         {
             std::vector<Cue> cues;
@@ -1497,9 +1498,9 @@ void Session::watch_select_sub(int index)
             std::string error;
         };
         bg<Res>(
-            [url, lang]() {
+            [url, lang, cancel]() {
                 Res r;
-                const HttpResponse h = http_get(url, 30);
+                const HttpResponse h = http_get_subtitle(url, cancel.get());
                 if (!h.ok())
                 {
                     r.error = h.describe();

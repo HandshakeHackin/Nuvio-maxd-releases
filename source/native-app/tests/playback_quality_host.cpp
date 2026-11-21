@@ -127,6 +127,32 @@ int main(int argc,char** argv) try {
         tracks[1].is_default=false;
         require(default_subtitle(tracks,{"eng"},true,false)==-1,"untagged non-default track guessed");
     });
+    test("multilingual embedded subtitle bursts preserve the current cue",[&]{
+        SubtitleRenderer renderer; renderer.configure(argv[1]);
+        auto* par=avcodec_parameters_alloc(); par->codec_id=AV_CODEC_ID_SUBRIP;
+        for(int id=0;id<24;++id) renderer.add_track(id,par,"eng");
+        avcodec_parameters_free(&par);
+        // Matroska can deliver many languages together during read-ahead or a
+        // seek. The first currently visible cue must survive later packets.
+        for(int cue=0;cue<20;++cue) for(int id=0;id<24;++id) {
+            std::string text=std::to_string(cue)+",0,Default,,0,0,0,,Embedded caption";
+            AVSubtitleRect rect{}; rect.type=SUBTITLE_ASS; rect.ass=text.data();
+            AVSubtitleRect* rects[]={&rect};
+            AVSubtitle decoded{}; decoded.num_rects=1; decoded.rects=rects; decoded.end_display_time=1500;
+            AVPacket packet{};
+            renderer.packet(id,&packet,cue*2,1.5,&decoded);
+        }
+        auto o=renderer.render(0,.5,1920,1080,1,0);
+        require(o.supported && !o.rgba.empty(),"read-ahead discarded the current embedded caption");
+        o=renderer.render(0,1.6,1920,1080,1,0);
+        require(o.changed && o.rgba.empty(),"caption did not clear at its authored end");
+        o=renderer.render(0,2.2,1920,1080,1,0);
+        require(o.changed && !o.rgba.empty(),"next embedded caption disappeared");
+        o=renderer.render(23,.5,1920,1080,1,0);
+        require(o.changed && !o.rgba.empty(),"switching languages lost buffered captions");
+        renderer.seek(); o=renderer.render(0,.5,1920,1080,1,0);
+        require(o.changed && o.rgba.empty(),"seek retained captions from the old timeline");
+    });
     test("styled ASS preserves positioned events and external cues survive a seek",[&]{
         SubtitleRenderer renderer; renderer.configure(argv[1]);
         const std::string ass="[Script Info]\nScriptType: v4.00+\nPlayResX: 1920\nPlayResY: 1080\n[V4+ Styles]\nFormat: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding\nStyle: Default,Inter,40,&H000000FF,&H00FFFFFF,&H00000000,&H80000000,0,0,0,0,100,100,0,0,1,2,0,2,10,10,10,1\n[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\nDialogue: 0,0:00:01.00,0:00:03.00,Default,,0,0,0,,{\\pos(400,200)}Styled text\n";
