@@ -20,7 +20,8 @@ void http_init(const std::string& ca_bundle_path);
 HttpResponse http_get(const std::string& url, long timeout_s = 20, const std::atomic<bool>* cancel = nullptr,
                       const std::vector<std::string>& headers = {});
 // Subtitle GETs: 8 MiB response cap, 30 s connection window, one transient
-// DNS/connect retry within a shared 60 s deadline. Cancellation covers retries.
+// DNS/connect retry (including CDN redirects) within a shared 60 s deadline.
+// Cancellation covers retries.
 HttpResponse http_get_subtitle(const std::string& url, const std::atomic<bool>* cancel = nullptr);
 // Release metadata must never follow a redirect to plaintext HTTP.
 HttpResponse http_get_https(const std::string& url, long timeout_s = 20, const std::atomic<bool>* cancel = nullptr,

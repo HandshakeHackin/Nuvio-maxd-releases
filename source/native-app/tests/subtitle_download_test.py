@@ -4,6 +4,7 @@ import http.server
 import os
 from pathlib import Path
 import ssl
+import socket
 import subprocess
 import tempfile
 import threading
@@ -26,6 +27,14 @@ class Handler(http.server.BaseHTTPRequestHandler):
 
     def do_GET(self):
         path = self.path.split('?', 1)[0]
+        if path == '/redirect-retry':
+            self.server.redirect_attempts += 1
+            self.send_response(302)
+            self.send_header('Location', f'https://localhost:{self.server.unavailable_port}/caption'
+                             if self.server.redirect_attempts == 1 else '/caption')
+            self.send_header('Content-Length', '0')
+            self.end_headers()
+            return
         if path in ('/redirect', '/unsafe-redirect'):
             self.send_response(302)
             self.send_header('Location', '/caption' if path == '/redirect' else 'file:///private-subtitle-fixture')
@@ -72,6 +81,10 @@ with tempfile.TemporaryDirectory(prefix='nuvio-subtitle-https-') as temp:
                         '-subj', '/CN=localhost', '-addext', 'subjectAltName=DNS:localhost'],
                        check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     server = Server(('127.0.0.1', 0), Handler)
+    with socket.socket() as unused:
+        unused.bind(('127.0.0.1', 0))
+        server.unavailable_port = unused.getsockname()[1]
+    server.redirect_attempts = 0
     server.context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
     server.context.load_cert_chain(cert, key)
     worker = threading.Thread(target=server.serve_forever, daemon=True)
@@ -80,6 +93,7 @@ with tempfile.TemporaryDirectory(prefix='nuvio-subtitle-https-') as temp:
     env = dict(os.environ, NO_PROXY='localhost,127.0.0.1', no_proxy='localhost,127.0.0.1')
     cases = [('normal', '/redirect'), ('retry-dns', '/caption'),
              ('retry-connect', '/caption'), ('persistent-dns', '/caption'),
+             ('retry-redirect-connect', '/redirect-retry'),
              ('pre-cancel', '/caption'), ('cancel-retry', '/caption'),
              ('cancel-transfer', '/stall'), ('oversized', '/oversized'),
              ('http-error', '/error'), ('bad-ca', '/caption'),

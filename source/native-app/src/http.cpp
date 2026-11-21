@@ -141,7 +141,10 @@ static HttpResponse perform(const std::string& url, const std::string* post_body
 		rc = curl_easy_perform(c);
 		curl_easy_getinfo(c, CURLINFO_RESPONSE_CODE, &r.status);
 		const bool transient = rc==CURLE_COULDNT_RESOLVE_HOST || rc==CURLE_COULDNT_CONNECT || rc==CURLE_OPERATION_TIMEDOUT;
-		if (!subtitle || rc==CURLE_OK || !transient || r.status!=0 || !r.body.empty() || (cancel && cancel->load())) break;
+		// Download services often redirect to a different CDN hostname. Curl
+		// retains the redirect status if resolving/connecting that host fails.
+		const bool no_final_response = r.status==0 || (r.status>=300 && r.status<400);
+		if (!subtitle || rc==CURLE_OK || !transient || !no_final_response || !r.body.empty() || (cancel && cancel->load())) break;
 	}
 	if (rc != CURLE_OK) {
 		// Curl's detailed buffer may include a private subtitle URL/hostname.

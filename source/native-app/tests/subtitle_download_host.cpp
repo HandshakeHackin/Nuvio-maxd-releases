@@ -53,7 +53,7 @@ int main(int argc,char** argv) try {
         require(!response.ok() && response.body.empty() && attempts==1,"non-HTTP subtitle redirect was accepted or retried");
     } else {
         require(response.ok() && response.body=="1\n00:00:01,000 --> 00:00:03,000\nCaption\n","subtitle redirect/gzip/TLS transfer failed");
-        require(attempts==((mode=="retry-dns" || mode=="retry-connect")?2:1),"unexpected subtitle attempt count");
+        require(attempts==((mode=="retry-dns" || mode=="retry-connect" || mode=="retry-redirect-connect")?2:1),"unexpected subtitle attempt count");
         if(mode=="slow-connect") require(elapsed>=10 && elapsed<25,"slow TLS connection was not exercised");
     }
     std::cout<<"Subtitle download: "<<mode<<" passed\n";

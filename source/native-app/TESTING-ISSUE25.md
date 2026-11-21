@@ -11,7 +11,8 @@ these changes address reproducible failures and still need reporter confirmation
   read-ahead headroom for Native/EVO; extreme overload can still discard packets.
   VLC draws its own embedded captions and does not use this queue.
 - Only subtitle-file GETs receive a 30-second connection window and one retry
-  for a DNS/connect/timeout failure before any response or body arrives. Both
+  for a DNS/connect/timeout failure before a final response or body arrives,
+  including a failure connecting to a redirected CDN. Both
   attempts share a 60-second curl transfer budget. TLS failures and HTTP error
   responses are not retried. No POST or account operation gains retries.
 - Subtitle bodies stop at 8 MiB of decompressed data. HTTP/HTTPS redirects,
