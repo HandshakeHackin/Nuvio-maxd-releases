@@ -87,11 +87,18 @@ int main(int argc, char** argv) {
         // fallback, in every selectable menu language.
         if(fonts.regular.font->wrap(d.message,26.0f,772.0f).size()>12)return 15;
         sx::draw_dropdown(list,env,d,1);
+    } else if(mode=="free-tv-countries") {
+        sx::DropdownState d;d.title=sx::i18n::tr("Free TV countries");d.wide=true;d.active=-1;d.selected=5;
+        d.message=sx::i18n::tr("Cross: toggle countries. Square: apply. Circle: cancel.");
+        d.options={sx::i18n::tr("Apply"),sx::i18n::tr("Select all"),sx::i18n::tr("Clear selection"),sx::i18n::tr("Cancel"),"Canada","Germany","United Kingdom","United States"};
+        d.checked={false,false,false,false,true,true,false,true};
+        if(fonts.regular.font->wrap(d.message,26.0f,772.0f).size()>3)return 16;
+        sx::draw_dropdown(list,env,d,1);
     } else if(mode=="free-tv-settings") {
         sx::SettingsContent content;
-        const char* labels[]={"Free live TV","Free TV country","Open free live TV"};
-        const char* help[]={"Watch free public channels without an IPTV subscription. Optional for this profile.","Choose a country for the free channel list.","Read the disclaimer and enable Free live TV first."};
-        for(int i=0;i<3;++i){sx::SettingRow row;row.category="Live TV";row.label=sx::i18n::tr(labels[i]);row.help=sx::i18n::tr(help[i]);row.kind=i==0?sx::SettingRow::Kind::toggle:i==1?sx::SettingRow::Kind::value:sx::SettingRow::Kind::action;row.value=i==1?"US":"";content.rows.push_back(row);}
+        const char* labels[]={"Free live TV","Free TV countries","Open free live TV"};
+        const char* help[]={"Watch free public channels without an IPTV subscription. Optional for this profile.","Choose one or more countries for the free channel list.","Read the disclaimer and enable Free live TV first."};
+        for(int i=0;i<3;++i){sx::SettingRow row;row.category="Live TV";row.label=sx::i18n::tr(labels[i]);row.help=sx::i18n::tr(help[i]);row.kind=i==0?sx::SettingRow::Kind::toggle:i==1?sx::SettingRow::Kind::value:sx::SettingRow::Kind::action;if(i==1){row.value=sx::i18n::tr("{count} countries selected");row.value.replace(row.value.find("{count}"),7,"3");}content.rows.push_back(row);}
         sx::Settings settings(env);settings.set_content(&content);settings.enter();hui::InputFrame input;input.nav=hui::Direction::down;settings.update(input,1.0f/60);input.nav=hui::Direction::none;input.pressed=hui::action_bit(hui::Action::confirm);settings.update(input,1.0f/60);input.pressed=0;
         for(int i=0;i<120;++i)settings.update(input,1.0f/60);
         hui::gfx::BackdropSpec backdrop;settings.draw(list,backdrop);

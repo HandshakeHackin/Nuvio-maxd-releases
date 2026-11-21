@@ -533,6 +533,16 @@
     "Open free live TV": "打开免费直播电视",
     "Read the disclaimer and enable Free live TV first.": "请先阅读免责声明并启用免费直播电视。",
     "These are free IPTV channels provided by third parties. Nuvio Max'd does not own, host or control them in any way. Availability and playback quality vary (YMMV). Please do not report dead channels or buffering to the Nuvio Max'd developer. This optional feature is intended to help users who do not want to pay for an IPTV subscription.": "这些是第三方提供的免费 IPTV 频道。Nuvio Max'd 不拥有、托管或以任何方式控制这些频道。可用性和播放质量因人而异（YMMV）。请勿向 Nuvio Max'd 开发者报告失效频道或缓冲问题。此可选功能旨在帮助不想支付 IPTV 订阅费用的用户。",
-    "Watch free public channels without an IPTV subscription. Optional for this profile.": "无需 IPTV 订阅即可观看免费的公开频道。本个人资料可选择启用。"
+    "Watch free public channels without an IPTV subscription. Optional for this profile.": "无需 IPTV 订阅即可观看免费的公开频道。本个人资料可选择启用。",
+    "Free TV countries": "免费电视国家/地区",
+    "Choose one or more countries for the free channel list.": "为免费频道列表选择一个或多个国家/地区。",
+    "{count} countries selected": "已选择 {count} 个国家/地区",
+    "Cross: toggle countries. Square: apply. Circle: cancel.": "叉键：勾选国家/地区。方框键：应用。圆圈键：取消。",
+    "Apply": "应用",
+    "Select all": "全选",
+    "Clear selection": "清除选择",
+    "Choose at least one country.": "请至少选择一个国家/地区。",
+    "Some countries could not be loaded. Reload channels to retry.": "部分国家/地区加载失败。请重新加载频道以重试。",
+    "Free TV loading limit reached. Choose fewer countries or reload channels.": "已达到免费电视加载上限。请选择更少的国家/地区或重新加载频道。"
   }
 }

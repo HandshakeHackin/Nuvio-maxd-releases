@@ -1,7 +1,9 @@
 # Free live TV
 
 Open **Settings → Live TV → Free live TV**. Read the disclaimer and choose
-**I understand — enable free TV**. Pick **Free TV country**, then
+**I understand — enable free TV**. Pick **Free TV countries**. Tick as many countries as you want, then choose
+**Apply** (or press Square). **Select all** and **Clear selection** help with longer
+lists; Circle or **Cancel** discards changes. Then choose
 **Open free live TV**. No IPTV subscription, provider account, API key or
 Cloudflare setup is required. Guest profiles can use it too.
 
@@ -22,7 +24,7 @@ Every time the switch is turned on, it shows:
 The controls and disclaimer are translated into all eight menu languages.
 Turning the switch off removes the free source from selection and cancels
 its pending requests; saved preferences remain available for re-enabling.
-Profile configuration backups retain the choice, country and disclaimer
+Profile configuration backups retain the choice, countries and disclaimer
 acceptance. Personal source credentials are never sent to the public catalogue.
 
 ## Sources and limits
@@ -36,8 +38,16 @@ i.mjh.nz. Those services remain independent of Nuvio Max'd. We do not run or
 mirror their video servers, bypass subscriptions, or certify every stream.
 Availability, ads and regional restrictions depend on the provider.
 
-Only the chosen country's catalogue is loaded: at most 8 MiB and 10,000
-channel records. Country metadata is limited to 256 KiB. Explicitly adult
+Selected countries are combined into one list. Duplicate station IDs appear
+once, keeping the first selected country's stream and guide. Country groups
+(such as US and UK) let you filter the combined list. Your old single-country
+choice carries over automatically.
+
+Up to 256 countries may be selected. Each catalogue is limited to 8 MiB and
+10,000 records; a combined load allows at most 32 MiB, 100,000 channels and
+90 seconds of network time. Slow or failed countries do not discard successful
+ones. If some countries fail or a limit is reached, a message recommends
+reloading or choosing fewer countries. Country metadata is limited to 256 KiB. Explicitly adult
 records, malformed entries, unsafe schemes/credentials/headers, duplicate IDs
 and links explicitly marked failed by the feed are omitted. Other feed health
 labels are not presented as guarantees. The first usable listed stream is used.
@@ -47,6 +57,8 @@ No private IPTV credentials or playback history are uploaded to this service.
 
 Tests cover the seven provider labels, malformed/bounded data, cancellation,
 disclaimer acceptance/cancel, save rollback, preservation of 16 personal sources,
-encrypted backup consent, stale replies and profile changes. Host UI previews
+encrypted backup consent, multiple-country persistence and legacy migration,
+Apply/Cancel and empty selection, correct per-country guides, duplicate station
+identity, partial failures, aggregate limits, stale replies and profile changes. Host UI previews
 check the full disclaimer fits without truncation in all eight languages.
 Physical PS5 playback and individual external channels still require testing.

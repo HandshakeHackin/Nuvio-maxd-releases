@@ -9,6 +9,7 @@ struct Query {
   std::vector<std::string> headers;
   size_t limit = 8u << 20;
   bool https_only = true;
+  long timeout_ms = 60000;
 };
 struct Response : HttpResponse {
   std::string etag;

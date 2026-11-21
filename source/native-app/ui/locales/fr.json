@@ -533,6 +533,16 @@
     "Open free live TV": "Ouvrir la TV en direct gratuite",
     "Read the disclaimer and enable Free live TV first.": "Lisez d’abord l’avertissement et activez la TV en direct gratuite.",
     "These are free IPTV channels provided by third parties. Nuvio Max'd does not own, host or control them in any way. Availability and playback quality vary (YMMV). Please do not report dead channels or buffering to the Nuvio Max'd developer. This optional feature is intended to help users who do not want to pay for an IPTV subscription.": "Ces chaînes IPTV gratuites sont fournies par des tiers. Nuvio Max'd ne les possède, ne les héberge et ne les contrôle en aucune façon. La disponibilité et la qualité peuvent varier (YMMV). Merci de ne pas signaler les chaînes indisponibles ou la mise en mémoire tampon au développeur de Nuvio Max'd. Cette option aide les utilisateurs qui ne souhaitent pas payer un abonnement IPTV.",
-    "Watch free public channels without an IPTV subscription. Optional for this profile.": "Regardez des chaînes publiques gratuites sans abonnement IPTV. Optionnel pour ce profil."
+    "Watch free public channels without an IPTV subscription. Optional for this profile.": "Regardez des chaînes publiques gratuites sans abonnement IPTV. Optionnel pour ce profil.",
+    "Free TV countries": "Pays de TV gratuite",
+    "Choose one or more countries for the free channel list.": "Choisissez un ou plusieurs pays pour la liste des chaînes gratuites.",
+    "{count} countries selected": "{count} pays sélectionnés",
+    "Cross: toggle countries. Square: apply. Circle: cancel.": "Croix : cocher les pays. Carré : appliquer. Rond : annuler.",
+    "Apply": "Appliquer",
+    "Select all": "Tout sélectionner",
+    "Clear selection": "Effacer la sélection",
+    "Choose at least one country.": "Choisissez au moins un pays.",
+    "Some countries could not be loaded. Reload channels to retry.": "Certains pays n’ont pas pu être chargés. Rechargez les chaînes pour réessayer.",
+    "Free TV loading limit reached. Choose fewer countries or reload channels.": "Limite de chargement de TV gratuite atteinte. Choisissez moins de pays ou rechargez les chaînes."
   }
 }

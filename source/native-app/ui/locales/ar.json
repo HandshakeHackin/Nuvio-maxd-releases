@@ -533,6 +533,16 @@
     "Open free live TV": "فتح البث التلفزيوني المجاني",
     "Read the disclaimer and enable Free live TV first.": "اقرأ إخلاء المسؤولية وفعّل البث التلفزيوني المجاني أولًا.",
     "These are free IPTV channels provided by third parties. Nuvio Max'd does not own, host or control them in any way. Availability and playback quality vary (YMMV). Please do not report dead channels or buffering to the Nuvio Max'd developer. This optional feature is intended to help users who do not want to pay for an IPTV subscription.": "هذه قنوات IPTV مجانية يقدمها أطراف آخرون. لا يمتلكها Nuvio Max'd ولا يستضيفها ولا يتحكم بها بأي شكل. قد يختلف التوفر وجودة التشغيل (YMMV). يُرجى عدم إبلاغ مطوّر Nuvio Max'd عن القنوات المتوقفة أو مشاكل التخزين المؤقت. تهدف هذه الميزة الاختيارية إلى مساعدة من لا يرغبون في دفع تكلفة اشتراك IPTV.",
-    "Watch free public channels without an IPTV subscription. Optional for this profile.": "شاهد قنوات عامة مجانية دون اشتراك IPTV. ميزة اختيارية لهذا الملف الشخصي."
+    "Watch free public channels without an IPTV subscription. Optional for this profile.": "شاهد قنوات عامة مجانية دون اشتراك IPTV. ميزة اختيارية لهذا الملف الشخصي.",
+    "Free TV countries": "بلدان التلفزيون المجاني",
+    "Choose one or more countries for the free channel list.": "اختر بلدًا واحدًا أو أكثر لقائمة القنوات المجانية.",
+    "{count} countries selected": "تم اختيار {count} من البلدان",
+    "Cross: toggle countries. Square: apply. Circle: cancel.": "إكس: تحديد البلدان. مربع: تطبيق. دائرة: إلغاء.",
+    "Apply": "تطبيق",
+    "Select all": "تحديد الكل",
+    "Clear selection": "مسح التحديد",
+    "Choose at least one country.": "اختر بلدًا واحدًا على الأقل.",
+    "Some countries could not be loaded. Reload channels to retry.": "تعذر تحميل بعض البلدان. أعد تحميل القنوات للمحاولة مجددًا.",
+    "Free TV loading limit reached. Choose fewer countries or reload channels.": "تم بلوغ حد تحميل التلفزيون المجاني. اختر بلدانًا أقل أو أعد تحميل القنوات."
   }
 }

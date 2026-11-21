@@ -524,7 +524,10 @@ void Shell::update(const hui::InputFrame &input, float dt)
             d.selected = std::max(0, d.selected - 1);
         else if (input.nav == Direction::down)
             d.selected = std::min(std::max(0, count - 1), d.selected + 1);
-        if (input.is_pressed(Action::confirm))
+        if (d.purpose==DropdownState::Purpose::free_tv_countries && input.is_pressed(Action::west)) {
+            d.selected=0;s_.dropdown_confirm();
+        }
+        else if (input.is_pressed(Action::confirm))
             s_.dropdown_confirm();
         else if (input.is_pressed(Action::back))
             s_.dropdown_cancel();

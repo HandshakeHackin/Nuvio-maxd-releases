@@ -27,10 +27,11 @@ void draw_boot_mark(hui::gfx::DrawList &list, const Env &env, float glow, float 
 
 struct DropdownState
 {
-    enum class Purpose {generic,usb_scan,usb_import,torrent_files,build_integrity};
+    enum class Purpose {generic,usb_scan,usb_import,torrent_files,build_integrity,free_tv_countries};
     Purpose purpose=Purpose::generic;
     std::string title;
     std::vector<std::string> options;
+    std::vector<bool> checked; // Optional independent ticks for multiple selections.
     std::string message; // under the title, for a question
     int active = 0;   // the current choice, ticked (-1: none)
     int selected = 0; // the cursor

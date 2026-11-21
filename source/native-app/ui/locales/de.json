@@ -1444,6 +1444,16 @@
     "Open free live TV": "Kostenloses Live-TV öffnen",
     "Read the disclaimer and enable Free live TV first.": "Zuerst den Haftungshinweis lesen und kostenloses Live-TV aktivieren.",
     "These are free IPTV channels provided by third parties. Nuvio Max'd does not own, host or control them in any way. Availability and playback quality vary (YMMV). Please do not report dead channels or buffering to the Nuvio Max'd developer. This optional feature is intended to help users who do not want to pay for an IPTV subscription.": "Dies sind kostenlose IPTV-Sender von Drittanbietern. Nuvio Max'd besitzt, hostet oder kontrolliert sie in keiner Weise. Verfügbarkeit und Wiedergabequalität können variieren (YMMV). Bitte melden Sie ausgefallene Sender oder Pufferprobleme nicht dem Entwickler von Nuvio Max'd. Diese optionale Funktion hilft Nutzern, die kein IPTV-Abonnement bezahlen möchten.",
-    "Watch free public channels without an IPTV subscription. Optional for this profile.": "Kostenlose öffentliche Sender ohne IPTV-Abonnement ansehen. Für dieses Profil optional."
+    "Watch free public channels without an IPTV subscription. Optional for this profile.": "Kostenlose öffentliche Sender ohne IPTV-Abonnement ansehen. Für dieses Profil optional.",
+    "Free TV countries": "Free-TV-Länder",
+    "Choose one or more countries for the free channel list.": "Ein oder mehrere Länder für die kostenlose Senderliste auswählen.",
+    "{count} countries selected": "{count} Länder ausgewählt",
+    "Cross: toggle countries. Square: apply. Circle: cancel.": "Kreuz: Länder auswählen. Quadrat: übernehmen. Kreis: abbrechen.",
+    "Apply": "Übernehmen",
+    "Select all": "Alle auswählen",
+    "Clear selection": "Auswahl löschen",
+    "Choose at least one country.": "Mindestens ein Land auswählen.",
+    "Some countries could not be loaded. Reload channels to retry.": "Einige Länder konnten nicht geladen werden. Sender neu laden, um es erneut zu versuchen.",
+    "Free TV loading limit reached. Choose fewer countries or reload channels.": "Ladelimit für Free TV erreicht. Weniger Länder auswählen oder Sender neu laden."
   }
 }

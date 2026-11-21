@@ -30,6 +30,16 @@ void free_tv_core_cases() {
  cloned=state;cloned["free_tv_enabled"]="true";assert(!valid_settings(cloned));
  cloned=state;cloned["free_tv_disclaimer_version"]=2;assert(!valid_settings(cloned));
  cloned=state;cloned["free_tv_guide_offset_minutes"]=721;assert(!valid_settings(cloned));
+ // Old profiles migrate without changing consent, country, source or favorites.
+ cloned=state;cloned["free_tv_country"]="GB";normalise(cloned);
+ assert(enabled(cloned)&&selected_countries(cloned)==std::vector<std::string>{"uk"});
+ cloned["free_tv_countries"]=json::array({"US","uk","de"});normalise(cloned);
+ assert(enabled(cloned)&&country(cloned)=="us"&&selected_countries(cloned).size()==3);
+ assert(sources(cloned).back()["free_tv_countries"]==json::array({"us","uk","de"}));
+ for(const auto& bad:std::vector<json>{json::array(),json::array({"us","US"}),json::array({"gb","uk"}),json::array({"../us"}),json::array({1}),"us",json(std::vector<std::string>(257,"us"))}) {
+  auto invalid=cloned;invalid["free_tv_countries"]=bad;
+  assert(!valid_settings(invalid));normalise(invalid);assert(!enabled(invalid)&&valid_settings(invalid));
+ }
  const auto countries=parse_countries(R"({"us":{"name":"United States"},"uk":{"name":"United Kingdom"},"../private":{"name":"Invalid"},"zz":{"name":"bad\nname"}})");
  assert(countries.error.empty()&&countries.rows.size()==2&&countries.rows[0].code=="uk");
  assert(!parse_countries("[]").error.empty());
@@ -44,7 +54,7 @@ void free_tv_core_cases() {
  assert(result.error.empty()&&result.channels.size()==7);
  assert(result.guide_url.empty()); // The guide is loaded per visible channel.
  for(const auto& c:result.channels) {
-  assert(c.url.find("broken")==std::string::npos&&c.headers.size()==2&&c.epg_id==c.id&&c.groups.size()==2);
+  assert(c.url.find("broken")==std::string::npos&&c.headers.size()==2&&c.epg_id==c.id&&c.groups.size()==3&&c.guide_country=="uk");
   assert(c.headers[0]=="User-Agent: FixturePlayer"&&c.headers[1]=="Referer: https://public.invalid/");
  }
  rows.push_back(rows.front()); // Duplicate IDs do not multiply channel rows.
@@ -69,6 +79,34 @@ void free_tv_core_cases() {
  assert(fetch("US",&cancel,transport).channels.size()==7&&calls==1);
  auto failed=fetch("us",nullptr,[](const auto&,const auto*){feature_http::Response r;r.error="private hostname and token";return r;});
  assert(failed.channels.empty()&&failed.error.find("private")==std::string::npos);
+ // Two distinct countries, a shared station, and a country-specific guide.
+ calls=0;
+ const auto merged=fetch(std::vector<std::string>{"US","uk"},nullptr,[&](const auto& q,const auto*) {
+  ++calls;assert(q.timeout_ms>0&&q.timeout_ms<=25000);
+  auto channels=json::array({rows.front()});
+  if(q.url.ends_with("uk.json")){auto unique=rows.front();unique["id"]="uk-only";channels.push_back(unique);}
+  feature_http::Response r;r.status=200;r.body=channels.dump();return r;
+ });
+ assert(calls==2&&merged.error.empty()&&merged.notice.empty()&&merged.channels.size()==2);
+ assert(merged.channels[0].guide_country=="us"&&merged.channels[1].guide_country=="uk");
+ assert(live_channel_prefs::key(source_id,merged.channels[0])==live_channel_prefs::key(source_id,result.channels[0]));
+ assert(merged.channels[0].in_group("US")&&merged.channels[0].in_group("UK")&&merged.channels[1].in_group("UK"));
+ calls=0;
+ const auto partial=fetch(std::vector<std::string>{"us","uk"},nullptr,[&](const auto&,const auto*) {
+  feature_http::Response r;if(++calls==1){r.status=200;r.body=json::array({rows.front()}).dump();}else r.error="private token";return r;
+ });
+ assert(partial.channels.size()==1&&partial.error.empty()&&!partial.notice.empty()&&partial.notice.find("private")==std::string::npos);
+ calls=0;cancel=false;
+ const auto stopped=fetch(std::vector<std::string>{"us","uk","de"},&cancel,[&](const auto&,const auto*) {
+  feature_http::Response r;r.status=200;r.body=json::array({rows.front()}).dump();if(++calls==2)cancel=true;return r;
+ });
+ assert(calls==2&&stopped.channels.empty()&&!stopped.error.empty());
+ calls=0;
+ const auto bounded=fetch(std::vector<std::string>{"us","uk","de","fr","es"},nullptr,[&](const auto& q,const auto*) {
+  ++calls;feature_http::Response r;r.status=200;r.body=json::array({rows.front()}).dump();r.body.resize(q.limit,' ');return r;
+ });
+ assert(calls==4&&bounded.channels.size()==1&&bounded.error.empty()&&!bounded.notice.empty());
+ calls=0;assert(!fetch(std::vector<std::string>{"us","US"},nullptr,transport).error.empty()&&calls==0);
  auto epg=guide("GB","channel/with spaces",10000,nullptr,[](const auto& q,const auto*) {
   assert(q.url==std::string(data_root)+"g/uk/channel%2Fwith%20spaces.json"&&q.limit==(1u<<20)&&q.headers.empty());
   feature_http::Response r;r.status=200;r.body=R"([{"s":10001,"e":10200,"t":"Next"},{"s":9900,"e":10001,"t":"Now"},{"s":9900,"e":10001,"t":"Now"},{"s":10000,"e":9999,"t":"Invalid"}])";return r;
@@ -78,7 +116,7 @@ void free_tv_core_cases() {
 
  json snapshot={{"version",1},{"scope",std::string(64,'a')},{"files",{
   {"profile-settings.json","{}"},{"tvdb.json","{}"},{"live-tv.json",json{{"sources",json::array()},
-   {"free_tv_enabled",true},{"free_tv_disclaimer_version",1},{"free_tv_country","us"}}.dump()}}}};
+   {"free_tv_enabled",true},{"free_tv_disclaimer_version",1},{"free_tv_country","us"},{"free_tv_countries",json::array({"us","uk"})}}.dump()}}}};
  std::string error;assert(config_backup::validate(snapshot,std::string(64,'a'),error));
  const auto encrypted=config_backup::encrypt(snapshot,"free-tv-fixture-passphrase");assert(encrypted.error.empty());
  const auto decrypted=config_backup::decrypt(encrypted.bytes,"free-tv-fixture-passphrase",std::string(64,'a'));

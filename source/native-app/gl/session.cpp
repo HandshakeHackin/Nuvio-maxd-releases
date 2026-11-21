@@ -851,7 +851,9 @@ void Session::refresh_settings()
     set(kFreeTv,Kind::toggle,i18n::tr("Free live TV"),"",i18n::tr("Watch free public channels without an IPTV subscription. Optional for this profile."),free_tv::enabled(live_state_));
     auto free_country=free_tv::country(live_state_);for(auto& c:free_country)c=char(std::toupper(static_cast<unsigned char>(c)));
     for(const auto& row:free_tv_countries_)if(row.code==free_tv::country(live_state_)){free_country=row.name;break;}
-    set(kFreeTvCountry,Kind::value,i18n::tr("Free TV country"),free_country,i18n::tr("Choose a country for the free channel list."));
+    const auto free_count=free_tv::selected_countries(live_state_).size();
+    if(free_count>1)free_country=replace_all(i18n::tr("{count} countries selected"),"{count}",std::to_string(free_count));
+    set(kFreeTvCountry,Kind::value,i18n::tr("Free TV countries"),free_country,i18n::tr("Choose one or more countries for the free channel list."));
     set(kFreeTvOpen,Kind::action,i18n::tr("Open free live TV"),"",i18n::tr(free_tv::enabled(live_state_)?"Watch free public channels without an IPTV subscription. Optional for this profile.":"Read the disclaimer and enable Free live TV first."));
     group("Live TV",{kFreeTv,kFreeTvCountry,kFreeTvOpen});
     set(kSportsEnable,Kind::toggle,sx::i18n::tr("Sports Hub"),"",sx::i18n::tr("Show Sports Hub in navigation for this profile. Off stops sports requests and keeps your selections."),sports_prefs_.enabled);
@@ -1257,6 +1259,8 @@ void Session::open_dropdown(const std::string &title, const std::vector<std::str
     dropdown.title = title;
     dropdown.purpose=DropdownState::Purpose::generic;
     dropdown.message.clear();
+    dropdown.checked.clear();
+    dropdown.wide=false;
     dropdown.danger = -1;
     dropdown.dialog = false;
     dropdown.poster = 0;

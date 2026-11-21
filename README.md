@@ -40,7 +40,7 @@ See the [full release notes](https://github.com/HandshakeHackin/Nuvio-maxd-relea
 
 ## Live TV and your own media
 
-- **Optional free live TV (next build):** turn it on in Settings → Live TV, read the disclaimer and choose a country. No IPTV subscription is needed. Channels are supplied by third parties, so availability and quality vary. Personal playlists stay separate. [Details](source/native-app/FREE_LIVE_TV.md).
+- **Optional free live TV (next build):** turn it on in Settings → Live TV, read the disclaimer and select the countries you want. Their channels appear together in one list. No IPTV subscription is needed. Channels are supplied by third parties, so availability and quality vary. Personal playlists stay separate. [Details](source/native-app/FREE_LIVE_TV.md).
 - **Live TV:** M3U/M3U8 playlists, Xtream Codes and Stalker/Ministra portals, with groups, search and favorites.
 - **USB import:** copy playlists into the selected profile. USB access may need the bundled helper and a compatible payload loader.
 - **TV guide:** Now/Next information from your provider or XMLTV.

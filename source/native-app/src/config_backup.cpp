@@ -69,7 +69,7 @@ Json project(const Json &j, const char *file) {
   } else if (std::string(file) == "live-tv.json") {
     for (const auto *k : {"sources", "selected", "favorites", "recent",
                           "guide_enabled", "guide_grid", "channel_edits", "last_groups",
-                          "free_tv_enabled", "free_tv_country", "free_tv_disclaimer_version", "free_tv_guide_offset_minutes"})
+                          "free_tv_enabled", "free_tv_country", "free_tv_countries", "free_tv_disclaimer_version", "free_tv_guide_offset_minutes"})
       if (j.contains(k))
         out[k] = j[k];
   } else if (std::string(file) == "tvdb.json")

@@ -359,7 +359,7 @@ void draw_dropdown(hui::gfx::DrawList &list, const Env &env, const DropdownState
         {
             list.rounded_rect(row, 20.0f, Color::rgb(0xffffff, 0.05f));
         }
-        const bool active = i == s.active;
+        const bool active = i == s.active || (size_t(i)<s.checked.size() && s.checked[size_t(i)]);
         if (active)
             tick(list, row.x + 26.0f, row.cy(), 24.0f, theme::accent_soft);
         const hui::ui::FontRef &face = active ? env.fonts.semibold : env.fonts.regular;

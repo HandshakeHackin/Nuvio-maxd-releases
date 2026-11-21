@@ -176,6 +176,7 @@ void Session::live_guide_update(int focus) {
          live_guide_inflight_ < 2;
          ++at) {
       const auto channel = live_channels_[guide_indices[at]].id;
+      const auto country=live_channels_[guide_indices[at]].guide_country;
       auto cached = live_guide_channels_.find(channel);
       if (live_guide_pending_.count(channel) ||
           (cached != live_guide_channels_.end() &&
@@ -184,8 +185,8 @@ void Session::live_guide_update(int focus) {
       live_guide_pending_.insert(channel);
       ++live_guide_inflight_;
       bg<live_guide::Result>(
-          [source, channel, cancel, offset] {
-            if(jstr(source,"type")=="free-tv")return free_tv::guide(jstr(source,"country"),channel,now_epoch_ms()/1000-offset,cancel.get());
+          [source, channel, country, cancel, offset] {
+            if(jstr(source,"type")=="free-tv")return free_tv::guide(country.empty()?jstr(source,"country"):country,channel,now_epoch_ms()/1000-offset,cancel.get());
             if(jstr(source,"type")=="stalker")return stalker::guide(stalker::source(source),channel,now_epoch_ms()/1000-offset,cancel.get());
             return live_guide::fetch_xtream(
                 jstr(source, "url"), jstr(source, "username"),

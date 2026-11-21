@@ -217,7 +217,7 @@ void Session::live_reload() {
   live_build();
   g_tasks.run<live_tv::Result>(
       [source, cancel, directory=profile_dir_] {
-        if(jstr(source,"type")=="free-tv")return free_tv::fetch(jstr(source,"country"),cancel.get());
+        if(jstr(source,"type")=="free-tv")return free_tv::fetch(free_tv::selected_countries(source),cancel.get());
         if(jstr(source,"type")=="stalker")return stalker::channels(stalker::source(source),cancel.get());
         if(jstr(source,"type")=="usb")return live_usb::load(directory,jstr(source,"id"),cancel.get());
         if (jstr(source, "type") == "xtream")
@@ -239,7 +239,7 @@ void Session::live_reload() {
         live_channels_ = std::move(r.channels);
         if(!live_group_.empty()&&std::none_of(live_channels_.begin(),live_channels_.end(),[this](const auto& c){return c.in_group(live_group_);}))live_group_.clear();
         live_build();
-        say(sx::i18n::tr("Live TV channels loaded"));
+        say(i18n::tr(r.notice.empty()?"Live TV channels loaded":r.notice.c_str()),r.notice.empty()?4:10);
       });
 }
 void Session::live_groups() {
@@ -486,7 +486,7 @@ void Session::live_menu() {
       return;
     }
     if (i == 9) {
-      if(live_source_==free_tv::source_id){free_tv_apply(false,free_tv::country(live_state_));return;}
+      if(live_source_==free_tv::source_id){free_tv_apply(false,free_tv::selected_countries(live_state_));return;}
       const auto source = live_source_;
       open_dropdown(
           sx::i18n::tr("Remove this Live TV source?"), {sx::i18n::tr("Cancel"), sx::i18n::tr("Remove source")}, 0,

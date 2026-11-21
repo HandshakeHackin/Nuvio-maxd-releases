@@ -112,8 +112,9 @@ Response perform(const Query &q, const std::atomic<bool> *cancel) {
                    q.https_only ? "https" : "http,https");
   curl_easy_setopt(c, CURLOPT_FOLLOWLOCATION, 0L);
   curl_easy_setopt(c, CURLOPT_NOSIGNAL, 1L);
-  curl_easy_setopt(c, CURLOPT_CONNECTTIMEOUT, 15L);
-  curl_easy_setopt(c, CURLOPT_TIMEOUT, 60L);
+  const long timeout=std::clamp(q.timeout_ms,1L,60000L);
+  curl_easy_setopt(c, CURLOPT_CONNECTTIMEOUT_MS, std::min(15000L,timeout));
+  curl_easy_setopt(c, CURLOPT_TIMEOUT_MS, timeout);
   curl_easy_setopt(c, CURLOPT_SSL_VERIFYPEER, 1L);
   curl_easy_setopt(c, CURLOPT_SSL_VERIFYHOST, 2L);
   if (!http_ca_bundle().empty())

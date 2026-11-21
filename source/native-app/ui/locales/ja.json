@@ -533,6 +533,16 @@
     "Open free live TV": "無料ライブテレビを開く",
     "Read the disclaimer and enable Free live TV first.": "まず免責事項を読み、無料ライブテレビを有効にしてください。",
     "These are free IPTV channels provided by third parties. Nuvio Max'd does not own, host or control them in any way. Availability and playback quality vary (YMMV). Please do not report dead channels or buffering to the Nuvio Max'd developer. This optional feature is intended to help users who do not want to pay for an IPTV subscription.": "これらは第三者が提供する無料のIPTVチャンネルです。Nuvio Max'dは所有、ホスティング、制御を一切行っていません。利用状況や再生品質は環境によって異なります（YMMV）。視聴できないチャンネルやバッファリングの問題は、Nuvio Max'dの開発者に報告しないでください。この任意機能はIPTVの有料契約を希望しない方を支援するものです。",
-    "Watch free public channels without an IPTV subscription. Optional for this profile.": "IPTV契約なしで公開の無料チャンネルを視聴できます。このプロフィールで任意に有効にできます。"
+    "Watch free public channels without an IPTV subscription. Optional for this profile.": "IPTV契約なしで公開の無料チャンネルを視聴できます。このプロフィールで任意に有効にできます。",
+    "Free TV countries": "無料テレビの国・地域",
+    "Choose one or more countries for the free channel list.": "無料チャンネル一覧に表示する国・地域を1つ以上選択します。",
+    "{count} countries selected": "{count} か国・地域を選択中",
+    "Cross: toggle countries. Square: apply. Circle: cancel.": "×：国・地域の選択切替  □：適用  ○：キャンセル",
+    "Apply": "適用",
+    "Select all": "すべて選択",
+    "Clear selection": "選択を解除",
+    "Choose at least one country.": "国・地域を1つ以上選択してください。",
+    "Some countries could not be loaded. Reload channels to retry.": "一部の国・地域を読み込めませんでした。チャンネルを再読み込みしてお試しください。",
+    "Free TV loading limit reached. Choose fewer countries or reload channels.": "無料テレビの読み込み上限に達しました。国・地域を減らすか、チャンネルを再読み込みしてください。"
   }
 }

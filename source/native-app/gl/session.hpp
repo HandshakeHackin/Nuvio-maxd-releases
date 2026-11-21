@@ -548,8 +548,9 @@ class Session
     int live_view_ = 0;
     bool live_loading_ = false;
     void free_tv_toggle();
-    void free_tv_apply(bool,const std::string&);
+    void free_tv_apply(bool,const std::vector<std::string>&);
     void free_tv_country_menu();
+    void free_tv_country_choices(std::vector<std::string>,int);
     void free_tv_open();
     unsigned free_tv_generation_=0;
     bool free_tv_country_loading_=false;

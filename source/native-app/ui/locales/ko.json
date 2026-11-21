@@ -533,6 +533,16 @@
     "Open free live TV": "무료 실시간 TV 열기",
     "Read the disclaimer and enable Free live TV first.": "먼저 안내문을 읽고 무료 실시간 TV를 활성화하세요.",
     "These are free IPTV channels provided by third parties. Nuvio Max'd does not own, host or control them in any way. Availability and playback quality vary (YMMV). Please do not report dead channels or buffering to the Nuvio Max'd developer. This optional feature is intended to help users who do not want to pay for an IPTV subscription.": "제3자가 제공하는 무료 IPTV 채널입니다. Nuvio Max'd는 이 채널을 소유하거나 호스팅하거나 어떤 방식으로도 관리하지 않습니다. 이용 가능 여부와 재생 품질은 환경에 따라 다릅니다(YMMV). 끊긴 채널이나 버퍼링 문제를 Nuvio Max'd 개발자에게 신고하지 마세요. 이 선택 기능은 IPTV 구독료를 지불하고 싶지 않은 사용자를 돕기 위한 것입니다.",
-    "Watch free public channels without an IPTV subscription. Optional for this profile.": "IPTV 구독 없이 무료 공개 채널을 시청하세요. 이 프로필에서 선택적으로 사용할 수 있습니다."
+    "Watch free public channels without an IPTV subscription. Optional for this profile.": "IPTV 구독 없이 무료 공개 채널을 시청하세요. 이 프로필에서 선택적으로 사용할 수 있습니다.",
+    "Free TV countries": "무료 TV 국가",
+    "Choose one or more countries for the free channel list.": "무료 채널 목록에 표시할 국가를 하나 이상 선택하세요.",
+    "{count} countries selected": "{count}개 국가 선택됨",
+    "Cross: toggle countries. Square: apply. Circle: cancel.": "십자: 국가 선택 전환. 네모: 적용. 동그라미: 취소.",
+    "Apply": "적용",
+    "Select all": "모두 선택",
+    "Clear selection": "선택 해제",
+    "Choose at least one country.": "국가를 하나 이상 선택하세요.",
+    "Some countries could not be loaded. Reload channels to retry.": "일부 국가를 불러오지 못했습니다. 채널을 다시 불러와 재시도하세요.",
+    "Free TV loading limit reached. Choose fewer countries or reload channels.": "무료 TV 불러오기 한도에 도달했습니다. 국가 수를 줄이거나 채널을 다시 불러오세요."
   }
 }

@@ -2,8 +2,8 @@
 
 ## Optional free live TV
 
-Enable **Settings → Live TV → Free live TV**, accept the disclaimer, choose a
-country and open the free channels. No IPTV subscription or setup server is
+Enable **Settings → Live TV → Free live TV**, accept the disclaimer, choose one or more
+countries and open the free channels. No IPTV subscription or setup server is
 needed. Personal playlists remain available. Free channels are supplied by
 third parties; availability and quality vary. See [details and sources](FREE_LIVE_TV.md).
 
