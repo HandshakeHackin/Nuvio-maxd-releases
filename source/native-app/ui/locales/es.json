@@ -519,6 +519,20 @@
     "1.0.0.28: choose your start page in Settings > App & Updates.": "1.0.0.28: elige tu página de inicio en Ajustes > App y actualizaciones.",
     "Live TV remembers each source's group. Options on a channel lets you rename or hide it.": "La TV en directo recuerda el grupo de cada fuente. Pulsa Options en un canal para cambiar su nombre u ocultarlo.",
     "Choose backup copies from your current playlist. Restore hidden channels in Sources & filters.": "Elige versiones alternativas de tu lista actual. Restaura los canales ocultos en Fuentes y filtros.",
-    "Signed release files and credits are checked offline. Warnings are dismissible; playback remains available.": "Los archivos firmados y los créditos se verifican sin conexión. Puedes cerrar los avisos y seguir reproduciendo."
+    "Signed release files and credits are checked offline. Warnings are dismissible; playback remains available.": "Los archivos firmados y los créditos se verifican sin conexión. Puedes cerrar los avisos y seguir reproduciendo.",
+    "Choose a country for the free channel list.": "Elige un país para la lista de canales gratuitos.",
+    "Enable Free live TV in Settings, or add your own Live TV source.": "Activa la TV en directo gratuita en Ajustes o añade tu propia fuente.",
+    "Free TV country": "País de la TV gratuita",
+    "Free TV is unavailable right now. Try again later.": "La TV gratuita no está disponible ahora. Inténtalo más tarde.",
+    "Free TV uses its supplied programme guide.": "La TV gratuita usa su propia guía de programación.",
+    "Free live TV": "TV en directo gratuita",
+    "Free live TV disclaimer": "Aviso sobre la TV gratuita",
+    "I understand — enable free TV": "Entendido — activar TV gratuita",
+    "Loading free TV countries...": "Cargando países de TV gratuita...",
+    "No free channels are available for this country.": "No hay canales gratuitos disponibles para este país.",
+    "Open free live TV": "Abrir TV en directo gratuita",
+    "Read the disclaimer and enable Free live TV first.": "Primero lee el aviso y activa la TV en directo gratuita.",
+    "These are free IPTV channels provided by third parties. Nuvio Max'd does not own, host or control them in any way. Availability and playback quality vary (YMMV). Please do not report dead channels or buffering to the Nuvio Max'd developer. This optional feature is intended to help users who do not want to pay for an IPTV subscription.": "Son canales IPTV gratuitos de terceros. Nuvio Max'd no los posee, aloja ni controla de ninguna manera. La disponibilidad y la calidad pueden variar (YMMV). No informes al desarrollador de Nuvio Max'd de canales caídos ni problemas de almacenamiento en búfer. Esta función opcional ayuda a quienes no quieren pagar una suscripción IPTV.",
+    "Watch free public channels without an IPTV subscription. Optional for this profile.": "Ve canales públicos gratuitos sin una suscripción IPTV. Opcional para este perfil."
   }
 }

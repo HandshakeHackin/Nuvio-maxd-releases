@@ -28,6 +28,7 @@
 #include "tasks.h"
 #include "stream_result_cache.hpp"
 #include "live_tv.h"
+#include "free_tv.h"
 #include "live_guide.h"
 #include "series_updates.hpp"
 #include "iptv_library.h"
@@ -546,6 +547,14 @@ class Session
     unsigned live_generation_ = 0;
     int live_view_ = 0;
     bool live_loading_ = false;
+    void free_tv_toggle();
+    void free_tv_apply(bool,const std::string&);
+    void free_tv_country_menu();
+    void free_tv_open();
+    unsigned free_tv_generation_=0;
+    bool free_tv_country_loading_=false;
+    std::shared_ptr<std::atomic<bool>> free_tv_cancel_;
+    std::vector<free_tv::Country> free_tv_countries_;
     void diagnostic_menu();
     void diagnostic_qr();
     void watch_fail(const std::string& error);

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 #include "live_tv.h"
+#include "free_tv.h"
 #include "util.h"
 #include <algorithm>
 #include <array>
@@ -36,12 +37,12 @@ inline bool valid(const Json& state) {
  if(!state.is_object())return false;
  if(state.contains("last_groups")) {
   const auto& groups=state["last_groups"];
-  if(!groups.is_object()||groups.size()>16)return false;
+  if(!groups.is_object()||groups.size()>16+size_t(groups.contains(free_tv::source_id)))return false;
   for(const auto& item:groups.items())if(!source_id(item.key())||!item.value().is_string()||!text(item.value().get_ref<const std::string&>(),512))return false;
  }
  if(state.contains("channel_edits")) {
   const auto& sources=state["channel_edits"];
-  if(!sources.is_object()||sources.size()>16)return false;
+  if(!sources.is_object()||sources.size()>16+size_t(sources.contains(free_tv::source_id)))return false;
   std::size_t total=0;
   for(const auto& source:sources.items()) {
    if(!source_id(source.key())||!source.value().is_object()||source.value().size()>max_edits-total)return false;
@@ -75,7 +76,7 @@ inline bool set(Json& state,const std::string& source,const std::string& id,cons
  if(hidden){if(!*hidden)row.erase("hidden");else row["hidden"]=true;}
  const auto& all=object_at(state,"channel_edits");
  std::size_t count=0;for(const auto& s:all.items())count+=s.value().size();
- if(!row.empty()&&!object_at(all,source).contains(id)&&(count>=max_edits||(!all.contains(source)&&all.size()>=16)))return false;
+ if(!row.empty()&&!object_at(all,source).contains(id)&&(count>=max_edits||(!all.contains(source)&&source!=free_tv::source_id&&all.size()-size_t(all.contains(free_tv::source_id))>=16)))return false;
  if(row.empty()) {
   if(state.contains("channel_edits")&&state["channel_edits"].contains(source)) {
    state["channel_edits"][source].erase(id);
@@ -89,7 +90,8 @@ inline std::string last_group(const Json& state,const std::string& source) {
  return it!=groups.end()&&it->is_string()?it->get<std::string>():"";
 }
 inline void remember_group(Json& state,const std::string& source,const std::string& group) {
- if(source_id(source)&&text(group,512)&&(object_at(state,"last_groups").contains(source)||object_at(state,"last_groups").size()<16))state["last_groups"][source]=group;
+ const auto& groups=object_at(state,"last_groups");
+ if(source_id(source)&&text(group,512)&&(groups.contains(source)||source==free_tv::source_id||groups.size()-size_t(groups.contains(free_tv::source_id))<16))state["last_groups"][source]=group;
 }
 // Conservative presentation matching; no URL guesses and no automatic tuning.
 // Preserve channel numbers, country/language tags and +1 timeshift variants.

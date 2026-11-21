@@ -1,5 +1,9 @@
 Nuvio Max'd
 Maintained by HandshakeHackin.
+Optional Free Live TV catalogue: jyotiprakash101/nuvio-livetv, as used by
+Horizon Home Kit; source listings from iptv-org, Free-TV, AdeelWajid,
+dearbulut and Matt Huisman's i.mjh.nz (Samsung TV Plus, Pluto TV and Roku).
+See licenses/free-live-tv/NOTICE.txt for catalogue and guide credits.
 Original project: https://github.com/HandshakeHackin/Nuvio-maxd-releases
 
 Nuvio Max'd is an unofficial native PS5 client, licensed under GPL-3.0.

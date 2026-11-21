@@ -1,0 +1,23 @@
+Free Live TV catalogue and guide sources
+
+Integration and independent client: Nuvio Max'd contributors, GPL-3.0-or-later.
+No Horizon Home Kit or nuvio-livetv implementation source is copied into this client.
+
+Public catalogue: https://github.com/jyotiprakash101/nuvio-livetv
+Reviewed builder: a6c49e80c1d6f90e9fab8e6e2350850d296e4273
+Integration inspiration: https://github.com/jyotiprakash101/horizon-home-kit
+Reviewed kit: c8d93f10cdd021711212d7411339f0eb2f639490
+
+Listed source projects:
+https://github.com/iptv-org
+https://github.com/Free-TV/IPTV
+https://github.com/AdeelWajid/iptv_validated_list
+https://dearbulut.github.io/iptv/playlists/online.m3u
+https://github.com/matthuisman/i.mjh.nz
+
+Listings include Samsung TV Plus, Pluto TV and Roku Channel.
+Programme data originates from epg.pw, epgshare01 and service-specific XMLTV
+listings collected by nuvio-livetv. Channel data is fetched at runtime and is
+not a bundled list of subscription credentials. Source projects and content
+retain their respective notices and rights. This feature does not imply their
+endorsement of Nuvio Max'd or ownership/control of the streams by Nuvio Max'd.

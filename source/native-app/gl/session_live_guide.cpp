@@ -1,5 +1,6 @@
 #include "../ui/i18n.hpp"
 #include "session.hpp"
+#include "free_tv.h"
 #include "stalker.h"
 #include <algorithm>
 namespace sx {
@@ -19,7 +20,7 @@ void Session::live_guide_reset() {
   live_guide_refresh_ = live_guide_tick_ = live_guide_redraw_ = 0;
 }
 int Session::live_guide_offset() const {
-  for(const auto& row:live_state_["sources"])
+  for(const auto& row:free_tv::sources(live_state_))
     if(jstr(row,"id")==live_source_)return live_guide::offset_minutes(row);
   return 0;
 }
@@ -30,6 +31,7 @@ void Session::live_guide_clock() {
   for(int n=-720;n<=720;n+=30)rows.push_back(n==0?sx::i18n::tr("No correction (default)"):std::string(n>0?"+":"")+std::to_string(n)+" minutes");
   open_dropdown(sx::i18n::tr("Provider guide clock correction"),rows,(live_guide_offset()+720)/30,[this,source,profile](int pick){
     if(profile!=profile_generation_ || source!=live_source_ || pick<0 || pick>48)return;
+    if(source==free_tv::source_id)live_state_["free_tv_guide_offset_minutes"]=-720+pick*30;
     for(auto& row:live_state_["sources"])if(jstr(row,"id")==source)row["guide_offset_minutes"]=-720+pick*30;
     // Keep raw timestamps in the cached XML; a correction never accumulates.
     auto document=live_guide_document_;auto expires=live_guide_document_expires_;
@@ -62,6 +64,7 @@ Session::live_guide_labels(const live_tv::Channel &channel) const {
                     : sx::i18n::tr("Next: No listing supplied")};
 }
 void Session::live_guide_configure() {
+  if(live_source_==free_tv::source_id){say(sx::i18n::tr("Free TV uses its supplied programme guide."),6);return;}
   const auto source = live_source_;
   const auto profile = profile_generation_;
   if (source.empty()) {
@@ -101,7 +104,7 @@ void Session::live_guide_update(int focus) {
   if (!live_guide_cancel_)
     live_guide_cancel_ = std::make_shared<std::atomic<bool>>(false);
   json source;
-  for (const auto &row : live_state_["sources"])
+  for (const auto &row : free_tv::sources(live_state_))
     if (jstr(row, "id") == live_source_)
       source = row;
   if (!source.is_object())
@@ -164,7 +167,7 @@ void Session::live_guide_update(int focus) {
             live_build();
           });
     }
-  } else if (jstr(source, "type") == "xtream" || jstr(source,"type")=="stalker") {
+  } else if (jstr(source, "type") == "xtream" || jstr(source,"type")=="stalker" || jstr(source,"type")=="free-tv") {
     const auto cancel = live_guide_cancel_;
     const auto generation = live_guide_generation_,
                profile = profile_generation_;
@@ -182,6 +185,7 @@ void Session::live_guide_update(int focus) {
       ++live_guide_inflight_;
       bg<live_guide::Result>(
           [source, channel, cancel, offset] {
+            if(jstr(source,"type")=="free-tv")return free_tv::guide(jstr(source,"country"),channel,now_epoch_ms()/1000-offset,cancel.get());
             if(jstr(source,"type")=="stalker")return stalker::guide(stalker::source(source),channel,now_epoch_ms()/1000-offset,cancel.get());
             return live_guide::fetch_xtream(
                 jstr(source, "url"), jstr(source, "username"),

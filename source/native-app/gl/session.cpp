@@ -90,6 +90,7 @@ enum SettingIndex
     kSourceOptions,
     kSportsEnable,kSportsOpen,kSportsRegion,kSportsBrowse,kSportsFollowing,kSportsScores,kSportsChannels,kSportsClock,
     kUiLanguage,kTvdb,kConfigBackup,kAgeRatingCountry,kBuildIntegrity,kStartPage,
+    kFreeTv,kFreeTvCountry,kFreeTvOpen,
     kSettingCount
 };
 
@@ -847,6 +848,12 @@ void Session::refresh_settings()
     group("Appearance & Lighting", {kReducedMotion,kHighContrast,kUiSounds,kCalmBackgrounds,kConsoleLights});
     set(kSourceOptions,Kind::action,sx::i18n::tr("Source preferences"),sx::i18n::tr("Quality, language and checks"),sx::i18n::tr("Rank sources using advertised metadata. Filter likely samples, wrong episodes, quality, size and HDR. Unknown metadata remains available. Preferences belong to this profile."));
     group("Addons", {kAddAddon,kReload,kSourceOptions});
+    set(kFreeTv,Kind::toggle,i18n::tr("Free live TV"),"",i18n::tr("Watch free public channels without an IPTV subscription. Optional for this profile."),free_tv::enabled(live_state_));
+    auto free_country=free_tv::country(live_state_);for(auto& c:free_country)c=char(std::toupper(static_cast<unsigned char>(c)));
+    for(const auto& row:free_tv_countries_)if(row.code==free_tv::country(live_state_)){free_country=row.name;break;}
+    set(kFreeTvCountry,Kind::value,i18n::tr("Free TV country"),free_country,i18n::tr("Choose a country for the free channel list."));
+    set(kFreeTvOpen,Kind::action,i18n::tr("Open free live TV"),"",i18n::tr(free_tv::enabled(live_state_)?"Watch free public channels without an IPTV subscription. Optional for this profile.":"Read the disclaimer and enable Free live TV first."));
+    group("Live TV",{kFreeTv,kFreeTvCountry,kFreeTvOpen});
     set(kSportsEnable,Kind::toggle,sx::i18n::tr("Sports Hub"),"",sx::i18n::tr("Show Sports Hub in navigation for this profile. Off stops sports requests and keeps your selections."),sports_prefs_.enabled);
     const auto sports_state=sports_prefs_.enabled?"":sx::i18n::tr("Enable Sports Hub first");
     set(kSportsOpen,Kind::action,sx::i18n::tr("Open Sports Hub"),sports_state,sx::i18n::tr("Browse schedules, results and matching channels from your own Live TV sources."));
@@ -868,6 +875,9 @@ void Session::refresh_settings()
 void Session::settings_activate(int row)
 {
     if(backup_busy_){say(i18n::tr("Backup operation in progress..."));return;}
+    if(row==kFreeTv){free_tv_toggle();return;}
+    if(row==kFreeTvCountry){free_tv_country_menu();return;}
+    if(row==kFreeTvOpen){free_tv_open();return;}
     if(row==kTvdb){tvdb_menu();return;}
     if(row==kConfigBackup){backup_menu();return;}
     if(row==kBuildIntegrity){integrity_menu();return;}

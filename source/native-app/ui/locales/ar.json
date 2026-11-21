@@ -519,6 +519,20 @@
     "1.0.0.28: choose your start page in Settings > App & Updates.": "1.0.0.28: اختر صفحة البدء من الإعدادات > التطبيق والتحديثات.",
     "Live TV remembers each source's group. Options on a channel lets you rename or hide it.": "يتذكر البث المباشر مجموعة كل مصدر. اضغط Options على قناة لإعادة تسميتها أو إخفائها.",
     "Choose backup copies from your current playlist. Restore hidden channels in Sources & filters.": "اختر نسخًا بديلة من قائمتك الحالية. أظهر القنوات المخفية من المصادر والفلاتر.",
-    "Signed release files and credits are checked offline. Warnings are dismissible; playback remains available.": "تُفحص ملفات الإصدار الموقعة وبيانات النسب دون اتصال. يمكنك إغلاق التنبيه ومواصلة التشغيل."
+    "Signed release files and credits are checked offline. Warnings are dismissible; playback remains available.": "تُفحص ملفات الإصدار الموقعة وبيانات النسب دون اتصال. يمكنك إغلاق التنبيه ومواصلة التشغيل.",
+    "Choose a country for the free channel list.": "اختر بلدًا لقائمة القنوات المجانية.",
+    "Enable Free live TV in Settings, or add your own Live TV source.": "فعّل البث التلفزيوني المجاني في الإعدادات أو أضف مصدر قنوات خاصًا بك.",
+    "Free TV country": "بلد القنوات المجانية",
+    "Free TV is unavailable right now. Try again later.": "القنوات المجانية غير متاحة حاليًا. حاول لاحقًا.",
+    "Free TV uses its supplied programme guide.": "تستخدم القنوات المجانية دليل البرامج المرفق بها.",
+    "Free live TV": "البث التلفزيوني المجاني",
+    "Free live TV disclaimer": "إخلاء مسؤولية القنوات المجانية",
+    "I understand — enable free TV": "أفهم ذلك — تفعيل القنوات المجانية",
+    "Loading free TV countries...": "جارٍ تحميل بلدان القنوات المجانية...",
+    "No free channels are available for this country.": "لا تتوفر قنوات مجانية لهذا البلد.",
+    "Open free live TV": "فتح البث التلفزيوني المجاني",
+    "Read the disclaimer and enable Free live TV first.": "اقرأ إخلاء المسؤولية وفعّل البث التلفزيوني المجاني أولًا.",
+    "These are free IPTV channels provided by third parties. Nuvio Max'd does not own, host or control them in any way. Availability and playback quality vary (YMMV). Please do not report dead channels or buffering to the Nuvio Max'd developer. This optional feature is intended to help users who do not want to pay for an IPTV subscription.": "هذه قنوات IPTV مجانية يقدمها أطراف آخرون. لا يمتلكها Nuvio Max'd ولا يستضيفها ولا يتحكم بها بأي شكل. قد يختلف التوفر وجودة التشغيل (YMMV). يُرجى عدم إبلاغ مطوّر Nuvio Max'd عن القنوات المتوقفة أو مشاكل التخزين المؤقت. تهدف هذه الميزة الاختيارية إلى مساعدة من لا يرغبون في دفع تكلفة اشتراك IPTV.",
+    "Watch free public channels without an IPTV subscription. Optional for this profile.": "شاهد قنوات عامة مجانية دون اشتراك IPTV. ميزة اختيارية لهذا الملف الشخصي."
   }
 }

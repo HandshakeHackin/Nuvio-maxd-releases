@@ -11,6 +11,7 @@
 #include "age_ratings.hpp"
 #include "build_integrity_text.hpp"
 #include "start_page.hpp"
+#include "free_tv.h"
 #include "board.hpp"
 #include "library.hpp"
 #include "addons.hpp"
@@ -79,7 +80,22 @@ int main(int argc, char** argv) {
     };
     const auto backdrop_texture=artwork(1920,1080,0);
     const auto poster_texture=artwork(480,720,3);
-    if(mode=="start-page"||mode=="channel-options"||mode=="backup-channels"||mode=="hidden-channels") {
+    if(mode=="free-tv-disclaimer") {
+        sx::DropdownState d;d.title=sx::i18n::tr("Free live TV disclaimer");d.wide=true;
+        d.options={sx::i18n::tr("Cancel"),sx::i18n::tr("I understand — enable free TV")};d.selected=d.active=0;d.message=sx::i18n::tr(free_tv::disclaimer);
+        // The complete notice must fit the real overlay, without its ellipsis
+        // fallback, in every selectable menu language.
+        if(fonts.regular.font->wrap(d.message,26.0f,772.0f).size()>12)return 15;
+        sx::draw_dropdown(list,env,d,1);
+    } else if(mode=="free-tv-settings") {
+        sx::SettingsContent content;
+        const char* labels[]={"Free live TV","Free TV country","Open free live TV"};
+        const char* help[]={"Watch free public channels without an IPTV subscription. Optional for this profile.","Choose a country for the free channel list.","Read the disclaimer and enable Free live TV first."};
+        for(int i=0;i<3;++i){sx::SettingRow row;row.category="Live TV";row.label=sx::i18n::tr(labels[i]);row.help=sx::i18n::tr(help[i]);row.kind=i==0?sx::SettingRow::Kind::toggle:i==1?sx::SettingRow::Kind::value:sx::SettingRow::Kind::action;row.value=i==1?"US":"";content.rows.push_back(row);}
+        sx::Settings settings(env);settings.set_content(&content);settings.enter();hui::InputFrame input;input.nav=hui::Direction::down;settings.update(input,1.0f/60);input.nav=hui::Direction::none;input.pressed=hui::action_bit(hui::Action::confirm);settings.update(input,1.0f/60);input.pressed=0;
+        for(int i=0;i<120;++i)settings.update(input,1.0f/60);
+        hui::gfx::BackdropSpec backdrop;settings.draw(list,backdrop);
+    } else if(mode=="start-page"||mode=="channel-options"||mode=="backup-channels"||mode=="hidden-channels") {
         sx::DropdownState d;d.active=-1;
         if(mode=="start-page") {
             d.title=sx::i18n::tr("Open Max'd on");

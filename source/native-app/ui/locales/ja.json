@@ -519,6 +519,20 @@
     "1.0.0.28: choose your start page in Settings > App & Updates.": "1.0.0.28: 設定 > アプリと更新で開始ページを選べます。",
     "Live TV remembers each source's group. Options on a channel lets you rename or hide it.": "ライブTVはソースごとのグループを記憶します。チャンネルでOptionsを押すと名前変更や非表示にできます。",
     "Choose backup copies from your current playlist. Restore hidden channels in Sources & filters.": "現在のプレイリストから代替配信を選べます。非表示チャンネルはソースとフィルターで戻せます。",
-    "Signed release files and credits are checked offline. Warnings are dismissible; playback remains available.": "署名付き配信ファイルとクレジットをオフラインで確認します。警告は閉じることができ、再生も続けられます。"
+    "Signed release files and credits are checked offline. Warnings are dismissible; playback remains available.": "署名付き配信ファイルとクレジットをオフラインで確認します。警告は閉じることができ、再生も続けられます。",
+    "Choose a country for the free channel list.": "無料チャンネル一覧の国・地域を選択します。",
+    "Enable Free live TV in Settings, or add your own Live TV source.": "設定で無料ライブテレビを有効にするか、ご自身のテレビソースを追加してください。",
+    "Free TV country": "無料テレビの国・地域",
+    "Free TV is unavailable right now. Try again later.": "無料テレビは現在利用できません。後でお試しください。",
+    "Free TV uses its supplied programme guide.": "無料テレビは付属の番組表を使用します。",
+    "Free live TV": "無料ライブテレビ",
+    "Free live TV disclaimer": "無料ライブテレビの免責事項",
+    "I understand — enable free TV": "理解して無料テレビを有効にする",
+    "Loading free TV countries...": "無料テレビの国・地域を読み込み中...",
+    "No free channels are available for this country.": "この国・地域で利用できる無料チャンネルはありません。",
+    "Open free live TV": "無料ライブテレビを開く",
+    "Read the disclaimer and enable Free live TV first.": "まず免責事項を読み、無料ライブテレビを有効にしてください。",
+    "These are free IPTV channels provided by third parties. Nuvio Max'd does not own, host or control them in any way. Availability and playback quality vary (YMMV). Please do not report dead channels or buffering to the Nuvio Max'd developer. This optional feature is intended to help users who do not want to pay for an IPTV subscription.": "これらは第三者が提供する無料のIPTVチャンネルです。Nuvio Max'dは所有、ホスティング、制御を一切行っていません。利用状況や再生品質は環境によって異なります（YMMV）。視聴できないチャンネルやバッファリングの問題は、Nuvio Max'dの開発者に報告しないでください。この任意機能はIPTVの有料契約を希望しない方を支援するものです。",
+    "Watch free public channels without an IPTV subscription. Optional for this profile.": "IPTV契約なしで公開の無料チャンネルを視聴できます。このプロフィールで任意に有効にできます。"
   }
 }

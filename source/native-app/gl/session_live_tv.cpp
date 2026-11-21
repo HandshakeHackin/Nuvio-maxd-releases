@@ -1,5 +1,6 @@
 #include "../ui/i18n.hpp"
 #include "live_tv.h"
+#include "free_tv.h"
 #include "live_usb.hpp"
 #include "usb_reader.hpp"
 #include "session.hpp"
@@ -33,6 +34,8 @@ bool contains(const json &a, const std::string &s) {
 }
 } // namespace
 void Session::live_reset() {
+  if(free_tv_cancel_)*free_tv_cancel_=true;
+  ++free_tv_generation_;free_tv_country_loading_=false;free_tv_countries_.clear();
   iptv_reset();
   live_guide_reset();
   live_guide_auto_url_.clear();
@@ -66,7 +69,11 @@ void Session::live_load() {
   if (!jobj(live_state_, "recent").is_array())
     live_state_["recent"] = json::array();
   live_channel_prefs::normalise(live_state_);
+  free_tv::normalise(live_state_);
   live_source_ = jstr(live_state_, "selected");
+  if(live_source_==free_tv::source_id&&!free_tv::enabled(live_state_)) {
+    const auto rows=free_tv::sources(live_state_);live_source_=rows.empty()?"":jstr(rows[0],"id");
+  }
   live_group_=live_channel_prefs::last_group(live_state_,live_source_);
   iptv_load();
   live_build();
@@ -99,7 +106,7 @@ void Session::live_build() {
   manage.version = live_loading_
                        ? sx::i18n::tr("Loading channels...")
                        : std::to_string(live_channels_.size()) + " channels";
-  manage.types = "M3U Xtream Stalker";
+  manage.types = live_source_==free_tv::source_id?i18n::tr("Free live TV"):"M3U Xtream Stalker";
   manage.description = sx::i18n::tr("X: sources and filters · Triangle: channel search · L1: groups · R1: All / Favorites / Recent");
   if (!live_group_.empty())
     manage.version += " · " + live_group_;
@@ -182,7 +189,7 @@ void Session::live_build() {
   else if (!live_loading_ && live_indices_.empty())
     live_content.items[0].description =
         live_channels_.empty()
-            ? sx::i18n::tr("Add an M3U playlist, Xtream account or Stalker portal to start watching.")
+            ? sx::i18n::tr("Enable Free live TV in Settings, or add your own Live TV source.")
             : sx::i18n::tr("No channels match these filters. Open sources and filters to change them.");
   changed_ |= kLive;
 }
@@ -194,7 +201,7 @@ void Session::live_reload() {
     return;
   }
   json source;
-  for (const auto &s : live_state_["sources"])
+  for (const auto &s : free_tv::sources(live_state_))
     if (jstr(s, "id") == live_source_)
       source = s;
   if (!source.is_object()) {
@@ -210,6 +217,7 @@ void Session::live_reload() {
   live_build();
   g_tasks.run<live_tv::Result>(
       [source, cancel, directory=profile_dir_] {
+        if(jstr(source,"type")=="free-tv")return free_tv::fetch(jstr(source,"country"),cancel.get());
         if(jstr(source,"type")=="stalker")return stalker::channels(stalker::source(source),cancel.get());
         if(jstr(source,"type")=="usb")return live_usb::load(directory,jstr(source,"id"),cancel.get());
         if (jstr(source, "type") == "xtream")
@@ -223,7 +231,7 @@ void Session::live_reload() {
           return;
         live_loading_ = false;
         if (!r.error.empty()) {
-          say(r.error, 10, true);
+          say(i18n::tr(r.error.c_str()), 10, true);
           live_build();
           return;
         }
@@ -425,8 +433,8 @@ void Session::live_menu() {
     }
     if (i == 2) {
       std::vector<std::string> names, ids;
-      for (const auto &s : live_state_["sources"]) {
-        names.push_back(jstr(s, "name"));
+      for (const auto &s : free_tv::sources(live_state_)) {
+        names.push_back(jstr(s,"id")==free_tv::source_id?i18n::tr("Free live TV"):jstr(s, "name"));
         ids.push_back(jstr(s, "id"));
       }
       if (names.empty()) {
@@ -478,6 +486,7 @@ void Session::live_menu() {
       return;
     }
     if (i == 9) {
+      if(live_source_==free_tv::source_id){free_tv_apply(false,free_tv::country(live_state_));return;}
       const auto source = live_source_;
       open_dropdown(
           sx::i18n::tr("Remove this Live TV source?"), {sx::i18n::tr("Cancel"), sx::i18n::tr("Remove source")}, 0,
@@ -506,7 +515,8 @@ void Session::live_menu() {
                                            return jstr(s, "id") == source;
                                          }),
                           sources.end());
-            live_source_ = sources.empty() ? "" : jstr(sources[0], "id");
+            const auto available=free_tv::sources(live_state_);
+            live_source_ = available.empty() ? "" : jstr(available[0], "id");
             if(live_state_.contains("channel_edits"))live_state_["channel_edits"].erase(source);
             if(live_state_.contains("last_groups"))live_state_["last_groups"].erase(source);
             live_channels_.clear();

@@ -14,7 +14,7 @@
 
 **Official release: 1.0.0.26**
 
-**Development branch: 1.0.0.28** — adds a choice of start page, remembered TV groups, channel rename/hide controls and backup channel selection, alongside offline release-file checks. Published downloads below remain 1.0.0.26.
+**Development branch: 1.0.0.28** — adds optional free live TV, a choice of start page, remembered TV groups, channel rename/hide controls and backup channel selection, alongside offline release-file checks. Published downloads below remain 1.0.0.26.
 
 Nuvio Max'd runs directly on a jailbroken PS5. Sign in with your phone or use
 Guest mode, then browse your library, addons, TV playlists and media servers.
@@ -40,6 +40,7 @@ See the [full release notes](https://github.com/HandshakeHackin/Nuvio-maxd-relea
 
 ## Live TV and your own media
 
+- **Optional free live TV (next build):** turn it on in Settings → Live TV, read the disclaimer and choose a country. No IPTV subscription is needed. Channels are supplied by third parties, so availability and quality vary. Personal playlists stay separate. [Details](source/native-app/FREE_LIVE_TV.md).
 - **Live TV:** M3U/M3U8 playlists, Xtream Codes and Stalker/Ministra portals, with groups, search and favorites.
 - **USB import:** copy playlists into the selected profile. USB access may need the bundled helper and a compatible payload loader.
 - **TV guide:** Now/Next information from your provider or XMLTV.
@@ -50,7 +51,8 @@ See the [full release notes](https://github.com/HandshakeHackin/Nuvio-maxd-relea
 - **Addons and providers:** Nuvio manifests, supported JavaScript providers, and cached-file access through TorBox/Premiumize.
 - **Experimental torrents and Web Drop:** send magnet links or torrent files from a paired phone/PC browser. Enable torrent mode first; it is off by default.
 
-Addons, playlists and media access come from your own sources and accounts.
+Addons, personal playlists and media access come from your own sources and accounts.
+The optional free TV list comes from public third-party sources.
 Availability depends on the provider.
 
 ## Playback

@@ -1,6 +1,7 @@
 #include "config_backup.h"
 #include "feature_http.h"
 #include "live_tv.h"
+#include "free_tv.h"
 #include "util.h"
 #include "age_ratings.hpp"
 #include "../ui/start_page.hpp"
@@ -67,7 +68,8 @@ Json project(const Json &j, const char *file) {
         out[k] = j[k];
   } else if (std::string(file) == "live-tv.json") {
     for (const auto *k : {"sources", "selected", "favorites", "recent",
-                          "guide_enabled", "guide_grid", "channel_edits", "last_groups"})
+                          "guide_enabled", "guide_grid", "channel_edits", "last_groups",
+                          "free_tv_enabled", "free_tv_country", "free_tv_disclaimer_version", "free_tv_guide_offset_minutes"})
       if (j.contains(k))
         out[k] = j[k];
   } else if (std::string(file) == "tvdb.json")
@@ -154,6 +156,7 @@ bool valid_file(const std::string &name, const std::string &bytes,
         }
   }
   if (name == "live-tv.json") {
+    if(!free_tv::valid_settings(j)){error="Invalid free TV preferences.";return false;}
     if(!live_channel_prefs::valid(j)){error="Invalid channel customizations.";return false;}
     if (j.contains("sources")) {
       if (!j["sources"].is_array() || j["sources"].size() > 16) {
@@ -163,7 +166,7 @@ bool valid_file(const std::string &name, const std::string &bytes,
       std::set<std::string> ids;
       for (const auto &s : j["sources"]) {
         auto id = str(s, "id"), type = str(s, "type");
-        if (!s.is_object() || id.empty() || id.size() > 128 ||
+        if (!s.is_object() || id.empty() || id==free_tv::source_id || id.size() > 128 ||
             id.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRS"
                                  "TUVWXYZ0123456789_-") != std::string::npos ||
             !ids.insert(id).second ||

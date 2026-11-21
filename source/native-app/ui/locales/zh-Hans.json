@@ -519,6 +519,20 @@
     "1.0.0.28: choose your start page in Settings > App & Updates.": "1.0.0.28：在设置 > 应用与更新中选择启动页面。",
     "Live TV remembers each source's group. Options on a channel lets you rename or hide it.": "直播电视会记住每个来源的分组。对频道按 Options 可重命名或隐藏。",
     "Choose backup copies from your current playlist. Restore hidden channels in Sources & filters.": "从当前播放列表选择备用版本。在来源和筛选中恢复隐藏频道。",
-    "Signed release files and credits are checked offline. Warnings are dismissible; playback remains available.": "离线校验已签名的发布文件和署名。警告可以关闭，仍可继续播放。"
+    "Signed release files and credits are checked offline. Warnings are dismissible; playback remains available.": "离线校验已签名的发布文件和署名。警告可以关闭，仍可继续播放。",
+    "Choose a country for the free channel list.": "选择免费频道列表的国家或地区。",
+    "Enable Free live TV in Settings, or add your own Live TV source.": "在设置中启用免费直播电视，或添加您自己的直播电视来源。",
+    "Free TV country": "免费电视国家/地区",
+    "Free TV is unavailable right now. Try again later.": "免费电视暂时不可用。请稍后重试。",
+    "Free TV uses its supplied programme guide.": "免费电视使用其提供的节目指南。",
+    "Free live TV": "免费直播电视",
+    "Free live TV disclaimer": "免费直播电视免责声明",
+    "I understand — enable free TV": "我已了解 — 启用免费电视",
+    "Loading free TV countries...": "正在加载免费电视国家/地区...",
+    "No free channels are available for this country.": "此国家或地区没有可用的免费频道。",
+    "Open free live TV": "打开免费直播电视",
+    "Read the disclaimer and enable Free live TV first.": "请先阅读免责声明并启用免费直播电视。",
+    "These are free IPTV channels provided by third parties. Nuvio Max'd does not own, host or control them in any way. Availability and playback quality vary (YMMV). Please do not report dead channels or buffering to the Nuvio Max'd developer. This optional feature is intended to help users who do not want to pay for an IPTV subscription.": "这些是第三方提供的免费 IPTV 频道。Nuvio Max'd 不拥有、托管或以任何方式控制这些频道。可用性和播放质量因人而异（YMMV）。请勿向 Nuvio Max'd 开发者报告失效频道或缓冲问题。此可选功能旨在帮助不想支付 IPTV 订阅费用的用户。",
+    "Watch free public channels without an IPTV subscription. Optional for this profile.": "无需 IPTV 订阅即可观看免费的公开频道。本个人资料可选择启用。"
   }
 }

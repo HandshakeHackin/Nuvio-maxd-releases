@@ -9,6 +9,13 @@ This native adaptation incorporates [Sp9nky/unofficial-stremio-ps5-port](https:/
 
 ## Code included in this repository
 
+The optional Free Live TV feature uses public catalogue and programme data
+from [jyotiprakash101/nuvio-livetv](https://github.com/jyotiprakash101/nuvio-livetv),
+the data source used by Horizon Home Kit. Its independently written GPL client
+copies no upstream implementation code. Data-source credits and reviewed
+revisions are in `app/licenses/free-live-tv/NOTICE.txt`; channel listings and
+video content retain the rights/notices of their respective providers.
+
 | Where | What | License |
 | --- | --- | --- |
 | `gl/update_channel.cpp`, `update/helper.cpp` | Bundled helper handoff follows BlackBearReloaded's [ProsperoEden](https://github.com/blackbearreloaded/ProsperoEden/tree/868669fe63d44cf41ffe3412aeaac2527cff5f57/headless/update_check), commit `868669fe63d44cf41ffe3412aeaac2527cff5f57`, and the native app kit. The FFPFSC transaction is specific to Nuvio; it uses the documented public HTTP API of [ShadowMount+ 1.7](https://github.com/drakmor/ShadowMountPlus/blob/4cde42a2293756132735d8e4280eb71f089865ee/docs/api.md), rather than its private control protocol. | GPL-3.0-or-later |
