@@ -176,8 +176,9 @@ void Session::live_build() {
     row.description = sx::i18n::tr("X: watch · Square: favorite · Options: channel settings");
     if(live_content.guide_grid && jbool(live_state_,"guide_enabled",true)) {
       const auto* listings=live_guide_programmes(c);
+      const auto guide_offset=int64_t(live_guide_offset(c))*60;
       if(listings)for(const auto& programme:*listings)
-        row.programmes.push_back({programme.start+int64_t(live_guide_offset(c))*60,programme.end+int64_t(live_guide_offset(c))*60,programme.title});
+        row.programmes.push_back({programme.start+guide_offset,programme.end+guide_offset,programme.title});
     }
     row.identity=key;
     auto guide=live_guide_labels(c);row.programme_now=std::move(guide.first);row.programme_next=std::move(guide.second);
