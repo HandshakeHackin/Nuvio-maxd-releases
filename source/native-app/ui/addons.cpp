@@ -130,7 +130,7 @@ void Addons::draw_guide(hui::gfx::DrawList& list) const {
     const int64_t start=content_->guide_now/1800*1800+int64_t(guide_slot_)*1800;
     constexpr float channel_width=330,time_width=1340;
     const float x=theme::kLeft+channel_width;
-    text(list,env_.fonts.semibold,sx::i18n::tr("Live TV programme guide"),theme::kLeft,158,32,theme::ink);
+    text(list,env_.fonts.semibold,(content_->guide_heading.empty()?sx::i18n::tr("Live TV programme guide"):content_->guide_heading),theme::kLeft,158,32,theme::ink);
     text(list,env_.fonts.regular,sx::i18n::tr("Left/Right: time · Up/Down: channel · X: watch live · Square: favorite"),theme::kLeft,198,23,theme::ink_2);
     for(int i=0;i<4;++i)text(list,env_.fonts.semibold,clock(start+i*1800),x+i*time_width/4,242,22,theme::ink_2);
     list.push_clip({theme::kLeft,254,1670,666});
@@ -138,7 +138,8 @@ void Addons::draw_guide(hui::gfx::DrawList& list) const {
         const auto row=tile_rect(int(i),false);if(row.y>920 || row.y+row.h<254)continue;
         const auto& channel=content_->items[i];const bool selected=int(i)==index_&&!rail_.focused();
         list.rounded_rect(row,10,selected?theme::surface_hi:theme::surface);
-        text(list,env_.fonts.semibold,env_.fonts.semibold.font->fit(channel.name,24,channel_width-26),row.x+12,row.cy()+8,24,theme::ink);
+        text(list,env_.fonts.semibold,env_.fonts.semibold.font->fit(channel.name,24,channel_width-26),row.x+12,row.cy()+(channel.source_label.empty()?8:-4),24,theme::ink);
+        if(!channel.source_label.empty())text(list,env_.fonts.regular,env_.fonts.regular.font->fit(channel.source_label,18,channel_width-26),row.x+12,row.cy()+22,18,theme::ink_2);
         list.push_clip({x,row.y,time_width,row.h});
         bool available=false;
         for(const auto& programme:channel.programmes){

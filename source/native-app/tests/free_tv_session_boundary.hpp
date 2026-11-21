@@ -22,6 +22,8 @@ struct Session {
 #include "free_tv_session_fields.hpp"
 #include "free_tv_guide_fields.hpp"
  enum {kLive=2048};
+ bool resuming_=false;
+ void live_unified_open();std::map<std::string,std::string> live_source_guides_;
  bool profile_ready_=true,backup_busy_=false,watching=false,multiview_active=false,dropdown_open=false,live_loading_=false;
  unsigned profile_generation_=1,live_generation_=0,changed_=0;
  int builds=0,refreshes=0,stops=0,live_view_=0;size_t live_page_=0;

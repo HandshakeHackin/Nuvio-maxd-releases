@@ -13,6 +13,7 @@ struct Channel {
   std::vector<std::string> headers;
   std::vector<std::string> groups; // all Xtream memberships; group is the display label
   std::string epg_id{}; // XMLTV identity; Xtream stream ID remains id.
+  std::string source_id{},source_name{}; // Origin for combined views; never provider credentials.
   std::string guide_country{}; // Built-in public catalogue origin, for per-channel guides.
   bool in_group(const std::string& name) const;
 };

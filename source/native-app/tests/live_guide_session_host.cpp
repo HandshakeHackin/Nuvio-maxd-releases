@@ -115,6 +115,50 @@ int main(int argc, char **argv) {
   assert(sports.live_guide_xml_.channels.count("sports")==1&&sports.live_guide_xml_.channels.count("general")==0);
   sports.sports_guide_indices_={0};sports.live_guide_tick_=0;sports.live_guide_update(0);g_tasks.drain();
   assert(sports.live_guide_xml_.channels.count("general")==1&&sports.live_guide_xml_.channels.count("sports")==0);
+  // Unified XMLTV: the same provider ID/EPG ID in two sources must stay isolated.
+  sx::Session unified;unified.live_source_=unified_tv::source_id;
+  unified.live_state_={{"sources",json::array({{{"id","a"},{"type","m3u"},{"name","A"},{"epg_url",base+"/unused"},{"guide_offset_minutes",60}},{{"id","b"},{"type","m3u"},{"name","B"},{"epg_url",base+"/unused"},{"guide_offset_minutes",-30}}})}};
+  live_tv::Channel a,b;a.id=b.id="42";a.epg_id=b.epg_id="one";a.source_id="a";b.source_id="b";
+  unified.live_channels_={a,b};unified.live_indices_={0,1};
+  const auto xml_for=[&](const std::string& title,int offset) {
+   std::string from,until;char text[40];std::tm tm{};
+   for(int edge:{-30,300}){time_t at=time(nullptr)-offset*60+edge;gmtime_r(&at,&tm);std::strftime(text,sizeof(text),"%Y%m%d%H%M%S +0000",&tm);(edge<0?from:until)=text;}
+   return std::make_shared<const std::string>("<tv><programme channel='one' start='"+from+"' stop='"+until+"'><title>"+title+"</title></programme></tv>");
+  };
+  const auto doc_a=xml_for("Source A programme",60),doc_b=xml_for("Source B programme",-30);
+  unified.live_guide_documents_["a"]={doc_a,now_seconds()+300,now_seconds()};
+  unified.live_guide_documents_["b"]={doc_b,now_seconds()+300,now_seconds()};
+  unified.live_guide_update(0);assert(g_tasks.work.size()==2&&unified.live_guide_inflight_==2);g_tasks.drain();
+  assert(unified.live_guide_channels_.size()==2&&unified.live_guide_inflight_==0);
+  assert(unified.live_guide_labels(a).first.find("Source A programme")!=std::string::npos);
+  assert(unified.live_guide_labels(b).first.find("Source B programme")!=std::string::npos);
+  assert(unified.live_guide_documents_["a"].body==doc_a&&unified.live_guide_documents_["b"].body==doc_b);
+  assert(unified.live_guide_offset(a)==60&&unified.live_guide_offset(b)==-30);
+  unified.live_guide_clock("b");unified.picked(26);
+  assert(unified.live_guide_offset(a)==60&&unified.live_guide_offset(b)==60&&unified.live_source_==unified_tv::source_id);
+  assert(unified.live_guide_documents_["a"].body==doc_a); // Raw timestamps stay raw.
+  unified.live_guide_update(0);g_tasks.work_one();++unified.profile_generation_;unified.live_guide_reset();g_tasks.drain();
+  assert(unified.live_guide_channels_.empty()&&unified.live_guide_documents_.empty()&&unified.live_guide_inflight_==0);
+  // A failed provider is cooled down without blocking another source.
+  unified.live_state_["sources"][0]["epg_url"]=base+"/unavailable";
+  unified.live_guide_update(0);g_tasks.drain();assert(unified.live_guide_source_retry_["a"]>now_seconds());
+  assert(unified.live_guide_channels_.count("a:42")&&unified.live_guide_channels_.count("b:42"));
+  // Colliding Xtream stream IDs use the matching account, never the selected view ID.
+  sx::Session accounts;accounts.live_source_=unified_tv::source_id;accounts.live_channels_={a,b};accounts.live_indices_={0,1};
+  accounts.live_state_={{"sources",json::array({{{"id","a"},{"type","xtream"},{"url",base+"/a"},{"username","user-a"},{"password","pass-a"}},{{"id","b"},{"type","xtream"},{"url",base+"/b"},{"username","user-b"},{"password","pass-b"}}})}};
+  accounts.live_guide_update(0);assert(g_tasks.work.size()==2);g_tasks.drain();
+  assert(accounts.live_guide_labels(a).first.find("Provider a")!=std::string::npos&&accounts.live_guide_labels(b).first.find("Provider b")!=std::string::npos);
+  // Successful downloads share a raw-document memory budget and parsed-channel LRU.
+  unified.live_guide_reset();unified.live_state_["sources"][0]["epg_url"]=base+"/unused";
+  unified.live_state_["sources"][1]["epg_url"]=base+"/guide.xml.gz";unified.live_state_["sources"][1]["guide_offset_minutes"]=0;
+  auto full=std::make_shared<const std::string>(*doc_a+std::string(live_guide::max_bytes-doc_a->size(),' '));
+  unified.live_guide_documents_["a"]={full,now_seconds()+300,now_seconds()-60};
+  for(int n=0;n<256;++n)unified.live_guide_channels_["old:"+std::to_string(n)].touched=now_seconds()-300;
+  unified.live_guide_update(0);g_tasks.drain();
+  size_t retained=0;for(const auto& row:unified.live_guide_documents_)retained+=row.second.body->size();
+  assert(retained<=live_guide::max_bytes&&unified.live_guide_documents_.count("b")&&!unified.live_guide_documents_.count("a"));
+  assert(unified.live_guide_channels_.size()==256&&unified.live_guide_channels_.count("a:42")&&unified.live_guide_channels_.count("b:42"));
+  std::cout<<"PASS: unified source/EPG collisions, per-source clocks, shared concurrency, raw XML reuse, failure cooldown and profile cancellation\n";
   std::cout
       << "PASS: guide background bounds, profile/source cancellation, "
          "disabled/playback states, XMLTV override and failure cooldown\n";

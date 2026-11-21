@@ -38,7 +38,7 @@ void Session::live_reset() {
   ++free_tv_generation_;free_tv_country_loading_=false;free_tv_countries_.clear();
   iptv_reset();
   live_guide_reset();
-  live_guide_auto_url_.clear();
+  live_guide_auto_url_.clear();live_source_guides_.clear();
   if(multiview_active)multi_stop();
   if (live_cancel_)
     *live_cancel_ = true;
@@ -71,6 +71,7 @@ void Session::live_load() {
   live_channel_prefs::normalise(live_state_);
   free_tv::normalise(live_state_);
   live_source_ = jstr(live_state_, "selected");
+  if(live_source_.empty()&&!free_tv::sources(live_state_).empty())live_source_=unified_tv::source_id;
   if(live_source_==free_tv::source_id&&!free_tv::enabled(live_state_)) {
     const auto rows=free_tv::sources(live_state_);live_source_=rows.empty()?"":jstr(rows[0],"id");
   }
@@ -90,6 +91,7 @@ bool Session::live_save() {
 }
 void Session::live_build() {
   live_content.items.clear();
+  live_content.guide_heading=live_source_==unified_tv::source_id?i18n::tr("Unified TV guide"):"";
   live_content.guide_grid=jbool(live_state_,"guide_grid",false);
   live_content.guide_now=now_epoch_ms()/1000;
   live_indices_.clear();
@@ -106,7 +108,7 @@ void Session::live_build() {
   manage.version = live_loading_
                        ? sx::i18n::tr("Loading channels...")
                        : std::to_string(live_channels_.size()) + " channels";
-  manage.types = live_source_==free_tv::source_id?i18n::tr("Free live TV"):"M3U Xtream Stalker";
+  manage.types = live_source_==unified_tv::source_id?i18n::tr("All TV sources"):live_source_==free_tv::source_id?i18n::tr("Free live TV"):"M3U Xtream Stalker";
   manage.description = sx::i18n::tr("X: sources and filters · Triangle: channel search · L1: groups · R1: All / Favorites / Recent");
   if (!live_group_.empty())
     manage.version += " · " + live_group_;
@@ -162,19 +164,20 @@ void Session::live_build() {
     const auto key = channel_key(live_source_, c);
     row.name = live_channel_prefs::name(live_state_,live_source_,c);
     row.version = c.group;
+    if(live_source_==unified_tv::source_id&&!c.source_name.empty()) {
+      row.source_label=c.source_id==free_tv::source_id?i18n::tr("Free live TV"):c.source_name;
+      if(!row.version.empty())row.version+=" · ";
+      row.version+=row.source_label;
+    }
     row.types =
         contains(live_state_["favorites"], key) ? sx::i18n::tr("Favorite Live") : sx::i18n::tr("Live");
     row.initial = std::to_string(live_indices_.size() + 1);
     row.colour = 0x0ea5a4;
     row.description = sx::i18n::tr("X: watch · Square: favorite · Options: channel settings");
     if(live_content.guide_grid && jbool(live_state_,"guide_enabled",true)) {
-      const live_guide::Listings* listings=nullptr;
-      auto xml=live_guide_xml_.channels.find(c.epg_id.empty()?c.id:c.epg_id);
-      if(xml!=live_guide_xml_.channels.end())listings=&xml->second;
-      auto short_epg=live_guide_channels_.find(c.id);
-      if(short_epg!=live_guide_channels_.end())listings=&short_epg->second.programmes;
+      const auto* listings=live_guide_programmes(c);
       if(listings)for(const auto& programme:*listings)
-        row.programmes.push_back({programme.start+int64_t(live_guide_offset())*60,programme.end+int64_t(live_guide_offset())*60,programme.title});
+        row.programmes.push_back({programme.start+int64_t(live_guide_offset(c))*60,programme.end+int64_t(live_guide_offset(c))*60,programme.title});
     }
     row.identity=key;
     auto guide=live_guide_labels(c);row.programme_now=std::move(guide.first);row.programme_next=std::move(guide.second);
@@ -194,7 +197,7 @@ void Session::live_build() {
   changed_ |= kLive;
 }
 void Session::live_reload() {
-  live_guide_reset();live_guide_auto_url_.clear();
+  live_guide_reset();live_guide_auto_url_.clear();live_source_guides_.clear();
   iptv_probe();
   if (!profile_ready_) {
     say(sx::i18n::tr("Choose a profile first"), 5);
@@ -204,7 +207,7 @@ void Session::live_reload() {
   for (const auto &s : free_tv::sources(live_state_))
     if (jstr(s, "id") == live_source_)
       source = s;
-  if (!source.is_object()) {
+  if (!source.is_object()&&live_source_!=unified_tv::source_id) {
     live_build();
     return;
   }
@@ -215,18 +218,23 @@ void Session::live_reload() {
   const auto generation = ++live_generation_, profile = profile_generation_;
   live_loading_ = true;
   live_build();
-  g_tasks.run<live_tv::Result>(
-      [source, cancel, directory=profile_dir_] {
-        if(jstr(source,"type")=="free-tv")return free_tv::fetch(free_tv::selected_countries(source),cancel.get());
-        if(jstr(source,"type")=="stalker")return stalker::channels(stalker::source(source),cancel.get());
-        if(jstr(source,"type")=="usb")return live_usb::load(directory,jstr(source,"id"),cancel.get());
+  g_tasks.run<unified_tv::Result>(
+      [source, cancel, directory=profile_dir_,state=live_state_,view=live_source_] {
+       const auto fetcher=[directory](const json& source,const std::atomic<bool>* cancel) -> live_tv::Result {
+        if(jstr(source,"type")=="free-tv")return free_tv::fetch(free_tv::selected_countries(source),cancel);
+        if(jstr(source,"type")=="stalker")return stalker::channels(stalker::source(source),cancel);
+        if(jstr(source,"type")=="usb")return live_usb::load(directory,jstr(source,"id"),cancel);
         if (jstr(source, "type") == "xtream")
           return live_tv::fetch_xtream(jstr(source, "url"),
                                        jstr(source, "username"),
-                                       jstr(source, "password"), cancel.get());
-        return live_tv::fetch(jstr(source, "url"), cancel.get());
+                                       jstr(source, "password"), cancel);
+        return live_tv::fetch(jstr(source, "url"), cancel);
+       };
+       if(view==unified_tv::source_id)return unified_tv::fetch(state,cancel.get(),fetcher);
+       unified_tv::Result result;result.playlist=fetcher(source,cancel.get());return result;
       },
-      [this, generation, profile](live_tv::Result &r) {
+      [this, generation, profile](unified_tv::Result &loaded) {
+        auto& r=loaded.playlist;
         if (generation != live_generation_ || profile != profile_generation_)
           return;
         live_loading_ = false;
@@ -235,7 +243,7 @@ void Session::live_reload() {
           live_build();
           return;
         }
-        live_guide_auto_url_ = r.guide_url;
+        live_guide_auto_url_ = r.guide_url;live_source_guides_=std::move(loaded.guide_urls);
         live_channels_ = std::move(r.channels);
         if(!live_group_.empty()&&std::none_of(live_channels_.begin(),live_channels_.end(),[this](const auto& c){return c.in_group(live_group_);}))live_group_.clear();
         live_build();
@@ -306,7 +314,7 @@ void Session::live_activate(int index, bool favorite) {
 }
 void Session::live_play(const live_tv::Channel& channel) {
   if(channel.url.rfind(stalker::marker,0)==0) {
-    json source;for(const auto& s:live_state_["sources"])if(jstr(s,"id")==live_source_)source=s;
+    const auto source=unified_tv::source(live_state_,channel,live_source_);
     if(jstr(source,"type")!="stalker" || live_loading_)return;
     const auto generation=live_generation_,profile=profile_generation_;const auto cancel=live_cancel_;
     live_loading_=true;live_build();
@@ -414,9 +422,11 @@ void Session::live_menu() {
       sx::i18n::tr("Recent channels"),   sx::i18n::tr("Remove current source"),
       sx::i18n::tr("Next channel page"), sx::i18n::tr("Previous channel page"), sx::i18n::tr("Four-screen TV (experimental)"), sx::i18n::tr("Check IPTV Library availability"), sx::i18n::tr("Set XMLTV guide URL"), sx::i18n::tr("Refresh programme guide"), jbool(live_state_,"guide_enabled",true)?sx::i18n::tr("Programme guide: On"):sx::i18n::tr("Programme guide: Off"), sx::i18n::tr("Correct provider guide clock"), jbool(live_state_,"guide_grid",false)?sx::i18n::tr("Guide layout: Time grid"):sx::i18n::tr("Guide layout: Channel tiles"), sx::i18n::tr("Import playlist from USB"), sx::i18n::tr("Replace current USB playlist"),sx::i18n::tr("Add Stalker / Ministra portal")};
   options.push_back(i18n::tr("Hidden channels"));
+  options.push_back(i18n::tr("All sources — unified guide"));
   open_dropdown(sx::i18n::tr("Live TV"), options, 0, [this, generation](int i) {
     if (generation != profile_generation_)
       return;
+    if(i==23){live_unified_open();return;}
     if(i==22){live_hidden_channels();return;}
     if(i==21){live_add(json{{"type","stalker"}},0);return;}
     if(i==19||i==20){live_usb_import(i==20);return;}
@@ -432,7 +442,7 @@ void Session::live_menu() {
       return;
     }
     if (i == 2) {
-      std::vector<std::string> names, ids;
+      std::vector<std::string> names{i18n::tr("All sources — unified guide")}, ids{unified_tv::source_id};
       for (const auto &s : free_tv::sources(live_state_)) {
         names.push_back(jstr(s,"id")==free_tv::source_id?i18n::tr("Free live TV"):jstr(s, "name"));
         ids.push_back(jstr(s, "id"));
@@ -486,6 +496,7 @@ void Session::live_menu() {
       return;
     }
     if (i == 9) {
+      if(live_source_==unified_tv::source_id){say(i18n::tr("Choose an individual source before removing it."),6);return;}
       if(live_source_==free_tv::source_id){free_tv_apply(false,free_tv::selected_countries(live_state_));return;}
       const auto source = live_source_;
       open_dropdown(

@@ -543,6 +543,20 @@
     "Clear selection": "مسح التحديد",
     "Choose at least one country.": "اختر بلدًا واحدًا على الأقل.",
     "Some countries could not be loaded. Reload channels to retry.": "تعذر تحميل بعض البلدان. أعد تحميل القنوات للمحاولة مجددًا.",
-    "Free TV loading limit reached. Choose fewer countries or reload channels.": "تم بلوغ حد تحميل التلفزيون المجاني. اختر بلدانًا أقل أو أعد تحميل القنوات."
+    "Free TV loading limit reached. Choose fewer countries or reload channels.": "تم بلوغ حد تحميل التلفزيون المجاني. اختر بلدانًا أقل أو أعد تحميل القنوات.",
+    "Unified TV guide": "دليل التلفزيون الموحد",
+    "All sources — unified guide": "كل المصادر — دليل موحد",
+    "All TV sources": "كل مصادر التلفزيون",
+    "Browse your IPTV sources and enabled free channels together. Source names identify each channel.": "تصفح مصادر IPTV والقنوات المجانية المفعلة معًا. يحدد اسم المصدر كل قناة.",
+    "Choose a source for guide settings": "اختر مصدرًا لإعدادات الدليل",
+    "Choose an individual source before removing it.": "اختر مصدرًا منفردًا قبل حذفه.",
+    "No channels loaded. Check your Live TV sources and try again.": "لم يتم تحميل قنوات. تحقق من مصادر التلفزيون المباشر وحاول مجددًا.",
+    "Unified TV loading limit reached. Some sources may be missing; reload or choose a source.": "تم بلوغ حد تحميل دليل التلفزيون الموحد. قد تغيب بعض المصادر؛ أعد التحميل أو اختر مصدرًا.",
+    "Some TV sources could not fully load. Available channels are shown; reload to retry.": "تعذر تحميل بعض مصادر التلفزيون بالكامل. تظهر القنوات المتاحة؛ أعد التحميل للمحاولة مجددًا.",
+    "Live TV loading cancelled.": "تم إلغاء تحميل التلفزيون المباشر.",
+    "1.0.1.0: personal IPTV and enabled free channels share one unified TV guide.": "1.0.1.0: تجمع مصادر IPTV والقنوات المجانية المفعلة في دليل تلفزيون موحد.",
+    "Choose multiple countries for free TV. Availability and quality depend on third-party providers.": "اختر بلدانًا متعددة للتلفزيون المجاني. يعتمد التوفر والجودة على مزودي الخدمة الخارجيين.",
+    "Channels keep their own source, guide, favorites and playback details.": "تحتفظ القنوات بمصدرها ودليلها ومفضلاتها وبيانات تشغيلها.",
+    "Open Settings > Live TV > Unified TV guide. Individual sources and four-screen TV remain available.": "افتح الإعدادات > التلفزيون المباشر > دليل التلفزيون الموحد. تظل المصادر المنفردة والعرض بأربع شاشات متاحة."
   }
 }

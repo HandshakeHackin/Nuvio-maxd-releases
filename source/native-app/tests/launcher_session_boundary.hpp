@@ -36,6 +36,8 @@ struct Session {
  void live_reset(){++live_generation_;live_state_=json::object();live_channels_.clear();live_indices_.clear();live_group_.clear();live_query_.clear();live_filter_.clear();live_view_=0;}
  void iptv_load(){}
  int live_guide_offset()const{return 0;}
+ int live_guide_offset(const live_tv::Channel&)const{return 0;}
+ const live_guide::Listings* live_guide_programmes(const live_tv::Channel& c)const {auto i=live_guide_channels_.find(c.id);if(i!=live_guide_channels_.end())return &i->second.programmes;auto x=live_guide_xml_.channels.find(c.epg_id.empty()?c.id:c.epg_id);return x==live_guide_xml_.channels.end()?nullptr:&x->second;}
  std::pair<std::string,std::string> live_guide_labels(const live_tv::Channel&)const{return {};}
  void live_menu(){++source_menus;}
  void live_play(const live_tv::Channel& c){played=c;watching=true;w_item_.id="live:"+live_channel_prefs::key(live_source_,c);++w_gen_;}

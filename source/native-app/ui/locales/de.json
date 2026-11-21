@@ -1454,6 +1454,20 @@
     "Clear selection": "Auswahl löschen",
     "Choose at least one country.": "Mindestens ein Land auswählen.",
     "Some countries could not be loaded. Reload channels to retry.": "Einige Länder konnten nicht geladen werden. Sender neu laden, um es erneut zu versuchen.",
-    "Free TV loading limit reached. Choose fewer countries or reload channels.": "Ladelimit für Free TV erreicht. Weniger Länder auswählen oder Sender neu laden."
+    "Free TV loading limit reached. Choose fewer countries or reload channels.": "Ladelimit für Free TV erreicht. Weniger Länder auswählen oder Sender neu laden.",
+    "Unified TV guide": "Gemeinsamer TV-Guide",
+    "All sources — unified guide": "Alle Quellen — gemeinsamer Guide",
+    "All TV sources": "Alle TV-Quellen",
+    "Browse your IPTV sources and enabled free channels together. Source names identify each channel.": "IPTV-Quellen und aktivierte kostenlose Sender gemeinsam durchsuchen. Der Quellenname kennzeichnet jeden Sender.",
+    "Choose a source for guide settings": "Eine Quelle für die Guide-Einstellungen auswählen",
+    "Choose an individual source before removing it.": "Vor dem Entfernen eine einzelne Quelle auswählen.",
+    "No channels loaded. Check your Live TV sources and try again.": "Keine Sender geladen. Live-TV-Quellen prüfen und erneut versuchen.",
+    "Unified TV loading limit reached. Some sources may be missing; reload or choose a source.": "Ladelimit des gemeinsamen TV-Guides erreicht. Quellen können fehlen; neu laden oder eine Quelle auswählen.",
+    "Some TV sources could not fully load. Available channels are shown; reload to retry.": "Einige TV-Quellen konnten nicht vollständig geladen werden. Verfügbare Sender werden angezeigt; zum Wiederholen neu laden.",
+    "Live TV loading cancelled.": "Laden von Live TV abgebrochen.",
+    "1.0.1.0: personal IPTV and enabled free channels share one unified TV guide.": "1.0.1.0: Eigene IPTV-Quellen und aktivierte kostenlose Sender teilen einen gemeinsamen TV-Guide.",
+    "Choose multiple countries for free TV. Availability and quality depend on third-party providers.": "Mehrere Länder für Free TV auswählen. Verfügbarkeit und Qualität hängen von Drittanbietern ab.",
+    "Channels keep their own source, guide, favorites and playback details.": "Sender behalten ihre eigene Quelle, ihren Guide, ihre Favoriten und Wiedergabedaten.",
+    "Open Settings > Live TV > Unified TV guide. Individual sources and four-screen TV remain available.": "Unter Einstellungen > Live TV den gemeinsamen TV-Guide öffnen. Einzelne Quellen und Vierfach-TV bleiben verfügbar."
   }
 }

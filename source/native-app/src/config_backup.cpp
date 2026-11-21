@@ -166,7 +166,7 @@ bool valid_file(const std::string &name, const std::string &bytes,
       std::set<std::string> ids;
       for (const auto &s : j["sources"]) {
         auto id = str(s, "id"), type = str(s, "type");
-        if (!s.is_object() || id.empty() || id==free_tv::source_id || id.size() > 128 ||
+        if (!s.is_object() || id.empty() || (id==free_tv::source_id||id==unified_tv::source_id) || id.size() > 128 ||
             id.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRS"
                                  "TUVWXYZ0123456789_-") != std::string::npos ||
             !ids.insert(id).second ||

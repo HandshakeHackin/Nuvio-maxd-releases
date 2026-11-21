@@ -90,7 +90,7 @@ enum SettingIndex
     kSourceOptions,
     kSportsEnable,kSportsOpen,kSportsRegion,kSportsBrowse,kSportsFollowing,kSportsScores,kSportsChannels,kSportsClock,
     kUiLanguage,kTvdb,kConfigBackup,kAgeRatingCountry,kBuildIntegrity,kStartPage,
-    kFreeTv,kFreeTvCountry,kFreeTvOpen,
+    kFreeTv,kFreeTvCountry,kFreeTvOpen,kUnifiedTv,
     kSettingCount
 };
 
@@ -855,7 +855,8 @@ void Session::refresh_settings()
     if(free_count>1)free_country=replace_all(i18n::tr("{count} countries selected"),"{count}",std::to_string(free_count));
     set(kFreeTvCountry,Kind::value,i18n::tr("Free TV countries"),free_country,i18n::tr("Choose one or more countries for the free channel list."));
     set(kFreeTvOpen,Kind::action,i18n::tr("Open free live TV"),"",i18n::tr(free_tv::enabled(live_state_)?"Watch free public channels without an IPTV subscription. Optional for this profile.":"Read the disclaimer and enable Free live TV first."));
-    group("Live TV",{kFreeTv,kFreeTvCountry,kFreeTvOpen});
+    set(kUnifiedTv,Kind::action,i18n::tr("Unified TV guide"),"",i18n::tr("Browse your IPTV sources and enabled free channels together. Source names identify each channel."));
+    group("Live TV",{kUnifiedTv,kFreeTv,kFreeTvCountry,kFreeTvOpen});
     set(kSportsEnable,Kind::toggle,sx::i18n::tr("Sports Hub"),"",sx::i18n::tr("Show Sports Hub in navigation for this profile. Off stops sports requests and keeps your selections."),sports_prefs_.enabled);
     const auto sports_state=sports_prefs_.enabled?"":sx::i18n::tr("Enable Sports Hub first");
     set(kSportsOpen,Kind::action,sx::i18n::tr("Open Sports Hub"),sports_state,sx::i18n::tr("Browse schedules, results and matching channels from your own Live TV sources."));
@@ -877,6 +878,7 @@ void Session::refresh_settings()
 void Session::settings_activate(int row)
 {
     if(backup_busy_){say(i18n::tr("Backup operation in progress..."));return;}
+    if(row==kUnifiedTv){live_unified_open();return;}
     if(row==kFreeTv){free_tv_toggle();return;}
     if(row==kFreeTvCountry){free_tv_country_menu();return;}
     if(row==kFreeTvOpen){free_tv_open();return;}

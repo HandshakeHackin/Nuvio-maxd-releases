@@ -49,7 +49,7 @@ inline bool enabled(const json& state) {
 inline json sources(const json& state) {
  auto rows=jobj(state,"sources");if(!rows.is_array())rows=json::array();
  // A saved/custom source cannot impersonate the reserved built-in source.
- rows.erase(std::remove_if(rows.begin(),rows.end(),[](const auto& r){return jstr(r,"id")==source_id||jstr(r,"type")=="free-tv";}),rows.end());
+ rows.erase(std::remove_if(rows.begin(),rows.end(),[](const auto& r){return jstr(r,"id")=="builtin-all-tv"||jstr(r,"id")==source_id||jstr(r,"type")=="free-tv";}),rows.end());
  if(enabled(state))rows.push_back({{"id",source_id},{"type","free-tv"},{"name","Free live TV"},
   {"country",country(state)},
   {"free_tv_countries",selected_countries(state)},

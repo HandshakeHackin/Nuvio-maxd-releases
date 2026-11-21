@@ -543,6 +543,20 @@
     "Clear selection": "清除选择",
     "Choose at least one country.": "请至少选择一个国家/地区。",
     "Some countries could not be loaded. Reload channels to retry.": "部分国家/地区加载失败。请重新加载频道以重试。",
-    "Free TV loading limit reached. Choose fewer countries or reload channels.": "已达到免费电视加载上限。请选择更少的国家/地区或重新加载频道。"
+    "Free TV loading limit reached. Choose fewer countries or reload channels.": "已达到免费电视加载上限。请选择更少的国家/地区或重新加载频道。",
+    "Unified TV guide": "统一电视节目表",
+    "All sources — unified guide": "所有来源 — 统一节目表",
+    "All TV sources": "所有电视来源",
+    "Browse your IPTV sources and enabled free channels together. Source names identify each channel.": "一起浏览您的 IPTV 来源和已启用的免费频道。每个频道均标明来源名称。",
+    "Choose a source for guide settings": "选择要设置节目表的来源",
+    "Choose an individual source before removing it.": "请先选择单个来源，再将其移除。",
+    "No channels loaded. Check your Live TV sources and try again.": "未加载任何频道。请检查您的直播电视来源并重试。",
+    "Unified TV loading limit reached. Some sources may be missing; reload or choose a source.": "已达到统一电视节目表的加载上限。部分来源可能缺失；请重新加载或选择单个来源。",
+    "Some TV sources could not fully load. Available channels are shown; reload to retry.": "部分电视来源未能完整加载。当前显示可用频道；请重新加载以重试。",
+    "Live TV loading cancelled.": "直播电视加载已取消。",
+    "1.0.1.0: personal IPTV and enabled free channels share one unified TV guide.": "1.0.1.0：您的 IPTV 来源和已启用的免费频道现可共用统一电视节目表。",
+    "Choose multiple countries for free TV. Availability and quality depend on third-party providers.": "可为免费电视选择多个国家/地区。可用性和质量取决于第三方提供商。",
+    "Channels keep their own source, guide, favorites and playback details.": "频道保留各自的来源、节目表、收藏和播放信息。",
+    "Open Settings > Live TV > Unified TV guide. Individual sources and four-screen TV remain available.": "打开设置 > 直播电视 > 统一电视节目表。仍可单独浏览来源或使用四屏电视。"
   }
 }

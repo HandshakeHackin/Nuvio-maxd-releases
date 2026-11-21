@@ -96,9 +96,9 @@ int main(int argc, char** argv) {
         sx::draw_dropdown(list,env,d,1);
     } else if(mode=="free-tv-settings") {
         sx::SettingsContent content;
-        const char* labels[]={"Free live TV","Free TV countries","Open free live TV"};
-        const char* help[]={"Watch free public channels without an IPTV subscription. Optional for this profile.","Choose one or more countries for the free channel list.","Read the disclaimer and enable Free live TV first."};
-        for(int i=0;i<3;++i){sx::SettingRow row;row.category="Live TV";row.label=sx::i18n::tr(labels[i]);row.help=sx::i18n::tr(help[i]);row.kind=i==0?sx::SettingRow::Kind::toggle:i==1?sx::SettingRow::Kind::value:sx::SettingRow::Kind::action;if(i==1){row.value=sx::i18n::tr("{count} countries selected");row.value.replace(row.value.find("{count}"),7,"3");}content.rows.push_back(row);}
+        const char* labels[]={"Unified TV guide","Free live TV","Free TV countries","Open free live TV"};
+        const char* help[]={"Browse your IPTV sources and enabled free channels together. Source names identify each channel.","Watch free public channels without an IPTV subscription. Optional for this profile.","Choose one or more countries for the free channel list.","Read the disclaimer and enable Free live TV first."};
+        for(int i=0;i<4;++i){sx::SettingRow row;row.category="Live TV";row.label=sx::i18n::tr(labels[i]);row.help=sx::i18n::tr(help[i]);row.kind=i==1?sx::SettingRow::Kind::toggle:i==2?sx::SettingRow::Kind::value:sx::SettingRow::Kind::action;if(i==2){row.value=sx::i18n::tr("{count} countries selected");row.value.replace(row.value.find("{count}"),7,"3");}content.rows.push_back(row);}
         sx::Settings settings(env);settings.set_content(&content);settings.enter();hui::InputFrame input;input.nav=hui::Direction::down;settings.update(input,1.0f/60);input.nav=hui::Direction::none;input.pressed=hui::action_bit(hui::Action::confirm);settings.update(input,1.0f/60);input.pressed=0;
         for(int i=0;i<120;++i)settings.update(input,1.0f/60);
         hui::gfx::BackdropSpec backdrop;settings.draw(list,backdrop);
@@ -190,7 +190,7 @@ int main(int argc, char** argv) {
         sx::Addons page(env,sx::Page::torrents);page.set_content(&content);page.enter();hui::InputFrame input;
         for(int i=0;i<120;++i)page.update(input,1.f/60);hui::gfx::BackdropSpec bg;page.draw(list,bg);
     }
-    else if(mode=="live-guide" || mode=="live-grid" || mode=="live-grid-future") {
+    else if(mode=="live-guide" || mode=="live-grid" || mode=="live-grid-future" || mode=="unified-guide") {
         sx::AddonsContent content;
         sx::Addon manage;manage.name="Live TV sources & filters";manage.version="Programme guide enabled";manage.description="Options: guide settings and XMLTV URL";manage.types="Live TV";content.items.push_back(manage);
         for(int i=0;i<3;++i){sx::Addon c;c.name=i==0?"News HD":i==1?"Sports":"Documentaries";c.version="Live TV";c.types="Live";c.initial="TV";c.programme_now=i==2?"Programme guide unavailable":"Now: 20:00 · Evening news and weather";c.programme_next=i==2?"X: watch channel":"Next: 20:30 · World headlines and a long programme title";content.items.push_back(c);}
@@ -200,6 +200,11 @@ int main(int argc, char** argv) {
             for(size_t i=1;i<content.items.size();++i)if(i!=3){
                 auto& channel=content.items[i];channel.programmes={{start-600,start+1800,"News and weather around the world"},{start+1800,start+5400,"Live sports — championship coverage"},{start+5400,start+9000,"Documentary special"}};
             }
+        }
+        if(mode=="unified-guide") {
+            content.guide_heading=sx::i18n::tr("Unified TV guide");content.items[1].source_label="Personal IPTV";content.items[2].source_label=sx::i18n::tr("Free live TV");content.items[3].source_label="USB playlist";
+            content.items[0].name=sx::i18n::tr("Live TV sources & filters");content.items[0].types=sx::i18n::tr("All TV sources");content.items[0].description=sx::i18n::tr("Browse your IPTV sources and enabled free channels together. Source names identify each channel.");
+            content.items[1].version="News · Personal IPTV";content.items[2].version=std::string("Sports · ")+sx::i18n::tr("Free live TV");content.items[3].version="Documentaries · USB playlist";
         }
         sx::Addons page(env,sx::Page::livetv);page.set_content(&content);page.enter();hui::InputFrame input;
         input.nav=hui::Direction::right;page.update(input,1.f/60);input.nav=hui::Direction::down;page.update(input,1.f/60);

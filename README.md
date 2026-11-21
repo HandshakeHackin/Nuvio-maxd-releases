@@ -14,7 +14,7 @@
 
 **Official release: 1.0.0.26**
 
-**Development branch: 1.0.0.28** — adds optional free live TV, a choice of start page, remembered TV groups, channel rename/hide controls and backup channel selection, alongside offline release-file checks. Published downloads below remain 1.0.0.26.
+**Development branch: 1.0.1.0** — combines IPTV sources and enabled free channels in one TV guide, with optional free live TV, a choice of start page, remembered TV groups, channel rename/hide controls and backup channel selection, alongside offline release-file checks. Published downloads below remain 1.0.0.26.
 
 Nuvio Max'd runs directly on a jailbroken PS5. Sign in with your phone or use
 Guest mode, then browse your library, addons, TV playlists and media servers.
@@ -40,6 +40,7 @@ See the [full release notes](https://github.com/HandshakeHackin/Nuvio-maxd-relea
 
 ## Live TV and your own media
 
+- **Unified TV guide (next build):** browse personal IPTV sources and enabled free channels together. Each channel keeps its own guide, favorites and playback details. Open Settings → Live TV → Unified TV guide. [Details](source/native-app/UNIFIED_TV_GUIDE.md).
 - **Optional free live TV (next build):** turn it on in Settings → Live TV, read the disclaimer and select the countries you want. Their channels appear together in one list. No IPTV subscription is needed. Channels are supplied by third parties, so availability and quality vary. Personal playlists stay separate. [Details](source/native-app/FREE_LIVE_TV.md).
 - **Live TV:** M3U/M3U8 playlists, Xtream Codes and Stalker/Ministra portals, with groups, search and favorites.
 - **USB import:** copy playlists into the selected profile. USB access may need the bundled helper and a compatible payload loader.

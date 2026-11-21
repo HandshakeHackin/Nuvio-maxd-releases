@@ -4,7 +4,8 @@ Open **Settings → Live TV → Free live TV**. Read the disclaimer and choose
 **I understand — enable free TV**. Pick **Free TV countries**. Tick as many countries as you want, then choose
 **Apply** (or press Square). **Select all** and **Clear selection** help with longer
 lists; Circle or **Cancel** discards changes. Then choose
-**Open free live TV**. No IPTV subscription, provider account, API key or
+**Open free live TV**. To include your personal sources in the same guide,
+open **Settings → Live TV → Unified TV guide**. No IPTV subscription, provider account, API key or
 Cloudflare setup is required. Guest profiles can use it too.
 
 The switch is off by default and belongs to the selected profile. Your own

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 #include "live_tv.h"
-#include "free_tv.h"
+#include "unified_tv.h"
 #include "util.h"
 #include <algorithm>
 #include <array>
@@ -12,7 +12,7 @@ namespace live_channel_prefs {
 using Json=nlohmann::json;
 inline constexpr std::size_t max_edits=1000,max_name=160,max_backups=32;
 inline std::string key(const std::string& source,const live_tv::Channel& c) {
- return std::to_string(fnv1a(source+"\n"+c.id+"\n"+c.name));
+ return std::to_string(fnv1a(unified_tv::owner(c,source)+"\n"+c.id+"\n"+c.name));
 }
 inline bool source_id(const std::string& value) {
  return !value.empty()&&value.size()<=128&&value.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-")==std::string::npos;
@@ -37,7 +37,7 @@ inline bool valid(const Json& state) {
  if(!state.is_object())return false;
  if(state.contains("last_groups")) {
   const auto& groups=state["last_groups"];
-  if(!groups.is_object()||groups.size()>16+size_t(groups.contains(free_tv::source_id)))return false;
+  if(!groups.is_object()||groups.size()>16+size_t(groups.contains(free_tv::source_id))+size_t(groups.contains(unified_tv::source_id)))return false;
   for(const auto& item:groups.items())if(!source_id(item.key())||!item.value().is_string()||!text(item.value().get_ref<const std::string&>(),512))return false;
  }
  if(state.contains("channel_edits")) {
@@ -63,11 +63,11 @@ inline void normalise(Json& state) {
  if(!valid(state)){state.erase("last_groups");state.erase("channel_edits");}
 }
 inline std::string name(const Json& state,const std::string& source,const live_tv::Channel& c) {
- const auto id=key(source,c);const auto& row=edit(state,source,id);auto it=row.find("name");
+ const auto id=key(source,c),origin=unified_tv::owner(c,source);const auto& row=edit(state,origin,id);auto it=row.find("name");
  return it!=row.end()&&it->is_string()&&!it->get_ref<const std::string&>().empty()?it->get<std::string>():c.name;
 }
 inline bool hidden(const Json& state,const std::string& source,const live_tv::Channel& c) {
- const auto id=key(source,c);const auto& row=edit(state,source,id);auto it=row.find("hidden");return it!=row.end()&&it->is_boolean()&&it->get<bool>();
+ const auto id=key(source,c),origin=unified_tv::owner(c,source);const auto& row=edit(state,origin,id);auto it=row.find("hidden");return it!=row.end()&&it->is_boolean()&&it->get<bool>();
 }
 inline bool set(Json& state,const std::string& source,const std::string& id,const std::string* name,const bool* hidden) {
  if(!source_id(source)||!channel_id(id)||!valid(state)||(name&&!text(*name,max_name)))return false;
@@ -91,7 +91,7 @@ inline std::string last_group(const Json& state,const std::string& source) {
 }
 inline void remember_group(Json& state,const std::string& source,const std::string& group) {
  const auto& groups=object_at(state,"last_groups");
- if(source_id(source)&&text(group,512)&&(groups.contains(source)||source==free_tv::source_id||groups.size()-size_t(groups.contains(free_tv::source_id))<16))state["last_groups"][source]=group;
+ if(source_id(source)&&text(group,512)&&(groups.contains(source)||source==free_tv::source_id||source==unified_tv::source_id||groups.size()-size_t(groups.contains(free_tv::source_id))-size_t(groups.contains(unified_tv::source_id))<16))state["last_groups"][source]=group;
 }
 // Conservative presentation matching; no URL guesses and no automatic tuning.
 // Preserve channel numbers, country/language tags and +1 timeshift variants.
@@ -115,7 +115,7 @@ inline std::vector<std::size_t> backups(const std::vector<live_tv::Channel>& cha
  std::set<std::pair<std::string,std::vector<std::string>>> seen{{current.url,current.headers}};
  for(std::size_t n=0;n<count&&result.size()<max_backups;++n) {
   const auto& candidate=channels[n];
-  if(n==selected||candidate.url.empty()||!((!current.epg_id.empty()&&current.epg_id==candidate.epg_id)||(!normal.empty()&&normal==match_name(candidate.name))))continue;
+  if(n==selected||candidate.url.empty()||!((current.source_id==candidate.source_id&&!current.epg_id.empty()&&current.epg_id==candidate.epg_id)||(!normal.empty()&&normal==match_name(candidate.name))))continue;
   if(seen.emplace(candidate.url,candidate.headers).second)result.push_back(n);
  }
  return result;

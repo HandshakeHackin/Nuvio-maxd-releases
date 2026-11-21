@@ -96,17 +96,10 @@ void Session::sports_channel_filter() {
 }
 std::vector<sports::Guide> Session::sports_guide() const {
   std::vector<sports::Guide> out;
-  const int64_t offset = int64_t(live_guide_offset()) * 60;
   for (size_t i = 0; i < live_channels_.size() && out.size() < 10000; ++i) {
     const auto &c = live_channels_[i];
-    const live_guide::Listings *list = nullptr;
-    const auto xml =
-        live_guide_xml_.channels.find(c.epg_id.empty() ? c.id : c.epg_id);
-    if (xml != live_guide_xml_.channels.end())
-      list = &xml->second;
-    const auto epg = live_guide_channels_.find(c.id);
-    if (epg != live_guide_channels_.end())
-      list = &epg->second.programmes;
+    const auto* list=live_guide_programmes(c);
+    const auto offset=int64_t(live_guide_offset(c))*60;
     if (list)
       for (auto p : *list) {
         p.start += offset;

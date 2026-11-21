@@ -14,7 +14,7 @@ void Session::multi_choose(std::vector<live_tv::Channel> chosen,int replace) {
         const auto& c=live_channels_[index];
         if(std::any_of(chosen.begin(),chosen.end(),[&](const auto& a){return a.url==c.url;}))continue;
         if(replace>=0 && std::any_of(multi_channels_.begin(),multi_channels_.end(),[&](const auto& a){return a.url==c.url;}))continue;
-        candidates.push_back(c);names.push_back(c.name);
+        candidates.push_back(c);names.push_back(c.name+(c.source_name.empty()?"":" · "+c.source_name));
     }
     if(names.empty()){say(sx::i18n::tr("Choose a source/filter with at least four different live channels."),7);return;}
     const auto generation=profile_generation_;
@@ -39,7 +39,7 @@ void Session::multi_open(int tile,bool audio,const std::string& resolved,const s
     ++multi_resolve_generation_[tile];
     if(multi_resolve_cancel_[tile])*multi_resolve_cancel_[tile]=true;
     if(resolved.empty() && channel.url.rfind(stalker::marker,0)==0) {
-        json source;for(const auto& s:live_state_["sources"])if(jstr(s,"id")==live_source_)source=s;
+        const auto source=unified_tv::source(live_state_,channel,live_source_);
         if(jstr(source,"type")!="stalker"){view.status="Portal source unavailable";return;}
         multi_resolve_cancel_[tile]=std::make_shared<std::atomic<bool>>(false);
         const auto cancel=multi_resolve_cancel_[tile];const auto gen=multi_resolve_generation_[tile],profile=profile_generation_;

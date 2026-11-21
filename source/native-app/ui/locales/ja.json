@@ -543,6 +543,20 @@
     "Clear selection": "選択を解除",
     "Choose at least one country.": "国・地域を1つ以上選択してください。",
     "Some countries could not be loaded. Reload channels to retry.": "一部の国・地域を読み込めませんでした。チャンネルを再読み込みしてお試しください。",
-    "Free TV loading limit reached. Choose fewer countries or reload channels.": "無料テレビの読み込み上限に達しました。国・地域を減らすか、チャンネルを再読み込みしてください。"
+    "Free TV loading limit reached. Choose fewer countries or reload channels.": "無料テレビの読み込み上限に達しました。国・地域を減らすか、チャンネルを再読み込みしてください。",
+    "Unified TV guide": "統合テレビ番組表",
+    "All sources — unified guide": "すべてのソース — 統合番組表",
+    "All TV sources": "すべてのテレビソース",
+    "Browse your IPTV sources and enabled free channels together. Source names identify each channel.": "IPTVソースと有効な無料チャンネルをまとめて表示します。各チャンネルにソース名が表示されます。",
+    "Choose a source for guide settings": "番組表を設定するソースを選択",
+    "Choose an individual source before removing it.": "削除する前に個別のソースを選択してください。",
+    "No channels loaded. Check your Live TV sources and try again.": "チャンネルを読み込めませんでした。ライブテレビのソースを確認して再試行してください。",
+    "Unified TV loading limit reached. Some sources may be missing; reload or choose a source.": "統合番組表の読み込み上限に達しました。一部のソースが表示されない場合があります。再読み込みするか、個別のソースを選択してください。",
+    "Some TV sources could not fully load. Available channels are shown; reload to retry.": "一部のテレビソースを完全に読み込めませんでした。利用可能なチャンネルを表示しています。再読み込みしてお試しください。",
+    "Live TV loading cancelled.": "ライブテレビの読み込みをキャンセルしました。",
+    "1.0.1.0: personal IPTV and enabled free channels share one unified TV guide.": "1.0.1.0：IPTVソースと有効な無料チャンネルを1つの統合番組表に表示できます。",
+    "Choose multiple countries for free TV. Availability and quality depend on third-party providers.": "無料テレビの国・地域を複数選択できます。提供状況と品質は第三者の配信元によって異なります。",
+    "Channels keep their own source, guide, favorites and playback details.": "各チャンネルのソース、番組表、お気に入り、再生情報は保持されます。",
+    "Open Settings > Live TV > Unified TV guide. Individual sources and four-screen TV remain available.": "設定 > ライブテレビ > 統合テレビ番組表から開けます。個別ソースと4画面テレビも引き続き利用できます。"
   }
 }

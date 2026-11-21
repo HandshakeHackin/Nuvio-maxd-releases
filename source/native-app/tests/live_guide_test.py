@@ -15,6 +15,12 @@ class Handler(http.server.BaseHTTPRequestHandler):
     body=gzip.compress(f"<tv><programme channel='one' start='{start}' stop='{end}'><title>News</title></programme></tv>".encode())
    else: body=gzip.compress(xml)
   elif url.path=='/bomb.gz': body=gzip.compress(b' '*(33<<20))
+  elif url.path in ['/a/player_api.php','/b/player_api.php']:
+   import time
+   q=parse_qs(url.query);provider=url.path[1]
+   assert q['username']==['user-'+provider] and q['password']==['pass-'+provider]
+   assert q['action']==['get_short_epg'] and q['stream_id']==['42']
+   now=int(time.time());body=json.dumps({'epg_listings':[{'title':'Provider '+provider,'start_timestamp':now-60,'stop_timestamp':now+60}]}).encode()
   elif url.path=='/player_api.php':
    q=parse_qs(url.query)
    assert q['username']==['fixture user'] and q['password']==['fixture&pass']
@@ -35,5 +41,5 @@ try:
  if len(sys.argv)>2:
   session=True
   subprocess.run([sys.argv[2],f'http://127.0.0.1:{server.server_port}'],check=True)
-  assert seen.count('/guide.xml.gz')==2,seen
+  assert seen.count('/guide.xml.gz')==3,seen
 finally: server.shutdown();server.server_close();thread.join()

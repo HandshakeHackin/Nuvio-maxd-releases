@@ -4,6 +4,15 @@
 #include "live_channel_prefs.hpp"
 
 namespace sx {
+void Session::live_unified_open() {
+ if(!profile_ready_||backup_busy_||watching||resuming_)return;
+ const auto previous=live_state_;const auto source=live_source_;
+ live_source_=unified_tv::source_id;
+ if(!live_state_.contains("guide_grid"))live_state_["guide_grid"]=true;
+ if(!live_save()){live_state_=previous;live_source_=source;return;}
+ live_channels_.clear();live_indices_.clear();live_group_=live_channel_prefs::last_group(live_state_,live_source_);
+ live_query_.clear();live_view_=0;live_reload();goto_=Page::livetv;
+}
 void Session::free_tv_toggle() {
  if(!profile_ready_){say(i18n::tr("Choose a profile first."),6);return;}
  if(free_tv::enabled(live_state_)){free_tv_apply(false,free_tv::selected_countries(live_state_));return;}
@@ -27,8 +36,8 @@ void Session::free_tv_apply(bool on,const std::vector<std::string>& regions) {
  if(!live_save()){live_state_=previous;live_source_=previous_source;refresh_settings();return;}
  if(free_tv_cancel_)*free_tv_cancel_=true;
  ++free_tv_generation_;free_tv_country_loading_=false;
- if(previous_source!=live_source_ || (live_source_==free_tv::source_id&&(old_countries!=free_tv::selected_countries(live_state_)||!was_enabled))) {
-  if(previous_source==free_tv::source_id && (watching||multiview_active))watch_stop(false);
+ if(previous_source!=live_source_ || ((live_source_==free_tv::source_id||live_source_==unified_tv::source_id)&&(old_countries!=free_tv::selected_countries(live_state_)||was_enabled!=on))) {
+  if((previous_source==free_tv::source_id||previous_source==unified_tv::source_id) && (watching||multiview_active))watch_stop(false);
   if(live_cancel_)*live_cancel_=true;
   ++live_generation_;live_loading_=false;
   live_channels_.clear();live_indices_.clear();live_group_=live_channel_prefs::last_group(live_state_,live_source_);

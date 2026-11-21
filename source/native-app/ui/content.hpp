@@ -84,10 +84,12 @@ struct Addon
     std::uint32_t colour = 0x7b5bf5; // the tile's colour while there is no logo
     bool local = false;      // runs on this console, not on a server
     std::string identity{};
+    std::string source_label{}; // Combined Live TV views only.
 };
 
 struct AddonsContent
 {
+    std::string guide_heading{};
     bool guide_grid=false;
     int64_t guide_now=0;
     std::vector<Addon> items;

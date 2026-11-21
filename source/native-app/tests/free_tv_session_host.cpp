@@ -70,6 +70,16 @@ int main(int argc,char** argv) {
  s.free_tv_toggle();auto stale=s.picked;++s.profile_generation_;s.profile_dir_=(root/"b").string();s.live_load();stale(1);
  assert(!free_tv::enabled(s.live_state_)&&g_tasks.work.empty());
  s.free_tv_toggle();s.choose(1);g_tasks.work_one();++s.profile_generation_;s.live_load();g_tasks.drain();assert(s.live_channels_.empty());
+ // The real combined loader includes the enabled public catalogue and keeps origins.
+ if(!free_tv::enabled(s.live_state_)){s.free_tv_toggle();s.choose(1);g_tasks.drain();}s.live_unified_open();g_tasks.drain();
+ assert(s.live_source_==unified_tv::source_id&&!s.live_channels_.empty());
+ assert(s.live_channels_[0].source_id==free_tv::source_id);
+ const auto unified_backup=config_backup::capture(s.profile_dir_,std::string(64,'a'));assert(unified_backup.error.empty());
+ const auto unified_saved=json::parse(unified_backup.snapshot["files"]["live-tv.json"].get<std::string>());assert(unified_saved["selected"]==unified_tv::source_id);
+ s.page_=sx::Page::livetv;s.live_guide_update(0);g_tasks.drain();
+ assert(!s.live_guide_channels_.empty()&&s.live_guide_channels_.begin()->first.starts_with("builtin-free-tv:"));
+ s.watching=true;s.free_tv_toggle();assert(!free_tv::enabled(s.live_state_)&&s.live_channels_.empty());
+ g_tasks.drain();assert(s.live_channels_.empty()&&s.live_guide_channels_.empty());
  // Retain a personal source and its active channel while enabling Free TV.
  s.live_state_={{"sources",json::array({{{"id","own"},{"type","m3u"},{"name","Personal"},{"url","https://private.invalid/list?secret=private"}}})},{"favorites",json::array({"own:favorite"})},{"recent",json::array()}};
  const auto own=s.live_state_["sources"];s.live_source_="own";s.live_channels_.push_back({"own-channel","Personal"});

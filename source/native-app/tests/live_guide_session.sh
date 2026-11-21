@@ -8,7 +8,7 @@ from pathlib import Path
 import sys
 r,b=map(Path,sys.argv[1:]);h=(r/'gl/session.hpp').read_text()
 b.joinpath('live_guide_session_fields.hpp').write_text(h[h.index('    void live_guide_reset();'):h.index('    void live_add(')])
-b.joinpath('session.cpp').write_text((r/'gl/session_live_guide.cpp').read_text().replace('#include "session.hpp"','#include "live_guide_session_boundary.hpp"'))
+b.joinpath('session.cpp').write_text(((r/'gl/session_live_guide.cpp').read_text()+(r/'gl/session_unified_tv.cpp').read_text()).replace('#include "session.hpp"','#include "live_guide_session_boundary.hpp"'))
 PY
 ${HOST_CXX:-g++} -std=c++20 -O1 -Wall -Wextra -Werror -pthread -I"$B" -I"$R/tests" -I"$R/src" -I"$R/third_party" \
  "$B/session.cpp" "$R/tests/live_guide_session_host.cpp" "$R/src/live_tv.cpp" "$R/src/free_tv.cpp" "$R/src/stalker.cpp" "$R/src/feature_http.cpp" "$R/src/live_guide.cpp" "$R/src/util.cpp" \

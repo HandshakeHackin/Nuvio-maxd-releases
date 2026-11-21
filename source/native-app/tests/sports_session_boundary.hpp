@@ -51,6 +51,8 @@ struct Session {
   int saves = 0, plays = 0, reloads = 0, offset = 0;
   live_tv::Channel played;
   int live_guide_offset() const { return offset; }
+  int live_guide_offset(const live_tv::Channel&) const {return offset;}
+  const live_guide::Listings* live_guide_programmes(const live_tv::Channel& c)const {auto i=live_guide_channels_.find(c.id);if(i!=live_guide_channels_.end())return &i->second.programmes;auto x=live_guide_xml_.channels.find(c.epg_id.empty()?c.id:c.epg_id);return x==live_guide_xml_.channels.end()?nullptr:&x->second;}
   void save_profile_settings() { ++saves; }
   void refresh_settings() {}
   void live_reload() { ++reloads; }

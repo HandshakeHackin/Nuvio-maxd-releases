@@ -29,6 +29,7 @@
 #include "stream_result_cache.hpp"
 #include "live_tv.h"
 #include "free_tv.h"
+#include "unified_tv.h"
 #include "live_guide.h"
 #include "series_updates.hpp"
 #include "iptv_library.h"
@@ -520,9 +521,17 @@ class Session
     bool live_save();
     void live_build();
     void live_guide_reset();
+    void live_guide_unified_update(int);
+    const live_guide::Listings* live_guide_programmes(const live_tv::Channel&) const;
+    int live_guide_offset(const live_tv::Channel&) const;
+    struct UnifiedGuideDocument {std::shared_ptr<const std::string> body;double expires=0,touched=0;};
+    std::map<std::string,UnifiedGuideDocument> live_guide_documents_;
+    std::map<std::string,double> live_guide_source_retry_;
+    std::set<std::string> live_guide_sources_pending_;
     void live_guide_update(int focus);
-    void live_guide_configure();
-    void live_guide_clock();
+    void live_guide_configure(const std::string& source_id={});
+    void live_guide_source_menu(bool);
+    void live_guide_clock(const std::string& source_id={});
     int live_guide_offset() const;
     std::pair<std::string,std::string> live_guide_labels(const live_tv::Channel&) const;
     live_guide::Result live_guide_xml_;
@@ -547,6 +556,8 @@ class Session
     unsigned live_generation_ = 0;
     int live_view_ = 0;
     bool live_loading_ = false;
+    void live_unified_open();
+    std::map<std::string,std::string> live_source_guides_;
     void free_tv_toggle();
     void free_tv_apply(bool,const std::vector<std::string>&);
     void free_tv_country_menu();

@@ -1,5 +1,12 @@
 # Native Nuvio Max'd for PS5
 
+## Unified TV guide — 1.0.1.0
+
+Open **Settings → Live TV → Unified TV guide** to browse your IPTV sources
+and enabled free channels together. Channels show their source and keep their
+own guide, favorites and playback details. Individual source views remain
+available. See [details](UNIFIED_TV_GUIDE.md).
+
 ## Optional free live TV
 
 Enable **Settings → Live TV → Free live TV**, accept the disclaimer, choose one or more

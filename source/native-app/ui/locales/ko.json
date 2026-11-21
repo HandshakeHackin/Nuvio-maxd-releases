@@ -543,6 +543,20 @@
     "Clear selection": "선택 해제",
     "Choose at least one country.": "국가를 하나 이상 선택하세요.",
     "Some countries could not be loaded. Reload channels to retry.": "일부 국가를 불러오지 못했습니다. 채널을 다시 불러와 재시도하세요.",
-    "Free TV loading limit reached. Choose fewer countries or reload channels.": "무료 TV 불러오기 한도에 도달했습니다. 국가 수를 줄이거나 채널을 다시 불러오세요."
+    "Free TV loading limit reached. Choose fewer countries or reload channels.": "무료 TV 불러오기 한도에 도달했습니다. 국가 수를 줄이거나 채널을 다시 불러오세요.",
+    "Unified TV guide": "통합 TV 편성표",
+    "All sources — unified guide": "모든 소스 — 통합 편성표",
+    "All TV sources": "모든 TV 소스",
+    "Browse your IPTV sources and enabled free channels together. Source names identify each channel.": "IPTV 소스와 활성화된 무료 채널을 함께 탐색하세요. 각 채널에 소스 이름이 표시됩니다.",
+    "Choose a source for guide settings": "편성표를 설정할 소스 선택",
+    "Choose an individual source before removing it.": "삭제하기 전에 개별 소스를 선택하세요.",
+    "No channels loaded. Check your Live TV sources and try again.": "불러온 채널이 없습니다. 라이브 TV 소스를 확인하고 다시 시도하세요.",
+    "Unified TV loading limit reached. Some sources may be missing; reload or choose a source.": "통합 TV 편성표 불러오기 한도에 도달했습니다. 일부 소스가 누락될 수 있습니다. 다시 불러오거나 개별 소스를 선택하세요.",
+    "Some TV sources could not fully load. Available channels are shown; reload to retry.": "일부 TV 소스를 완전히 불러오지 못했습니다. 사용 가능한 채널이 표시됩니다. 다시 불러와 재시도하세요.",
+    "Live TV loading cancelled.": "라이브 TV 불러오기가 취소되었습니다.",
+    "1.0.1.0: personal IPTV and enabled free channels share one unified TV guide.": "1.0.1.0: IPTV 소스와 활성화된 무료 채널을 하나의 통합 TV 편성표에서 볼 수 있습니다.",
+    "Choose multiple countries for free TV. Availability and quality depend on third-party providers.": "무료 TV 국가를 여러 개 선택하세요. 제공 여부와 품질은 외부 제공업체에 따라 달라집니다.",
+    "Channels keep their own source, guide, favorites and playback details.": "채널별 소스, 편성표, 즐겨찾기 및 재생 정보가 유지됩니다.",
+    "Open Settings > Live TV > Unified TV guide. Individual sources and four-screen TV remain available.": "설정 > 라이브 TV > 통합 TV 편성표에서 여세요. 개별 소스와 4화면 TV도 계속 이용할 수 있습니다."
   }
 }

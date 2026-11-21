@@ -31,5 +31,17 @@ int main(int argc,char** argv) {
  s.start_page_menu();s.choose(3);assert(s.prefs_.start_page=="livetv");s.start_page_apply();assert(s.goto_==sx::Page::livetv);
  s.fail_profile_write=true;s.start_page_menu();s.choose(2);assert(s.prefs_.start_page=="livetv");s.fail_profile_write=false;
  s.start_page_menu();old=s.pick;++s.profile_generation_;old(0);assert(s.prefs_.start_page=="livetv");
+ {
+ // Editing a combined row writes to its origin, preserving the individual view.
+ sx::Session combined;combined.live_source_=unified_tv::source_id;combined.profile_dir_=argv[1];
+ live_tv::Channel first,second;first.id=second.id="same-id";first.name=second.name="Station";
+ first.source_id="provider-a";second.source_id="provider-b";first.source_name="Provider A";second.source_name="Provider B";
+ first.url="https://public.invalid/a";second.url="https://public.invalid/b";
+ combined.live_channels_={first,second};combined.live_build();assert(combined.live_content.items[1].source_label=="Provider A"&&combined.live_content.items[2].source_label=="Provider B");combined.live_channel_menu(1);combined.choose(1);combined.type("My station");
+ assert(live_channel_prefs::name(combined.live_state_,"provider-a",first)=="My station");
+ assert(live_channel_prefs::name(combined.live_state_,"provider-b",second)=="Station");
+ combined.live_channel_menu(1);combined.choose(2);assert(combined.live_indices_.size()==1&&combined.live_indices_[0]==1);
+ combined.live_hidden_channels();combined.choose(1);assert(combined.live_indices_.size()==2);
+ }
  std::cout<<"Launcher Session: production channel lists/actions, original/search identities, hidden restoration, save rollback, stale profile/list/playback guards, header-safe backup switching and start-page scheduling passed\n";
 }

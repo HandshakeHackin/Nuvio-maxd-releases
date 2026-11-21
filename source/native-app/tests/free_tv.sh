@@ -16,6 +16,7 @@ for name in ('live_reset','live_load','live_save','live_reload'):
     while depth:depth+=(s[end]=='{')-(s[end]=='}');end+=1
     parts.append(s[a:end])
 parts.append('}\n');parts.append((r/'gl/session_free_tv.cpp').read_text().replace('#include "session.hpp"','#include "free_tv_session_boundary.hpp"'))
+parts.append((r/'gl/session_unified_tv.cpp').read_text().replace('#include "session.hpp"','#include "free_tv_session_boundary.hpp"'))
 parts.append((r/'gl/session_live_guide.cpp').read_text().replace('#include "session.hpp"','#include "free_tv_session_boundary.hpp"'))
 (b/'session.cpp').write_text('\n'.join(parts))
 PY
@@ -23,7 +24,7 @@ flags=(-std=c++20 -O1 -Wall -Wextra -Werror -Wno-unused-function -Wno-misleading
 # Keep production URL validation; substitute only network IO in the fixture.
 ${HOST_CXX:-g++} "${flags[@]}" $(pkg-config --cflags libcurl) -Dperform=free_tv_real_transport -c "$R/src/feature_http.cpp" -o "$B/feature-http.o"
 ${HOST_CXX:-g++} "${flags[@]}" "$R/tests/free_tv_core_host.cpp" "$R/tests/free_tv_session_host.cpp" "$B/session.cpp" \
- "$R/src/free_tv.cpp" "$R/src/live_tv.cpp" "$R/src/live_guide.cpp" "$R/src/stalker.cpp" "$R/src/config_backup.cpp" "$R/src/stremio.cpp" "$R/src/http.cpp" "$R/src/util.cpp" "$B/feature-http.o" \
+ "$R/src/free_tv.cpp" "$R/src/unified_tv.cpp" "$R/src/live_tv.cpp" "$R/src/live_guide.cpp" "$R/src/stalker.cpp" "$R/src/config_backup.cpp" "$R/src/stremio.cpp" "$R/src/http.cpp" "$R/src/util.cpp" "$B/feature-http.o" \
  $(pkg-config --cflags --libs libcurl openssl expat zlib) -Wl,--gc-sections -o "$B/free-tv-host"
 TASK_FREE_TV_TMP=$(mktemp -d)
 trap 'rm -rf "$TASK_FREE_TV_TMP"' EXIT
