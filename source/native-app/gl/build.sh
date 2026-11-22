@@ -196,7 +196,7 @@ PY
 mkdir -p "$APP/licenses/provider-runtime"
 cp "$ROOT/third_party/provider-runtime/LICENSES.txt" "$APP/licenses/provider-runtime/"
 mkdir -p "$APP/fonts" "$APP/hui-fonts" "$APP/icons"
-cp "$ROOT"/app/fonts/{Inter-Regular,Inter-SemiBold,Montserrat-Medium,NotoSans-Regular,NotoSans-Bold,NotoSansHebrew-Regular,NotoSansHebrew-Bold,NotoNaskhArabicUI-Regular,NotoNaskhArabicUI-Bold,NotoSansThai-Regular,NotoSansCJKsc-Regular}.ttf "$APP/fonts/"
+cp "$ROOT"/app/fonts/{Inter-Regular,Inter-SemiBold,Montserrat-Medium,NotoSans-Regular,NotoSans-Bold,NotoSansHebrew-Regular,NotoSansHebrew-Bold,NotoNaskhArabicUI-Regular,NotoNaskhArabicUI-Bold,NotoSansThai-Regular,NotoSansCJKsc-Regular,NuvioSubtitleFallback-Regular}.ttf "$APP/fonts/"
 # Every pinned fallback must actually ship, not only exist in the source tree.
 python3 - "$ROOT/dependencies.json" "$APP/fonts" <<'PYFONTS'
 import hashlib,json,sys
