@@ -1,5 +1,12 @@
 # Native Nuvio Max'd for PS5
 
+## Thai subtitle test fix (#27)
+
+The test build adds a bundled fallback for Thai text with missing or incorrect
+language tags, including ASS files requesting unavailable fonts. Downloaded
+Windows-874/TIS-620 files marked as Thai are decoded correctly. Original fonts,
+styles and timing remain available. See [test details](TESTING-ISSUE27.md).
+
 ## Unified TV guide — 1.0.1.0
 
 Open **Settings → Live TV → Unified TV guide** to browse your IPTV sources

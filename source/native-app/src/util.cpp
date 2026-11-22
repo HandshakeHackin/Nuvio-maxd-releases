@@ -275,6 +275,28 @@ static std::string cp1256_to_utf8(const std::string& s) {
 	return out;
 }
 
+// Windows-874 is a superset of TIS-620. Use only with an explicit Thai
+// language hint and after UTF-8/BOM handling; do not guess from Western bytes.
+static std::string cp874_to_utf8(const std::string& s) {
+ std::string out;out.reserve(s.size());
+ for(unsigned char c:s) {
+  uint32_t cp=0xFFFD;
+  if(c<0x80)cp=c;
+  else if(c>=0xA1&&c<=0xDA)cp=0x0E01+c-0xA1;
+  else if(c==0xDF)cp=0x0E3F;
+  else if(c>=0xE0&&c<=0xFB)cp=0x0E40+c-0xE0;
+  else switch(c) {
+   case 0x80:cp=0x20AC;break;case 0x85:cp=0x2026;break;
+   case 0x91:cp=0x2018;break;case 0x92:cp=0x2019;break;
+   case 0x93:cp=0x201C;break;case 0x94:cp=0x201D;break;
+   case 0x95:cp=0x2022;break;case 0x96:cp=0x2013;break;
+   case 0x97:cp=0x2014;break;case 0xA0:cp=0x00A0;break;
+  }
+  put_utf8(out,cp);
+ }
+ return out;
+}
+
 std::string to_utf8(const std::string& in, const std::string& lang_hint) {
 	std::string s = in;
 	// Strip a UTF-8 byte order mark.
@@ -295,6 +317,8 @@ std::string to_utf8(const std::string& in, const std::string& lang_hint) {
 	}
 	if (is_valid_utf8(s)) return s;
 	std::string l = lower(lang_hint);
+	const auto primary=l.substr(0,l.find_first_of("-_"));
+	if(primary=="th"||primary=="tha"||primary=="thai") return cp874_to_utf8(s);
 	if (l == "gre" || l == "ell" || l == "el" || l == "greek") return cp1253_to_utf8(s);
 	if (l == "ara" || l == "ar" || l == "arabic" || l == "per" || l == "fas" || l == "fa" || l == "urd" || l == "ur")
 		return cp1256_to_utf8(s);

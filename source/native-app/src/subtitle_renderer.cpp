@@ -4,6 +4,7 @@
 #include "util.h"
 #include "video_frame.h"
 #include "subtitles.h"
+#include "subtitle_fonts.hpp"
 extern "C" {
 #include <ass/ass.h>
 #include <libavcodec/avcodec.h>
@@ -119,13 +120,15 @@ void SubtitleRenderer::configure(const std::string& fonts) {
     // Bundle fonts: no system provider or redistributed console fonts required.
     for(const char* name:{"Inter-Regular.ttf","Inter-SemiBold.ttf","Montserrat-Medium.ttf","NotoSans-Regular.ttf","NotoSans-Bold.ttf",
         "NotoSansHebrew-Regular.ttf","NotoSansHebrew-Bold.ttf",
-        "NotoNaskhArabicUI-Regular.ttf","NotoNaskhArabicUI-Bold.ttf","NotoSansCJKsc-Regular.ttf","NotoSansThai-Regular.ttf"}) {
+        "NotoNaskhArabicUI-Regular.ttf","NotoNaskhArabicUI-Bold.ttf","NotoSansCJKsc-Regular.ttf","NotoSansThai-Regular.ttf",subtitle_fonts::fallback_file}) {
         std::ifstream f(fonts+"/"+name,std::ios::binary);
         std::string data((std::istreambuf_iterator<char>(f)),{});
         if(!data.empty() && data.size()<24u<<20) ass_add_font(d_->library,name,data.data(),int(data.size()));
     }
     d_->renderer=ass_renderer_init(d_->library); if(!d_->renderer) return;
-    ass_set_fonts(d_->renderer,(fonts+"/Inter-Regular.ttf").c_str(),"Inter",ASS_FONTPROVIDER_NONE,nullptr,1);
+    // Requested style families remain primary. With no system provider, the
+    // default family must itself cover missing glyphs, including Thai.
+    ass_set_fonts(d_->renderer,subtitle_fonts::fallback_path(fonts).c_str(),subtitle_fonts::fallback_family,ASS_FONTPROVIDER_NONE,nullptr,1);
     ass_set_frame_size(d_->renderer,W,H);
     ass_set_shaper(d_->renderer,ASS_SHAPING_COMPLEX);
     ass_set_cache_limits(d_->renderer,6000,32);
@@ -258,7 +261,7 @@ SubtitleOverlay SubtitleRenderer::render(int id,double seconds,int vw,int vh,dou
             st.PrimaryColour=colour==1?0xFFFF0000u:colour==2?0x00FFFF00u:0xFFFFFF00u;
             st.Outline=effect==1?2:0; st.Shadow=effect==2?2:0; st.BorderStyle=background?3:1;
             st.OutlineColour=background?unsigned(255-background*255/100):0; st.BackColour=0; st.MarginV=110;
-            ass_set_fonts(d_->renderer,(d_->fonts+"/Inter-Regular.ttf").c_str(),chosen,ASS_FONTPROVIDER_NONE,nullptr,1);
+            ass_set_fonts(d_->renderer,subtitle_fonts::fallback_path(d_->fonts).c_str(),subtitle_fonts::fallback_family,ASS_FONTPROVIDER_NONE,nullptr,1);
         }
         ass_set_storage_size(d_->renderer,vw>0?vw:W,vh>0?vh:H);
         ASS_Image* images=ass_render_frame(d_->renderer,t.ass,llround(seconds*1000),&changed);

@@ -25,3 +25,7 @@ installations, or restrict playback. Modified source can remove these checks.
 Start-page and Live TV usability features are inspired by Br0ck25/NuvioTVLauncher,
 NuvioMedia/NuvioTV and homelessbrian/NuvioPlusIPTV. See
 licenses/nuvio-tv-launcher/NOTICE.txt and UPSTREAM.json for the reviewed source.
+
+Nuvio Subtitle Fallback combines the bundled Noto Sans, Noto Sans Thai and
+Inter fonts under SIL OFL 1.1, with its own family name. Original fonts are
+unchanged. See fonts/NuvioSubtitleFallback-NOTICE.txt and adjacent licenses.

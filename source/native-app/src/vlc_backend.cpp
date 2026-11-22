@@ -2,6 +2,7 @@
 // YUV frames for the existing OpenGL renderer; console audio remains PCM.
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "vlc_backend.h"
+#include "subtitle_fonts.hpp"
 #include "pcm_out.h"
 #include "util.h"
 #include "vlc_colour.h"
@@ -454,8 +455,7 @@ bool VlcBackend::open(const Options &o) {
         libvlc_media_add_option_flag(media, text.c_str(), libvlc_media_option_trusted);
     };
 #ifdef NUVIO_VLC_STATIC
-    option(":freetype-font=/app0/fonts/NotoSans-Regular.ttf");
-    option(":freetype-monofont=/app0/fonts/NotoSans-Regular.ttf");
+    for(const auto& font_option:subtitle_fonts::vlc_options())option(font_option);
 #endif
     if (o.software) {
         // VLC boolean options use the no- prefix; '=0' can still enable them.

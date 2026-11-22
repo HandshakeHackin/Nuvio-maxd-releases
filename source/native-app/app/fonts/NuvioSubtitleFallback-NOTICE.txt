@@ -1,0 +1,25 @@
+Nuvio Subtitle Fallback Regular
+
+A modified font combining the bundled Noto Sans, Noto Sans Thai and Inter
+regular faces. It retains all 4,021 input Unicode code points, including
+Thai marks and Latin, Greek and Cyrillic text. Outlines are normalized to
+1000 units per em, resolution-specific hinting is removed, layout tables are
+merged and the family/PostScript names are changed. Original bundled faces
+are unchanged. No console/system font is included.
+
+Copyright 2022 The Noto Project Authors
+(https://github.com/notofonts/latin-greek-cyrillic)
+Copyright 2018 The Noto Project Authors
+(https://github.com/googlei18n/noto-fonts)
+Copyright (c) 2016 The Inter Project Authors
+(https://github.com/rsms/inter)
+
+Licensed under the SIL Open Font License, Version 1.1. The complete original
+copyright and license texts ship alongside this font in OFL.txt,
+NotoSansThai-LICENSE.txt and Inter-LICENSE.txt. The modified font uses its own
+family name; it is not an upstream Noto or Inter release.
+
+Reproduction: tools/prepare_subtitle_fallback.py, fontTools 4.68.0.
+Input/output SHA-256 pins and preparation details: dependencies.json,
+subtitleStack.fallbackPreparation. Two independent builds with different
+Python hash seeds produce identical bytes.

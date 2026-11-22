@@ -245,3 +245,13 @@ selection behavior was inspired by Br0ck25/NuvioTVLauncher (GPL-3.0), reviewed a
 7867b98484a6fb2c4af4914abe494c825c2fc541. Max'd uses independent C++ implementations.
 See app/licenses/nuvio-tv-launcher/ for credits and source provenance, including
 NuvioMedia/NuvioTV and homelessbrian/NuvioPlusIPTV. Android-specific code is not bundled.
+
+## Thai subtitle fallback
+
+`app/fonts/NuvioSubtitleFallback-Regular.ttf` is a renamed OFL-1.1 derivative
+of the unchanged bundled Noto Sans, Noto Sans Thai and Inter regular faces.
+It preserves their complete Unicode coverage and merges their layout tables;
+no console font is used. See its adjacent NOTICE and original font licenses.
+The reproducible fontTools recipe and input/output pins are recorded in
+`dependencies.json`. Native/EVO and VLC use it when the requested subtitle
+font cannot supply a glyph, including Thai text without a language tag.

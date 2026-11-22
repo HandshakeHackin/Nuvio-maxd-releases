@@ -40,6 +40,7 @@ See the [full release notes](https://github.com/HandshakeHackin/Nuvio-maxd-relea
 
 ## Live TV and your own media
 
+- **Thai subtitle compatibility (test fix):** adds a bundled fallback for untagged Thai captions and decoding for Thai Windows-874/TIS-620 files. [Test details](source/native-app/TESTING-ISSUE27.md).
 - **Unified TV guide (next build):** browse personal IPTV sources and enabled free channels together. Each channel keeps its own guide, favorites and playback details. Open Settings → Live TV → Unified TV guide. [Details](source/native-app/UNIFIED_TV_GUIDE.md).
 - **Optional free live TV (next build):** turn it on in Settings → Live TV, read the disclaimer and select the countries you want. Their channels appear together in one list. No IPTV subscription is needed. Channels are supplied by third parties, so availability and quality vary. Personal playlists stay separate. [Details](source/native-app/FREE_LIVE_TV.md).
 - **Live TV:** M3U/M3U8 playlists, Xtream Codes and Stalker/Ministra portals, with groups, search and favorites.

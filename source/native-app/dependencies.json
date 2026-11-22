@@ -135,7 +135,8 @@
       "NotoSansCJKsc-Regular.ttf": "3012a9b63f5eca3e3b38f23a1be5ed504675e394abf8e7a4fa981506582c04aa",
       "NotoSansThai-Regular.ttf": "404ddfb5ed0aaa6b6ec8a85700d682978992062d67da93903967b56cbd9a4acc",
       "NotoSansHebrew-Regular.ttf": "5fb2e1fc38c242d64f9fc5f77e026473f288b9791762d80df98a3ec762d5bbdf",
-      "NotoSansHebrew-Bold.ttf": "2aea024b57ba381f7ce84547e35fa4b39ef75d824284ce632a204eb61756f531"
+      "NotoSansHebrew-Bold.ttf": "2aea024b57ba381f7ce84547e35fa4b39ef75d824284ce632a204eb61756f531",
+      "NuvioSubtitleFallback-Regular.ttf": "ad1b566bcc58e60627fa875eb28fda12b7014a09e258f8bd5c5396de7e1c4c71"
     },
     "cjkPreparation": {
       "sourceCommit": "f8d157532fbfaeda587e826d4cd5b21a49186f7c",
@@ -159,7 +160,28 @@
       }
     },
     "freetype": "2.15.0 (maintenance overlay)",
-    "fribidi": "1.0.18 (maintenance overlay)"
+    "fribidi": "1.0.18 (maintenance overlay)",
+    "fallbackPreparation": {
+      "recipe": "tools/prepare_subtitle_fallback.py",
+      "recipeSha256": "0c35dff5f7c07996803671cfb2efd94a9070853cba2e4bc925b3e37a3d747191",
+      "fontTools": "4.68.0",
+      "inputs": {
+        "NotoSans-Regular.ttf": "478c558ea716033cd60c03438f628dfa75694dcf6b5f6d505a2f05fd2b4f3823",
+        "NotoSansThai-Regular.ttf": "404ddfb5ed0aaa6b6ec8a85700d682978992062d67da93903967b56cbd9a4acc",
+        "Inter-Regular.ttf": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82"
+      },
+      "output": "app/fonts/NuvioSubtitleFallback-Regular.ttf",
+      "sha256": "ad1b566bcc58e60627fa875eb28fda12b7014a09e258f8bd5c5396de7e1c4c71",
+      "family": "Nuvio Subtitle Fallback",
+      "postscriptName": "NuvioSubtitleFallback-Regular",
+      "upem": 1000,
+      "originalFontsUnchanged": true,
+      "completeInputCoverage": true,
+      "codePoints": 4021,
+      "independentBuildsIdentical": true,
+      "notice": "app/fonts/NuvioSubtitleFallback-NOTICE.txt",
+      "noticeSha256": "1a3eb887fa6c37133d73a7c87682f409143e32275d219452e598e333553f75b0"
+    }
   },
   "experimentalHdrDriver": {
     "baseRuntimeCommit": "a519561626933257213d64a4a8bd5e02b55dceb2",
@@ -1165,7 +1187,8 @@
       "tools/normalize_ffmpeg_configuration.py"
     ],
     "extraRecipeSha256": {
-      "tools/normalize_ffmpeg_configuration.py": "8e2af39f53a6ed566de72905a0b0343bc58db6f296c8baf03b4ccd534a905c2c"
+      "tools/normalize_ffmpeg_configuration.py": "8e2af39f53a6ed566de72905a0b0343bc58db6f296c8baf03b4ccd534a905c2c",
+      "tools/prepare_subtitle_fallback.py": "0c35dff5f7c07996803671cfb2efd94a9070853cba2e4bc925b3e37a3d747191"
     },
     "artifactRebuild": {
       "receipt": "DEPENDENCY_REBUILD_1.0.0.24.json",
@@ -1256,7 +1279,9 @@
       "app/fonts/NotoNaskhArabicUI-Regular.ttf": "6f0a92031367b2f5a2078fe9d24f3433122b61a0bad57c423aad8f3c39aa2e6e",
       "app/fonts/NotoEmoji-VariableFont_wght.ttf": "dbd8394b0ee513b356b5a101fb0f64628ce9508294523e051a0efb1679bb34e3",
       "app/fonts/NotoSans-Bold.ttf": "1df075a380fc7cb898acf64c1f7b3b4dd780de3caa860178bf929de35817a913",
-      "app/fonts/NotoSansThai-Regular.ttf": "404ddfb5ed0aaa6b6ec8a85700d682978992062d67da93903967b56cbd9a4acc"
+      "app/fonts/NotoSansThai-Regular.ttf": "404ddfb5ed0aaa6b6ec8a85700d682978992062d67da93903967b56cbd9a4acc",
+      "app/fonts/NuvioSubtitleFallback-Regular.ttf": "ad1b566bcc58e60627fa875eb28fda12b7014a09e258f8bd5c5396de7e1c4c71",
+      "app/fonts/NuvioSubtitleFallback-NOTICE.txt": "1a3eb887fa6c37133d73a7c87682f409143e32275d219452e598e333553f75b0"
     },
     "providerCompatibility": {
       "modernDomUtilsPredicates": true,
