@@ -1,0 +1,2 @@
+# Preserve raw CI and build evidence, including terminal progress whitespace.
+*.log -whitespace
