@@ -111,12 +111,14 @@ class NetworkTests(unittest.TestCase):
 
     def test_negative_dns_cache_control_detects_runtime_behavior(self):
         result=self.run_stream('/video','cached-negative-control')
-        if result['negative_cache_supported']:
-            self.assertFalse(result['started'])
-            self.assertEqual(result['resolver_calls'],1)
-        else:
+        # Resolver builds/backports differ; observe the control instead of
+        # inferring negative-cache behavior from a version number.
+        if result['started']:
             self.assertTrue(result['started'] and result['correct'])
             self.assertEqual(result['resolver_calls'],2)
+        else:
+            self.assertEqual(result['resolver_calls'],1)
+            self.assertIn('resolv',result['error'].lower())
 
     def test_media_server_credentials_and_blocked_redirects(self):
         private=self.run_stream('/media-private','media-auth')

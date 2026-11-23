@@ -34,7 +34,7 @@ thread-allocation failures. The new checks retain current dialogue through a
 10,040-sign burst, clear it on time, reclaim expired events, preserve external
 backward seeks, exercise concurrent streaming/subtitle requests using warmed DNS,
 verify recovery from a real negative DNS result (with a cached-failure control
-on curl 8.16+), and verify single/fewer-worker read, seek and shutdown under
+on runtimes that cache failed lookups), and verify single/fewer-worker read, seek and shutdown under
 thread exhaustion.
 Existing transport, private-header, retry and cancellation checks remain.
 

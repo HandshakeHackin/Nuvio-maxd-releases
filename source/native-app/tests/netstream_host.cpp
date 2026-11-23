@@ -62,7 +62,7 @@ extern "C" CURLcode __wrap_curl_easy_perform(CURL* c) {
         return CURLE_COULDNT_RESOLVE_HOST;
     curl_slist* seed=nullptr;
     if(dns_recovery)curl_easy_setopt(c,CURLOPT_PROXY,"");
-    // Control recreates the stale negative-cache behavior on curl >=8.16.
+    // Control detects negative caching in the runtime's resolver build.
     if(cached_negative_control)curl_easy_setopt(c,CURLOPT_DNS_CACHE_TIMEOUT,60L);
     if(shared_dns) {
         curl_easy_setopt(c,CURLOPT_PROXY,"");
@@ -130,6 +130,6 @@ int main(int argc, char** argv) try {
     }
     result["error"] = stream.failure(); result["fault_calls"] = faults.load();
     result["resolver_calls"]=resolver_calls.load();
-    result["negative_cache_supported"]=curl_version_info(CURLVERSION_NOW)->version_num>=0x081000;
+    result["curl_version"]=curl_version_info(CURLVERSION_NOW)->version;
     std::cout << result.dump() << std::endl;
 } catch(const std::exception& error) {std::cerr<<"Uncaught stream exception: "<<error.what()<<'\n';return 1;}
