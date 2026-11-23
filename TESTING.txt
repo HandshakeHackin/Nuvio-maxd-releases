@@ -1,0 +1,18 @@
+Nuvio Max'd 1.0.1.0
+
+Close the app before installing. Keep saved data, profiles and your previous installer.
+Use PPSA99288.zip for app-folder / Homebrew Store installation, or the native .ffpfsc image with your normal image loader.
+
+New features to check:
+- Settings > Live TV > Free live TV: read the disclaimer, choose countries and open channels.
+- Settings > Live TV > Unified TV guide: browse personal and enabled free channels together.
+- Settings > Live TV > Channel list auto-refresh: Off, 1, 3, 6, 12 or 24 hours; default 6 hours per profile.
+- Refresh waits during playback, multiview and menus. Off still allows manual reload. Closing the app stops the timer.
+- Failed or partially failed automatic downloads keep the previous channels and guide.
+- Search: L1/R1 switches language; Options opens the PS5 keyboard for Chinese characters / Japanese kanji.
+- Settings > App & Updates > Top navigation: optional Search tab and all enabled sections.
+- Retest SIMKL sign-in and Thai subtitles. Issue #25 still needs its reporter's results.
+
+Free channels are controlled by third parties. Availability and quality vary. Dead channels and buffering should not be reported to the developer.
+
+Signing status: the original private offline signing key was unavailable. This release retains the dismissible Unverified build notice, with the owner's approval. Normal playback and saved data are unaffected.
