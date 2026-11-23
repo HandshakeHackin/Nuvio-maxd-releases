@@ -1,0 +1,116 @@
+[nuvio] curl libcurl/8.23.0 OpenSSL/3.5.7 zlib/1.3.1, CA bundle  (MISSING)
+[nuvio] player: playback engine Nuvio native
+[nuvio] player: opening stream
+[nuvio] net: opened stream (468 bytes)
+[nuvio] player: identified HLS from playlist contents
+[nuvio] net: opened stream (344 bytes)
+[nuvio] net: opened stream (351 bytes)
+[nuvio] net: opened stream (311 bytes)
+[nuvio] net: opened stream (317 bytes)
+[nuvio] net: opened stream (19928 bytes)
+[nuvio] net: opened stream (19928 bytes)
+[nuvio] net: opened stream (70312 bytes)
+[nuvio] net: opened stream (159612 bytes)
+[nuvio] player: colours BT.601 (transfer 2, matrix 2, primaries 2)
+[nuvio] player: software video decoding (host software test)
+[nuvio] player: HLS selected video=2 audio=0 programs=2; unused audio playlists disabled
+[nuvio] audio: output stereo PCM 16-bit
+[nuvio] audio: PCM clock accounts for two output grains (10.67 ms estimate)
+[nuvio] player: hls, 12s, video #2 h264, audio #0 aac
+[nuvio] player: about 0 Mbit/s, buffering 2 s before playing
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] net: opened stream (80276 bytes)
+[nuvio] net: opened stream (19552 bytes)
+[nuvio] net: opened stream (78396 bytes)
+[nuvio] net: opened stream (19552 bytes)
+[nuvio] net: opened stream (81028 bytes)
+[nuvio] net: opened stream (19364 bytes)
+[nuvio] net: opened stream (72004 bytes)
+[nuvio] net: opened stream (19552 bytes)
+[nuvio] net: opened stream (74072 bytes)
+[nuvio] net: opened stream (19552 bytes)
+[nuvio] net: opened stream (940 bytes)
+HLS variants: compatible initial audio, first picture, track filtering and stale switch rejection passed
+
+[hls @ 0x7f1460001140] Skip ('#EXT-X-VERSION:3')
+[hls @ 0x7f1460001140] Skip ('#EXT-X-VERSION:3')
+[hls @ 0x7f1460001140] Skip ('#EXT-X-VERSION:3')
+[hls @ 0x7f1460001140] Skip ('#EXT-X-VERSION:3')
+[hls @ 0x7f1460001140] No longer receiving playlist 3 ('[media URL]')
+[hls @ 0x7f1460001140] No longer receiving playlist 1 ('[media URL]')
+
+External-rendition HLS playback passed with real FFmpeg and production HTTP input
+[nuvio] curl libcurl/8.23.0 OpenSSL/3.5.7 zlib/1.3.1, CA bundle  (MISSING)
+[nuvio] player: playback engine Nuvio native
+[nuvio] player: opening stream
+[nuvio] net: opened stream (468 bytes)
+[nuvio] player: identified HLS from playlist contents
+[nuvio] net: opened stream (484 bytes)
+[nuvio] net: opened stream (491 bytes)
+[nuvio] net: opened stream (431 bytes)
+[nuvio] net: opened stream (437 bytes)
+[nuvio] net: opened stream (19928 bytes)
+[nuvio] net: opened stream (19928 bytes)
+[nuvio] net: opened stream (70312 bytes)
+[nuvio] net: opened stream (159612 bytes)
+[nuvio] player: colours BT.601 (transfer 2, matrix 2, primaries 2)
+[nuvio] player: software video decoding (host software test)
+[nuvio] player: HLS selected video=2 audio=0 programs=2; unused audio playlists disabled
+[nuvio] audio: output stereo PCM 16-bit
+[nuvio] audio: PCM clock accounts for two output grains (10.67 ms estimate)
+[nuvio] player: hls, 12s, video #2 h264, audio #0 aac
+[nuvio] player: about 0 Mbit/s, buffering 2 s before playing
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] net: opened stream (80276 bytes)
+[nuvio] net: opened stream (19552 bytes)
+[nuvio] player: the stream fell behind (stop 1); buffering 2 s before going on
+[nuvio] net: opened stream (78396 bytes)
+[nuvio] net: opened stream (19552 bytes)
+[nuvio] net: opened stream (81028 bytes)
+[nuvio] net: opened stream (19364 bytes)
+[nuvio] player: buffered 2.0 s, playing again
+[nuvio] audio: PCM levels peak=-19.1 dBFS rms=-24.1 dBFS queued=346.7 ms
+HLS variants: compatible initial audio, first picture, track filtering and stale switch rejection passed
+
+[hls @ 0x7fa544001580] Skip ('#EXT-X-VERSION:3')
+[hls @ 0x7fa544001580] Skip ('#EXT-X-VERSION:3')
+[hls @ 0x7fa544001580] Skip ('#EXT-X-VERSION:3')
+[hls @ 0x7fa544001580] Skip ('#EXT-X-VERSION:3')
+[hls @ 0x7fa544001580] No longer receiving playlist 3 ('[media URL]')
+[hls @ 0x7fa544001580] No longer receiving playlist 1 ('[media URL]')
+
+Live HTTP-only extensionless HLS segments, stall recovery, audio/video playback and local-file/write rejection passed
+[nuvio] curl libcurl/8.23.0 OpenSSL/3.5.7 zlib/1.3.1, CA bundle  (MISSING)
+[nuvio] player: playback engine Nuvio native
+[nuvio] player: opening stream
+[nuvio] net: opened stream (588 bytes)
+[nuvio] player: identified HLS from playlist contents
+[nuvio] net: opened stream (694 bytes)
+[nuvio] net: opened stream (701 bytes)
+[nuvio] net: opened stream (611 bytes)
+[nuvio] net: opened stream (617 bytes)
+[nuvio] net: opened stream (19928 bytes)
+[nuvio] net: opened stream (19928 bytes)
+[nuvio] net: opened stream (70312 bytes)
+[nuvio] net: opened stream (159612 bytes)
+[nuvio] player: colours BT.601 (transfer 2, matrix 2, primaries 2)
+[nuvio] player: software video decoding (host software test)
+[nuvio] player: HLS selected video=2 audio=0 programs=2; unused audio playlists disabled
+[nuvio] audio: output stereo PCM 16-bit
+[nuvio] audio: PCM clock accounts for two output grains (10.67 ms estimate)
+[nuvio] player: hls, 12s, video #2 h264, audio #0 aac
+[nuvio] player: about 0 Mbit/s, buffering 2 s before playing
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] net: opened stream (80276 bytes)
+[nuvio] net: opened stream (19552 bytes)
+[nuvio] net: request failed
+HLS variants: compatible initial audio, first picture, track filtering and stale switch rejection passed
+
+[hls @ 0x7f9974001580] Skip ('#EXT-X-VERSION:3')
+[hls @ 0x7f9974001580] Skip ('#EXT-X-VERSION:3')
+[hls @ 0x7f9974001580] Skip ('#EXT-X-VERSION:3')
+[hls @ 0x7f9974001580] Skip ('#EXT-X-VERSION:3')
+[hls @ 0x7f9974001580] No longer receiving playlist 3 ('[media URL]')
+[hls @ 0x7f9974001580] No longer receiving playlist 1 ('[media URL]')
+
+Authenticated media-server HLS: opaque playlists, extensionless audio/video segments and first-picture playback passed

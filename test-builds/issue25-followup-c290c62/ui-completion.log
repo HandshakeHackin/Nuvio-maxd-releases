@@ -1,0 +1,325 @@
+[HUI] program batch2d built in 24 ms
+[HUI] program mesh2d built in 0 ms
+[HUI] program backdrop built in 31 ms
+[HUI] program blur built in 1 ms
+ar-free-tv-settings: GL error 0x0; 328 shapes
+[HUI] program batch2d built in 16 ms
+[HUI] program mesh2d built in 0 ms
+[HUI] program backdrop built in 29 ms
+[HUI] program blur built in 1 ms
+ar-free-tv-disclaimer: GL error 0x0; 305 shapes
+[HUI] program batch2d built in 20 ms
+[HUI] program mesh2d built in 0 ms
+[HUI] program backdrop built in 28 ms
+[HUI] program blur built in 1 ms
+ar-free-tv-countries: GL error 0x0; 146 shapes
+[HUI] program batch2d built in 17 ms
+[HUI] program mesh2d built in 0 ms
+[HUI] program backdrop built in 30 ms
+[HUI] program blur built in 1 ms
+ar-unified-guide: GL error 0x0; 632 shapes
+[HUI] program batch2d built in 18 ms
+[HUI] program mesh2d built in 0 ms
+[HUI] program backdrop built in 32 ms
+[HUI] program blur built in 1 ms
+zh-Hans-free-tv-settings: GL error 0x0; 153 shapes
+[HUI] program batch2d built in 17 ms
+[HUI] program mesh2d built in 0 ms
+[HUI] program backdrop built in 28 ms
+[HUI] program blur built in 1 ms
+zh-Hans-free-tv-disclaimer: GL error 0x0; 150 shapes
+[HUI] program batch2d built in 17 ms
+[HUI] program mesh2d built in 0 ms
+[HUI] program backdrop built in 44 ms
+[HUI] program blur built in 3 ms
+zh-Hans-free-tv-countries: GL error 0x0; 100 shapes
+[HUI] program batch2d built in 16 ms
+[HUI] program mesh2d built in 1 ms
+[HUI] program backdrop built in 29 ms
+[HUI] program blur built in 1 ms
+zh-Hans-unified-guide: GL error 0x0; 504 shapes
+[HUI] program batch2d built in 17 ms
+[HUI] program mesh2d built in 0 ms
+[HUI] program backdrop built in 42 ms
+[HUI] program blur built in 7 ms
+ja-free-tv-settings: GL error 0x0; 189 shapes
+[HUI] program batch2d built in 17 ms
+[HUI] program mesh2d built in 0 ms
+[HUI] program backdrop built in 29 ms
+[HUI] program blur built in 1 ms
+ja-free-tv-disclaimer: GL error 0x0; 213 shapes
+[HUI] program batch2d built in 20 ms
+[HUI] program mesh2d built in 0 ms
+[HUI] program backdrop built in 32 ms
+[HUI] program blur built in 1 ms
+ja-free-tv-countries: GL error 0x0; 105 shapes
+[HUI] program batch2d built in 20 ms
+[HUI] program mesh2d built in 0 ms
+[HUI] program backdrop built in 31 ms
+[HUI] program blur built in 1 ms
+ja-unified-guide: GL error 0x0; 524 shapes
+[HUI] program batch2d built in 18 ms
+[HUI] program mesh2d built in 0 ms
+[HUI] program backdrop built in 31 ms
+[HUI] program blur built in 1 ms
+ko-free-tv-settings: GL error 0x0; 161 shapes
+[HUI] program batch2d built in 23 ms
+[HUI] program mesh2d built in 0 ms
+[HUI] program backdrop built in 29 ms
+[HUI] program blur built in 1 ms
+ko-free-tv-disclaimer: GL error 0x0; 193 shapes
+[HUI] program batch2d built in 17 ms
+[HUI] program mesh2d built in 0 ms
+[HUI] program backdrop built in 30 ms
+[HUI] program blur built in 1 ms
+ko-free-tv-countries: GL error 0x0; 98 shapes
+[HUI] program batch2d built in 17 ms
+[HUI] program mesh2d built in 0 ms
+[HUI] program backdrop built in 30 ms
+[HUI] program blur built in 1 ms
+ko-unified-guide: GL error 0x0; 512 shapes
+[HUI] program batch2d built in 22 ms
+[HUI] program mesh2d built in 2 ms
+[HUI] program backdrop built in 32 ms
+[HUI] program blur built in 1 ms
+de-start-page: GL error 0x0; 178 shapes
+[HUI] program batch2d built in 17 ms
+[HUI] program mesh2d built in 0 ms
+[HUI] program backdrop built in 31 ms
+[HUI] program blur built in 1 ms
+de-channel-options: GL error 0x0; 101 shapes
+[HUI] program batch2d built in 17 ms
+[HUI] program mesh2d built in 0 ms
+[HUI] program backdrop built in 29 ms
+[HUI] program blur built in 1 ms
+de-backup-channels: GL error 0x0; 160 shapes
+[HUI] program batch2d built in 20 ms
+[HUI] program mesh2d built in 0 ms
+[HUI] program backdrop built in 27 ms
+[HUI] program blur built in 1 ms
+de-hidden-channels: GL error 0x0; 187 shapes
+[HUI] program batch2d built in 19 ms
+[HUI] program mesh2d built in 0 ms
+[HUI] program backdrop built in 31 ms
+[HUI] program blur built in 1 ms
+es-start-page: GL error 0x0; 185 shapes
+[HUI] program batch2d built in 17 ms
+[HUI] program mesh2d built in 0 ms
+[HUI] program backdrop built in 29 ms
+[HUI] program blur built in 1 ms
+es-channel-options: GL error 0x0; 94 shapes
+[HUI] program batch2d built in 19 ms
+[HUI] program mesh2d built in 0 ms
+[HUI] program backdrop built in 43 ms
+[HUI] program blur built in 1 ms
+es-backup-channels: GL error 0x0; 152 shapes
+[HUI] program batch2d built in 17 ms
+[HUI] program mesh2d built in 0 ms
+[HUI] program backdrop built in 29 ms
+[HUI] program blur built in 1 ms
+es-hidden-channels: GL error 0x0; 166 shapes
+[HUI] program batch2d built in 16 ms
+[HUI] program mesh2d built in 0 ms
+[HUI] program backdrop built in 29 ms
+[HUI] program blur built in 1 ms
+fr-start-page: GL error 0x0; 185 shapes
+[HUI] program batch2d built in 16 ms
+[HUI] program mesh2d built in 0 ms
+[HUI] program backdrop built in 27 ms
+[HUI] program blur built in 1 ms
+fr-channel-options: GL error 0x0; 99 shapes
+[HUI] program batch2d built in 17 ms
+[HUI] program mesh2d built in 0 ms
+[HUI] program backdrop built in 32 ms
+[HUI] program blur built in 1 ms
+fr-backup-channels: GL error 0x0; 153 shapes
+[HUI] program batch2d built in 17 ms
+[HUI] program mesh2d built in 0 ms
+[HUI] program backdrop built in 29 ms
+[HUI] program blur built in 1 ms
+fr-hidden-channels: GL error 0x0; 173 shapes
+[HUI] program batch2d built in 19 ms
+[HUI] program mesh2d built in 0 ms
+[HUI] program backdrop built in 30 ms
+[HUI] program blur built in 1 ms
+ar-start-page: GL error 0x0; 147 shapes
+[HUI] program batch2d built in 17 ms
+[HUI] program mesh2d built in 0 ms
+[HUI] program backdrop built in 30 ms
+[HUI] program blur built in 1 ms
+ar-channel-options: GL error 0x0; 90 shapes
+[HUI] program batch2d built in 19 ms
+[HUI] program mesh2d built in 1 ms
+[HUI] program backdrop built in 30 ms
+[HUI] program blur built in 1 ms
+ar-backup-channels: GL error 0x0; 119 shapes
+[HUI] program batch2d built in 19 ms
+[HUI] program mesh2d built in 0 ms
+[HUI] program backdrop built in 31 ms
+[HUI] program blur built in 1 ms
+ar-hidden-channels: GL error 0x0; 136 shapes
+[HUI] program batch2d built in 18 ms
+[HUI] program mesh2d built in 0 ms
+[HUI] program backdrop built in 31 ms
+[HUI] program blur built in 1 ms
+zh-Hans-start-page: GL error 0x0; 66 shapes
+[HUI] program batch2d built in 23 ms
+[HUI] program mesh2d built in 1 ms
+[HUI] program backdrop built in 36 ms
+[HUI] program blur built in 1 ms
+zh-Hans-channel-options: GL error 0x0; 41 shapes
+[HUI] program batch2d built in 17 ms
+[HUI] program mesh2d built in 0 ms
+[HUI] program backdrop built in 30 ms
+[HUI] program blur built in 1 ms
+zh-Hans-backup-channels: GL error 0x0; 66 shapes
+[HUI] program batch2d built in 16 ms
+[HUI] program mesh2d built in 1 ms
+[HUI] program backdrop built in 28 ms
+[HUI] program blur built in 1 ms
+zh-Hans-hidden-channels: GL error 0x0; 73 shapes
+[HUI] program batch2d built in 24 ms
+[HUI] program mesh2d built in 1 ms
+[HUI] program backdrop built in 38 ms
+[HUI] program blur built in 2 ms
+ja-start-page: GL error 0x0; 94 shapes
+[HUI] program batch2d built in 17 ms
+[HUI] program mesh2d built in 0 ms
+[HUI] program backdrop built in 28 ms
+[HUI] program blur built in 1 ms
+ja-channel-options: GL error 0x0; 63 shapes
+[HUI] program batch2d built in 17 ms
+[HUI] program mesh2d built in 0 ms
+[HUI] program backdrop built in 32 ms
+[HUI] program blur built in 1 ms
+ja-backup-channels: GL error 0x0; 84 shapes
+[HUI] program batch2d built in 17 ms
+[HUI] program mesh2d built in 0 ms
+[HUI] program backdrop built in 30 ms
+[HUI] program blur built in 1 ms
+ja-hidden-channels: GL error 0x0; 101 shapes
+[HUI] program batch2d built in 27 ms
+[HUI] program mesh2d built in 0 ms
+[HUI] program backdrop built in 28 ms
+[HUI] program blur built in 1 ms
+ko-start-page: GL error 0x0; 81 shapes
+[HUI] program batch2d built in 16 ms
+[HUI] program mesh2d built in 0 ms
+[HUI] program backdrop built in 30 ms
+[HUI] program blur built in 1 ms
+ko-channel-options: GL error 0x0; 44 shapes
+[HUI] program batch2d built in 23 ms
+[HUI] program mesh2d built in 0 ms
+[HUI] program backdrop built in 37 ms
+[HUI] program blur built in 1 ms
+ko-backup-channels: GL error 0x0; 75 shapes
+[HUI] program batch2d built in 26 ms
+[HUI] program mesh2d built in 0 ms
+[HUI] program backdrop built in 35 ms
+[HUI] program blur built in 1 ms
+ko-hidden-channels: GL error 0x0; 84 shapes
+[HUI] program batch2d built in 36 ms
+[HUI] program mesh2d built in 0 ms
+[HUI] program backdrop built in 30 ms
+[HUI] program blur built in 1 ms
+de-integrity-warning: GL error 0x0; 267 shapes
+[HUI] program batch2d built in 19 ms
+[HUI] program mesh2d built in 0 ms
+[HUI] program backdrop built in 28 ms
+[HUI] program blur built in 1 ms
+de-integrity-credits: GL error 0x0; 362 shapes
+[HUI] program batch2d built in 17 ms
+[HUI] program mesh2d built in 0 ms
+[HUI] program backdrop built in 29 ms
+[HUI] program blur built in 1 ms
+es-integrity-warning: GL error 0x0; 248 shapes
+[HUI] program batch2d built in 16 ms
+[HUI] program mesh2d built in 0 ms
+[HUI] program backdrop built in 30 ms
+[HUI] program blur built in 1 ms
+es-integrity-credits: GL error 0x0; 357 shapes
+[HUI] program batch2d built in 18 ms
+[HUI] program mesh2d built in 0 ms
+[HUI] program backdrop built in 33 ms
+[HUI] program blur built in 1 ms
+fr-integrity-warning: GL error 0x0; 261 shapes
+[HUI] program batch2d built in 16 ms
+[HUI] program mesh2d built in 0 ms
+[HUI] program backdrop built in 28 ms
+[HUI] program blur built in 1 ms
+fr-integrity-credits: GL error 0x0; 361 shapes
+[HUI] program batch2d built in 16 ms
+[HUI] program mesh2d built in 0 ms
+[HUI] program backdrop built in 29 ms
+[HUI] program blur built in 1 ms
+ar-integrity-warning: GL error 0x0; 194 shapes
+[HUI] program batch2d built in 23 ms
+[HUI] program mesh2d built in 1 ms
+[HUI] program backdrop built in 31 ms
+[HUI] program blur built in 1 ms
+ar-integrity-credits: GL error 0x0; 299 shapes
+[HUI] program batch2d built in 18 ms
+[HUI] program mesh2d built in 0 ms
+[HUI] program backdrop built in 29 ms
+[HUI] program blur built in 1 ms
+zh-Hans-integrity-warning: GL error 0x0; 121 shapes
+[HUI] program batch2d built in 16 ms
+[HUI] program mesh2d built in 0 ms
+[HUI] program backdrop built in 27 ms
+[HUI] program blur built in 1 ms
+zh-Hans-integrity-credits: GL error 0x0; 214 shapes
+[HUI] program batch2d built in 18 ms
+[HUI] program mesh2d built in 0 ms
+[HUI] program backdrop built in 29 ms
+[HUI] program blur built in 1 ms
+ja-integrity-warning: GL error 0x0; 153 shapes
+[HUI] program batch2d built in 17 ms
+[HUI] program mesh2d built in 0 ms
+[HUI] program backdrop built in 28 ms
+[HUI] program blur built in 1 ms
+ja-integrity-credits: GL error 0x0; 251 shapes
+[HUI] program batch2d built in 16 ms
+[HUI] program mesh2d built in 0 ms
+[HUI] program backdrop built in 80 ms
+[HUI] program blur built in 3 ms
+ko-integrity-warning: GL error 0x0; 145 shapes
+[HUI] program batch2d built in 25 ms
+[HUI] program mesh2d built in 0 ms
+[HUI] program backdrop built in 49 ms
+[HUI] program blur built in 4 ms
+ko-integrity-credits: GL error 0x0; 238 shapes
+[HUI] program batch2d built in 18 ms
+[HUI] program mesh2d built in 0 ms
+[HUI] program backdrop built in 31 ms
+[HUI] program blur built in 1 ms
+de-watched-movie: GL error 0x0; 828 shapes
+[HUI] program batch2d built in 47 ms
+[HUI] program mesh2d built in 0 ms
+[HUI] program backdrop built in 35 ms
+[HUI] program blur built in 1 ms
+es-watched-movie: GL error 0x0; 835 shapes
+[HUI] program batch2d built in 111 ms
+[HUI] program mesh2d built in 0 ms
+[HUI] program backdrop built in 34 ms
+[HUI] program blur built in 1 ms
+fr-watched-movie: GL error 0x0; 833 shapes
+[HUI] program batch2d built in 18 ms
+[HUI] program mesh2d built in 0 ms
+[HUI] program backdrop built in 34 ms
+[HUI] program blur built in 1 ms
+ar-watched-movie: GL error 0x0; 822 shapes
+[HUI] program batch2d built in 19 ms
+[HUI] program mesh2d built in 0 ms
+[HUI] program backdrop built in 31 ms
+[HUI] program blur built in 1 ms
+zh-Hans-watched-movie: GL error 0x0; 713 shapes
+[HUI] program batch2d built in 18 ms
+[HUI] program mesh2d built in 0 ms
+[HUI] program backdrop built in 29 ms
+[HUI] program blur built in 1 ms
+ja-watched-movie: GL error 0x0; 741 shapes
+[HUI] program batch2d built in 19 ms
+[HUI] program mesh2d built in 1 ms
+[HUI] program backdrop built in 30 ms
+[HUI] program blur built in 1 ms
+ko-watched-movie: GL error 0x0; 721 shapes

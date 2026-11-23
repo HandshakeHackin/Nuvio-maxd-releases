@@ -1,0 +1,1104 @@
+[ps5-curl] nonblocking socket setup failed errno=9
+Pinned PS5 curl socket regression: old fcntl/readback fails; direct SO_NBIO enables/disables and preserves write errors
+Maintenance builder refuses overlapping or aliased base/overlay SDKs before any writes
+Dependency refresh refuses overlapping and symlink-aliased SDKs before any writes
+Production startup: actual entry point passes conditional-indentation compiler check
+Production startup order: one VideoDec2 preload before EGL/AGC, no early compute warm-up or second display
+Shutdown: fresh-launch exit and update handoff, active-task cancellation and cleanup ordering passed
+Profile PIN keypad: numeric mapping, masking, limit, delete, cancellation, submit clearing, held-button suppression and bounded navigation passed
+Profile PIN wiring: in-app modal holds input; server verification retained; system IME bypassed
+Hebrew: missing-font reproduction, both fallback weights, 27 letter rasters and RTL order passed
+Controller lightbar: throttling, failure suppression, reconnect, reset and logo/reduced-motion envelopes passed; slow teal-white-purple loop and continuity passed
+Console lighting: saved state, disable/exit restoration, system priority, denied access, retry, rejected writes and malformed layouts passed
+x265 [error]: unable to set thread affinity for NUMA node mask
+x265 [error]: unable to set thread affinity for NUMA node mask
+x265 [error]: unable to set thread affinity for NUMA node mask
+x265 [error]: unable to set thread affinity for NUMA node mask
+Real HEVC SPS (Annex B/hvcC), missing-only colour fallback, malformed input, chapters and artwork bounds passed
+Production artwork workers: bounded request/decoded queues, backpressure and shutdown cancellation passed
+Production Session: renumbered subtitles, explicit Off, external cues, missing/ambiguous tracks and chapter controller navigation passed
+Playback badges: resolutions/crops, selected audio, HDR source vs SDR, codec overrides, release types, boundaries and bounded input passed
+Playback badge rendering: outlined pills, title/episode spacing, row bounds, overflow and control visibility passed
+Multiview controls: focus, single audio transfer order, replacement, full-screen and stop passed
+Live TV parser, Xtream API, headers, bounds, redirects, credentials and cancellation passed
+60,000-channel HTTP M3U and gzip Xtream imports passed; no VOD requests. Host peak RSS: 146708 KiB
+Free TV catalogue: seven providers, country paths, safe headers/URLs, adult/duplicate/broken filtering, limits, cancellation, private failures and backup consent validation passed
+Channel refresh: all intervals, real personal/free downloads, no overlap, active-playback/menu cancellation, failed/partial retention, guide preservation, retry bounds, private persistence/backup and profile isolation passed
+Free TV session: disclaimer acceptance/cancel, private save, rollback, country changes, personal-source preservation, disable/late replies and profile boundaries passed
+Unified TV core: source identities, header isolation, exact duplicates, cross-source backups, consent, partial failures, cancellation, deadline and shared memory/source limits passed
+USB diagnostics: missing/access/empty mounts, metadata fallback, unknown types, enumeration errors, privacy, cancellation and global count/depth limits passed
+USB playlists: scan, symlink/path rejection, limits, HLS rejection, atomic replacement, cancellation, permissions, profile isolation and unplugged reload passed
+....
+----------------------------------------------------------------------
+Ran 4 tests in 0.788s
+
+OK
+USB reader: bounded protocol, loopback loader, fragmented/buffered transfers, invalid replies, cancellation, validation, private atomic copies and profile isolation passed
+Menu catalogs: en 1496/1496, de 1496/1496, es 585/1496, fr 585/1496, ar 585/1496, zh-Hans 585/1496, ja 585/1496, ko 585/1496; complete core and reproducible table
+............
+----------------------------------------------------------------------
+Ran 12 tests in 0.714s
+
+OK
+Localization: eight saved languages, aliases, invalid settings, English fallback, stable category IDs, Latin/Arabic/CJK search, Arabic shaping and 4485 menu glyph rasters passed
+Localization dialogs: eight native language names, real persistence/readback, failed-save rollback, restart boundary and stable USB cancellation purposes passed
+Title actions: production menus, library toggle, movie/season/series and episode marks, future/unknown/invalid dates, confirmation/cancel, bounded scopes, persistence failures and stale profile/title guards passed
+PASS: provider now/next, XMLTV timezone/entities/cancellation, gzip limits, Xtream contract and playback independence
+PASS: provider now/next, XMLTV timezone/entities/cancellation, gzip limits, Xtream contract and playback independence
+PASS: unified source/EPG collisions, per-source clocks, shared concurrency, raw XML reuse, failure cooldown and profile cancellation
+PASS: guide background bounds, profile/source cancellation, disabled/playback states, XMLTV override and failure cooldown
+PASS: aired-only series badges, known history, future/unknown/date-only releases, in-progress exclusion, TTL and cache bounds
+IPTV model: discovery, live-only hiding, outage retention, namespaced playback, lazy episodes, isolated private caches, cancellation, 60k catalog and bounded saved search passed
+IPTV Session: hidden/live-only, immediate VOD discovery, direct playback, lazy seasons, isolated resume, offline cache, A–Z, cross-provider movie/series search, profile races and removal passed
+Synthetic Xtream HTTP fixture: exact account endpoints and on-demand episodes passed
+[nuvio] curl libcurl/8.14.1 OpenSSL/3.5.7 zlib/1.3.1 brotli/1.1.0 zstd/1.5.7 libidn2/2.3.8 libpsl/0.21.2 libssh2/1.11.1 nghttp2/1.64.0 nghttp3/1.8.0 librtmp/2.3 OpenLDAP/2.6.10, CA bundle  (MISSING)
+[nuvio] media servers: load not found errno=2
+[nuvio] media servers: loaded 0 connection(s), rejected 0
+[nuvio] media servers: saved and verified 1 connection(s)
+[nuvio] media servers: loaded 1 connection(s), rejected 0
+[nuvio] media servers: save skipped; profile not ready
+[nuvio] media servers: save failed (write), 0 connection(s)
+[nuvio] media servers: load not found errno=2
+[nuvio] media servers: loaded 0 connection(s), rejected 0
+[nuvio] media servers: saved and verified 1 connection(s)
+[nuvio] media servers: loaded 1 connection(s), rejected 0
+[nuvio] media servers: saved and verified 0 connection(s)
+[nuvio] media servers: loaded 0 connection(s), rejected 0
+[nuvio] media servers: saved and verified 1 connection(s)
+[nuvio] media servers: saved and verified 1 connection(s)
+[nuvio] media servers: loaded 1 connection(s), rejected 0
+Production media Session connection, persistence, browse, cancellation, profile isolation and playback passed
+[nuvio] torrent: accepting peers on port 6881
+[nuvio] torrent 5739665c05e34ccde200a3a3bed45e6f353d48a4: "Sample.Show.S01", 2 files, 5242880 bytes, 20 pieces of 256 KB, cache 20 pieces
+[nuvio] torrent 5739665c05e34ccde200a3a3bed45e6f353d48a4: metadata from the cache
+[nuvio] torrent 5739665c05e34ccde200a3a3bed45e6f353d48a4: starting with 15 trackers, 1 webseeds
+[nuvio] torrent 5739665c05e34ccde200a3a3bed45e6f353d48a4: reader 2 waiting for piece 12 (pos=2097152)
+[nuvio] torrent 5739665c05e34ccde200a3a3bed45e6f353d48a4: 0 peers (0 connecting, 0 known), 0.00 MB/s, 0 pieces cached, 0 active
+[nuvio] torrent 5739665c05e34ccde200a3a3bed45e6f353d48a4: reader 2 waiting for piece 12 (pos=2097152)
+[nuvio] torrent: playing file 1 of 5739665c05e34ccde200a3a3bed45e6f353d48a4 (4194304 bytes)
+[nuvio] torrent 5739665c05e34ccde200a3a3bed45e6f353d48a4: reader 3 waiting for piece 15 (pos=2883584)
+[nuvio] torrent 5739665c05e34ccde200a3a3bed45e6f353d48a4: reader 3 waiting for piece 15 (pos=2883584)
+[nuvio] torrent 5739665c05e34ccde200a3a3bed45e6f353d48a4: nobody is watching, pausing
+[nuvio] torrent 5739665c05e34ccde200a3a3bed45e6f353d48a4: 0 peers (0 connecting, 0 known), 0.00 MB/s, 0 pieces cached, 0 active
+[nuvio] tracker udp://open.stealth.si:80/announce: no answer, 0 peers
+[nuvio] tracker udp://tracker.opentrackr.org:1337/announce: no answer, 0 peers
+[nuvio] torrent: accepting peers on port 6881
+[nuvio] torrent 5739665c05e34ccde200a3a3bed45e6f353d48a4: "Sample.Show.S01", 2 files, 5242880 bytes, 20 pieces of 256 KB, cache 20 pieces
+[nuvio] torrent 5739665c05e34ccde200a3a3bed45e6f353d48a4: metadata from the cache
+[nuvio] torrent 5739665c05e34ccde200a3a3bed45e6f353d48a4: starting with 15 trackers, 1 webseeds
+[nuvio] torrent 2222222222222222222222222222222222222222: starting with 15 trackers, 0 webseeds
+[nuvio] torrent 5739665c05e34ccde200a3a3bed45e6f353d48a4: "Sample.Show.S01", 2 files, 5242880 bytes, 20 pieces of 256 KB, cache 20 pieces
+[nuvio] torrent 5739665c05e34ccde200a3a3bed45e6f353d48a4: metadata from the cache
+[nuvio] torrent 5739665c05e34ccde200a3a3bed45e6f353d48a4: starting with 15 trackers, 1 webseeds
+[nuvio] tracker udp://tracker.opentrackr.org:1337/announce: no answer, 0 peers
+[nuvio] tracker udp://tracker.opentrackr.org:1337/announce: no answer, 0 peers
+[nuvio] tracker udp://open.stealth.si:80/announce: no answer, 0 peers
+[nuvio] tracker udp://tracker.opentrackr.org:1337/announce: no answer, 0 peers
+[nuvio] tracker udp://open.stealth.si:80/announce: no answer, 0 peers
+[nuvio] torrent: accepting peers on port 6881
+[nuvio] torrent 6b6963b190e71302cc68ceb0aac4209f67ad409c: "video.mkv", 1 files, 262144 bytes, 1 pieces of 256 KB, cache 8 pieces
+[nuvio] torrent 6b6963b190e71302cc68ceb0aac4209f67ad409c: metadata from the cache
+[nuvio] torrent 6b6963b190e71302cc68ceb0aac4209f67ad409c: starting with 15 trackers, 1 webseeds
+[nuvio] tracker udp://open.demonii.com:1337/announce: no answer, 0 peers
+[nuvio] tracker udp://tracker.opentrackr.org:1337/announce: no answer, 0 peers
+ALL TORRENT STREAMING HOST TESTS PASSED!
+[nuvio] curl libcurl/8.14.1 OpenSSL/3.5.7 zlib/1.3.1 brotli/1.1.0 zstd/1.5.7 libidn2/2.3.8 libpsl/0.21.2 libssh2/1.11.1 nghttp2/1.64.0 nghttp3/1.8.0 librtmp/2.3 OpenLDAP/2.6.10, CA bundle  (MISSING)
+[nuvio] player: playback engine Nuvio native
+[nuvio] player: opening stream
+[nuvio] player: head-only container startup; explicit seek can load deferred indexes
+[nuvio] player: colours BT.601 (transfer 2, matrix 2, primaries 2)
+[nuvio] player: software video decoding (host software test)
+[nuvio] audio: output stereo PCM 16-bit
+[nuvio] audio: PCM clock accounts for two output grains (10.67 ms estimate)
+[nuvio] player: matroska,webm, 10s, video #0 h264, audio #1 aac
+[nuvio] player: about 0 Mbit/s, buffering 2 s before playing
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] player: seek inline target=5.000 landed=5.021 first_picture_ms=15.5 paused=0
+[nuvio] player: seek playing target=5.000 first_picture_ms=15.5 playing_ms=18.7
+[nuvio] player: playback engine Nuvio native
+[nuvio] player: opening stream
+[nuvio] player: colours BT.601 (transfer 2, matrix 2, primaries 2)
+[nuvio] player: software video decoding (host software test)
+[nuvio] audio: output stereo PCM 16-bit
+[nuvio] audio: PCM clock accounts for two output grains (10.67 ms estimate)
+[nuvio] player: matroska,webm, 10s, video #0 h264, audio #1 aac
+[nuvio] player: about 0 Mbit/s, buffering 2 s before playing
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] player: seek inline target=5.000 landed=5.021 first_picture_ms=15.5 paused=0
+[nuvio] player: seek playing target=5.000 first_picture_ms=15.5 playing_ms=18.7
+[nuvio] player: playback engine Nuvio native
+[nuvio] player: opening stream
+[nuvio] player: head-only container startup; explicit seek can load deferred indexes
+[nuvio] player: colours BT.601 (transfer 2, matrix 2, primaries 2)
+[nuvio] player: software video decoding (host software test)
+[nuvio] audio: output stereo PCM 16-bit
+[nuvio] audio: PCM clock accounts for two output grains (10.67 ms estimate)
+[nuvio] player: mpegts, 0s, video #0 h264, audio #1 aac
+[nuvio] player: about 0 Mbit/s, buffering 2 s before playing
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] player: seek inline target=5.000 landed=5.021 first_picture_ms=9.3 paused=0
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] player: seek playing target=5.000 first_picture_ms=9.3 playing_ms=12.4
+[nuvio] player: playback engine Nuvio native
+[nuvio] player: opening stream
+[nuvio] player: colours BT.601 (transfer 2, matrix 2, primaries 2)
+[nuvio] player: software video decoding (host software test)
+[nuvio] audio: output stereo PCM 16-bit
+[nuvio] audio: PCM clock accounts for two output grains (10.67 ms estimate)
+[nuvio] player: mpegts, 10s, video #0 h264, audio #1 aac
+[nuvio] player: about 0 Mbit/s, buffering 2 s before playing
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] player: seek inline target=5.000 landed=5.021 first_picture_ms=15.5 paused=0
+[nuvio] player: seek playing target=5.000 first_picture_ms=15.5 playing_ms=18.6
+[nuvio] player: playback engine Nuvio native
+[nuvio] player: opening stream
+[nuvio] player: head-only container startup; explicit seek can load deferred indexes
+[nuvio] player: colours BT.601 (transfer 2, matrix 2, primaries 2)
+[nuvio] player: software video decoding (host software test)
+[nuvio] audio: output stereo PCM 16-bit
+[nuvio] audio: PCM clock accounts for two output grains (10.67 ms estimate)
+[nuvio] player: mpegts, 0s, video #0 h264, audio #1 aac
+[nuvio] player: about 0 Mbit/s, buffering 2 s before playing
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] player: seek inline target=5.000 landed=5.021 first_picture_ms=6.5 paused=0
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] player: seek playing target=5.000 first_picture_ms=6.5 playing_ms=9.7
+[nuvio] player: playback engine Nuvio native
+[nuvio] player: opening stream
+[nuvio] player: colours BT.601 (transfer 2, matrix 2, primaries 2)
+[nuvio] player: software video decoding (host software test)
+[nuvio] audio: output stereo PCM 16-bit
+[nuvio] audio: PCM clock accounts for two output grains (10.67 ms estimate)
+[nuvio] player: mpegts, 10s, video #0 h264, audio #1 aac
+[nuvio] player: about 0 Mbit/s, buffering 2 s before playing
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] player: seek inline target=5.000 landed=5.021 first_picture_ms=12.3 paused=0
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] player: seek playing target=5.000 first_picture_ms=12.3 playing_ms=15.5
+[nuvio] player: playback engine Nuvio native
+[nuvio] player: opening stream
+[mov,mp4,m4a,3gp,3g2,mj2 @ 0x7f06d4899180] Protocol name not provided, cannot determine if input is local or a network protocol, buffers and access patterns cannot be configured optimally without knowing the protocol
+[nuvio] player: colours BT.601 (transfer 2, matrix 2, primaries 2)
+[nuvio] player: software video decoding (host software test)
+[nuvio] audio: output stereo PCM 16-bit
+[nuvio] audio: PCM clock accounts for two output grains (10.67 ms estimate)
+[nuvio] player: mov,mp4,m4a,3gp,3g2,mj2, 10s, video #0 h264, audio #1 aac
+[nuvio] player: about 0 Mbit/s, buffering 2 s before playing
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] player: seek inline target=5.000 landed=5.000 first_picture_ms=6.2 paused=0
+[nuvio] player: seek playing target=5.000 first_picture_ms=6.2 playing_ms=9.3
+[nuvio] player: playback engine Nuvio native
+[nuvio] player: opening stream
+[mov,mp4,m4a,3gp,3g2,mj2 @ 0x7f06d4899180] Protocol name not provided, cannot determine if input is local or a network protocol, buffers and access patterns cannot be configured optimally without knowing the protocol
+[nuvio] player: colours BT.601 (transfer 2, matrix 2, primaries 2)
+[nuvio] player: software video decoding (host software test)
+[nuvio] audio: output stereo PCM 16-bit
+[nuvio] audio: PCM clock accounts for two output grains (10.67 ms estimate)
+[nuvio] player: mov,mp4,m4a,3gp,3g2,mj2, 10s, video #0 h264, audio #1 aac
+[nuvio] player: about 0 Mbit/s, buffering 2 s before playing
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] player: seek inline target=5.000 landed=5.000 first_picture_ms=9.3 paused=0
+[nuvio] player: seek playing target=5.000 first_picture_ms=9.3 playing_ms=12.4
+[nuvio] player: playback engine Nuvio native
+[nuvio] player: opening stream
+[mov,mp4,m4a,3gp,3g2,mj2 @ 0x7f06d4899180] Protocol name not provided, cannot determine if input is local or a network protocol, buffers and access patterns cannot be configured optimally without knowing the protocol
+[nuvio] player: colours BT.601 (transfer 2, matrix 2, primaries 2)
+[nuvio] player: software video decoding (host software test)
+[nuvio] audio: output stereo PCM 16-bit
+[nuvio] audio: PCM clock accounts for two output grains (10.67 ms estimate)
+[nuvio] player: mov,mp4,m4a,3gp,3g2,mj2, 10s, video #0 h264, audio #1 aac
+[nuvio] player: about 0 Mbit/s, buffering 2 s before playing
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] player: seek inline target=5.000 landed=5.000 first_picture_ms=9.3 paused=0
+[nuvio] player: seek playing target=5.000 first_picture_ms=9.3 playing_ms=12.4
+[nuvio] player: playback engine Nuvio native
+[nuvio] player: opening stream
+[mov,mp4,m4a,3gp,3g2,mj2 @ 0x7f06d4899180] Protocol name not provided, cannot determine if input is local or a network protocol, buffers and access patterns cannot be configured optimally without knowing the protocol
+[nuvio] player: colours BT.601 (transfer 2, matrix 2, primaries 2)
+[nuvio] player: software video decoding (host software test)
+[nuvio] audio: output stereo PCM 16-bit
+[nuvio] audio: PCM clock accounts for two output grains (10.67 ms estimate)
+[nuvio] player: mov,mp4,m4a,3gp,3g2,mj2, 10s, video #0 h264, audio #1 aac
+[nuvio] player: about 0 Mbit/s, buffering 2 s before playing
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] player: seek inline target=5.000 landed=5.000 first_picture_ms=9.3 paused=0
+[nuvio] player: seek playing target=5.000 first_picture_ms=9.3 playing_ms=12.4
+Torrent player: MKV/TS/M2TS/front- and tail-moov MP4 startup, resume and seek passed
+[nuvio] player: playback engine Nuvio native
+[nuvio] player: opening stream
+[nuvio] player: head-only container startup; explicit seek can load deferred indexes
+[nuvio] player: colours BT.601 (transfer 2, matrix 2, primaries 2)
+[nuvio] player: software video decoding (host software test)
+[nuvio] audio: output stereo PCM 16-bit
+[nuvio] audio: PCM clock accounts for two output grains (10.67 ms estimate)
+[nuvio] player: matroska,webm, 10s, video #0 h264, audio #1 aac
+[nuvio] player: about 0 Mbit/s, buffering 2 s before playing
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] player: seek to 7.0 failed: Input/output error
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] player: seek inline target=7.000 landed=0.188 first_picture_ms=9.2 paused=0
+[nuvio] player: seek playing target=7.000 first_picture_ms=9.2 playing_ms=9.3
+[nuvio] player: seek to 7.0 failed: Input/output error
+[nuvio] player: seek to 7.0 failed: Input/output error
+[nuvio] player: Torrent seek could not recover safely. Restart playback or choose another stream.
+[matroska,webm @ 0x7f06d4899180] Element at 0x39a5c ending at 0x39a60 exceeds containing master element ending at 0xb4ac
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] player: playback engine Nuvio native
+[nuvio] player: opening stream
+[nuvio] player: colours BT.601 (transfer 2, matrix 2, primaries 2)
+[nuvio] player: software video decoding (host software test)
+[nuvio] audio: output stereo PCM 16-bit
+[nuvio] audio: PCM clock accounts for two output grains (10.67 ms estimate)
+[nuvio] player: matroska,webm, 10s, video #0 h264, audio #1 aac
+[nuvio] player: about 0 Mbit/s, buffering 2 s before playing
+[nuvio] player: seek to 3.0 failed: Input/output error
+[nuvio] player: The saved torrent position is unavailable. Try Play from beginning.
+[nuvio] player: playback engine Nuvio native
+[nuvio] player: opening stream
+[nuvio] player: head-only container startup; explicit seek can load deferred indexes
+[nuvio] player: colours BT.601 (transfer 2, matrix 2, primaries 2)
+[nuvio] audio: output stereo PCM 16-bit
+[nuvio] audio: PCM clock accounts for two output grains (10.67 ms estimate)
+[nuvio] player: matroska,webm, 10s, video #0 h264, audio #1 aac
+[nuvio] player: about 0 Mbit/s, buffering 2 s before playing
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] player: decoder recovery to software at 0.273 s; rebuffering audio and video together
+[nuvio] player: seek to 0.3 failed: Input/output error
+[nuvio] player: Decoder recovery could not seek this source. Choose another stream.
+[nuvio] player: playback engine Nuvio native
+[nuvio] player: opening stream
+[nuvio] player: head-only container startup; explicit seek can load deferred indexes
+[nuvio] player: colours BT.601 (transfer 2, matrix 2, primaries 2)
+[nuvio] player: software video decoding (host software test)
+[nuvio] audio: output stereo PCM 16-bit
+[nuvio] audio: PCM clock accounts for two output grains (10.67 ms estimate)
+[nuvio] player: matroska,webm, 10s, video #0 h264, audio #1 aac
+[nuvio] player: about 0 Mbit/s, buffering 2 s before playing
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] audio: output stereo PCM 16-bit
+[nuvio] audio: PCM clock accounts for two output grains (10.67 ms estimate)
+[nuvio] player: audio switch to #2 at 0.208 s (paused 0)
+[nuvio] player: seek to 0.2 failed: Input/output error
+[nuvio] player: Could not resynchronize the selected audio track. Restart playback or choose another stream.
+Torrent player: seek rollback/deadline, startup failure, decoder/audio errors and no reopen loops passed
+test_absolute_pairing_timezones_and_fractional_seconds (__main__.AccountTests.test_absolute_pairing_timezones_and_fractional_seconds) ... ok
+test_accounts_never_share_profile_cache (__main__.AccountTests.test_accounts_never_share_profile_cache) ... ok
+test_aiostreams_http_headers_and_torrent_entries (__main__.AccountTests.test_aiostreams_http_headers_and_torrent_entries) ... ok
+test_anonymous_exchange_is_not_saved_as_login (__main__.AccountTests.test_anonymous_exchange_is_not_saved_as_login) ... ok
+test_backend_expiry_and_rejection_end_pairing (__main__.AccountTests.test_backend_expiry_and_rejection_end_pairing) ... ok
+test_cancelled_pairing_cannot_exchange_or_persist (__main__.AccountTests.test_cancelled_pairing_cannot_exchange_or_persist) ... ok
+test_catalog_request_failure_is_reported (__main__.AccountTests.test_catalog_request_failure_is_reported) ... ok
+test_configuration_restore_preserves_history_and_retires_old_context (__main__.AccountTests.test_configuration_restore_preserves_history_and_retires_old_context) ... ok
+test_configuration_restore_rejects_foreign_profile_and_stale_review (__main__.AccountTests.test_configuration_restore_rejects_foreign_profile_and_stale_review) ... ok
+test_configured_addon_url_preserves_path_and_query_on_resources (__main__.AccountTests.test_configured_addon_url_preserves_path_and_query_on_resources) ... ok
+test_debrid_url_wins_over_accompanying_torrent_hash (__main__.AccountTests.test_debrid_url_wins_over_accompanying_torrent_hash) ... ok
+test_disconnected_tracker_keeps_queued_progress_out_of_nuvio_backend (__main__.AccountTests.test_disconnected_tracker_keeps_queued_progress_out_of_nuvio_backend) ... ok
+test_feature_transport_bounds_verbs_etag_and_no_credential_redirects (__main__.AccountTests.test_feature_transport_bounds_verbs_etag_and_no_credential_redirects) ... ok
+test_home_catalog_selection_matches_nuvio (__main__.AccountTests.test_home_catalog_selection_matches_nuvio) ... ok
+test_legacy_data_migrates_only_to_original_primary (__main__.AccountTests.test_legacy_data_migrates_only_to_original_primary) ... ok
+test_legacy_pairing_and_addon_fallback (__main__.AccountTests.test_legacy_pairing_and_addon_fallback) ... ok
+test_library_membership_is_separate_from_resume_and_history (__main__.AccountTests.test_library_membership_is_separate_from_resume_and_history) ... ok
+test_library_snapshot_removal_and_malformed_reply_preserve_correct_membership (__main__.AccountTests.test_library_snapshot_removal_and_malformed_reply_preserve_correct_membership) ... ok
+test_logout_survives_process_restart (__main__.AccountTests.test_logout_survives_process_restart) ... ok
+test_membership_offline_restart_latest_intent_and_remote_changes (__main__.AccountTests.test_membership_offline_restart_latest_intent_and_remote_changes) ... ok
+test_membership_source_change_and_unreadable_cache_do_not_write (__main__.AccountTests.test_membership_source_change_and_unreadable_cache_do_not_write) ... ok
+test_missing_or_invalid_server_date_keeps_code_pending (__main__.AccountTests.test_missing_or_invalid_server_date_keeps_code_pending) ... ok
+test_missing_rotated_refresh_token_retains_previous (__main__.AccountTests.test_missing_rotated_refresh_token_retains_previous) ... ok
+test_new_account_without_profiles_can_create_second_profile (__main__.AccountTests.test_new_account_without_profiles_can_create_second_profile) ... ok
+test_numeric_absolute_pairing_expiry (__main__.AccountTests.test_numeric_absolute_pairing_expiry) ... ok
+test_pair_pending_then_save_and_restore_without_pairing (__main__.AccountTests.test_pair_pending_then_save_and_restore_without_pairing) ... ok
+test_pairing_expiry_uses_server_time_when_console_clock_is_ahead (__main__.AccountTests.test_pairing_expiry_uses_server_time_when_console_clock_is_ahead) ... ok
+test_partial_progress_snapshot_never_replaces_cloud_or_deletes_cache (__main__.AccountTests.test_partial_progress_snapshot_never_replaces_cloud_or_deletes_cache) ... ok
+test_plugin_repository_import_is_profile_scoped (__main__.AccountTests.test_plugin_repository_import_is_profile_scoped) ... ok
+test_plugin_sync_preserves_dex_and_refuses_unknown_types (__main__.AccountTests.test_plugin_sync_preserves_dex_and_refuses_unknown_types) ... ok
+test_profile_credentials_use_selected_profile (__main__.AccountTests.test_profile_credentials_use_selected_profile) ... ok
+test_profile_limit_and_failed_create_do_not_modify_cache (__main__.AccountTests.test_profile_limit_and_failed_create_do_not_modify_cache) ... ok
+test_profile_locks_fail_closed (__main__.AccountTests.test_profile_locks_fail_closed) ... ok
+test_profile_source_inheritance_separate_for_plugins_and_addons (__main__.AccountTests.test_profile_source_inheritance_separate_for_plugins_and_addons) ... ok
+test_profile_switch_scopes_history_and_rejects_delayed_jobs (__main__.AccountTests.test_profile_switch_scopes_history_and_rejects_delayed_jobs) ... ok
+test_profiles_import_and_create_preserves_metadata (__main__.AccountTests.test_profiles_import_and_create_preserves_metadata) ... ok
+test_progress_explicit_short_video_is_readable (__main__.AccountTests.test_progress_explicit_short_video_is_readable) ... ok
+test_progress_mixed_explicit_and_legacy_units (__main__.AccountTests.test_progress_mixed_explicit_and_legacy_units) ... ok
+test_progress_percentage_with_duration_imports_resume (__main__.AccountTests.test_progress_percentage_with_duration_imports_resume) ... ok
+test_provider_credential_import_is_read_only_and_scoped (__main__.AccountTests.test_provider_credential_import_is_read_only_and_scoped) ... ok
+test_provider_credentials_require_signed_in_nuvio (__main__.AccountTests.test_provider_credentials_require_signed_in_nuvio) ... ok
+test_provider_import_reports_offline_without_credentials (__main__.AccountTests.test_provider_import_reports_offline_without_credentials) ... ok
+test_provider_import_survives_missing_settings_rpc (__main__.AccountTests.test_provider_import_survives_missing_settings_rpc) ... ok
+test_provider_transport_posts_urlencoded_form (__main__.AccountTests.test_provider_transport_posts_urlencoded_form) ... ok
+test_provider_transport_rejects_http_and_never_forwards_credentials_on_redirect (__main__.AccountTests.test_provider_transport_rejects_http_and_never_forwards_credentials_on_redirect) ... ok
+test_raw_torrents_require_opt_in (__main__.AccountTests.test_raw_torrents_require_opt_in) ... ok
+test_refresh_rotation_serializes_parallel_requests (__main__.AccountTests.test_refresh_rotation_serializes_parallel_requests) ... ok
+test_relative_pairing_lifetime_takes_priority (__main__.AccountTests.test_relative_pairing_lifetime_takes_priority) ... ok
+test_revoked_refresh_token_clears_session (__main__.AccountTests.test_revoked_refresh_token_clears_session) ... ok
+test_secondary_profile_continue_watching_survives_unreadable_row (__main__.AccountTests.test_secondary_profile_continue_watching_survives_unreadable_row) ... ok
+test_server_expired_code_is_rejected (__main__.AccountTests.test_server_expired_code_is_rejected) ... ok
+test_server_time_prevents_refresh_loop_after_pairing_and_restore (__main__.AccountTests.test_server_time_prevents_refresh_loop_after_pairing_and_restore) ... ok
+test_source_changes_retry_after_restart_without_crossing_profiles (__main__.AccountTests.test_source_changes_retry_after_restart_without_crossing_profiles) ... ok
+test_storage_failure_does_not_report_saved_login (__main__.AccountTests.test_storage_failure_does_not_report_saved_login) ... ok
+test_synced_aiometadata_popular_catalog_is_requested (__main__.AccountTests.test_synced_aiometadata_popular_catalog_is_requested) ... ok
+test_synced_configured_addon_returns_debrid_links (__main__.AccountTests.test_synced_configured_addon_returns_debrid_links) ... ok
+test_tracker_outage_keeps_previously_synced_continue_watching (__main__.AccountTests.test_tracker_outage_keeps_previously_synced_continue_watching) ... ok
+test_tracking_corrupt_settings_are_not_overwritten (__main__.AccountTests.test_tracking_corrupt_settings_are_not_overwritten) ... ok
+test_tracking_credentials_stay_with_profile_and_old_context_cannot_write (__main__.AccountTests.test_tracking_credentials_stay_with_profile_and_old_context_cannot_write) ... ok
+test_tracking_requires_account_and_defaults_to_nuvio (__main__.AccountTests.test_tracking_requires_account_and_defaults_to_nuvio) ... ok
+test_transient_addon_sync_uses_cache_after_restart (__main__.AccountTests.test_transient_addon_sync_uses_cache_after_restart) ... ok
+test_transient_refresh_error_preserves_session (__main__.AccountTests.test_transient_refresh_error_preserves_session) ... ok
+test_unavailable_library_tracker_falls_back_without_erasing_preference (__main__.AccountTests.test_unavailable_library_tracker_falls_back_without_erasing_preference) ... ok
+test_unowned_legacy_data_is_not_assigned_to_a_new_account (__main__.AccountTests.test_unowned_legacy_data_is_not_assigned_to_a_new_account) ... ok
+test_unsupported_url_does_not_fall_back_to_torrent (__main__.AccountTests.test_unsupported_url_does_not_fall_back_to_torrent) ... ok
+test_untrusted_https_backend_is_rejected (__main__.AccountTests.test_untrusted_https_backend_is_rejected) ... ok
+test_unusable_absolute_expiry_uses_bounded_fallback (__main__.AccountTests.test_unusable_absolute_expiry_uses_bounded_fallback) ... ok
+test_update_metadata_rejects_plaintext_http (__main__.AccountTests.test_update_metadata_rejects_plaintext_http) ... ok
+test_update_metadata_rejects_tls_to_plaintext_redirect (__main__.AccountTests.test_update_metadata_rejects_tls_to_plaintext_redirect) ... ok
+test_watch_progress_completion_is_portable (__main__.AccountTests.test_watch_progress_completion_is_portable) ... ok
+test_watch_progress_delayed_write_cannot_cross_login_boundary (__main__.AccountTests.test_watch_progress_delayed_write_cannot_cross_login_boundary) ... ok
+test_watch_progress_empty_or_invalid_snapshot_keeps_saved_resume (__main__.AccountTests.test_watch_progress_empty_or_invalid_snapshot_keeps_saved_resume) ... ok
+test_watch_progress_explicit_units_and_profile_isolation (__main__.AccountTests.test_watch_progress_explicit_units_and_profile_isolation) ... ok
+test_watch_progress_failed_push_retries_after_restart (__main__.AccountTests.test_watch_progress_failed_push_retries_after_restart) ... ok
+test_watch_progress_keeps_episode_keys_separate (__main__.AccountTests.test_watch_progress_keeps_episode_keys_separate) ... ok
+test_watch_progress_loads_remote_resume_and_legacy_seconds (__main__.AccountTests.test_watch_progress_loads_remote_resume_and_legacy_seconds) ... ok
+test_watch_progress_logout_retains_scoped_pending_cache (__main__.AccountTests.test_watch_progress_logout_retains_scoped_pending_cache) ... ok
+test_watch_progress_newer_remote_wins_over_offline_update (__main__.AccountTests.test_watch_progress_newer_remote_wins_over_offline_update) ... ok
+test_watch_progress_push_preserves_other_device_rows_and_utc_offsets (__main__.AccountTests.test_watch_progress_push_preserves_other_device_rows_and_utc_offsets) ... ok
+test_watch_progress_pushes_only_portable_fields (__main__.AccountTests.test_watch_progress_pushes_only_portable_fields) ... ok
+test_watch_progress_remote_deletion_does_not_restore_old_local_state (__main__.AccountTests.test_watch_progress_remote_deletion_does_not_restore_old_local_state) ... ok
+test_watch_progress_remove_uses_delete_and_stable_client_id (__main__.AccountTests.test_watch_progress_remove_uses_delete_and_stable_client_id) ... ok
+test_watch_progress_short_clip_does_not_upload (__main__.AccountTests.test_watch_progress_short_clip_does_not_upload) ... ok
+test_watched_batch_atomic_validation_offline_retry_and_movie_unmark (__main__.AccountTests.test_watched_batch_atomic_validation_offline_retry_and_movie_unmark) ... ok
+test_watched_history_import_scopes_each_profile_and_merges_push (__main__.AccountTests.test_watched_history_import_scopes_each_profile_and_merges_push) ... ok
+test_watched_marks_migrate_and_remote_deletions_are_respected (__main__.AccountTests.test_watched_marks_migrate_and_remote_deletions_are_respected) ... ok
+test_watched_offline_marks_and_deletions_retry_after_restore (__main__.AccountTests.test_watched_offline_marks_and_deletions_retry_after_restore) ... ok
+test_watched_sync_uses_explicit_identity_for_custom_episode_ids (__main__.AccountTests.test_watched_sync_uses_explicit_identity_for_custom_episode_ids) ... ok
+
+----------------------------------------------------------------------
+Ran 88 tests in 54.507s
+
+OK
+sports_navigation_combinations: PASS
+library_search_controls: PASS
+torrent_visibility_combinations: PASS
+iptv_visibility_changes: PASS
+live_tv_rail_and_channel_arrival: PASS
+media_server_visibility_changes: PASS
+home_without_catalogs: PASS
+home_reload_and_arrival: PASS
+home_empty_frames_keep_menu_selection: PASS
+empty_addons_can_reach_settings: PASS
+addons_arrival_keeps_menu_selection: PASS
+populated_pages_keep_normal_navigation: PASS
+UI navigation: 12 tests, 0 failures
+Sports Hub: catalogue, bounded parsing, stale scores, follows, filtering, channel confidence, cancellation and production selection flows passed
+Continue Watching: full history, ordering, metadata, guest history, removals and Next Up deduplication passed
+PASS: cold Library posters, addon fallback, existing art, scrolling, request bounds, offline handling and profile isolation
+PASS: local Library search, type/sort/progress, accents/UTF-8, clear/cancel, source/profile isolation and zero search requests
+PASS: production series requests, deduplication, card badge updates, watched marks, cooldown and stale source/profile replies
+source_options_navigation: PASS
+aio_card_preserves_badges: PASS
+filename_and_hint_metadata: PASS
+no_invented_metadata: PASS
+flags_and_hdr_plus: PASS
+filtered_index_maps_to_source: PASS
+pills_never_start_playback: PASS
+empty_filter_and_late_arrival: PASS
+arrival_keeps_selected_source: PASS
+series_returns_to_episodes: PASS
+reload_keeps_late_selected_source: PASS
+reload_respects_navigation_and_missing_source: PASS
+season_selection_does_not_open_streams: PASS
+empty_season_keeps_other_seasons_reachable: PASS
+late_episode_art_keeps_focus_and_selection: PASS
+watched_refresh_keeps_carousel_position: PASS
+Stream presentation and navigation: 16 tests, 0 failures
+Source checks, preference validation/ranking, safe overrides and production menu callbacks passed
+PASS clientResolve survives parsing and resume without accepting injected credentials
+PASS raw torrents resolve through the preferred service with P2P off
+PASS provider-specific instructions respect Resolve with
+PASS direct URLs remain unchanged without contacting providers
+PASS TorBox resolves the exact original file with cached-only creation
+PASS Premiumize selects original link instead of transcoded stream_link
+PASS cache misses never create jobs on either provider
+PASS malformed cache responses do not authorize creation
+PASS errors do not reveal provider keys or playable URLs
+PASS cancellation stops before another provider request
+PASS episode matching rejects prefix collisions and unrelated episodes
+PASS filename and fileIdx preserve the selected encode
+PASS keys reject header injection and remain in a private atomic file
+PASS sync import supports JSON rows and clears only account-imported keys
+PASS Anime-Skip client ID imports from Nuvio Sync, saves privately and clears on sign-out
+PASS invalid Anime-Skip client IDs are rejected without touching other connections
+PASS Anime-Skip credentials remain isolated between profile files
+PASS TorBox QR flow handles pending, approved and expired codes
+PASS malformed sync snapshots cannot partially replace working credentials
+19 Connected Services tests passed
+Trailer checks passed: identities, metadata, ranking, deduplication, safe URLs, public player responses, TMDB routing, fallback, cancellation and history isolation
+PASS prepared original link starts playback without another provider call
+PASS cache keeps caller presentation and removes addon credentials from CDN requests
+PASS links expire at five minutes and manual playback obtains a fresh link
+PASS resume preserves resolver instructions and uses the same prepared file
+PASS file index and exact filename do not share prepared links
+PASS next episode and season identities cannot reuse the current episode link
+PASS provider identities stay separate for the same hash
+PASS credential changes discard cached links and stale queued preparation
+PASS provider preference and disconnected services invalidate eligibility
+PASS turning instant playback off stops background work but permits manual resolution
+PASS direct addon URLs bypass preparation and keep their existing headers
+PASS uncached and unsupported instructions never contact providers in the background
+PASS background budget limits starts to six a minute while cache hits stay free
+PASS hourly background budget recovers and manual play bypasses it
+PASS cache evicts least recently used links at the one hundred link bound
+PASS closing a browsing scope cancels the provider and discards its link
+PASS one active background resolution bounds concurrent provider requests
+PASS selected stream adopts the pending request across browsing closure
+PASS cancelling playback wakes a waiter and interrupts adopted provider work
+PASS cancellation before the queued play task also stops a promoted request
+PASS settings changes cancel requests and wake pending playback
+PASS shutdown cancels provider work and rejects queued preparation
+PASS provider failures cool down in the background while manual retry stays available
+PASS provider exceptions release flights and produce a sanitized retry message
+PASS a non HTTP provider result never becomes Ready or playable
+PASS focus is prepared first and addon filters, duplicate identities and caps are respected
+26 Instant playback tests passed
+Episode skip and next playback: 61 tests, 0 failures
+[nuvio] torrent recovery: waiting_s=45.0 piece=0 retired=1 retry_s=30
+[nuvio] torrent recovery: waiting_s=30.0 piece=0 retired=0 retry_s=60
+[nuvio] torrent : reader 1 waiting for piece 0 (pos=0)
+[nuvio] torrent recovery: waiting_s=31.0 piece=-1 retired=0 retry_s=30
+Playback recovery passed: cancellation generations, blocked-reader gating, useful-data timing, backoff, cache retention and aborted-read cleanup
+vlc pictures: unmap deferred rc=ffffffff bytes=536870912
+vlc pictures: unmap deferred rc=ffffffff bytes=536870912
+vlc pictures: release deferred rc=ffffffff bytes=536870912
+vlc pictures: release deferred rc=ffffffff bytes=536870912
+vlc pictures: release deferred rc=ffffffff bytes=16384
+VLC picture memory passed: reserve, cap, alignment, foreign pointers, map/unmap/release failures and ownership retention
+VLC decoder headers passed: VP9 superframes, malformed bounds, keyframes, H264 interlaced/progressive SPS, top/bottom fields and planar chroma
+VLC workspace: exhausted flexible memory uses direct storage; shared-block ownership and failure cleanup passed
+hevc_only_keeps_base_layer: PASS
+vp9_profile2_uses_hardware_and_retries_depth: PASS
+main10_prefers_deep_pipeline: PASS
+main10_retries_query_failure: PASS
+main10_retries_create_failure: PASS
+main10_releases_unmapped_workspace_before_retry: PASS
+main10_all_fail_cleanly: PASS
+main10_successful_retry_can_be_reused: PASS
+other_codecs_keep_existing_setup: PASS
+codec_switch_releases_idle_workspaces: PASS
+h264_retries_create_failure: PASS
+h264_all_fail_cleanly: PASS
+Hardware decoder setup and HEVC base-layer filtering: 11 tests, 0 failures
+EVO Player 0.13.7: 15 release files and recorded local patches verified
+x265 [error]: unable to set thread affinity for NUMA node mask
+x265 [error]: unable to set thread affinity for NUMA node mask
+EVO integration: SDR/10-bit B-frame decode, EOF, reopen after seek, owned planes, 24/120 cadence, early/late frames and P5 rejection passed
+Upstream refresh: Unicode wrapping, 24/60 and 24/120 frame order, bounded catch-up, holds and nonblocking logging passed
+Install source: unset migration, validated local persistence and source-specific update routing passed
+Release notes: first launch, update and persistent acknowledgement passed
+User experience: preference recovery, subtitle styles, motion/contrast, custom countdown and private crash/runtime diagnostics passed
+PS5 display output: 27 display output selection and probe-lifecycle assertions
+Display refresh: 4K 120 Hz is selected before EGL and confirmed after swap passed
+Display refresh: rejected refresh request retries 60 Hz at the same 4K resolution passed
+Display refresh: two refused refresh requests stop before creating EGL resources passed
+Display refresh: hardware refusal of 120 Hz is reported as accepted 60 Hz passed
+Display refresh: failed readback does not claim high refresh passed
+Display refresh: default and invalid stored refresh values use 60 Hz passed
+Display refresh lifecycle: 6 tests, 0 failures
+Presentation timing: GPU/CPU flips, timestamp guards, duplicate/stale rejection, reset and bounded lead passed
+[HDR] failed stage=buffer registration rc=ffffffff
+[HDR] failed stage=buffer registration rc=ffffffff
+HDR output: missing or failed registration cannot switch output passed
+[HDR] before switch status_rc=00000000 range=1 refresh=0 flags=0000000000000000
+[HDR] driver change=80290003 unregister=7fffffff register=7fffffff restore=7fffffff
+[HDR] attribute HDR10 render=3840x2160 format=8100070400000000 rc=80290003 handle=0000002a set=0 candidate=0
+[HDR] driver change=80290003 unregister=7fffffff register=7fffffff restore=7fffffff
+[HDR] attribute HDR10 render=3840x2160 format=8100070422000000 rc=80290003 handle=0000002a set=0 candidate=1
+[HDR] failed stage=buffer attribute rc=80290003
+HDR output: refused HDR leaves SDR layout intact passed
+[HDR] before switch status_rc=00000000 range=1 refresh=0 flags=0000000000000000
+[HDR] driver change=00000000 unregister=7fffffff register=7fffffff restore=7fffffff
+[HDR] attribute HDR10 render=3840x2160 format=8100070400000000 rc=00000000 handle=0000002a set=0 candidate=0
+[HDR] before switch status_rc=00000000 range=1 refresh=0 flags=0000000000000000
+[HDR] driver change=00000000 unregister=7fffffff register=7fffffff restore=7fffffff
+[HDR] attribute SDR render=3840x2160 format=8000000000000000 rc=00000000 handle=0000002a set=0 candidate=0
+HDR output: BGR-only outputs use the successful format and matching word order passed
+[HDR] before switch status_rc=00000000 range=1 refresh=0 flags=0000000000000000
+[HDR] driver change=80290003 unregister=7fffffff register=7fffffff restore=7fffffff
+[HDR] attribute HDR10 render=3840x2160 format=8100070400000000 rc=80290003 handle=0000002a set=0 candidate=0
+[HDR] driver change=00000000 unregister=7fffffff register=7fffffff restore=7fffffff
+[HDR] attribute HDR10 render=3840x2160 format=8100070422000000 rc=00000000 handle=0000002a set=0 candidate=1
+[HDR] before switch status_rc=00000000 range=1 refresh=0 flags=0000000000000000
+[HDR] driver change=00000000 unregister=7fffffff register=7fffffff restore=7fffffff
+[HDR] attribute SDR render=3840x2160 format=8000000000000000 rc=00000000 handle=0000002a set=0 candidate=0
+HDR output: RGB remains available after a BGR format rejection passed
+[HDR] failed stage=flip queue drain rc=fffffffe
+[HDR] failed stage=flip queue query rc=ffffffff
+HDR output: busy or invalid flip queues cannot change the pixel layout passed
+[HDR] failed stage=flip queue wait rc=80020004
+HDR output: failed flip wait reports its native result without submitting an attribute passed
+[HDR] before switch status_rc=00000000 range=1 refresh=0 flags=0000000000000000
+[HDR] driver change=00000000 unregister=7fffffff register=7fffffff restore=7fffffff
+[HDR] attribute HDR10 render=3840x2160 format=8100070400000000 rc=00000000 handle=0000002a set=0 candidate=0
+[HDR] after flip rc=00000000 range=1 flags=0000000000000000 confirmed=0
+[HDR] after flip rc=00000000 range=2 flags=0000000000000000 confirmed=1
+HDR output: attribute acceptance requires a successful post-flip HDR readback passed
+[HDR] before switch status_rc=00000000 range=2 refresh=0 flags=0000000000000000
+[HDR] driver change=ffffffff unregister=7fffffff register=7fffffff restore=7fffffff
+[HDR] attribute SDR render=3840x2160 format=8000000000000000 rc=ffffffff handle=0000002a set=0 candidate=0
+[HDR] failed stage=buffer attribute rc=ffffffff
+[HDR] before switch status_rc=00000000 range=2 refresh=0 flags=0000000000000000
+[HDR] driver change=00000000 unregister=7fffffff register=7fffffff restore=7fffffff
+[HDR] attribute SDR render=3840x2160 format=8000000000000000 rc=00000000 handle=0000002a set=0 candidate=0
+HDR output: refused SDR restore retains packed HDR presentation passed
+[HDR] before switch status_rc=00000000 range=1 refresh=0 flags=0000000000000000
+[HDR] driver change=00000000 unregister=7fffffff register=7fffffff restore=7fffffff
+[HDR] attribute HDR10 render=3840x2160 format=8100070400000000 rc=00000000 handle=0000002a set=0 candidate=0
+[HDR] after flip rc=00000000 range=1 flags=0000000000000000 confirmed=0
+[HDR] failed stage=HDR confirmation rc=fffffffd
+[HDR] output did not confirm HDR within 5 seconds; stop playback and restore SDR
+[HDR] before switch status_rc=00000000 range=1 refresh=0 flags=0000000000000000
+[HDR] driver change=00000000 unregister=7fffffff register=7fffffff restore=7fffffff
+[HDR] attribute SDR render=3840x2160 format=8000000000000000 rc=00000000 handle=0000002a set=0 candidate=0
+HDR output: missing HDR confirmation times out without silently tone mapping passed
+[HDR] before switch status_rc=00000000 range=1 refresh=0 flags=0000000000000000
+[HDR] driver change=00000000 unregister=7fffffff register=7fffffff restore=7fffffff
+[HDR] attribute HDR10 render=3840x2160 format=8100070400000000 rc=00000000 handle=0000002a set=0 candidate=0
+[HDR] failed stage=buffer registration rc=ffffffff
+HDR output: closing an unrelated or refused handle preserves ownership passed
+HDR output transitions: 10 tests, 0 failures
+HDR fallback: strict/SDR modes, failed restoration, retained picture, session reset and unchanged preferences passed
+Scanout driver: in-place HDR/SDR, refusal preserves registration, busy queue passed
+Video lifetime: timeout/failure retain texture fence, completion releases, repeats and fallback passed
+[ac3 @ 0x561ba6f7a1c0] Estimating duration from bitrate, this may be inaccurate
+[eac3 @ 0x561ba6f7d8c0] Estimating duration from bitrate, this may be inaccurate
+Bitstream audio: framing, capabilities, lossless fallback, pacing, seek epoch and port recovery passed
+Scanout driver: in-place HDR/SDR, refusal preserves registration, busy queue passed
+Audio PCM: stereo identity, mono, isolated dialogue/surround/bass, headroom, clock and level diagnostics passed
+Upstream adaptations: Night Mode, linked channels/limiter, preference defaults and persistence, chapter skip protection, stable suppression and confident subtitle alignment passed
+Production subtitle sync: bounded worker, selected-file identity, generation/profile/cancellation guards, settings and unsupported-source fallback passed
+[nuvio] curl libcurl/8.14.1 OpenSSL/3.5.7 zlib/1.3.1 brotli/1.1.0 zstd/1.5.7 libidn2/2.3.8 libpsl/0.21.2 libssh2/1.11.1 nghttp2/1.64.0 nghttp3/1.8.0 librtmp/2.3 OpenLDAP/2.6.10, CA bundle  (MISSING)
+[nuvio] player: playback engine Nuvio native
+[nuvio] player: opening stream
+[nuvio] net: opened stream (293 bytes)
+[nuvio] player: identified HLS from playlist contents
+[nuvio] net: opened stream (94000 bytes)
+[nuvio] player: colours BT.601 (transfer 2, matrix 2, primaries 2)
+[nuvio] player: software video decoding (host software test)
+[nuvio] player: HLS selected video=0 audio=1 programs=1; unused audio playlists disabled
+[nuvio] audio: output stereo PCM 16-bit
+[nuvio] audio: PCM clock accounts for two output grains (10.67 ms estimate)
+[nuvio] player: hls, 12s, video #0 h264, audio #1 aac
+[nuvio] player: about 0 Mbit/s, buffering 2 s before playing
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] net: opened stream (103588 bytes)
+[nuvio] net: opened stream (97760 bytes)
+[nuvio] net: opened stream (107724 bytes)
+[nuvio] net: opened stream (95504 bytes)
+[nuvio] net: opened stream (100204 bytes)
+[nuvio] net: opened stream (97760 bytes)
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] net: opened stream (107724 bytes)
+[nuvio] net: opened stream (95504 bytes)
+[nuvio] net: opened stream (100204 bytes)
+[nuvio] player: seek inline target=6.000 landed=6.021 first_picture_ms=9.3 paused=1
+[nuvio] net: opened stream (103588 bytes)
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] net: opened stream (97760 bytes)
+[nuvio] net: opened stream (107724 bytes)
+[nuvio] player: seek inline target=4.000 landed=4.021 first_picture_ms=20.4 paused=1
+[nuvio] net: opened stream (95504 bytes)
+[nuvio] net: opened stream (100204 bytes)
+[nuvio] player: seek playing target=4.000 first_picture_ms=20.4 playing_ms=23.6
+[nuvio] net: opened stream (94000 bytes)
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] net: opened stream (103588 bytes)
+[nuvio] player: seek inline target=0.000 landed=0.021 first_picture_ms=15.5 paused=0
+[nuvio] net: opened stream (97760 bytes)
+[nuvio] net: opened stream (107724 bytes)
+[nuvio] player: seek playing target=0.000 first_picture_ms=15.5 playing_ms=18.6
+[nuvio] net: opened stream (95504 bytes)
+[nuvio] net: request failed
+[nuvio] net: opened stream (95504 bytes)
+[nuvio] net: opened stream (100204 bytes)
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] player: seek inline target=10.000 landed=10.021 first_picture_ms=6.2 paused=0
+[nuvio] player: seek playing target=10.000 first_picture_ms=6.2 playing_ms=9.3
+[nuvio] net: opened stream (94000 bytes)
+[nuvio] net: opened stream (103588 bytes)
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] net: opened stream (97760 bytes)
+[nuvio] net: opened stream (107724 bytes)
+[nuvio] player: seek inline target=2.000 landed=2.021 first_picture_ms=18.9 paused=0
+[nuvio] net: opened stream (95504 bytes)
+[nuvio] net: opened stream (100204 bytes)
+[nuvio] player: seek playing target=2.000 first_picture_ms=18.9 playing_ms=22.0
+Network playback: fixture.m3u8 segment playback, paused/rapid/backward seeks and tracks passed
+[nuvio] player: playback engine Nuvio native
+[nuvio] player: opening stream
+[nuvio] net: opened stream (658646 bytes)
+[nuvio] net: jump to 48 of 658646 (new request)
+[nuvio] player: colours BT.601 (transfer 2, matrix 2, primaries 2)
+[nuvio] player: software video decoding (host software test)
+[nuvio] audio: output stereo PCM 16-bit
+[nuvio] audio: PCM clock accounts for two output grains (10.67 ms estimate)
+[nuvio] player: mov,mp4,m4a,3gp,3g2,mj2, 12s, video #0 h264, audio #1 aac
+[nuvio] player: about 0 Mbit/s, buffering 2 s before playing
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] audio: output stereo PCM 16-bit
+[nuvio] audio: PCM clock accounts for two output grains (10.67 ms estimate)
+[nuvio] player: audio switch to #2 at 2.203 s (paused 1)
+[nuvio] net: jump to 55656 of 658646 (new request)
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] audio: output stereo PCM 16-bit
+[nuvio] audio: PCM clock accounts for two output grains (10.67 ms estimate)
+[nuvio] player: audio switch to #1 at 2.353 s (paused 0)
+[nuvio] net: jump to 55656 of 658646 (new request)
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] audio: output stereo PCM 16-bit
+[nuvio] audio: PCM clock accounts for two output grains (10.67 ms estimate)
+[nuvio] player: audio switch to #2 at 5.000 s (paused 1)
+[nuvio] net: jump to 55656 of 658646 (new request)
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] player: seek inline target=5.000 landed=5.000 first_picture_ms=15.6 paused=1
+Audio switch: fixture.mp4 preserves paused/playing position and explicit seek
+[nuvio] net: jump to 55656 of 658646 (new request)
+[nuvio] player: seek inline target=6.000 landed=6.000 first_picture_ms=9.2 paused=1
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] net: jump to 55656 of 658646 (new request)
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] player: seek inline target=4.000 landed=4.000 first_picture_ms=12.3 paused=1
+[nuvio] player: seek playing target=4.000 first_picture_ms=12.3 playing_ms=15.4
+[nuvio] net: jump to 540 of 658646 (new request)
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] player: seek inline target=0.000 landed=0.000 first_picture_ms=9.6 paused=0
+[nuvio] player: seek playing target=0.000 first_picture_ms=9.6 playing_ms=12.7
+[nuvio] net: jump to 55656 of 658646 (new request)
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] player: seek inline target=10.000 landed=10.000 first_picture_ms=12.4 paused=0
+[nuvio] player: seek playing target=10.000 first_picture_ms=12.4 playing_ms=15.6
+[nuvio] net: jump to 55656 of 658646 (new request)
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] player: seek inline target=2.000 landed=2.000 first_picture_ms=15.8 paused=0
+[nuvio] player: seek playing target=2.000 first_picture_ms=15.8 playing_ms=19.0
+Network playback: fixture.mp4 segment playback, paused/rapid/backward seeks and tracks passed
+[nuvio] player: playback engine Nuvio native
+[nuvio] player: opening stream
+[nuvio] net: opened stream (656392 bytes)
+[nuvio] player: head-only container startup; explicit seek can load deferred indexes
+[nuvio] player: colours BT.601 (transfer 2, matrix 2, primaries 2)
+[nuvio] player: software video decoding (host software test)
+[nuvio] audio: output stereo PCM 16-bit
+[nuvio] audio: PCM clock accounts for two output grains (10.67 ms estimate)
+[nuvio] player: matroska,webm, 12s, video #0 h264, audio #1 aac
+[nuvio] player: about 0 Mbit/s, buffering 2 s before playing
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] audio: output stereo PCM 16-bit
+[nuvio] audio: PCM clock accounts for two output grains (10.67 ms estimate)
+[nuvio] player: audio switch to #2 at 2.203 s (paused 1)
+[nuvio] net: jump to 105360 of 656392 (new request)
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] audio: output stereo PCM 16-bit
+[nuvio] audio: PCM clock accounts for two output grains (10.67 ms estimate)
+[nuvio] player: audio switch to #1 at 2.357 s (paused 0)
+[nuvio] net: jump to 105360 of 656392 (new request)
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] audio: output stereo PCM 16-bit
+[nuvio] audio: PCM clock accounts for two output grains (10.67 ms estimate)
+[nuvio] player: audio switch to #2 at 5.000 s (paused 1)
+[nuvio] net: jump to 218695 of 656392 (new request)
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] player: seek inline target=5.000 landed=5.021 first_picture_ms=21.8 paused=1
+Audio switch: fixture.mkv preserves paused/playing position and explicit seek
+[nuvio] net: jump to 218695 of 656392 (new request)
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] player: seek inline target=6.000 landed=6.021 first_picture_ms=12.4 paused=1
+[nuvio] net: jump to 105360 of 656392 (new request)
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] player: seek inline target=4.000 landed=4.021 first_picture_ms=12.4 paused=1
+[nuvio] player: seek playing target=4.000 first_picture_ms=12.4 playing_ms=15.5
+[nuvio] net: jump to 1419 of 656392 (new request)
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] player: seek inline target=0.000 landed=0.021 first_picture_ms=14.6 paused=0
+[nuvio] player: seek playing target=0.000 first_picture_ms=14.6 playing_ms=17.8
+[nuvio] net: jump to 442110 of 656392 (new request)
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] player: seek inline target=10.000 landed=10.021 first_picture_ms=15.5 paused=0
+[nuvio] player: seek playing target=10.000 first_picture_ms=15.5 playing_ms=18.7
+[nuvio] net: jump to 1419 of 656392 (new request)
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] player: seek inline target=2.000 landed=2.021 first_picture_ms=16.5 paused=0
+[nuvio] player: seek playing target=2.000 first_picture_ms=16.5 playing_ms=19.6
+Network playback: fixture.mkv segment playback, paused/rapid/backward seeks and tracks passed
+[nuvio] player: playback engine Nuvio native
+[nuvio] player: opening stream
+[nuvio] net: opened stream (293 bytes)
+[nuvio] player: identified HLS from playlist contents
+[nuvio] net: opened stream (94000 bytes)
+[nuvio] player: colours BT.601 (transfer 2, matrix 2, primaries 2)
+[nuvio] player: software video decoding (host software test)
+[nuvio] player: HLS selected video=0 audio=1 programs=1; unused audio playlists disabled
+[nuvio] audio: output stereo PCM 16-bit
+[nuvio] audio: PCM clock accounts for two output grains (10.67 ms estimate)
+[nuvio] player: hls, 12s, video #0 h264, audio #1 aac
+[nuvio] player: about 0 Mbit/s, buffering 2 s before playing
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] net: opened stream (103588 bytes)
+[nuvio] net: opened stream (97760 bytes)
+[nuvio] net: opened stream (107724 bytes)
+[nuvio] net: opened stream (95504 bytes)
+[nuvio] net: opened stream (100204 bytes)
+Content-probed HLS: extensionless octet-stream playlist produces video/audio
+[nuvio] player: playback engine Nuvio native
+[nuvio] player: opening stream
+[nuvio] net: opened stream (253 bytes)
+[nuvio] player: identified HLS from playlist contents
+[nuvio] net: opened stream (107724 bytes)
+[nuvio] player: colours BT.601 (transfer 2, matrix 2, primaries 2)
+[nuvio] player: software video decoding (host software test)
+[nuvio] player: HLS selected video=0 audio=1 programs=1; unused audio playlists disabled
+[nuvio] audio: output stereo PCM 16-bit
+[nuvio] audio: PCM clock accounts for two output grains (10.67 ms estimate)
+[nuvio] player: hls, 0s, video #0 h264, audio #1 aac
+[nuvio] player: about 0 Mbit/s, buffering 2 s before playing
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] net: opened stream (95504 bytes)
+[nuvio] net: opened stream (100204 bytes)
+[nuvio] net: opened stream (253 bytes)
+Live HLS: custom-AVIO segment playback and clean close passed
+[nuvio] player: playback engine Nuvio native
+[nuvio] player: opening stream
+[nuvio] net: opened stream (656392 bytes)
+[nuvio] player: head-only container startup; explicit seek can load deferred indexes
+[nuvio] player: colours BT.601 (transfer 2, matrix 2, primaries 2)
+[nuvio] player: software video decoding (host software test)
+[nuvio] audio: output stereo PCM 16-bit
+[nuvio] audio: PCM clock accounts for two output grains (10.67 ms estimate)
+[nuvio] player: matroska,webm, 12s, video #0 h264, audio #2 aac
+[nuvio] player: about 0 Mbit/s, buffering 2 s before playing
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] player: seek to 6.0 failed: Function not implemented
+[nuvio] player: seek reopen target=6.000 (index unavailable in place)
+[nuvio] player: playback engine Nuvio native
+[nuvio] player: opening stream
+[nuvio] net: opened stream (656392 bytes)
+[nuvio] player: colours BT.601 (transfer 2, matrix 2, primaries 2)
+[nuvio] player: software video decoding (host software test)
+[nuvio] audio: output stereo PCM 16-bit
+[nuvio] audio: PCM clock accounts for two output grains (10.67 ms estimate)
+[nuvio] player: matroska,webm, 12s, video #0 h264, audio #2 aac
+[nuvio] player: about 0 Mbit/s, buffering 2 s before playing
+[nuvio] net: jump to 21122 of 656392 (new request)
+[nuvio] net: jump to 218695 of 656392 (new request)
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] net: jump to 105360 of 656392 (new request)
+[nuvio] player: seek inline target=4.000 landed=4.021 first_picture_ms=12.5 paused=1
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+Matroska seek: refused inline seek safely reopens with pause/audio preserved
+[nuvio] player: playback engine Nuvio native
+[nuvio] player: opening stream
+[nuvio] net: opened stream (293 bytes)
+[nuvio] player: identified HLS from playlist contents
+[nuvio] net: opened stream (94000 bytes)
+[nuvio] player: colours BT.601 (transfer 2, matrix 2, primaries 2)
+[nuvio] player: software video decoding (host software test)
+[nuvio] player: HLS selected video=0 audio=1 programs=1; unused audio playlists disabled
+[nuvio] audio: output stereo PCM 16-bit
+[nuvio] audio: PCM clock accounts for two output grains (10.67 ms estimate)
+[nuvio] player: hls, 12s, video #0 h264, audio #1 aac
+[nuvio] player: about 0 Mbit/s, buffering 2 s before playing
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] net: opened stream (103588 bytes)
+[nuvio] net: opened stream (97760 bytes)
+[nuvio] net: opened stream (107724 bytes)
+[nuvio] net: opened stream (95504 bytes)
+[nuvio] net: opened stream (100204 bytes)
+Redirected HLS: extensionless entry, relative segments and request headers passed
+[nuvio] player: playback engine Nuvio native
+[nuvio] player: opening stream
+[nuvio] net: opened stream (62 bytes)
+[nuvio] player: The source returned a web page instead of video. Refresh the source or choose another stream.
+Non-media HTML: actionable error instead of demux failure passed
+[nuvio] net: opened stream (2000000 bytes)
+[nuvio] net: reconnecting at 1999968
+Network seeking: blocked read interruption and reusable downloader passed
+
+[hls @ 0x7ff668001140] Skip ('#EXT-X-VERSION:3')
+[hls @ 0x7ff668001140] The m3u8 list sequence may have been wrapped.
+[hls @ 0x7ff668001140] The m3u8 list sequence may have been wrapped.
+[hls @ 0x7ff668001140] The m3u8 list sequence may have been wrapped.
+[hls @ 0x7ff668001140] The m3u8 list sequence may have been wrapped.
+[hls @ 0x7ff668001140] The m3u8 list sequence may have been wrapped.
+[hls @ 0x7ff668001140] The m3u8 list sequence may have been wrapped.
+[hls @ 0x7ff668001140] The m3u8 list sequence may have been wrapped.
+[hls @ 0x7ff668001140] The m3u8 list sequence may have been wrapped.
+[hls @ 0x7ff668001140] The m3u8 list sequence may have been wrapped.
+[hls @ 0x7ff668001140] The m3u8 list sequence may have been wrapped.
+[hls @ 0x7ff668001140] The m3u8 list sequence may have been wrapped.
+[hls @ 0x7ff668001140] The m3u8 list sequence may have been wrapped.
+[hls @ 0x7ff668001140] The m3u8 list sequence may have been wrapped.
+[hls @ 0x7ff668001140] The m3u8 list sequence may have been wrapped.
+[hls @ 0x7ff668001140] The m3u8 list sequence may have been wrapped.
+[hls @ 0x7ff668001140] The m3u8 list sequence may have been wrapped.
+[hls @ 0x7ff668001140] The m3u8 list sequence may have been wrapped.
+[hls @ 0x7ff668001140] The m3u8 list sequence may have been wrapped.
+[hls @ 0x7ff668001140] The m3u8 list sequence may have been wrapped.
+[hls @ 0x7ff668001140] The m3u8 list sequence may have been wrapped.
+[hls @ 0x7ff668001140] The m3u8 list sequence may have been wrapped.
+[hls @ 0x7ff668001140] The m3u8 list sequence may have been wrapped.
+[hls @ 0x7ff668001140] The m3u8 list sequence may have been wrapped.
+[hls @ 0x7ff668221540] Skip ('#EXT-X-VERSION:3')
+[hls @ 0x7ff6680a02c0] Skip ('#EXT-X-VERSION:3')
+[hls @ 0x7ff6680a02c0] Skip ('#EXT-X-VERSION:3')
+[hls @ 0x7ff668001c80] Skip ('#EXT-X-VERSION:3')
+
+HLS crossed multiple custom-AVIO segments; MP4/Matroska seek stayed in the open session.
+[nuvio] curl libcurl/8.14.1 OpenSSL/3.5.7 zlib/1.3.1 brotli/1.1.0 zstd/1.5.7 libidn2/2.3.8 libpsl/0.21.2 libssh2/1.11.1 nghttp2/1.64.0 nghttp3/1.8.0 librtmp/2.3 OpenLDAP/2.6.10, CA bundle  (MISSING)
+[nuvio] player: playback engine Nuvio native
+[nuvio] player: opening stream
+[nuvio] net: opened stream (468 bytes)
+[nuvio] player: identified HLS from playlist contents
+[nuvio] net: opened stream (344 bytes)
+[nuvio] net: opened stream (351 bytes)
+[nuvio] net: opened stream (311 bytes)
+[nuvio] net: opened stream (317 bytes)
+[nuvio] net: opened stream (19928 bytes)
+[nuvio] net: opened stream (19928 bytes)
+[nuvio] net: opened stream (70312 bytes)
+[nuvio] net: opened stream (159612 bytes)
+[nuvio] player: colours BT.601 (transfer 2, matrix 2, primaries 2)
+[nuvio] player: software video decoding (host software test)
+[nuvio] player: HLS selected video=2 audio=0 programs=2; unused audio playlists disabled
+[nuvio] audio: output stereo PCM 16-bit
+[nuvio] audio: PCM clock accounts for two output grains (10.67 ms estimate)
+[nuvio] player: hls, 12s, video #2 h264, audio #0 aac
+[nuvio] player: about 0 Mbit/s, buffering 2 s before playing
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] net: opened stream (80276 bytes)
+[nuvio] net: opened stream (19552 bytes)
+[nuvio] net: opened stream (78396 bytes)
+[nuvio] net: opened stream (19552 bytes)
+[nuvio] net: opened stream (81028 bytes)
+[nuvio] net: opened stream (19364 bytes)
+[nuvio] net: opened stream (72004 bytes)
+[nuvio] net: opened stream (19552 bytes)
+[nuvio] net: opened stream (74072 bytes)
+[nuvio] net: opened stream (19552 bytes)
+[nuvio] net: opened stream (940 bytes)
+HLS variants: compatible initial audio, first picture, track filtering and stale switch rejection passed
+
+[hls @ 0x7f228c001140] Skip ('#EXT-X-VERSION:3')
+[hls @ 0x7f228c001140] Skip ('#EXT-X-VERSION:3')
+[hls @ 0x7f228c001140] Skip ('#EXT-X-VERSION:3')
+[hls @ 0x7f228c001140] Skip ('#EXT-X-VERSION:3')
+[hls @ 0x7f228c001140] No longer receiving playlist 3 ('[media URL]')
+[hls @ 0x7f228c001140] No longer receiving playlist 1 ('[media URL]')
+
+External-rendition HLS playback passed with real FFmpeg and production HTTP input
+[nuvio] curl libcurl/8.14.1 OpenSSL/3.5.7 zlib/1.3.1 brotli/1.1.0 zstd/1.5.7 libidn2/2.3.8 libpsl/0.21.2 libssh2/1.11.1 nghttp2/1.64.0 nghttp3/1.8.0 librtmp/2.3 OpenLDAP/2.6.10, CA bundle  (MISSING)
+[nuvio] player: playback engine Nuvio native
+[nuvio] player: opening stream
+[nuvio] net: opened stream (468 bytes)
+[nuvio] player: identified HLS from playlist contents
+[nuvio] net: opened stream (484 bytes)
+[nuvio] net: opened stream (491 bytes)
+[nuvio] net: opened stream (431 bytes)
+[nuvio] net: opened stream (437 bytes)
+[nuvio] net: opened stream (19928 bytes)
+[nuvio] net: opened stream (19928 bytes)
+[nuvio] net: opened stream (70312 bytes)
+[nuvio] net: opened stream (159612 bytes)
+[nuvio] player: colours BT.601 (transfer 2, matrix 2, primaries 2)
+[nuvio] player: software video decoding (host software test)
+[nuvio] player: HLS selected video=2 audio=0 programs=2; unused audio playlists disabled
+[nuvio] audio: output stereo PCM 16-bit
+[nuvio] audio: PCM clock accounts for two output grains (10.67 ms estimate)
+[nuvio] player: hls, 12s, video #2 h264, audio #0 aac
+[nuvio] player: about 0 Mbit/s, buffering 2 s before playing
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] net: opened stream (80276 bytes)
+[nuvio] net: opened stream (19552 bytes)
+[nuvio] player: the stream fell behind (stop 1); buffering 2 s before going on
+[nuvio] net: opened stream (78396 bytes)
+[nuvio] net: opened stream (19552 bytes)
+[nuvio] net: opened stream (81028 bytes)
+[nuvio] net: opened stream (19364 bytes)
+[nuvio] player: buffered 2.0 s, playing again
+[nuvio] audio: PCM levels peak=-19.1 dBFS rms=-24.1 dBFS queued=346.7 ms
+HLS variants: compatible initial audio, first picture, track filtering and stale switch rejection passed
+
+[hls @ 0x7facc4001580] Skip ('#EXT-X-VERSION:3')
+[hls @ 0x7facc4001580] Skip ('#EXT-X-VERSION:3')
+[hls @ 0x7facc4001580] Skip ('#EXT-X-VERSION:3')
+[hls @ 0x7facc4001580] Skip ('#EXT-X-VERSION:3')
+[hls @ 0x7facc4001580] No longer receiving playlist 3 ('[media URL]')
+[hls @ 0x7facc4001580] No longer receiving playlist 1 ('[media URL]')
+
+Live HTTP-only extensionless HLS segments, stall recovery, audio/video playback and local-file/write rejection passed
+[nuvio] curl libcurl/8.14.1 OpenSSL/3.5.7 zlib/1.3.1 brotli/1.1.0 zstd/1.5.7 libidn2/2.3.8 libpsl/0.21.2 libssh2/1.11.1 nghttp2/1.64.0 nghttp3/1.8.0 librtmp/2.3 OpenLDAP/2.6.10, CA bundle  (MISSING)
+[nuvio] player: playback engine Nuvio native
+[nuvio] player: opening stream
+[nuvio] net: opened stream (588 bytes)
+[nuvio] player: identified HLS from playlist contents
+[nuvio] net: opened stream (694 bytes)
+[nuvio] net: opened stream (701 bytes)
+[nuvio] net: opened stream (611 bytes)
+[nuvio] net: opened stream (617 bytes)
+[nuvio] net: opened stream (19928 bytes)
+[nuvio] net: opened stream (19928 bytes)
+[nuvio] net: opened stream (70312 bytes)
+[nuvio] net: opened stream (159612 bytes)
+[nuvio] player: colours BT.601 (transfer 2, matrix 2, primaries 2)
+[nuvio] player: software video decoding (host software test)
+[nuvio] player: HLS selected video=2 audio=0 programs=2; unused audio playlists disabled
+[nuvio] audio: output stereo PCM 16-bit
+[nuvio] audio: PCM clock accounts for two output grains (10.67 ms estimate)
+[nuvio] player: hls, 12s, video #2 h264, audio #0 aac
+[nuvio] player: about 0 Mbit/s, buffering 2 s before playing
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] net: opened stream (80276 bytes)
+[nuvio] net: opened stream (19552 bytes)
+[nuvio] net: request failed
+HLS variants: compatible initial audio, first picture, track filtering and stale switch rejection passed
+
+[hls @ 0x7f39a8001580] Skip ('#EXT-X-VERSION:3')
+[hls @ 0x7f39a8001580] Skip ('#EXT-X-VERSION:3')
+[hls @ 0x7f39a8001580] Skip ('#EXT-X-VERSION:3')
+[hls @ 0x7f39a8001580] Skip ('#EXT-X-VERSION:3')
+[hls @ 0x7f39a8001580] No longer receiving playlist 3 ('[media URL]')
+[hls @ 0x7f39a8001580] No longer receiving playlist 1 ('[media URL]')
+
+Authenticated media-server HLS: opaque playlists, extensionless audio/video segments and first-picture playback passed
+[HUI] program native video YUV built in 12 ms
+[HUI] program native video YUV built in 3 ms
+[HUI] program native video YUV built in 3 ms
+[HUI] program native video YUV built in 3 ms
+[HUI] program native video YUV built in 3 ms
+[HUI] program native video YUV built in 3 ms
+[HUI] program native video YUV built in 3 ms
+[HUI] program native video YUV built in 3 ms
+[HUI] program native video YUV built in 3 ms
+[HUI] program native video YUV built in 3 ms
+[HUI] program native video YUV built in 3 ms
+[HUI] program native video YUV built in 3 ms
+[HUI] program batch2d built in 9 ms
+[HUI] program mesh2d built in 0 ms
+[HUI] program backdrop built in 28 ms
+[HUI] program blur built in 1 ms
+[HUI] program native video YUV built in 3 ms
+[HUI] program native video YUV built in 3 ms
+[HUI] program batch2d built in 8 ms
+[HUI] program mesh2d built in 0 ms
+[HUI] program backdrop built in 26 ms
+[HUI] program blur built in 1 ms
+[HUI] program HDR10 final composition built in 2 ms
+[HUI] program batch2d built in 9 ms
+[HUI] program mesh2d built in 0 ms
+[HUI] program backdrop built in 30 ms
+[HUI] program blur built in 1 ms
+[HUI] program HDR10 final composition built in 2 ms
+[HUI] program batch2d built in 9 ms
+[HUI] program mesh2d built in 0 ms
+[HUI] program backdrop built in 28 ms
+[HUI] program blur built in 1 ms
+[HUI] program HDR10 final composition built in 4 ms
+[HUI] program batch2d built in 14 ms
+[HUI] program mesh2d built in 1 ms
+[HUI] program backdrop built in 36 ms
+[HUI] program blur built in 1 ms
+[HUI] program HDR10 final composition built in 3 ms
+[HUI] program native video YUV built in 3 ms
+[HUI] program batch2d built in 10 ms
+[HUI] program mesh2d built in 0 ms
+[HUI] program backdrop built in 29 ms
+[HUI] program blur built in 1 ms
+[HUI] program HDR10 final composition built in 2 ms
+[HUI] program batch2d built in 9 ms
+[HUI] program mesh2d built in 0 ms
+[HUI] program backdrop built in 29 ms
+[HUI] program blur built in 1 ms
+[HUI] program HDR10 final composition built in 2 ms
+[HUI] program batch2d built in 10 ms
+[HUI] program mesh2d built in 0 ms
+[HUI] program backdrop built in 27 ms
+[HUI] program blur built in 1 ms
+[HUI] program HDR10 final composition built in 2 ms
+[HUI] program native video YUV built in 3 ms
+[HUI] program native video YUV built in 3 ms
+[HUI] program native video YUV built in 3 ms
+[HUI] program native video YUV built in 3 ms
+video: 10-bit alignment including a black high-bit intro passed
+video: 3840x1606 cropped low-bit picture survives decoder reuse passed
+video: odd planar frames with negative and unequal strides passed
+video: invalid dimensions, planes and strides are rejected passed
+video: SDR BT.601 and BT.709 in 8-bit and both 10-bit layouts passed
+video: 10-bit grayscale precision survives GPU conversion passed
+video: frame submission pacing respects accepted refresh and recovers from hitches passed
+video: full-range black and white passed
+video: GPU upload restores display, texture and pixel-store state passed
+video: format and size changes including RGBA software fallback passed
+video: 4K one-pixel detail survives the actual UI renderer passed
+video: display fit preserves cinema crops and sample aspect ratio passed
+video: odd-sized low-bit HDR retains tone mapping and last row passed
+video: real H.264 High with B-frames decodes and renders all pictures passed
+video: HDR primaries match both VideoOut channel layouts passed
+video: HDR accepted BGR format reverses packed red/blue bits only passed
+video: HDR10 bypass retains 877 PQ levels and rejects incompatible pictures passed
+video: final BGRA transport retains 1024 RGB codes with correct channel order passed
+video: HDR UI uses 100-nit white and blends shadows in linear light passed
+video: cropped 4K HDR keeps one-pixel stripes, orientation and black bars passed
+video: HDR-to-SDR keeps greys neutral, opens shadows and rolls highlights passed
+video: HDR-to-SDR preserves in-gamut warm colour balance passed
+video: HDR-to-SDR fits wide-gamut primaries at their mapped luminance passed
+video: HDR peak metadata is bounded, propagated and affects highlight rolloff passed
+Video packing and GPU presentation: 24 tests, 0 failures
+update: numeric versions and downgrade refusal
+update: malformed version refusal
+update: temporary revision ordering and upgrade to next release
+update: canonical temporary revision parsing
+update: 1.0 upgrade ordering
+update: stable release tag and version-matched assets
+update: 1.0 legacy upgrade tag retained
+update: native stable tag accepted
+update: tag and declared version must match
+update: unknown tag suffix refused
+update: stable binary requires matching source
+update: stable draft is not advertised
+update: new native image with matching source
+update: malformed release cannot hide a valid later release
+update: no binary advertised without matching source
+update: wrong repository or plaintext URL refusal
+update: missing digest refusal
+update: oversized image refusal
+update: managed homebrew paths only
+update: resolve exact title's physical image
+update: wrong title refusal
+update: persistent backing mount refusal
+update: fully released image accepted
+update: disconnected storage is not an unmount
+update: successful runtime unmount still waits for backing image
+update: busy title cannot authorize replacement even with released snapshot
+update: later independent snapshot completes release wait
+update: terminal unmount error is not retried
+update: transient API outage is retried without replacing
+update: malformed status cannot authorize replacement
+update: missing image is not proof of release
+update: storage disconnection cannot authorize replacement
+update: verified staging leaves original installed
+update: cancellation removes only the owned stage
+update: truncated transfer refusal
+update: corrupt image SHA-256 refusal
+update: busy image retains original
+update: external install changes are preserved
+update: symlink image refusal
+update: symlink parent refusal
+update: stage tampering after verification refusal
+update: remount before commit retains original
+update: rename failure retains installed image and verified backup
+update: storage sync failure refuses replacement
+update: existing backup is never overwritten
+update: atomic install retains backup and saved data
+FFPFSC updater: 46 tests, 0 failures

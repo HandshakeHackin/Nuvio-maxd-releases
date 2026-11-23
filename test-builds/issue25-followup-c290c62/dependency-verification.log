@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "/workspace/nuvio-issue25-followup/source/native-app/tools/validate_maintenance_libraries.py", line 22, in <module>
+    assert hashlib.sha256((sdk/name).read_bytes()).hexdigest()==digest, (
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Maintenance dependency differs: target/user/homebrew/bin/curl. Build the pinned overlay with tools/build_maintenance_libraries.sh BASE_SDK WORK_DIRECTORY
+Traceback (most recent call last):
+  File "/workspace/nuvio-issue25-followup/source/native-app/tools/validate_build_dependencies.py", line 24, in <module>
+    subprocess.run([sys.executable,str(root/'tools/validate_maintenance_libraries.py'),str(sdk)],check=True)
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3', '/workspace/nuvio-issue25-followup/source/native-app/tools/validate_maintenance_libraries.py', '/workspace/nuvio-deps24/sdk']' returned non-zero exit status 1.

@@ -1,0 +1,98 @@
+[
+  {
+    "name": "NuvioMaxd-1.0.1.1-issue25-test.ffpfsc",
+    "path": "test-builds/issue25-followup-c290c62/NuvioMaxd-1.0.1.1-issue25-test.ffpfsc",
+    "sha": "647f5436935f05e0eb3e1d400903cfa23a3adeba",
+    "size": 49938432,
+    "url": "https://api.github.com/repos/HandshakeHackin/Nuvio-maxd-releases/contents/test-builds/issue25-followup-c290c62/NuvioMaxd-1.0.1.1-issue25-test.ffpfsc?ref=cf8ad20dc839ac8c14923f289c57f0a95ff3b1ed",
+    "html_url": "https://github.com/HandshakeHackin/Nuvio-maxd-releases/blob/cf8ad20dc839ac8c14923f289c57f0a95ff3b1ed/test-builds/issue25-followup-c290c62/NuvioMaxd-1.0.1.1-issue25-test.ffpfsc",
+    "git_url": "https://api.github.com/repos/HandshakeHackin/Nuvio-maxd-releases/git/blobs/647f5436935f05e0eb3e1d400903cfa23a3adeba",
+    "download_url": "https://raw.githubusercontent.com/HandshakeHackin/Nuvio-maxd-releases/cf8ad20dc839ac8c14923f289c57f0a95ff3b1ed/test-builds/issue25-followup-c290c62/NuvioMaxd-1.0.1.1-issue25-test.ffpfsc",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/HandshakeHackin/Nuvio-maxd-releases/contents/test-builds/issue25-followup-c290c62/NuvioMaxd-1.0.1.1-issue25-test.ffpfsc?ref=cf8ad20dc839ac8c14923f289c57f0a95ff3b1ed",
+      "git": "https://api.github.com/repos/HandshakeHackin/Nuvio-maxd-releases/git/blobs/647f5436935f05e0eb3e1d400903cfa23a3adeba",
+      "html": "https://github.com/HandshakeHackin/Nuvio-maxd-releases/blob/cf8ad20dc839ac8c14923f289c57f0a95ff3b1ed/test-builds/issue25-followup-c290c62/NuvioMaxd-1.0.1.1-issue25-test.ffpfsc"
+    }
+  },
+  {
+    "name": "NuvioMaxd-1.0.1.1-issue25-test.zip",
+    "path": "test-builds/issue25-followup-c290c62/NuvioMaxd-1.0.1.1-issue25-test.zip",
+    "sha": "4b13c3071deee6fed3e7eb70dbea4b8086f52a18",
+    "size": 47444541,
+    "url": "https://api.github.com/repos/HandshakeHackin/Nuvio-maxd-releases/contents/test-builds/issue25-followup-c290c62/NuvioMaxd-1.0.1.1-issue25-test.zip?ref=cf8ad20dc839ac8c14923f289c57f0a95ff3b1ed",
+    "html_url": "https://github.com/HandshakeHackin/Nuvio-maxd-releases/blob/cf8ad20dc839ac8c14923f289c57f0a95ff3b1ed/test-builds/issue25-followup-c290c62/NuvioMaxd-1.0.1.1-issue25-test.zip",
+    "git_url": "https://api.github.com/repos/HandshakeHackin/Nuvio-maxd-releases/git/blobs/4b13c3071deee6fed3e7eb70dbea4b8086f52a18",
+    "download_url": "https://raw.githubusercontent.com/HandshakeHackin/Nuvio-maxd-releases/cf8ad20dc839ac8c14923f289c57f0a95ff3b1ed/test-builds/issue25-followup-c290c62/NuvioMaxd-1.0.1.1-issue25-test.zip",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/HandshakeHackin/Nuvio-maxd-releases/contents/test-builds/issue25-followup-c290c62/NuvioMaxd-1.0.1.1-issue25-test.zip?ref=cf8ad20dc839ac8c14923f289c57f0a95ff3b1ed",
+      "git": "https://api.github.com/repos/HandshakeHackin/Nuvio-maxd-releases/git/blobs/4b13c3071deee6fed3e7eb70dbea4b8086f52a18",
+      "html": "https://github.com/HandshakeHackin/Nuvio-maxd-releases/blob/cf8ad20dc839ac8c14923f289c57f0a95ff3b1ed/test-builds/issue25-followup-c290c62/NuvioMaxd-1.0.1.1-issue25-test.zip"
+    }
+  },
+  {
+    "name": "NuvioMaxd-1.0.1.1-source.tar.gz",
+    "path": "test-builds/issue25-followup-c290c62/NuvioMaxd-1.0.1.1-source.tar.gz",
+    "sha": "dc369bd1348f07899397f1a1b08b6a0d452e1644",
+    "size": 47736051,
+    "url": "https://api.github.com/repos/HandshakeHackin/Nuvio-maxd-releases/contents/test-builds/issue25-followup-c290c62/NuvioMaxd-1.0.1.1-source.tar.gz?ref=cf8ad20dc839ac8c14923f289c57f0a95ff3b1ed",
+    "html_url": "https://github.com/HandshakeHackin/Nuvio-maxd-releases/blob/cf8ad20dc839ac8c14923f289c57f0a95ff3b1ed/test-builds/issue25-followup-c290c62/NuvioMaxd-1.0.1.1-source.tar.gz",
+    "git_url": "https://api.github.com/repos/HandshakeHackin/Nuvio-maxd-releases/git/blobs/dc369bd1348f07899397f1a1b08b6a0d452e1644",
+    "download_url": "https://raw.githubusercontent.com/HandshakeHackin/Nuvio-maxd-releases/cf8ad20dc839ac8c14923f289c57f0a95ff3b1ed/test-builds/issue25-followup-c290c62/NuvioMaxd-1.0.1.1-source.tar.gz",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/HandshakeHackin/Nuvio-maxd-releases/contents/test-builds/issue25-followup-c290c62/NuvioMaxd-1.0.1.1-source.tar.gz?ref=cf8ad20dc839ac8c14923f289c57f0a95ff3b1ed",
+      "git": "https://api.github.com/repos/HandshakeHackin/Nuvio-maxd-releases/git/blobs/dc369bd1348f07899397f1a1b08b6a0d452e1644",
+      "html": "https://github.com/HandshakeHackin/Nuvio-maxd-releases/blob/cf8ad20dc839ac8c14923f289c57f0a95ff3b1ed/test-builds/issue25-followup-c290c62/NuvioMaxd-1.0.1.1-source.tar.gz"
+    }
+  },
+  {
+    "name": "README.md",
+    "path": "test-builds/issue25-followup-c290c62/README.md",
+    "sha": "a4245290962a6a179f16c89dcd0bcc09bf30353c",
+    "size": 1136,
+    "url": "https://api.github.com/repos/HandshakeHackin/Nuvio-maxd-releases/contents/test-builds/issue25-followup-c290c62/README.md?ref=cf8ad20dc839ac8c14923f289c57f0a95ff3b1ed",
+    "html_url": "https://github.com/HandshakeHackin/Nuvio-maxd-releases/blob/cf8ad20dc839ac8c14923f289c57f0a95ff3b1ed/test-builds/issue25-followup-c290c62/README.md",
+    "git_url": "https://api.github.com/repos/HandshakeHackin/Nuvio-maxd-releases/git/blobs/a4245290962a6a179f16c89dcd0bcc09bf30353c",
+    "download_url": "https://raw.githubusercontent.com/HandshakeHackin/Nuvio-maxd-releases/cf8ad20dc839ac8c14923f289c57f0a95ff3b1ed/test-builds/issue25-followup-c290c62/README.md",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/HandshakeHackin/Nuvio-maxd-releases/contents/test-builds/issue25-followup-c290c62/README.md?ref=cf8ad20dc839ac8c14923f289c57f0a95ff3b1ed",
+      "git": "https://api.github.com/repos/HandshakeHackin/Nuvio-maxd-releases/git/blobs/a4245290962a6a179f16c89dcd0bcc09bf30353c",
+      "html": "https://github.com/HandshakeHackin/Nuvio-maxd-releases/blob/cf8ad20dc839ac8c14923f289c57f0a95ff3b1ed/test-builds/issue25-followup-c290c62/README.md"
+    }
+  },
+  {
+    "name": "SHA256SUMS",
+    "path": "test-builds/issue25-followup-c290c62/SHA256SUMS",
+    "sha": "9bda21a3210c15af106699c8f8783e35e77fbf86",
+    "size": 456,
+    "url": "https://api.github.com/repos/HandshakeHackin/Nuvio-maxd-releases/contents/test-builds/issue25-followup-c290c62/SHA256SUMS?ref=cf8ad20dc839ac8c14923f289c57f0a95ff3b1ed",
+    "html_url": "https://github.com/HandshakeHackin/Nuvio-maxd-releases/blob/cf8ad20dc839ac8c14923f289c57f0a95ff3b1ed/test-builds/issue25-followup-c290c62/SHA256SUMS",
+    "git_url": "https://api.github.com/repos/HandshakeHackin/Nuvio-maxd-releases/git/blobs/9bda21a3210c15af106699c8f8783e35e77fbf86",
+    "download_url": "https://raw.githubusercontent.com/HandshakeHackin/Nuvio-maxd-releases/cf8ad20dc839ac8c14923f289c57f0a95ff3b1ed/test-builds/issue25-followup-c290c62/SHA256SUMS",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/HandshakeHackin/Nuvio-maxd-releases/contents/test-builds/issue25-followup-c290c62/SHA256SUMS?ref=cf8ad20dc839ac8c14923f289c57f0a95ff3b1ed",
+      "git": "https://api.github.com/repos/HandshakeHackin/Nuvio-maxd-releases/git/blobs/9bda21a3210c15af106699c8f8783e35e77fbf86",
+      "html": "https://github.com/HandshakeHackin/Nuvio-maxd-releases/blob/cf8ad20dc839ac8c14923f289c57f0a95ff3b1ed/test-builds/issue25-followup-c290c62/SHA256SUMS"
+    }
+  },
+  {
+    "name": "TESTING.md",
+    "path": "test-builds/issue25-followup-c290c62/TESTING.md",
+    "sha": "2c5bb2dae74ca3b8d08253b5d074af7f5300cbbb",
+    "size": 3621,
+    "url": "https://api.github.com/repos/HandshakeHackin/Nuvio-maxd-releases/contents/test-builds/issue25-followup-c290c62/TESTING.md?ref=cf8ad20dc839ac8c14923f289c57f0a95ff3b1ed",
+    "html_url": "https://github.com/HandshakeHackin/Nuvio-maxd-releases/blob/cf8ad20dc839ac8c14923f289c57f0a95ff3b1ed/test-builds/issue25-followup-c290c62/TESTING.md",
+    "git_url": "https://api.github.com/repos/HandshakeHackin/Nuvio-maxd-releases/git/blobs/2c5bb2dae74ca3b8d08253b5d074af7f5300cbbb",
+    "download_url": "https://raw.githubusercontent.com/HandshakeHackin/Nuvio-maxd-releases/cf8ad20dc839ac8c14923f289c57f0a95ff3b1ed/test-builds/issue25-followup-c290c62/TESTING.md",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/HandshakeHackin/Nuvio-maxd-releases/contents/test-builds/issue25-followup-c290c62/TESTING.md?ref=cf8ad20dc839ac8c14923f289c57f0a95ff3b1ed",
+      "git": "https://api.github.com/repos/HandshakeHackin/Nuvio-maxd-releases/git/blobs/2c5bb2dae74ca3b8d08253b5d074af7f5300cbbb",
+      "html": "https://github.com/HandshakeHackin/Nuvio-maxd-releases/blob/cf8ad20dc839ac8c14923f289c57f0a95ff3b1ed/test-builds/issue25-followup-c290c62/TESTING.md"
+    }
+  }
+]

@@ -1,0 +1,276 @@
+[nuvio] curl libcurl/8.23.0 OpenSSL/3.5.7 zlib/1.3.1, CA bundle  (MISSING)
+[nuvio] player: playback engine Nuvio native
+[nuvio] player: opening stream
+[nuvio] net: opened stream (293 bytes)
+[nuvio] player: identified HLS from playlist contents
+[nuvio] net: opened stream (94000 bytes)
+[nuvio] player: colours BT.601 (transfer 2, matrix 2, primaries 2)
+[nuvio] player: software video decoding (host software test)
+[nuvio] player: HLS selected video=0 audio=1 programs=1; unused audio playlists disabled
+[nuvio] audio: output stereo PCM 16-bit
+[nuvio] audio: PCM clock accounts for two output grains (10.67 ms estimate)
+[nuvio] player: hls, 12s, video #0 h264, audio #1 aac
+[nuvio] player: about 0 Mbit/s, buffering 2 s before playing
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] net: opened stream (103588 bytes)
+[nuvio] net: opened stream (97760 bytes)
+[nuvio] net: opened stream (107724 bytes)
+[nuvio] net: opened stream (95504 bytes)
+[nuvio] net: opened stream (100204 bytes)
+[nuvio] net: opened stream (97760 bytes)
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] net: opened stream (107724 bytes)
+[nuvio] net: opened stream (95504 bytes)
+[nuvio] net: opened stream (100204 bytes)
+[nuvio] player: seek inline target=6.000 landed=6.021 first_picture_ms=9.5 paused=1
+[nuvio] net: opened stream (103588 bytes)
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] net: opened stream (97760 bytes)
+[nuvio] net: opened stream (107724 bytes)
+[nuvio] net: opened stream (95504 bytes)
+[nuvio] player: seek inline target=4.000 landed=4.021 first_picture_ms=19.8 paused=1
+[nuvio] net: opened stream (100204 bytes)
+[nuvio] player: seek playing target=4.000 first_picture_ms=19.8 playing_ms=22.9
+[nuvio] net: opened stream (94000 bytes)
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] net: opened stream (103588 bytes)
+[nuvio] player: seek inline target=0.000 landed=0.021 first_picture_ms=15.6 paused=0
+[nuvio] net: opened stream (97760 bytes)
+[nuvio] net: opened stream (107724 bytes)
+[nuvio] player: seek playing target=0.000 first_picture_ms=15.6 playing_ms=18.7
+[nuvio] net: opened stream (95504 bytes)
+[nuvio] net: request failed
+[nuvio] net: opened stream (95504 bytes)
+[nuvio] net: opened stream (100204 bytes)
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] player: seek inline target=10.000 landed=10.021 first_picture_ms=9.3 paused=0
+[nuvio] player: seek playing target=10.000 first_picture_ms=9.3 playing_ms=12.4
+[nuvio] net: opened stream (94000 bytes)
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] net: opened stream (103588 bytes)
+[nuvio] net: opened stream (97760 bytes)
+[nuvio] net: opened stream (107724 bytes)
+[nuvio] net: opened stream (95504 bytes)
+[nuvio] net: opened stream (100204 bytes)
+[nuvio] player: seek inline target=2.000 landed=2.021 first_picture_ms=28.0 paused=0
+[nuvio] player: seek playing target=2.000 first_picture_ms=28.0 playing_ms=31.2
+Network playback: fixture.m3u8 segment playback, paused/rapid/backward seeks and tracks passed
+[nuvio] player: playback engine Nuvio native
+[nuvio] player: opening stream
+[nuvio] net: opened stream (658646 bytes)
+[nuvio] net: jump to 48 of 658646 (new request)
+[nuvio] player: colours BT.601 (transfer 2, matrix 2, primaries 2)
+[nuvio] player: software video decoding (host software test)
+[nuvio] audio: output stereo PCM 16-bit
+[nuvio] audio: PCM clock accounts for two output grains (10.67 ms estimate)
+[nuvio] player: mov,mp4,m4a,3gp,3g2,mj2, 12s, video #0 h264, audio #1 aac
+[nuvio] player: about 0 Mbit/s, buffering 2 s before playing
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] audio: output stereo PCM 16-bit
+[nuvio] audio: PCM clock accounts for two output grains (10.67 ms estimate)
+[nuvio] player: audio switch to #2 at 2.203 s (paused 1)
+[nuvio] net: jump to 55656 of 658646 (new request)
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] audio: output stereo PCM 16-bit
+[nuvio] audio: PCM clock accounts for two output grains (10.67 ms estimate)
+[nuvio] player: audio switch to #1 at 2.350 s (paused 0)
+[nuvio] net: jump to 55656 of 658646 (new request)
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] audio: output stereo PCM 16-bit
+[nuvio] audio: PCM clock accounts for two output grains (10.67 ms estimate)
+[nuvio] player: audio switch to #2 at 5.000 s (paused 1)
+[nuvio] net: jump to 55656 of 658646 (new request)
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] player: seek inline target=5.000 landed=5.000 first_picture_ms=17.9 paused=1
+Audio switch: fixture.mp4 preserves paused/playing position and explicit seek
+[nuvio] net: jump to 55656 of 658646 (new request)
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] player: seek inline target=6.000 landed=6.000 first_picture_ms=10.3 paused=1
+[nuvio] net: jump to 55656 of 658646 (new request)
+[nuvio] player: seek inline target=4.000 landed=4.000 first_picture_ms=14.4 paused=1
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] player: seek playing target=4.000 first_picture_ms=14.4 playing_ms=17.5
+[nuvio] net: jump to 540 of 658646 (new request)
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] player: seek inline target=0.000 landed=0.000 first_picture_ms=11.5 paused=0
+[nuvio] player: seek playing target=0.000 first_picture_ms=11.5 playing_ms=14.7
+[nuvio] net: jump to 55656 of 658646 (new request)
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] player: seek inline target=10.000 landed=10.000 first_picture_ms=9.2 paused=0
+[nuvio] player: seek playing target=10.000 first_picture_ms=9.2 playing_ms=12.4
+[nuvio] net: jump to 55656 of 658646 (new request)
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] player: seek inline target=2.000 landed=2.000 first_picture_ms=13.7 paused=0
+[nuvio] player: seek playing target=2.000 first_picture_ms=13.7 playing_ms=17.0
+Network playback: fixture.mp4 segment playback, paused/rapid/backward seeks and tracks passed
+[nuvio] player: playback engine Nuvio native
+[nuvio] player: opening stream
+[nuvio] net: opened stream (656392 bytes)
+[nuvio] player: head-only container startup; explicit seek can load deferred indexes
+[nuvio] player: colours BT.601 (transfer 2, matrix 2, primaries 2)
+[nuvio] player: software video decoding (host software test)
+[nuvio] audio: output stereo PCM 16-bit
+[nuvio] audio: PCM clock accounts for two output grains (10.67 ms estimate)
+[nuvio] player: matroska,webm, 12s, video #0 h264, audio #1 aac
+[nuvio] player: about 0 Mbit/s, buffering 2 s before playing
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] audio: output stereo PCM 16-bit
+[nuvio] audio: PCM clock accounts for two output grains (10.67 ms estimate)
+[nuvio] player: audio switch to #2 at 2.203 s (paused 1)
+[nuvio] net: jump to 105360 of 656392 (new request)
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] audio: output stereo PCM 16-bit
+[nuvio] audio: PCM clock accounts for two output grains (10.67 ms estimate)
+[nuvio] player: audio switch to #1 at 2.356 s (paused 0)
+[nuvio] net: jump to 105360 of 656392 (new request)
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] audio: output stereo PCM 16-bit
+[nuvio] audio: PCM clock accounts for two output grains (10.67 ms estimate)
+[nuvio] player: audio switch to #2 at 5.000 s (paused 1)
+[nuvio] net: jump to 218695 of 656392 (new request)
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] player: seek inline target=5.000 landed=5.021 first_picture_ms=67.0 paused=1
+Audio switch: fixture.mkv preserves paused/playing position and explicit seek
+[nuvio] net: jump to 218695 of 656392 (new request)
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] player: seek inline target=6.000 landed=6.021 first_picture_ms=13.3 paused=1
+[nuvio] net: jump to 105360 of 656392 (new request)
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] player: seek inline target=4.000 landed=4.021 first_picture_ms=18.6 paused=1
+[nuvio] player: seek playing target=4.000 first_picture_ms=18.6 playing_ms=21.7
+[nuvio] net: jump to 1419 of 656392 (new request)
+[nuvio] player: seek inline target=0.000 landed=0.021 first_picture_ms=12.3 paused=0
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] player: seek playing target=0.000 first_picture_ms=12.3 playing_ms=15.4
+[nuvio] net: jump to 442110 of 656392 (new request)
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] player: seek inline target=10.000 landed=10.021 first_picture_ms=15.4 paused=0
+[nuvio] player: seek playing target=10.000 first_picture_ms=15.4 playing_ms=18.5
+[nuvio] net: jump to 1419 of 656392 (new request)
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] player: seek inline target=2.000 landed=2.021 first_picture_ms=43.6 paused=0
+[nuvio] player: seek playing target=2.000 first_picture_ms=43.6 playing_ms=46.7
+Network playback: fixture.mkv segment playback, paused/rapid/backward seeks and tracks passed
+[nuvio] player: playback engine Nuvio native
+[nuvio] player: opening stream
+[nuvio] net: opened stream (293 bytes)
+[nuvio] player: identified HLS from playlist contents
+[nuvio] net: opened stream (94000 bytes)
+[nuvio] player: colours BT.601 (transfer 2, matrix 2, primaries 2)
+[nuvio] player: software video decoding (host software test)
+[nuvio] player: HLS selected video=0 audio=1 programs=1; unused audio playlists disabled
+[nuvio] audio: output stereo PCM 16-bit
+[nuvio] audio: PCM clock accounts for two output grains (10.67 ms estimate)
+[nuvio] player: hls, 12s, video #0 h264, audio #1 aac
+[nuvio] player: about 0 Mbit/s, buffering 2 s before playing
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] net: opened stream (103588 bytes)
+[nuvio] net: opened stream (97760 bytes)
+[nuvio] net: opened stream (107724 bytes)
+[nuvio] net: opened stream (95504 bytes)
+[nuvio] net: opened stream (100204 bytes)
+Content-probed HLS: extensionless octet-stream playlist produces video/audio
+[nuvio] player: playback engine Nuvio native
+[nuvio] player: opening stream
+[nuvio] net: opened stream (253 bytes)
+[nuvio] player: identified HLS from playlist contents
+[nuvio] net: opened stream (107724 bytes)
+[nuvio] player: colours BT.601 (transfer 2, matrix 2, primaries 2)
+[nuvio] player: software video decoding (host software test)
+[nuvio] player: HLS selected video=0 audio=1 programs=1; unused audio playlists disabled
+[nuvio] audio: output stereo PCM 16-bit
+[nuvio] audio: PCM clock accounts for two output grains (10.67 ms estimate)
+[nuvio] player: hls, 0s, video #0 h264, audio #1 aac
+[nuvio] player: about 0 Mbit/s, buffering 2 s before playing
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] net: opened stream (95504 bytes)
+[nuvio] net: opened stream (100204 bytes)
+[nuvio] net: opened stream (253 bytes)
+Live HLS: custom-AVIO segment playback and clean close passed
+[nuvio] player: playback engine Nuvio native
+[nuvio] player: opening stream
+[nuvio] net: opened stream (656392 bytes)
+[nuvio] player: head-only container startup; explicit seek can load deferred indexes
+[nuvio] player: colours BT.601 (transfer 2, matrix 2, primaries 2)
+[nuvio] player: software video decoding (host software test)
+[nuvio] audio: output stereo PCM 16-bit
+[nuvio] audio: PCM clock accounts for two output grains (10.67 ms estimate)
+[nuvio] player: matroska,webm, 12s, video #0 h264, audio #2 aac
+[nuvio] player: about 0 Mbit/s, buffering 2 s before playing
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] player: seek to 6.0 failed: Function not implemented
+[nuvio] player: seek reopen target=6.000 (index unavailable in place)
+[nuvio] player: playback engine Nuvio native
+[nuvio] player: opening stream
+[nuvio] net: opened stream (656392 bytes)
+[nuvio] player: colours BT.601 (transfer 2, matrix 2, primaries 2)
+[nuvio] player: software video decoding (host software test)
+[nuvio] audio: output stereo PCM 16-bit
+[nuvio] audio: PCM clock accounts for two output grains (10.67 ms estimate)
+[nuvio] player: matroska,webm, 12s, video #0 h264, audio #2 aac
+[nuvio] player: about 0 Mbit/s, buffering 2 s before playing
+[nuvio] net: jump to 21122 of 656392 (new request)
+[nuvio] net: jump to 218695 of 656392 (new request)
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] net: jump to 105360 of 656392 (new request)
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] player: seek inline target=4.000 landed=4.021 first_picture_ms=34.3 paused=1
+Matroska seek: refused inline seek safely reopens with pause/audio preserved
+[nuvio] player: playback engine Nuvio native
+[nuvio] player: opening stream
+[nuvio] net: opened stream (293 bytes)
+[nuvio] player: identified HLS from playlist contents
+[nuvio] net: opened stream (94000 bytes)
+[nuvio] player: colours BT.601 (transfer 2, matrix 2, primaries 2)
+[nuvio] player: software video decoding (host software test)
+[nuvio] player: HLS selected video=0 audio=1 programs=1; unused audio playlists disabled
+[nuvio] audio: output stereo PCM 16-bit
+[nuvio] audio: PCM clock accounts for two output grains (10.67 ms estimate)
+[nuvio] player: hls, 12s, video #0 h264, audio #1 aac
+[nuvio] player: about 0 Mbit/s, buffering 2 s before playing
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] net: opened stream (103588 bytes)
+[nuvio] net: opened stream (97760 bytes)
+[nuvio] net: opened stream (107724 bytes)
+[nuvio] net: opened stream (95504 bytes)
+[nuvio] net: opened stream (100204 bytes)
+Redirected HLS: extensionless entry, relative segments and request headers passed
+[nuvio] player: playback engine Nuvio native
+[nuvio] player: opening stream
+[nuvio] net: opened stream (62 bytes)
+[nuvio] player: The source returned a web page instead of video. Refresh the source or choose another stream.
+Non-media HTML: actionable error instead of demux failure passed
+[nuvio] net: opened stream (2000000 bytes)
+[nuvio] net: reconnecting at 1999968
+Network seeking: blocked read interruption and reusable downloader passed
+
+[hls @ 0x7fc844001140] Skip ('#EXT-X-VERSION:3')
+[hls @ 0x7fc844001140] The m3u8 list sequence may have been wrapped.
+[hls @ 0x7fc844001140] The m3u8 list sequence may have been wrapped.
+[hls @ 0x7fc844001140] The m3u8 list sequence may have been wrapped.
+[hls @ 0x7fc844001140] The m3u8 list sequence may have been wrapped.
+[hls @ 0x7fc844001140] The m3u8 list sequence may have been wrapped.
+[hls @ 0x7fc844001140] The m3u8 list sequence may have been wrapped.
+[hls @ 0x7fc844001140] The m3u8 list sequence may have been wrapped.
+[hls @ 0x7fc844001140] The m3u8 list sequence may have been wrapped.
+[hls @ 0x7fc844001140] The m3u8 list sequence may have been wrapped.
+[hls @ 0x7fc844001140] The m3u8 list sequence may have been wrapped.
+[hls @ 0x7fc844001140] The m3u8 list sequence may have been wrapped.
+[hls @ 0x7fc844001140] The m3u8 list sequence may have been wrapped.
+[hls @ 0x7fc844001140] The m3u8 list sequence may have been wrapped.
+[hls @ 0x7fc844001140] The m3u8 list sequence may have been wrapped.
+[hls @ 0x7fc844001140] The m3u8 list sequence may have been wrapped.
+[hls @ 0x7fc844001140] The m3u8 list sequence may have been wrapped.
+[hls @ 0x7fc844001140] The m3u8 list sequence may have been wrapped.
+[hls @ 0x7fc844001140] The m3u8 list sequence may have been wrapped.
+[hls @ 0x7fc844001140] The m3u8 list sequence may have been wrapped.
+[hls @ 0x7fc844001140] The m3u8 list sequence may have been wrapped.
+[hls @ 0x7fc844001140] The m3u8 list sequence may have been wrapped.
+[hls @ 0x7fc844001140] The m3u8 list sequence may have been wrapped.
+[hls @ 0x7fc844001140] The m3u8 list sequence may have been wrapped.
+[hls @ 0x7fc844057b00] Skip ('#EXT-X-VERSION:3')
+[hls @ 0x7fc844057b00] Skip ('#EXT-X-VERSION:3')
+[hls @ 0x7fc844057b00] Skip ('#EXT-X-VERSION:3')
+[hls @ 0x7fc844057b00] Skip ('#EXT-X-VERSION:3')
+
+HLS crossed multiple custom-AVIO segments; MP4/Matroska seek stayed in the open session.

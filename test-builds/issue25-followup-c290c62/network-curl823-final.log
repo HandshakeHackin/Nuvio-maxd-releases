@@ -1,0 +1,19 @@
+test_media_server_credentials_and_blocked_redirects (__main__.NetworkTests.test_media_server_credentials_and_blocked_redirects) ... ok
+test_negative_dns_cache_control_detects_runtime_behavior (__main__.NetworkTests.test_negative_dns_cache_control_detects_runtime_behavior) ... ok
+test_parallel_dns_failure_does_not_walk_entire_file (__main__.NetworkTests.test_parallel_dns_failure_does_not_walk_entire_file) ... ok
+test_parallel_reads_and_seeks_outside_window (__main__.NetworkTests.test_parallel_reads_and_seeks_outside_window) ... ok
+test_parallel_stream_and_subtitle_share_warmed_dns (__main__.NetworkTests.test_parallel_stream_and_subtitle_share_warmed_dns) ... ok
+test_parallel_worker_exhaustion_falls_back_to_existing_reader (__main__.NetworkTests.test_parallel_worker_exhaustion_falls_back_to_existing_reader) ... ok
+test_partial_worker_capacity_remains_usable (__main__.NetworkTests.test_partial_worker_capacity_remains_usable) ... ok
+test_reader_thread_exhaustion_returns_an_error (__main__.NetworkTests.test_reader_thread_exhaustion_returns_an_error) ... ok
+test_second_seek_before_reconnect_starts_keeps_byte_position (__main__.NetworkTests.test_second_seek_before_reconnect_starts_keeps_byte_position) ... ok
+test_server_outage_has_shared_cooldown_and_bounded_requests (__main__.NetworkTests.test_server_outage_has_shared_cooldown_and_bounded_requests) ... ok
+test_single_connection_dns_failure_stops_after_three_attempts (__main__.NetworkTests.test_single_connection_dns_failure_stops_after_three_attempts) ... ok
+test_stream_retry_bypasses_cached_negative_dns (__main__.NetworkTests.test_stream_retry_bypasses_cached_negative_dns) ... ok
+test_terminal_http_error_stops_all_workers (__main__.NetworkTests.test_terminal_http_error_stops_all_workers) ... ok
+test_transient_chunk_failures_recover (__main__.NetworkTests.test_transient_chunk_failures_recover) ... ok
+
+----------------------------------------------------------------------
+Ran 14 tests in 19.913s
+
+OK

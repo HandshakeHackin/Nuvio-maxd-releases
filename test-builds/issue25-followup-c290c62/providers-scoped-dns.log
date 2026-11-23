@@ -1,0 +1,10 @@
+Provider bundle and dependency lock match the recorded build pins
+JS exception: Error: Unsupported provider module: fs
+Provider runtime, parsing, crypto, timers, cancellation, isolation and manifest tests passed
+[nuvio] provider: script download failed id=sample status=404
+[nuvio] provider: script download failed id=sample status=0
+[nuvio] provider: script download failed id=sample status=0
+Provider download pipeline: script execution, relative URLs, HTTP errors, timeout, redirect and address protection passed
+Dropdown scrolling: every selection stays visible, first/last choices reachable, panel fits screen
+Six provider registration validation cases passed (values omitted)
+Stream result cache: HTTP/torrent expiry, stable torrent metadata, profile/options isolation, signed URL exclusion, memory/count/LRU bounds, reload and clearing passed

@@ -1,0 +1,23 @@
+{
+  "sourceCommit": "c290c62dbd1566726a5d056c7827335d5a038ef1",
+  "curlVersion": "8.23.0 (matching native app pin)",
+  "control": "Forcing cached DNS on retry reproduces failure; production retry bypass recovers without restarting. Runtime behavior is observed, not inferred from a version number.",
+  "results": {
+    "dns-recovery": {
+      "correct": true,
+      "curl_version": "8.23.0",
+      "error": "",
+      "fault_calls": 0,
+      "read": 32,
+      "resolver_calls": 2,
+      "started": true
+    },
+    "cached-negative-control": {
+      "curl_version": "8.23.0",
+      "error": "Could not resolve host: dns-recovery.fixture.invalid",
+      "fault_calls": 0,
+      "resolver_calls": 1,
+      "started": false
+    }
+  }
+}

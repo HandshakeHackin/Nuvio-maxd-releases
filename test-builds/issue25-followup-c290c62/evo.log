@@ -1,0 +1,4 @@
+EVO Player 0.13.7: 15 release files and recorded local patches verified
+x265 [error]: unable to set thread affinity for NUMA node mask
+x265 [error]: unable to set thread affinity for NUMA node mask
+EVO integration: SDR/10-bit B-frame decode, EOF, reopen after seek, owned planes, 24/120 cadence, early/late frames and P5 rejection passed

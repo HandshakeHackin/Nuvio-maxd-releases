@@ -9,6 +9,6 @@ Unconfirmed test for Native/Torbox captions, subtitle downloads and stream resou
 - [SHA-256 checksums](SHA256SUMS)
 
 Source: `c290c62dbd1566726a5d056c7827335d5a038ef1`, branch `builds/v1.0.1.1`.
-Native build, ZIP/image/source verification, fourteen network cases on matching curl 8.23, subtitle HTTPS tests and real-player HTTP/HLS checks passed. Full hosted CI is still running; final evidence follows before the issue test request.
+Native build, ZIP/image/source verification, fourteen network cases on matching curl 8.23, subtitle HTTPS tests and real-player HTTP/HLS checks passed. The full functional host suite, media-server checks and VLC tests passed on the exact source in [CI](https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/45278742505). CI reached its 35-minute limit during screenshots after 198 passing modes; the remaining 65 passed locally, completing all 263. See the [verification report](native-validation.json), [CI receipt](ci-final-receipt.json) and [interface results](ui-completion-results.json). Console results remain unconfirmed.
 
 Close Max’d before installing, keep saved data and preserve your previous installer. The unsigned build displays the expected dismissible **Unverified build** notice. Test the same Torbox source with Native captions and OpenSubtitles, then EVO. See the checklist for what to report; keep private URLs, tokens and account files out of replies.

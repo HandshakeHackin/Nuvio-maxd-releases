@@ -1,0 +1,27 @@
+[nuvio] subtitles: fontselect: Using default font family: (Inter, 400, 0) -> NuvioSubtitleFallback-Regular, 0, NuvioSubtitleFallback-Regular
+[nuvio] subtitles: fontselect: Using default font family: (Inter, 700, 0) -> NuvioSubtitleFallback-Regular, 0, NuvioSubtitleFallback-Regular
+[nuvio] subtitles: fontselect: Using default font family: (Montserrat Medium, 400, 0) -> NuvioSubtitleFallback-Regular, 0, NuvioSubtitleFallback-Regular
+PASS: Thai UTF-8 external SRT, tag=und
+[nuvio] subtitles: fontselect: Using default font family: (Inter, 400, 0) -> NuvioSubtitleFallback-Regular, 0, NuvioSubtitleFallback-Regular
+[nuvio] subtitles: fontselect: Using default font family: (Inter, 700, 0) -> NuvioSubtitleFallback-Regular, 0, NuvioSubtitleFallback-Regular
+[nuvio] subtitles: fontselect: Using default font family: (Montserrat Medium, 400, 0) -> NuvioSubtitleFallback-Regular, 0, NuvioSubtitleFallback-Regular
+PASS: Thai UTF-8 external SRT, tag=eng
+PASS: Thai UTF-8 external SRT, tag=tha
+PASS: Thai UTF-8 external SRT, tag=th-TH
+[nuvio] subtitles: fontselect: Using default font family: (Inter, 700, 0) -> NuvioSubtitleFallback-Regular, 0, NuvioSubtitleFallback-Regular
+PASS: untagged embedded SubRip with mixed Latin and Thai
+[nuvio] subtitles: fontselect: Using default font family: (Arial, 400, 0) -> NuvioSubtitleFallback-Regular, 0, NuvioSubtitleFallback-Regular
+PASS: authored ASS generic/inline fonts retain positioning
+PASS: VLC font options render generic ASS without system font services
+PASS: Thai shaping and combining-mark placement match the original face
+PASS: legacy CP874/TIS-620 decoding, hint=th
+PASS: legacy CP874/TIS-620 decoding, hint=tha
+PASS: legacy CP874/TIS-620 decoding, hint=thai
+PASS: legacy CP874/TIS-620 decoding, hint=th-TH
+PASS: legacy CP874/TIS-620 decoding, hint=th_TH
+PASS: UTF-8 and BOM/UTF-16 Thai stay intact
+PASS: CP874 punctuation and undefined bytes are explicit
+PASS: non-Thai fallback decoding remains unchanged
+Thai subtitle regressions: 16 passed, 0 failed
+Thai fallback font: all 4021 input code points retained; original font hashes, recipe, renamed family and bundled OFL notice verified
+Thai legacy decoding: all 256 CP874 bytes match the independent Python codec

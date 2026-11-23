@@ -1,0 +1,19 @@
+[nuvio] subtitles: Event format header missing
+Playback quality: subtitle packets do not block behind libass rendering passed
+[nuvio] audio: output 7.1 PCM 16-bit
+[nuvio] audio: PCM clock accounts for two output grains (10.67 ms estimate)
+Playback quality: surround negotiates S16 PCM, consumes media samples, and holds during pause passed
+[nuvio] audio: output format 2 refused 0xffffffff
+[nuvio] audio: output stereo PCM 16-bit
+[nuvio] audio: PCM clock accounts for two output grains (10.67 ms estimate)
+Playback quality: refused surround/float output falls back to stereo S16 passed
+[nuvio] audio: output stereo PCM 16-bit
+[nuvio] audio: PCM clock accounts for two output grains (10.67 ms estimate)
+FAIL: dense read-ahead flushed the active dialogue
+Playback quality: fixed PCM ring wraps and rejects overflow without discarding samples passed
+Playback quality: packet slab preserves codec references across flush and destruction passed
+Playback quality: packet slab reuses coalesced free blocks and preserves fallback data passed
+Playback quality: automatic subtitles wait for embedded metadata and preserve manual choices passed
+Playback quality: embedded source priority respects preferred languages and addon fallback passed
+Playback quality: embedded caption roles prefer full default tracks and handle untagged defaults passed
+Playback quality: multilingual embedded subtitle bursts preserve the current cue passed

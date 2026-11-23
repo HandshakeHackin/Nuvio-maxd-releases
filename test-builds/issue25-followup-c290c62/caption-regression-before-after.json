@@ -1,0 +1,9 @@
+{
+  "oldSourceCommit": "83e52676c789e0268a9331ff85ca07736db05de3",
+  "fixtureSourceCommit": "31de76bffa53810c7438ad12222525a06deac3ad",
+  "hostLibass": "0.17.5",
+  "oldCodeExit": 1,
+  "failure": "dense read-ahead flushed the active dialogue",
+  "newCodeExit": 0,
+  "newCodeLog": "caption-regression-final2.log"
+}

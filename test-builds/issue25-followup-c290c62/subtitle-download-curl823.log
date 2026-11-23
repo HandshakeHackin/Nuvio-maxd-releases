@@ -1,0 +1,32 @@
+[nuvio] curl libcurl/8.23.0 OpenSSL/3.5.7 zlib/1.3.1, CA bundle /tmp/nuvio-subtitle-https-p8r8era7/cert.pem (found)
+Subtitle download: normal passed
+[nuvio] curl libcurl/8.23.0 OpenSSL/3.5.7 zlib/1.3.1, CA bundle /tmp/nuvio-subtitle-https-p8r8era7/cert.pem (found)
+Subtitle download: retry-dns passed
+[nuvio] curl libcurl/8.23.0 OpenSSL/3.5.7 zlib/1.3.1, CA bundle /tmp/nuvio-subtitle-https-p8r8era7/cert.pem (found)
+Subtitle download: retry-connect passed
+[nuvio] curl libcurl/8.23.0 OpenSSL/3.5.7 zlib/1.3.1, CA bundle /tmp/nuvio-subtitle-https-p8r8era7/cert.pem (found)
+[nuvio] http: GET failed (curl 6)
+Subtitle download: persistent-dns passed
+[nuvio] curl libcurl/8.23.0 OpenSSL/3.5.7 zlib/1.3.1, CA bundle /tmp/nuvio-subtitle-https-p8r8era7/cert.pem (found)
+Subtitle download: retry-redirect-connect passed
+[nuvio] curl libcurl/8.23.0 OpenSSL/3.5.7 zlib/1.3.1, CA bundle /tmp/nuvio-subtitle-https-p8r8era7/cert.pem (found)
+Subtitle download: pre-cancel passed
+[nuvio] curl libcurl/8.23.0 OpenSSL/3.5.7 zlib/1.3.1, CA bundle /tmp/nuvio-subtitle-https-p8r8era7/cert.pem (found)
+[nuvio] http: GET failed (curl 6)
+Subtitle download: cancel-retry passed
+[nuvio] curl libcurl/8.23.0 OpenSSL/3.5.7 zlib/1.3.1, CA bundle /tmp/nuvio-subtitle-https-p8r8era7/cert.pem (found)
+[nuvio] http: GET failed (curl 42)
+Subtitle download: cancel-transfer passed
+[nuvio] curl libcurl/8.23.0 OpenSSL/3.5.7 zlib/1.3.1, CA bundle /tmp/nuvio-subtitle-https-p8r8era7/cert.pem (found)
+[nuvio] http: GET failed (curl 23)
+Subtitle download: oversized passed
+[nuvio] curl libcurl/8.23.0 OpenSSL/3.5.7 zlib/1.3.1, CA bundle /tmp/nuvio-subtitle-https-p8r8era7/cert.pem (found)
+Subtitle download: http-error passed
+[nuvio] curl libcurl/8.23.0 OpenSSL/3.5.7 zlib/1.3.1, CA bundle /tmp/nuvio-subtitle-https-p8r8era7/wrong-ca.pem (found)
+[nuvio] http: GET failed (curl 60)
+Subtitle download: bad-ca passed
+[nuvio] curl libcurl/8.23.0 OpenSSL/3.5.7 zlib/1.3.1, CA bundle /tmp/nuvio-subtitle-https-p8r8era7/cert.pem (found)
+[nuvio] http: GET failed (curl 1)
+Subtitle download: bad-redirect passed
+[nuvio] curl libcurl/8.23.0 OpenSSL/3.5.7 zlib/1.3.1, CA bundle /tmp/nuvio-subtitle-https-p8r8era7/cert.pem (found)
+Subtitle download: slow-connect passed
