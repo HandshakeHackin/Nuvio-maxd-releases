@@ -1,5 +1,22 @@
-Nuvio Max'd 1.0.0.19 verification evidence is generated from the final clean
-source commit after the full native build, exact-source host/VLC checks and
-ZIP/native image/source archive verification. See the release's TEST_RESULTS.txt
-and native-validation.json for the completed checks and CI links. These checks
-do not establish physical PS5 or real-account round-trip acceptance.
+Nuvio Max'd 1.0.1.0 validation
+CI source: 6c7fa804f2eb32882725d48f2b87aaf9dce1410e
+The publication commit changes release documentation only. Application code, assets, dependency pins and CI workflows match this passing CI commit; native build/package metadata identifies the publication commit.
+
+Passed:
+- Complete PS5 application compile/link; ZIP and deep native-image extraction match.
+- SELF entry point PPSA99288/eboot.bin, source metadata, all immutable file hashes, matching source archive.
+- Automatic channel refresh: real personal HTTP and public catalogue; every interval; failure/partial retention; playback/menu cancellation; private save/backup; profile races.
+- New refresh menus and changelog rendered in all eight languages; strict startup and shutdown checks.
+- 136 feature/backup checks, account profiles and credential isolation, IPTV and media-server playback, USB readers/private atomic copies, guide, library, streams, trackers, codecs and renderer checks.
+- Remaining full host suite completed through the FFPFSC updater: 46 cases, zero failures.
+- Provider graph security audit: zero vulnerabilities. Upstream dependency check: 26 components; four upgrades available for compatibility review.
+
+Hosted CI passed for the same source commit:
+- https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/45185260870
+- account-and-transport and vlc-playback: success, 2026-11-23.
+
+Signing and console status:
+- The owner approved publication with the dismissible Unverified build notice. The original key was not restored; no replacement key was generated.
+- Physical PS5 testing of the new timer/UI is not claimed.
+
+Dependency pins: all app libraries/headers/core/graphics/source assets verified. Three unused SDK target CLI executables differ only in proven 16-byte random linker build IDs; the original full-output check is retained as failed, not reported as a full 741-file match.

@@ -11,3 +11,5 @@ Close Max'd before installing and keep your saved data. Enable the optional top 
 Free channels are not hosted or controlled by Nuvio Max'd. Dead channels or buffering should not be reported to the developer. YMMV.
 
 The embedded-caption and subtitle-download changes from issue #25 are included; that reporter's confirmation is still outstanding.
+
+This release retains the dismissible **Unverified build** notice because the original offline signing key was unavailable. Normal use is unaffected.

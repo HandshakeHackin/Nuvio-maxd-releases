@@ -1,32 +1,18 @@
-Nuvio Max'd 1.0.0.19 — issues #22 and #21
+Nuvio Max'd 1.0.1.0
 
-Close Max'd fully before installation. Preserve saved data and your previous
-installer. Do not overwrite a mounted FFPFSC. Check App updates shows 1.0.0.19.
+Close the app before installing. Keep saved data, profiles and your previous installer.
+Use PPSA99288.zip for app-folder / Homebrew Store installation, or the native .ffpfsc image with your normal image loader.
 
-1. On a movie detail page press Options. Add to library; check Library and the
-   same Nuvio account/profile on another device. Remove it; check both again.
-   Existing resume positions should survive removal.
-2. Mark a movie watched/unwatched. Verify on another device using the same
-   Watch Progress service. Reopen the Options menu to check the action state.
-3. On a series page use Triangle on an episode. The controller hint should now
-   show this action. Verify its watched indicator and remote history.
-4. Try a season's and a series' bulk watched/unwatched actions. Cancel first:
-   nothing should change. Confirm next: check the displayed count and resulting
-   indicators. Future/unknown dates are skipped when marking watched; only the
-   provider's listed episodes are included. No action silently truncates a scope.
-5. If connected, select Trakt or MDBList as Library Source and repeat membership
-   checks. Check both that service and Nuvio. SIMKL library remains read-only here
-   and reports the limitation; Nuvio membership can still change. Watched actions
-   independently follow Watch Progress (including SIMKL when selected).
-6. Try offline changes, restart, reconnect and refresh Library/Watch Progress.
-   Pending changes should retry without clearing other devices' titles/history.
-   Switch profiles and verify no data or late completion appears in another one.
-7. Open cast with R2 and a person with Cross. Check dark controller icons, Browse,
-   Person details/Open title, Retry and Back; R2 should appear only on the cast row.
-   Test long translations, the last cards, Back navigation and normal playback.
-8. Check trailer access from Options, Triangle stream reload, library search,
-   existing USB imports and saved copies, and switching menu languages.
+New features to check:
+- Settings > Live TV > Free live TV: read the disclaimer, choose countries and open channels.
+- Settings > Live TV > Unified TV guide: browse personal and enabled free channels together.
+- Settings > Live TV > Channel list auto-refresh: Off, 1, 3, 6, 12 or 24 hours; default 6 hours per profile.
+- Refresh waits during playback, multiview and menus. Off still allows manual reload. Closing the app stops the timer.
+- Failed or partially failed automatic downloads keep the previous channels and guide.
+- Search: L1/R1 switches language; Options opens the PS5 keyboard for Chinese characters / Japanese kanji.
+- Settings > App & Updates > Top navigation: optional Search tab and all enabled sections.
+- Retest SIMKL sign-in and Thai subtitles. Issue #25 still needs its reporter's results.
 
-Report firmware, app version, folder/image installation, exact screen/action,
-selected Library/Watch Progress services and what passed/failed. Keep credentials,
-account files, private URLs and real playlists out of shared logs.
+Free channels are controlled by third parties. Availability and quality vary. Dead channels and buffering should not be reported to the developer.
+
+Signing status: the original private offline signing key was unavailable. This release retains the dismissible Unverified build notice, with the owner's approval. Normal playback and saved data are unaffected.

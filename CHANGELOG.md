@@ -1,3 +1,13 @@
+# 1.0.1.0 — free live TV and a unified guide
+
+- Optional free live TV with a disclaimer and multiple-country selection.
+- One guide for personal IPTV and enabled free channels.
+- Per-profile automatic channel refresh: Off, 1, 3, 6, 12 or 24 hours, default six. Playback and menus defer refresh; failures retain the previous list and guide.
+- Multilingual search keyboard, configured-catalogue suggestions and optional top navigation.
+- SIMKL device sign-in, Thai subtitles, start-page selection and saved TV group/channel controls.
+- Issue #25's proposed embedded-caption and subtitle-download changes are included; confirmation remains outstanding.
+- The dismissible Unverified build notice remains because the original offline signing key was unavailable.
+
 # 1.0.0.19 — detail actions and controller hints
 
 Library membership sync and movie/season/series watched controls from title details (#22); discoverable episode marking; controller glyphs on cast and person pages (#21). Bounded private offline queues, bulk confirmation and profile/service guards. See source/native-app/TITLE_ACTIONS.md.

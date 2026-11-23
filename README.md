@@ -8,11 +8,11 @@
 
 <p align="center">
   <a href="https://prosperostore.net/app/PPSA99288/">Homebrew Store</a> ·
-  <a href="https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/tag/v1.0.0.26-native">Downloads and release notes</a> ·
+  <a href="https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/tag/v1.0.1.0-native">Downloads and release notes</a> ·
   <a href="https://github.com/HandshakeHackin/Nuvio-maxd-releases/issues">Report a problem</a>
 </p>
 
-**Release candidate: 1.0.1.0** — free live TV, a unified guide, selectable channel-list refresh, multilingual search and a choice of menu layout. The published download remains 1.0.0.26 until this candidate passes release verification.
+**Latest release: 1.0.1.0** — free live TV, a unified guide, selectable channel-list refresh, multilingual search and a choice of menu layout.
 
 Nuvio Max'd runs directly on a jailbroken PS5. Sign in with your phone or use
 Guest mode, then browse your library, addons, TV playlists and media servers.
@@ -68,7 +68,7 @@ Availability depends on the provider.
 
 Optional engines, HDR and 120 Hz depend on your console, display and media.
 Full Dolby Vision and HDR10+ are not supported. See the
-[playback limits](https://github.com/HandshakeHackin/Nuvio-maxd-releases/blob/v1.0.0.26-native/source/native-app/PLAYBACK_QUALITY.md)
+[playback limits](https://github.com/HandshakeHackin/Nuvio-maxd-releases/blob/v1.0.1.0-native/source/native-app/PLAYBACK_QUALITY.md)
 for format details.
 
 ## Languages, controls and backups
@@ -88,11 +88,14 @@ loader's instructions for your firmware.
 | Download | Install |
 | --- | --- |
 | [**Homebrew Store**](https://prosperostore.net/app/PPSA99288/) | Find **Nuvio Max'd** and install the listed build. |
-| [**ZIP folder**](https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/download/v1.0.0.26-native/PPSA99288.zip) | Extract `PPSA99288/` into a folder scanned by ShadowMount+, such as `/data/homebrew/`. The app should be at `/data/homebrew/PPSA99288/eboot.bin`, without an extra folder level. |
-| [**FFPFSC image**](https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/download/v1.0.0.26-native/NuvioMaxd-1.0.0.26-native.ffpfsc) | Put the image in a homebrew location scanned by ShadowMount+. |
+| [**ZIP folder**](https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/download/v1.0.1.0-native/PPSA99288.zip) | Extract `PPSA99288/` into a folder scanned by ShadowMount+, such as `/data/homebrew/`. The app should be at `/data/homebrew/PPSA99288/eboot.bin`, without an extra folder level. |
+| [**FFPFSC image**](https://github.com/HandshakeHackin/Nuvio-maxd-releases/releases/download/v1.0.1.0-native/NuvioMaxd-1.0.1.0-native.ffpfsc) | Put the image in a homebrew location scanned by ShadowMount+. |
 
 Use one installation format at a time. Close Max'd before updating and keep your
 app data. GitHub downloads include matching source and checksums.
+
+This release shows one dismissible **Unverified build** notice because the
+original offline signing key was unavailable. It does not block normal use.
 
 After launch:
 
@@ -112,7 +115,7 @@ Sony. It builds on [Nuvio protocols](https://github.com/NuvioMedia/NuvioTVSmart)
 and [BlackBearReloaded's Prospero UI](https://github.com/blackbearreloaded/ps5-homebrew-ui),
 with credited EVO/VLC and media libraries.
 
-[Matching source and build guide](https://github.com/HandshakeHackin/Nuvio-maxd-releases/tree/v1.0.0.26-native/source/native-app) ·
-[Third-party notices](https://github.com/HandshakeHackin/Nuvio-maxd-releases/blob/v1.0.0.26-native/source/native-app/THIRD_PARTY.md) ·
+[Matching source and build guide](https://github.com/HandshakeHackin/Nuvio-maxd-releases/tree/v1.0.1.0-native/source/native-app) ·
+[Third-party notices](https://github.com/HandshakeHackin/Nuvio-maxd-releases/blob/v1.0.1.0-native/source/native-app/THIRD_PARTY.md) ·
 [GPL-3.0 license](LICENSE) ·
 [Optional support on Ko-fi](https://ko-fi.com/handshakehackin)
