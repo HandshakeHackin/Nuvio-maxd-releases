@@ -3,6 +3,7 @@
 #include <atomic>
 #include <cassert>
 #include <iostream>
+#include <functional>
 #include <memory>
 #include <string>
 #include <vector>
@@ -14,6 +15,7 @@ struct Boundary {
     void shutdown() { events.push_back(name); }
     void close() { events.push_back(name); }
     void stop() { events.push_back(name); }
+    void cancel() { events.push_back(name); }
 };
 namespace bt {
 struct Engine : Boundary {
@@ -44,6 +46,9 @@ struct Session {
     void sports_reset() { events.push_back("sports reset"); }
     void media_reset(){if(media_cancel_)*media_cancel_=true;if(media_play_cancel_)*media_play_cancel_=true;events.push_back("media reset");}
     bool watching = false;
+    Boundary ime_{"IME closed"};
+    std::function<void(const std::string&)> text_done_=[](const auto&){};
+    void search_keyboard_cancel() { if(suggest_cancel_)*suggest_cancel_=true;events.push_back("search cancelled"); }
     Boundary player_{"player"}, provider_tasks_{"providers"}, tex_{"textures"};
     void watch_stop(bool) { events.push_back("playback stopped"); watching = false; }
     void save_progress() { events.push_back("progress saved"); }
@@ -61,7 +66,8 @@ int main() {
         assert(!session.w_episode_cancel_);
         session.updater_.closing = updating;
         session.shutdown();
-        assert(sx::events.size()>1 && sx::events[0]=="sports reset" && sx::events[1]=="pin cleared");
+        assert(sx::events.size()>3 && sx::events[0]=="search cancelled" && sx::events[1]=="IME closed" && sx::events[2]=="sports reset" && sx::events[3]=="pin cleared");
+        assert(*session.suggest_cancel_&&!session.text_done_);
         assert(sx::events.back() == "progress saved");
         assert(!session.updater_.handed_off);
         assert(!session.media_reporter_);
