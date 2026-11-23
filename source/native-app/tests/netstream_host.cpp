@@ -13,6 +13,18 @@
 #include <pthread.h>
 #include <cerrno>
 #include <stdexcept>
+#include <netdb.h>
+
+static bool dns_recovery=false, cached_negative_control=false;
+static std::atomic<int> resolver_calls{0};
+extern "C" int getaddrinfo(const char* node,const char* service,const addrinfo* hints,addrinfo** result) {
+    static auto real=reinterpret_cast<decltype(&getaddrinfo)>(dlsym(RTLD_NEXT,"getaddrinfo"));
+    if(dns_recovery && node && std::string(node)=="dns-recovery.fixture.invalid") {
+        if(++resolver_calls==1){*result=nullptr;return EAI_NONAME;}
+        return real("127.0.0.1",service,hints,result);
+    }
+    return real(node,service,hints,result);
+}
 
 static std::atomic<int> thread_budget{-1};
 extern "C" int pthread_create(pthread_t* thread,const pthread_attr_t* attr,void* (*start)(void*),void* arg) noexcept {
@@ -49,6 +61,9 @@ extern "C" CURLcode __wrap_curl_easy_perform(CURL* c) {
     if (url && std::string(url).find("/dns-parallel") != std::string::npos && ++faults > 1)
         return CURLE_COULDNT_RESOLVE_HOST;
     curl_slist* seed=nullptr;
+    if(dns_recovery)curl_easy_setopt(c,CURLOPT_PROXY,"");
+    // Control recreates the stale negative-cache behavior on curl >=8.16.
+    if(cached_negative_control)curl_easy_setopt(c,CURLOPT_DNS_CACHE_TIMEOUT,60L);
     if(shared_dns) {
         curl_easy_setopt(c,CURLOPT_PROXY,"");
         if(seed_dns.exchange(false)) {
@@ -70,12 +85,14 @@ int main(int argc, char** argv) try {
     http_init(""); NetStream::set_cache_dir(std::string(argv[2]) == "seek" ? "" : argv[3]);
     std::atomic<bool> cancel{false};
     const std::string test_mode=argv[2];shared_dns=test_mode=="shared-dns";
+    dns_recovery=test_mode=="dns-recovery" || test_mode=="cached-negative-control";
+    cached_negative_control=test_mode=="cached-negative-control";
     if(test_mode=="thread-no-reader")thread_budget=0;
     if(test_mode=="thread-no-workers")thread_budget=1;
     if(test_mode=="thread-two-workers")thread_budget=3;
     std::vector<std::string> headers;
     if(std::string(argv[2]).starts_with("media-"))headers={"X-Emby-Authorization: MediaBrowser Token=\"fixture-only\"", "X-Maxd-Credential-Origin: "+(std::string(argv[2])=="media-foreign"?std::string("http://foreign.invalid"):http_credentials::origin(argv[1]))};
-    NetStream stream(argv[1], headers, &cancel, !std::string(argv[2]).starts_with("media-") && std::string(argv[2]) != "single" && std::string(argv[2]) != "rapid-single");
+    NetStream stream(argv[1], headers, &cancel, !dns_recovery && !std::string(argv[2]).starts_with("media-") && std::string(argv[2]) != "single" && std::string(argv[2]) != "rapid-single");
     rapid=std::string(argv[2])=="rapid-single";
     json result; result["started"] = stream.start();
     if(shared_dns && result["started"]==true) {
@@ -112,5 +129,7 @@ int main(int argc, char** argv) try {
         }
     }
     result["error"] = stream.failure(); result["fault_calls"] = faults.load();
+    result["resolver_calls"]=resolver_calls.load();
+    result["negative_cache_supported"]=curl_version_info(CURLVERSION_NOW)->version_num>=0x081000;
     std::cout << result.dump() << std::endl;
 } catch(const std::exception& error) {std::cerr<<"Uncaught stream exception: "<<error.what()<<'\n';return 1;}

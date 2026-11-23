@@ -67,8 +67,6 @@ static int on_socket(void*, curl_socket_t s, curlsocktype) {
 #endif
 
 void http_setup_handle(void* curl) {
-    static DnsCache dns;
-    if(dns.handle)curl_easy_setopt(static_cast<CURL*>(curl),CURLOPT_SHARE,dns.handle);
 	// All clients, including JavaScript providers, must use the console DNS route.
 	curl_easy_setopt(static_cast<CURL*>(curl), CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
 #ifdef PLATFORM_PS5_NATIVE
@@ -76,6 +74,11 @@ void http_setup_handle(void* curl) {
 #else
 	(void)curl;
 #endif
+}
+
+void http_share_playback_dns(void* curl) {
+    static DnsCache dns;
+    if(dns.handle)curl_easy_setopt(static_cast<CURL*>(curl),CURLOPT_SHARE,dns.handle);
 }
 
 struct BodySink {
@@ -145,6 +148,7 @@ static HttpResponse perform(const std::string& url, const std::string* post_body
 	curl_easy_setopt(c, CURLOPT_HEADERDATA, &r);
 	if (!g_ca_bundle.empty() && file_exists(g_ca_bundle)) curl_easy_setopt(c, CURLOPT_CAINFO, g_ca_bundle.c_str());
 	http_setup_handle(c);
+    if(subtitle)http_share_playback_dns(c);
 	if (cancel) {
 		curl_easy_setopt(c, CURLOPT_NOPROGRESS, 0L);
 		curl_easy_setopt(c, CURLOPT_XFERINFOFUNCTION, progress_cb);

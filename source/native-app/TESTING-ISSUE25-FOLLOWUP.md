@@ -14,10 +14,12 @@ or provider fault. The actual console crash cause is still unconfirmed.
   until space is available. External subtitle files retain their timeline for
   backward seeks. External auto-sync cannot advance the embedded retention clock.
   The separate 4,096-packet / 32 MiB pending limit remains.
-- Curl handles share a thread-safe DNS-address cache with the normal 60-second
-  expiry. Range downloads and subtitle GETs can reuse warm console lookups.
-  A subtitle retry still bypasses cached failures. No connections, cookies,
-  headers or credentials are shared, and no DNS server or TLS policy changes.
+- Playback range readers and subtitle files share a thread-safe DNS-address
+  cache with the normal 60-second expiry. They can reuse warm console lookups.
+  Stream and subtitle retries bypass cached DNS failures; stream connection
+  failures also force a fresh lookup. Account/addon HTTP retains its existing
+  private per-handle cache. No connections, cookies, headers or credentials are
+  shared, and no DNS server or TLS policy changes.
 - Stream reader/parallel-worker thread allocation failures return an error or
   use fewer workers. If none of the parallel workers starts, the existing probe
   reader resumes as one connection. This prevents a reproducible uncaught
@@ -31,7 +33,9 @@ The old code fails a real libass dense-sign fixture and real stream tests with
 thread-allocation failures. The new checks retain current dialogue through a
 10,040-sign burst, clear it on time, reclaim expired events, preserve external
 backward seeks, exercise concurrent streaming/subtitle requests using warmed DNS,
-and verify single/fewer-worker read, seek and shutdown under thread exhaustion.
+verify recovery from a real negative DNS result (with a cached-failure control
+on curl 8.16+), and verify single/fewer-worker read, seek and shutdown under
+thread exhaustion.
 Existing transport, private-header, retry and cancellation checks remain.
 
 Renderer tests prepare checksum-pinned host libass 0.17.5 when the distro’s older

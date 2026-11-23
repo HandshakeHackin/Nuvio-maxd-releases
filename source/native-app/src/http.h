@@ -38,4 +38,7 @@ const std::string& http_ca_bundle();
 // What every curl handle needs on this platform (a CURL*). In the native PS5
 // app: sockets made non-blocking with the console's own option.
 void http_setup_handle(void* curl);
+// Playback range readers and subtitle files only. Other clients retain their
+// private per-handle DNS cache; requests/cookies/credentials are never shared.
+void http_share_playback_dns(void* curl);
 extern const char* kUserAgent;

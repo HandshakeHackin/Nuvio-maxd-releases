@@ -227,6 +227,7 @@ int chunk_progress(void* ud, curl_off_t, curl_off_t, curl_off_t, curl_off_t) {
 
 void NetStream::worker() {
 	CURL* c = curl_easy_init();  // kept: the connection is reused for the next chunk
+    bool fresh_dns=false;
 	std::unique_lock<std::mutex> lock(m_);
 	if (!c) { error_ = "curl_easy_init failed"; cv_.notify_all(); }
 	while (c && !stopped()) {
@@ -295,8 +296,11 @@ void NetStream::worker() {
 		if (!http_ca_bundle().empty() && file_exists(http_ca_bundle()))
 			curl_easy_setopt(c, CURLOPT_CAINFO, http_ca_bundle().c_str());
 		http_setup_handle(c);
+        http_share_playback_dns(c);
+        curl_easy_setopt(c,CURLOPT_DNS_CACHE_TIMEOUT,fresh_dns?0L:60L);
 		if (hdrs) curl_easy_setopt(c, CURLOPT_HTTPHEADER, hdrs);
 		CURLcode rc = curl_easy_perform(c);
+        fresh_dns=dns_failure(rc) || rc==CURLE_COULDNT_CONNECT;
 		long status = 0;
 		curl_easy_getinfo(c, CURLINFO_RESPONSE_CODE, &status);
 		if (hdrs) curl_slist_free_all(hdrs);
@@ -401,6 +405,7 @@ void NetStream::run() {
 }
 
 bool NetStream::transfer(int64_t from, int gen) {
+    bool fresh_dns=false;
 	for (int attempt = 0;; attempt++) {
 		CURL* c = curl_easy_init();
 		if (!c) {
@@ -442,6 +447,10 @@ bool NetStream::transfer(int64_t from, int gen) {
 		if (!http_ca_bundle().empty() && file_exists(http_ca_bundle()))
 			curl_easy_setopt(c, CURLOPT_CAINFO, http_ca_bundle().c_str());
 		http_setup_handle(c);
+        http_share_playback_dns(c);
+        // New curl versions cache negative DNS answers too. A reconnect after
+        // DNS/connect failure must query again rather than repeat that entry.
+        curl_easy_setopt(c,CURLOPT_DNS_CACHE_TIMEOUT,fresh_dns?0L:60L);
 		if (hdrs) curl_easy_setopt(c, CURLOPT_HTTPHEADER, hdrs);
 		{
 			std::lock_guard<std::mutex> lock(m_);
@@ -450,6 +459,7 @@ bool NetStream::transfer(int64_t from, int gen) {
 			cur_curl_ = c;
 		}
 		CURLcode rc = curl_easy_perform(c);
+        fresh_dns=dns_failure(rc) || rc==CURLE_COULDNT_CONNECT;
 		{
 			std::lock_guard<std::mutex> lock(m_);
 			cur_curl_ = nullptr;

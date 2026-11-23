@@ -26,11 +26,6 @@ extern "C" CURLcode __real_curl_easy_setopt(CURL *, CURLoption, ...);
 extern "C" CURLcode __wrap_curl_easy_setopt(CURL *c, CURLoption opt, ...) {
   // This sees the real shared http.cpp setup; the isolated transfer options
   // below are captured separately. A regression to an empty host setup fails.
-  if(opt == CURLOPT_SHARE) {
-    va_list args;va_start(args,opt);auto* value=va_arg(args,CURLSH*);va_end(args);
-    assert(value);
-    return __real_curl_easy_setopt(c,opt,value);
-  }
   assert(opt == CURLOPT_IPRESOLVE);
   va_list args; va_start(args, opt); const long value = va_arg(args, long); va_end(args);
   assert(value == CURL_IPRESOLVE_V4); ++ipv4_setups;

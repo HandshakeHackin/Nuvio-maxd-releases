@@ -20,17 +20,10 @@ static long reply_status = 200;
 static CURLcode reply_error = CURLE_OK;
 static bool redirect = false;
 static int ipv4_setups = 0;
-static int dns_setups = 0;
-static CURLSH* shared_dns = nullptr;
 extern "C" CURLcode __real_curl_easy_setopt(CURL *, CURLoption, ...);
 extern "C" CURLcode __wrap_curl_easy_setopt(CURL *c, CURLoption opt, ...) {
   // This sees the real shared http.cpp setup; the isolated transfer options
   // below are captured separately. A regression to an empty host setup fails.
-  if(opt == CURLOPT_SHARE) {
-    va_list args; va_start(args,opt); auto* value=va_arg(args,CURLSH*);va_end(args);
-    assert(value && (!shared_dns || value==shared_dns));shared_dns=value;++dns_setups;
-    return __real_curl_easy_setopt(c,opt,value);
-  }
   assert(opt == CURLOPT_IPRESOLVE);
   va_list args; va_start(args, opt); const long value = va_arg(args, long); va_end(args);
   assert(value == CURL_IPRESOLVE_V4); ++ipv4_setups;
@@ -97,7 +90,7 @@ int main(int argc, char **argv) {
   a.providers[0].enabled = true;
   const auto run = [&] { return providers::streams(a, "movie", "tmdb:10378", Meta{}, nullptr); };
   auto r = run();
-  assert(ipv4_setups == 1 && dns_setups == 1);
+  assert(ipv4_setups == 1);
   assert(r.error.empty() && r.streams.size() == 1);
   assert(r.streams[0].url == "https://example.com/video.mp4");
   r=run();assert(ipv4_setups==1); // repeated searches reuse the downloaded script
@@ -117,6 +110,5 @@ int main(int argc, char **argv) {
   ip->sin_family = AF_INET; ip->sin_addr.s_addr = htonl(INADDR_LOOPBACK);
   assert(providers::open_socket(&transfer, CURLSOCKTYPE_IPCXN, &addr) == CURL_SOCKET_BAD && transfer.blocked_address);
   assert(providers::transport_error(CURLE_COULDNT_CONNECT, transfer).find("public address") != std::string::npos);
-  assert(dns_setups==ipv4_setups);
   std::cout << "Provider download pipeline: script execution, relative URLs, HTTP errors, timeout, redirect and address protection passed\n";
 }

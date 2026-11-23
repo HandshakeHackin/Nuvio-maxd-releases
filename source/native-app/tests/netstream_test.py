@@ -70,7 +70,8 @@ class NetworkTests(unittest.TestCase):
         self.server.shutdown(); self.server.server_close(); self.thread.join(); self.temp.cleanup()
 
     def run_stream(self, path, mode='parallel'):
-        host='stream.fixture.invalid' if mode=='shared-dns' else '127.0.0.1'
+        host=('stream.fixture.invalid' if mode=='shared-dns' else
+              'dns-recovery.fixture.invalid' if mode in ('dns-recovery','cached-negative-control') else '127.0.0.1')
         run = subprocess.run([str(ROOT / 'test-output/netstream-host'),
             f'http://{host}:{self.server.server_port}{path}', mode, self.temp.name],
             capture_output=True, text=True, timeout=45)
@@ -101,6 +102,21 @@ class NetworkTests(unittest.TestCase):
         self.assertTrue(result['started'] and result['correct'])
         self.assertTrue(result['subtitle_ok'])
         self.assertEqual(result['error'],'')
+
+    def test_stream_retry_bypasses_cached_negative_dns(self):
+        result=self.run_stream('/video','dns-recovery')
+        self.assertTrue(result['started'] and result['correct'])
+        self.assertEqual(result['resolver_calls'],2)
+        self.assertEqual(result['error'],'')
+
+    def test_negative_dns_cache_control_detects_runtime_behavior(self):
+        result=self.run_stream('/video','cached-negative-control')
+        if result['negative_cache_supported']:
+            self.assertFalse(result['started'])
+            self.assertEqual(result['resolver_calls'],1)
+        else:
+            self.assertTrue(result['started'] and result['correct'])
+            self.assertEqual(result['resolver_calls'],2)
 
     def test_media_server_credentials_and_blocked_redirects(self):
         private=self.run_stream('/media-private','media-auth')
