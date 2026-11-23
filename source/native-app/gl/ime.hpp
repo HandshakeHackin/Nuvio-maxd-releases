@@ -21,9 +21,10 @@ class Ime
     };
 
     // Opens the dialog; false if the console would not (or this is not a console).
-    bool open(const std::string& title = "", bool secret = false);
+    bool open(const std::string& title = "", bool secret = false,const std::string& initial = "");
     // Once per frame while a dialog is up.
     State poll(std::string *text);
+    void cancel();
     bool active() const
     {
         return active_;

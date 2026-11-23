@@ -4,7 +4,13 @@
 #include "stream_display.hpp"
 #include "stream_json.hpp"
 #include <cstdio>
+#include <array>
 #include <stdexcept>
+namespace sx {
+struct DetailTestAccess {
+    static auto scroll(const Detail& d){return std::array{d.episode_scroll_.position.value,d.episode_scroll_.position.target,d.episode_scroll_.position.velocity};}
+};
+}
 
 namespace {
 void expect(bool ok, const char *reason) { if (!ok) throw std::runtime_error(reason); }
@@ -77,6 +83,13 @@ void pills_never_start_playback() {
     f.move(hui::Direction::down); expect(f.page.stream_index()==0,"cannot enter filtered cards");
     f.move(hui::Direction::up); f.move(hui::Direction::left); f.move(hui::Direction::left);
     expect(f.page.reload_focused() && f.page.stream_index()==-1,"reload button can play a stream");
+}
+void source_options_navigation() {
+    Fixture f; f.move(hui::Direction::up);f.move(hui::Direction::left);
+    expect(f.page.reload_focused(),"reload focus changed");f.move(hui::Direction::left);
+    expect(f.page.source_options_focused()&&f.page.stream_index()==-1,"source options inaccessible");
+    f.move(hui::Direction::left);expect(f.page.source_options_focused(),"source options left boundary lost");
+    f.move(hui::Direction::right);expect(f.page.reload_focused(),"cannot return from source options");
 }
 void empty_filter_and_late_arrival() {
     Fixture f; for (int i=0;i<3;++i) f.press(hui::Action::page_next);
@@ -169,10 +182,27 @@ void late_episode_art_keeps_focus_and_selection() {
     f.content.episodes.clear(); f.content.seasons.clear(); f.page.refresh(); f.move(hui::Direction::none);
     expect(!f.page.seasons_focused(),"removed seasons leave stale chip focus");
 }
+void watched_refresh_keeps_carousel_position() {
+    Fixture f;f.content.series=true;f.content.seasons={"Season 1","Season 2"};f.content.episodes.resize(30);
+    f.page.set_content(&f.content);
+    for(int i=0;i<19;++i)f.move(hui::Direction::right);
+    for(int i=0;i<120;++i)f.move(hui::Direction::none);
+    const auto before=sx::DetailTestAccess::scroll(f.page);
+    expect(before[0]>0&&f.page.episode_index()==19,"fixture did not scroll beyond initial cards");
+    for(bool watched:{true,false,true}) {
+        f.content.episodes[19].watched=watched;f.page.refresh();
+        expect(f.page.episode_index()==19,"watched refresh moved the selected episode");
+        expect(sx::DetailTestAccess::scroll(f.page)==before,"watched refresh reset or replayed scroll animation");
+    }
+    f.move(hui::Direction::up);const int selected=f.page.season_index();
+    f.content.episodes[19].watched=false;f.page.refresh();
+    expect(f.page.seasons_focused()&&f.page.season_index()==selected,"watched refresh stole season focus");
+}
 
 }
 int main() {
     const struct { const char *name; void (*run)(); } tests[] = {
+        {"source_options_navigation",source_options_navigation},
         {"aio_card_preserves_badges",aio_card_preserves_badges}, {"filename_and_hint_metadata",filename_and_hint_metadata},
         {"no_invented_metadata",no_invented_metadata}, {"flags_and_hdr_plus",flags_and_hdr_plus},
         {"filtered_index_maps_to_source",filtered_index_maps_to_source}, {"pills_never_start_playback",pills_never_start_playback},
@@ -183,12 +213,13 @@ int main() {
         {"season_selection_does_not_open_streams",season_selection_does_not_open_streams},
         {"empty_season_keeps_other_seasons_reachable",empty_season_keeps_other_seasons_reachable},
         {"late_episode_art_keeps_focus_and_selection",late_episode_art_keeps_focus_and_selection},
+        {"watched_refresh_keeps_carousel_position",watched_refresh_keeps_carousel_position},
     };
     int failed=0;
     for (auto &t:tests) {
         try { t.run(); std::printf("%s: PASS\n",t.name); }
         catch(const std::exception &e) { ++failed; std::printf("%s: FAIL (%s)\n",t.name,e.what()); }
     }
-    std::printf("Stream presentation and navigation: 14 tests, %d failures\n",failed);
+    std::printf("Stream presentation and navigation: %zu tests, %d failures\n",sizeof(tests)/sizeof(tests[0]),failed);
     return failed ? 1 : 0;
 }

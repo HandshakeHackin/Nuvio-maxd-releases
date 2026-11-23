@@ -6,7 +6,16 @@
 #include "detail.hpp"
 #include "player.hpp"
 #include "settings.hpp"
+#include "person.hpp"
+#include "i18n.hpp"
+#include "age_ratings.hpp"
+#include "build_integrity_text.hpp"
+#include "start_page.hpp"
+#include "free_tv.h"
 #include "board.hpp"
+#include "search_keyboard_draw.hpp"
+#include "live_refresh.hpp"
+#include "top_navigation.hpp"
 #include "library.hpp"
 #include "addons.hpp"
 #include <cmath>
@@ -25,6 +34,9 @@
 
 int main(int argc, char** argv) {
     if (argc != 3 && argc != 4) return 2;
+    std::string mode = argc == 4 ? argv[3] : "login";
+    for(const auto& locale:sx::i18n::locales()){const std::string prefix=std::string(locale.code)+"-";if(mode.starts_with(prefix)){sx::i18n::set_language(locale.code);mode=mode.substr(prefix.size());break;}}
+    const std::string preview_name=argc==4?argv[3]:"login";
     auto get_display = reinterpret_cast<PFNEGLGETPLATFORMDISPLAYEXTPROC>(eglGetProcAddress("eglGetPlatformDisplayEXT"));
     EGLDisplay display = get_display(EGL_PLATFORM_SURFACELESS_MESA, EGL_DEFAULT_DISPLAY, nullptr);
     if (!eglInitialize(display, nullptr, nullptr) || !eglBindAPI(EGL_OPENGL_API)) return 3;
@@ -40,7 +52,7 @@ int main(int argc, char** argv) {
     if(!font_data.regular.has_glyph(0x4e2d) || !font_data.regular.has_glyph(0x65e5) || !font_data.regular.has_glyph(0xac00) || !font_data.regular.has_glyph(0x0e01)) return 8;
     sx::SignInState state;
     state.link = "nuvio.tv/link"; state.code = "ABCD-EF";
-    state.status = "Waiting for approval on your phone...";
+    state.status = sx::i18n::tr("Waiting for approval on your phone...");
     std::uint8_t temp[qrcodegen_BUFFER_LEN_MAX], qr[qrcodegen_BUFFER_LEN_MAX];
     if (!qrcodegen_encodeText("https://nuvio.tv/link?code=ABCD-EF", temp, qr, qrcodegen_Ecc_MEDIUM,
         1, 20, qrcodegen_Mask_AUTO, true)) return 7;
@@ -51,9 +63,11 @@ int main(int argc, char** argv) {
     bool iptv_visible=argc==4 && (std::string(argv[3])=="iptv"||std::string(argv[3])=="iptv-search");
     bool torrents_visible=argc==4 && std::string(argv[3]).starts_with("torrents");
     bool media_visible=argc==4 && std::string(argv[3])=="torrents-all";
+    bool sports_visible=argc==4 && std::string(argv[3]).starts_with("sports-") && std::string(argv[3])!="sports-settings-off";
+    if(argc==4 && std::string(argv[3])=="sports-all-nav"){media_visible=true;torrents_visible=true;iptv_visible=true;}
     iptv_visible=iptv_visible||media_visible;
-    const sx::Env env{fonts,icons,"21:45",&iptv_visible,&media_visible,&torrents_visible};
-    const std::string mode = argc == 4 ? argv[3] : "login";
+    if(mode.starts_with("top-navigation"))iptv_visible=media_visible=torrents_visible=sports_visible=true;
+    const sx::Env env{fonts,icons,"21:45",&iptv_visible,&media_visible,&torrents_visible,&sports_visible};
     const auto artwork = [&](int w, int h, float tint) {
         std::vector<std::uint8_t> px(static_cast<std::size_t>(w)*h*4);
         for (int y=0;y<h;++y) for (int x=0;x<w;++x) {
@@ -70,6 +84,125 @@ int main(int argc, char** argv) {
     };
     const auto backdrop_texture=artwork(1920,1080,0);
     const auto poster_texture=artwork(480,720,3);
+    if(mode=="playlist-refresh") {
+        sx::DropdownState d;d.title=sx::i18n::tr("Channel list auto-refresh");d.active=d.selected=3;d.wide=true;
+        for(const auto& choice:sx::live_refresh::choices)d.options.emplace_back(sx::i18n::tr(choice.label));
+        d.message=sx::i18n::tr("Refresh loaded free and personal channel lists while Max'd is open. Waits during playback and menus. Failed downloads keep the last working list. Guide updates are separate.");
+        sx::draw_dropdown(list,env,d,1);
+    }else if(mode=="search-keyboard"||mode=="search-keyboard-he"||mode=="search-keyboard-th"||mode=="search-keyboard-ko"||mode=="top-navigation"||mode=="top-navigation-last") {
+        if(mode.starts_with("search-keyboard")){
+            sx::search_keyboard::State entry;entry.title=sx::i18n::tr("Search movies, series and more");entry.language=sx::search_keyboard::language_index(mode=="search-keyboard-he"?"he":mode=="search-keyboard-th"?"th":mode=="search-keyboard-ko"?"ko":sx::i18n::code());entry.text=entry.language==4?"שלום":entry.language==5?"العربية":entry.language==7?"ภาษาไทย":entry.language==9?"한국어":"Dune";entry.status=sx::i18n::tr("From your configured catalogs");entry.suggestions={{"tt1","movie","Dune: Part Two","2024"},{"tt2","series","Dune: Prophecy","2024"}};entry.row=2;entry.col=4;
+            sx::draw_search_keyboard(list,env,entry);
+        }else{
+            bool top=true;sx::Env top_env=env;top_env.top_navigation=&top;
+            sx::BoardContent content;sx::Row row;row.key="fixture";row.title=sx::i18n::tr("Movies");
+            for(const auto* name:{"Dune: Part Two","The Wild Robot","A Quiet Place","The Creator","Arrival","Interstellar"}){sx::Title title;title.id=name;title.type="movie";title.name=name;title.year="2024";title.poster=poster_texture;title.backdrop=backdrop_texture;row.items.push_back(title);}
+            content.rows.push_back(row);sx::Board page(top_env);page.set_content(&content);page.enter();hui::InputFrame idle;
+            for(int n=0;n<120;++n)page.update(idle,1.0f/60);hui::gfx::BackdropSpec backdrop;page.draw(list,backdrop);
+            sx::draw_top_navigation(list,top_env,sx::Page::board,mode=="top-navigation-last"?10:1,true);
+        }
+    }else if(mode=="free-tv-disclaimer") {
+        sx::DropdownState d;d.title=sx::i18n::tr("Free live TV disclaimer");d.wide=true;
+        d.options={sx::i18n::tr("Cancel"),sx::i18n::tr("I understand — enable free TV")};d.selected=d.active=0;d.message=sx::i18n::tr(free_tv::disclaimer);
+        // The complete notice must fit the real overlay, without its ellipsis
+        // fallback, in every selectable menu language.
+        if(fonts.regular.font->wrap(d.message,26.0f,772.0f).size()>12)return 15;
+        sx::draw_dropdown(list,env,d,1);
+    } else if(mode=="free-tv-countries") {
+        sx::DropdownState d;d.title=sx::i18n::tr("Free TV countries");d.wide=true;d.active=-1;d.selected=5;
+        d.message=sx::i18n::tr("Cross: toggle countries. Square: apply. Circle: cancel.");
+        d.options={sx::i18n::tr("Apply"),sx::i18n::tr("Select all"),sx::i18n::tr("Clear selection"),sx::i18n::tr("Cancel"),"Canada","Germany","United Kingdom","United States"};
+        d.checked={false,false,false,false,true,true,false,true};
+        if(fonts.regular.font->wrap(d.message,26.0f,772.0f).size()>3)return 16;
+        sx::draw_dropdown(list,env,d,1);
+    } else if(mode=="free-tv-settings") {
+        sx::SettingsContent content;
+        const char* labels[]={"Unified TV guide","Free live TV","Free TV countries","Open free live TV"};
+        const char* help[]={"Browse your IPTV sources and enabled free channels together. Source names identify each channel.","Watch free public channels without an IPTV subscription. Optional for this profile.","Choose one or more countries for the free channel list.","Read the disclaimer and enable Free live TV first."};
+        for(int i=0;i<4;++i){sx::SettingRow row;row.category="Live TV";row.label=sx::i18n::tr(labels[i]);row.help=sx::i18n::tr(help[i]);row.kind=i==1?sx::SettingRow::Kind::toggle:i==2?sx::SettingRow::Kind::value:sx::SettingRow::Kind::action;if(i==2){row.value=sx::i18n::tr("{count} countries selected");row.value.replace(row.value.find("{count}"),7,"3");}content.rows.push_back(row);}
+        sx::Settings settings(env);settings.set_content(&content);settings.enter();hui::InputFrame input;input.nav=hui::Direction::down;settings.update(input,1.0f/60);input.nav=hui::Direction::none;input.pressed=hui::action_bit(hui::Action::confirm);settings.update(input,1.0f/60);input.pressed=0;
+        for(int i=0;i<120;++i)settings.update(input,1.0f/60);
+        hui::gfx::BackdropSpec backdrop;settings.draw(list,backdrop);
+    } else if(mode=="start-page"||mode=="channel-options"||mode=="backup-channels"||mode=="hidden-channels") {
+        sx::DropdownState d;d.active=-1;
+        if(mode=="start-page") {
+            d.title=sx::i18n::tr("Open Max'd on");
+            for(const auto& choice:sx::start_page::choices)d.options.emplace_back(sx::i18n::tr(choice.label));
+            d.active=d.selected=3;
+            d.message=sx::i18n::tr("Choose the page to open after selecting this profile. Disabled Sports falls back to Home. Playback does not start automatically.");
+        } else if(mode=="channel-options") {
+            d.title="My news";
+            d.options={sx::i18n::tr("Watch channel"),sx::i18n::tr("Rename channel"),sx::i18n::tr("Hide channel"),sx::i18n::tr("Backup channels"),sx::i18n::tr("Live TV sources & filters")};
+        } else if(mode=="backup-channels") {
+            d.title=sx::i18n::tr("Backup channels");d.options={"News FHD · News","News SD · News"};
+            d.message=sx::i18n::tr("Choose another copy from the current playlist. Hidden channels are included. Playback changes only after you choose a channel.");
+        } else {
+            d.title=sx::i18n::tr("Hidden channels");d.options={sx::i18n::tr("Show all hidden channels"),"My news","Family TV"};
+            d.message=sx::i18n::tr("Select a channel to show it again. Up to 200 are listed; Show all restores every hidden channel in this playlist.");
+        }
+        sx::draw_dropdown(list,env,d,1);
+    }
+    else if(mode=="integrity-warning"||mode=="integrity-credits"||mode=="integrity-verified") {
+        sx::DropdownState d;d.wide=true;d.active=-1;
+        if(mode=="integrity-warning") {
+            d.title=sx::i18n::tr("Unverified build");d.options={sx::i18n::tr("Continue")};d.message=sx::integrity_warning();
+        }else{
+            d.title=sx::i18n::tr("Build authenticity & credits");d.options={sx::i18n::tr("Recheck release files"),sx::i18n::tr("Close")};d.selected=1;
+            d.message=sx::integrity_credits(mode=="integrity-verified"?build_integrity::Status::verified:build_integrity::Status::unverified);
+        }
+        sx::draw_dropdown(list,env,d,1);
+    }
+    else if(mode=="age-country") {
+        sx::DropdownState d;d.title=sx::i18n::tr("Age-rating country");
+        for(const auto& country:age_ratings::countries)d.options.push_back(std::string(country.code)+" — "+sx::i18n::tr(country.name));
+        d.selected=d.active=int(age_ratings::country_index("ES"));sx::draw_dropdown(list,env,d,1);
+    }
+    else if(mode.starts_with("age-")) {
+        sx::DetailContent content;content.series=mode=="age-series";
+        content.title.name=content.series?"A series with age certification":"A movie with age certification";
+        content.title.year="2026";content.title.runtime="2h 08m";content.title.genres="Drama, Adventure";
+        content.title.imdb="8.2";content.title.poster=poster_texture;
+        content.certifications={{"ES","12"},{"US",content.series?"TV-14":"PG-13"}};
+        if(mode=="age-missing")content.certifications.clear();
+        content.title.certification=age_ratings::badge(content.certifications,mode=="age-fallback"?"GB":"ES");
+        content.title.synopsis="Published certifications are displayed with their country. Missing certifications do not create a badge.";
+        if(content.series){content.seasons={"Season 1"};content.episodes={{1,"An episode","52m","A synopsis",false,0,poster_texture}};}
+        sx::Detail page(env);page.set_content(&content);hui::InputFrame in;
+        for(int n=0;n<120;++n)page.update(in,1.f/60);hui::gfx::BackdropSpec bg;page.draw(list,bg);
+    }
+    else if(mode=="title-actions"||mode=="title-actions-movie"||mode=="watched-confirm") {
+        std::ifstream input(root+"/test-output/title-actions/previews.json");nlohmann::json scenes;input>>scenes;
+        const auto& scene=scenes.at(mode);sx::DropdownState d;
+        d.title=sx::i18n::tr(scene.at("title").get<std::string>());
+        for(const auto& label:scene.at("options"))d.options.push_back(sx::i18n::tr(label.get<std::string>()));
+        d.message=sx::i18n::tr(scene.at("message").get<std::string>());d.dialog=scene.at("dialog");
+        if(mode=="watched-confirm")d.selected=1;
+        sx::draw_dropdown(list,env,d,1);
+    }
+    else
+    if(mode=="person" || mode=="person-last") {
+        sx::PersonContent content;content.data.id="1";content.data.name="Alexandra Müller";content.data.photo="";content.photo=poster_texture;
+        content.data.birthday="1974-03-12";content.data.birthplace="Berlin, Deutschland";content.data.deathday="2024-01-01";content.data.known_for="Acting";
+        content.data.biography=sx::i18n::german()?"Eine kurze Biografie mit deutschen Umlauten: Ä, Ö, Ü und ß. Diese Vorschau prüft Bild, Lebensdaten und die Filmografie. Die Personenseite verwendet dieselben Schriften und dieselbe Steuerung wie die PS5-App.":"A short biography. This preview exercises portrait images, biographical facts, credits and controller focus using the production person page.";
+        for(int i=0;i<18;++i){people::Credit c;c.id=std::to_string(i+1);c.type="movie";c.name=i==1?"Ein längerer Filmtitel mit mehreren Wörtern":"Film "+std::to_string(i+1);c.year="2025";content.data.movies.push_back(c);content.movies.push_back(poster_texture);if(i<10){c.type="series";c.name="Series "+std::to_string(i+1);content.data.series.push_back(c);content.series.push_back(poster_texture);}}
+        sx::PersonPage page(env);page.set_content(&content);hui::InputFrame in;in.nav=hui::Direction::right;for(int n=0;n<(mode.ends_with("-last")?40:1);++n)page.update(in,1.f/60);in.nav=hui::Direction::none;for(int i=0;i<120;++i)page.update(in,1.f/60);hui::gfx::BackdropSpec bg;page.draw(list,bg);
+    }
+    else if(mode=="cast" || mode=="cast-last") {
+        sx::DetailContent content;content.title.name="A title with cast & crew";content.title.synopsis="Public movie metadata stays separate from the interface language.";
+        for(int i=0;i<16;++i)content.people.push_back({std::to_string(i+1),i==0?"Alexandra Müller":"Example Person "+std::to_string(i),i==0?"Director":"Character name","",poster_texture,i==0});
+        sx::Detail page(env);page.set_content(&content);page.toggle_cast();hui::InputFrame in;in.nav=hui::Direction::right;for(int n=0;n<(mode.ends_with("-last")?40:1);++n)page.update(in,1.f/60);in.nav=hui::Direction::none;for(int i=0;i<120;++i)page.update(in,1.f/60);hui::gfx::BackdropSpec bg;page.draw(list,bg);
+    }
+    else if(mode=="language-picker") {
+        sx::DropdownState d;d.title=sx::i18n::tr("Language");for(const auto& locale:sx::i18n::locales())d.options.emplace_back(locale.native_name);d.selected=d.active=int(sx::i18n::index(sx::i18n::code()));d.message=sx::i18n::tr("Some help and status messages may appear in English.");sx::draw_dropdown(list,env,d,1);
+    }
+    else if(mode=="language") {
+        sx::SettingsContent content;sx::SettingRow row;row.category="App & Updates";row.label=sx::i18n::tr("Language");row.value=sx::i18n::native_name(sx::i18n::code());row.help=std::string(sx::i18n::tr("Use the app menus in your preferred language. Restart Max'd to apply."))+" "+sx::i18n::tr("Some help and status messages may appear in English.");content.rows.push_back(row);
+        sx::Settings page(env);page.set_content(&content);page.enter();hui::InputFrame in;in.nav=hui::Direction::down;page.update(in,1.f/60);in.nav=hui::Direction::none;in.pressed=hui::action_bit(hui::Action::confirm);page.update(in,1.f/60);in.pressed=0;for(int i=0;i<120;++i)page.update(in,1.f/60);hui::gfx::BackdropSpec bg;page.draw(list,bg);
+    }
+    else if(mode=="usb-language") {
+        sx::DropdownState d;d.title=sx::i18n::tr("USB access is restricted");d.options={sx::i18n::tr("Cancel"),sx::i18n::tr("Use USB reader helper")};d.selected=1;d.message=sx::i18n::tr("The reader runs with the existing payload loader's privileges to read USB playlists. Max'd stays sandboxed. Only a selected, validated playlist is saved privately to this profile.");sx::draw_dropdown(list,env,d,1);
+    }
+    else
     if(mode=="torrents"||mode=="torrents-all") {
         sx::AddonsContent content;
         const char* names[]={"Torrents & Magnet Hub","Enter Magnet or .torrent URL","Phone / PC Web Drop (QR Code)","Sample video.mkv"};
@@ -78,11 +211,27 @@ int main(int argc, char** argv) {
         sx::Addons page(env,sx::Page::torrents);page.set_content(&content);page.enter();hui::InputFrame input;
         for(int i=0;i<120;++i)page.update(input,1.f/60);hui::gfx::BackdropSpec bg;page.draw(list,bg);
     }
-    else if(mode=="live-guide") {
+    else if(mode=="live-guide" || mode=="live-grid" || mode=="live-grid-future" || mode=="unified-guide") {
         sx::AddonsContent content;
         sx::Addon manage;manage.name="Live TV sources & filters";manage.version="Programme guide enabled";manage.description="Options: guide settings and XMLTV URL";manage.types="Live TV";content.items.push_back(manage);
         for(int i=0;i<3;++i){sx::Addon c;c.name=i==0?"News HD":i==1?"Sports":"Documentaries";c.version="Live TV";c.types="Live";c.initial="TV";c.programme_now=i==2?"Programme guide unavailable":"Now: 20:00 · Evening news and weather";c.programme_next=i==2?"X: watch channel":"Next: 20:30 · World headlines and a long programme title";content.items.push_back(c);}
+        if(mode!="live-guide"){
+            content.guide_grid=true;content.guide_now=1793536200;
+            const auto start=content.guide_now/1800*1800;
+            for(size_t i=1;i<content.items.size();++i)if(i!=3){
+                auto& channel=content.items[i];channel.programmes={{start-600,start+1800,"News and weather around the world"},{start+1800,start+5400,"Live sports — championship coverage"},{start+5400,start+9000,"Documentary special"}};
+            }
+        }
+        if(mode=="unified-guide") {
+            content.guide_heading=sx::i18n::tr("Unified TV guide");content.items[1].source_label="Personal IPTV";content.items[2].source_label=sx::i18n::tr("Free live TV");content.items[3].source_label="USB playlist";
+            content.items[0].name=sx::i18n::tr("Live TV sources & filters");content.items[0].types=sx::i18n::tr("All TV sources");content.items[0].description=sx::i18n::tr("Browse your IPTV sources and enabled free channels together. Source names identify each channel.");
+            content.items[1].version="News · Personal IPTV";content.items[2].version=std::string("Sports · ")+sx::i18n::tr("Free live TV");content.items[3].version="Documentaries · USB playlist";
+        }
         sx::Addons page(env,sx::Page::livetv);page.set_content(&content);page.enter();hui::InputFrame input;
+        input.nav=hui::Direction::right;page.update(input,1.f/60);input.nav=hui::Direction::down;page.update(input,1.f/60);
+        if(mode!="live-guide")assert(page.cursor_index()==1);
+        if(mode=="live-grid-future"){input.nav=hui::Direction::right;for(int i=0;i<8;++i)page.update(input,1.f/60);}
+        input.nav=hui::Direction::none;
         for(int i=0;i<120;++i)page.update(input,1.f/60);hui::gfx::BackdropSpec bg;page.draw(list,bg);
     }
     else if(mode=="series-updates") {
@@ -121,8 +270,44 @@ int main(int argc, char** argv) {
         for(int i=0;i<120;++i)page.update(idle,1.f/60);
         hui::gfx::BackdropSpec bg;page.draw(list,bg);
     }
+    else if(mode=="sports-settings" || mode=="sports-settings-off") {
+        std::ifstream input(root+"/test-output/sports-hub/scenes.json");nlohmann::json scenes;input>>scenes;
+        sx::SettingsContent content;for(const auto& row:scenes.at(mode)){sx::SettingRow r;r.label=row.at("label");r.value=row.at("value");r.help=row.at("help");r.category=row.at("category");r.kind=sx::SettingRow::Kind(row.at("kind").get<int>());r.on=row.at("on");content.rows.push_back(r);}
+        sx::Settings page(env);page.set_content(&content);page.enter();hui::InputFrame input_frame;input_frame.nav=hui::Direction::down;page.update(input_frame,1.f/60);input_frame={};input_frame.pressed=1u<<unsigned(hui::Action::confirm);page.update(input_frame,1.f/60);input_frame={};for(int i=0;i<120;++i)page.update(input_frame,1.f/60);hui::gfx::BackdropSpec bg;page.draw(list,bg);
+    }
+    else if(mode=="sports-hub" || mode=="sports-all-nav") {
+        std::ifstream input(root+"/test-output/sports-hub/scenes.json");nlohmann::json scenes;input>>scenes;
+        sx::AddonsContent content;for(const auto& row:scenes.at("sports-hub")) {sx::Addon a;a.name=row.at("name");a.version=row.at("version");a.description=row.at("description");a.types=row.at("types");a.initial=row.at("initial");content.items.push_back(a);}
+        sx::Addons page(env,sx::Page::sports);page.set_content(&content);page.enter();hui::InputFrame idle;for(int i=0;i<120;++i)page.update(idle,1.f/60);hui::gfx::BackdropSpec bg;page.draw(list,bg);
+    }
+    else if(mode=="sports-menu" || mode=="sports-picker" || mode=="sports-teams" || mode=="sports-channels") {
+        std::ifstream input(root+"/test-output/sports-hub/scenes.json");nlohmann::json scenes;input>>scenes;
+        const auto& scene=scenes.at(mode);sx::DropdownState d;d.title=scene.at("title");d.message=scene.at("message");d.options=scene.at("options").get<std::vector<std::string>>();d.selected=0;
+        sx::draw_dropdown(list,env,d,1);
+    }
+    else if(mode=="source-preferences" || mode=="source-preferences-last") {
+        std::ifstream input(root+"/test-output/source-preferences/ui-scenes.json");nlohmann::json scenes;input>>scenes;
+        const auto& scene=scenes.at("source-preferences");sx::DropdownState d;d.title=scene.at("title");d.message=scene.at("message");d.options=scene.at("options").get<std::vector<std::string>>();d.selected=mode=="source-preferences-last"?int(d.options.size())-1:0;
+        sx::draw_dropdown(list,env,d,1);
+    }
+    else if(mode=="torrent-resume" || mode=="torrent-settings" || mode=="playback-recovery") {
+        std::ifstream input(root+"/test-output/torrent-streaming/ui-scenes.json");nlohmann::json scenes;input>>scenes;
+        const auto& scene=scenes.at(mode);sx::DropdownState d;d.title=scene.at("title");d.message=scene.at("message");d.options=scene.at("options").get<std::vector<std::string>>();d.selected=0;
+        sx::draw_dropdown(list,env,d,1);
+    }
+    else if(mode=="diagnostic-summary") {
+        std::ifstream input(root+"/test-output/torrent-streaming/ui-scenes.json");nlohmann::json scenes;input>>scenes;
+        const auto& scene=scenes.at(mode);state.link_only=true;state.text_payload=true;state.title="Copy diagnostic summary";state.cancel_label="Close";
+        state.link=scene.at("link");state.qr_size=scene.at("qr_size");state.qr_modules=scene.at("modules").get<std::vector<uint8_t>>();
+        sx::draw_sign_in(list,env,state,0,1);
+    }
+    else if(mode=="torrent-buffer") {
+        sx::LaunchState launch;launch.title="Example Episode · 4K";launch.subtitle="Starting the selected torrent file";launch.stage=2;launch.progress=.35;
+        launch.stages={"Finding peers","Getting file information","Buffering video","Starting"};launch.peers="12";launch.speed="8.4 MB/s";launch.done="256 MB cached of 80 GB file";launch.ready="16 MB ready ahead · 3.5 s buffered";
+        sx::draw_launch(list,env,launch,0,1);
+    }
     else if(mode=="donation") {
-        state.link_only=true;state.title="Support on Ko-fi";state.link=sx::donation_link;state.cancel_label="Close";
+        state.link_only=true;state.donation=true;state.title=sx::i18n::tr("Support on Ko-fi");state.link=sx::donation_link;state.cancel_label="Close";
         std::uint8_t temp[qrcodegen_BUFFER_LEN_MAX],donation_qr[qrcodegen_BUFFER_LEN_MAX];
         assert(qrcodegen_encodeText(sx::donation_url,temp,donation_qr,qrcodegen_Ecc_MEDIUM,qrcodegen_VERSION_MIN,20,qrcodegen_Mask_AUTO,true));
         state.qr_size=qrcodegen_getSize(donation_qr);state.qr_modules.resize(state.qr_size*state.qr_size);
@@ -185,6 +370,7 @@ int main(int argc, char** argv) {
             auto& row=content.rows[4];row.label="Console light sync";row.kind=sx::SettingRow::Kind::toggle;row.on=true;
             row.help="Fade the console lights with the controller while Nuvio is open. Console colours are approximate. Turning off restores the previous state. Sync active.";
         }
+        for(auto& row:content.rows){row.label=sx::i18n::tr(row.label);row.value=sx::i18n::tr(row.value);row.help=sx::i18n::tr(row.help);}
         sx::Settings settings(env);settings.set_content(&content);settings.enter();hui::InputFrame input;
         if(mode!="settings-categories") {
             // Search is the first root row; open the actual category rather
@@ -237,14 +423,15 @@ int main(int argc, char** argv) {
         }
         player.snap(); player.draw(list);
     }
-    else if (mode == "home")
+    else if (mode == "home"||mode=="watched-home")
     {
         sx::BoardContent content;
         for (int r=0;r<2;++r) {
-            sx::Row row; row.title=r ? "Popular TV" : "Continue Watching";
+            sx::Row row; row.title=r ? "Popular TV" : sx::i18n::tr("Continue Watching");row.continue_watching=r==0;
             for (int i=0;i<9;++i) {
                 sx::Title t; t.name="The Quiet Hours"; t.id=std::to_string(i); t.poster=poster_texture; t.backdrop=backdrop_texture;
                 t.year="2026"; t.synopsis="A quiet town, a familiar face, and a story waiting to be told.";
+                if(mode=="watched-home"){t.type="movie";t.watched=i%3==0;}
                 if (!r) { t.progress=0.36f; t.badge="S2 E5"; }
                 row.items.push_back(t);
             }
@@ -259,6 +446,7 @@ int main(int argc, char** argv) {
     {
         sx::DetailContent content;
         content.title.name = "The End of Oak Street"; content.title.year = "2026";
+        content.title.type="movie";content.title.watched=mode=="watched-movie"||mode=="watched-person";
         content.title.genres = "Drama  ·  Mystery";
         if (mode != "streams") {
             content.title.backdrop=backdrop_texture; content.title.poster=poster_texture;
@@ -266,8 +454,8 @@ int main(int argc, char** argv) {
             content.directors="Avery Quinn"; content.cast="Alex Morgan, Sam Rivera, Taylor Reed";
         }
         content.title.synopsis = "Choose a source from your addons. Video, audio and language badges describe the release supplied by each addon.";
-        content.stream_heading = "Available streams"; content.stream_addons = {"AIOStreams","Pengu"};
-        content.resume_label = "Resume from 35:36";
+        content.stream_heading = sx::i18n::tr("Available streams"); content.stream_addons = {"AIOStreams","Pengu"};
+        content.resume_label = sx::i18n::tr("Resume from ") + std::string("35:36");
         using B = sx::StreamBadge;
         for (int i = 0; i < 5; ++i)
         {
@@ -280,6 +468,16 @@ int main(int argc, char** argv) {
             if (i == 0) s.badges.insert(s.badges.begin()+2,B::dolby_vision);
             content.streams.push_back(s);
         }
+        if(mode=="source-ranking") {
+            std::ifstream input(root+"/test-output/source-preferences/ui-scenes.json");nlohmann::json scenes;input>>scenes;
+            const auto& scene=scenes.at("source-ranking");content.title.name="Example Show";content.title.year="2026";
+            content.stream_heading="Season 1 · Episode 2";content.stream_addons={"Example addon"};content.streams.clear();
+            content.streams_status=std::to_string(scene.at("hidden").get<int>())+" filtered. Source options > Show all sources.";
+            for(const auto& row:scene.at("streams")) {
+                sx::Stream s;s.name=row.at("name");s.size=row.at("size");s.language=row.at("language");s.addon="Example addon";
+                s.badges=row.at("badges").get<std::vector<sx::StreamBadge>>();s.assessment=row.at("assessment");s.source_warning=row.at("warning");content.streams.push_back(s);
+            }
+        }
         if (mode == "series" || mode == "seasons") {
             content.series=true; content.seasons={"Season 1","Season 2","Season 3","Season 4","Specials"}; content.season=1;
             for (int i=0;i<12;++i) {
@@ -291,6 +489,7 @@ int main(int argc, char** argv) {
             content.episode_hint=1;
         }
         sx::Detail detail(env); detail.set_content(&content); detail.enter();
+        if(mode=="watched-person")detail.toggle_cast();
         hui::InputFrame input;
         for (int i = 0; i < 120; ++i) detail.update(input,1.0f/60);
         if (mode == "seasons") { input.nav=hui::Direction::up; detail.update(input,1.0f/60); }
@@ -313,6 +512,6 @@ int main(int argc, char** argv) {
     const auto error = glGetError();
     stbi_flip_vertically_on_write(1);
     const bool written = stbi_write_png(argv[2], 1920, 1080, 4, pixels.data(), 1920 * 4);
-    std::fprintf(stderr, "%s: GL error 0x%x; %zu shapes\n", mode.c_str(), error, renderer.last_instances());
+    std::fprintf(stderr, "%s: GL error 0x%x; %zu shapes\n", preview_name.c_str(), error, renderer.last_instances());
     return written && error == GL_NO_ERROR ? 0 : 9;
 }

@@ -42,6 +42,14 @@ int main() {
   captured.buffer[2] = 0;
   assert(ime.poll(&text) == sx::Ime::State::done && text == "se");
   assert(captured.buffer[0] == 0 && !ime.active());
+  assert(ime.open("Search",false,"שלום 中文 😀"));
+  assert(captured.type==0&&captured.option==0&&captured.buffer[0]==0x5e9);
+  assert(ime.poll(&text)==sx::Ime::State::done&&text=="שלום 中文 😀");
+  assert(ime.open("Search",false,"draft"));
+  ime.cancel();assert(!ime.active()&&captured.buffer[0]==0);
+  assert(ime.open("Password",true,"never prefill a secret"));
+  assert(captured.type==1&&captured.option==0x326&&captured.buffer[0]==0);
+  assert(ime.poll(&text)==sx::Ime::State::done&&text.empty());
   assert(ime.open("Username"));
   assert(captured.type == 0 && captured.option == 0);
   status = 1;

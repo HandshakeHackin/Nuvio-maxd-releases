@@ -4,6 +4,7 @@
 #include "util.h"
 #include "video_frame.h"
 #include "subtitles.h"
+#include "subtitle_fonts.hpp"
 extern "C" {
 #include <ass/ass.h>
 #include <libavcodec/avcodec.h>
@@ -21,6 +22,10 @@ extern "C" {
 namespace {
 constexpr int W=1920, H=1080;
 constexpr size_t kBitmapBudget=32u<<20;
+// A multilingual Matroska read-ahead burst can contain hundreds of small
+// packets before the next render. Keep a bounded burst window as well as the
+// byte budget; 256 packets across all languages discarded current captions.
+constexpr size_t kPendingPacketLimit=4096;
 struct Tile { int x=0,y=0,w=0,h=0; std::vector<uint8_t> rgba; };
 struct Event { double start=0,end=0; std::vector<Tile> tiles; size_t bytes=0; };
 struct SubtitlePacket {
@@ -42,7 +47,8 @@ void blend(uint8_t* dst,const uint8_t* src) {
 }
 const char* family(const std::string& lang) {
     const auto l=lower(lang);
-    if(starts_with(l,"ar")||starts_with(l,"fa")||starts_with(l,"per")||starts_with(l,"ur")) return "Noto Naskh Arabic UI";
+    // Version 2.021's embedded family dropped "UI"; file basenames stay stable.
+    if(starts_with(l,"ar")||starts_with(l,"fa")||starts_with(l,"per")||starts_with(l,"ur")) return "Noto Naskh Arabic";
     if(starts_with(l,"ja")||starts_with(l,"jp")||starts_with(l,"ko")||starts_with(l,"zh")||starts_with(l,"chi")||starts_with(l,"cmn")||starts_with(l,"yue")) return "Noto Sans CJK SC";
     if(l=="he"||l=="heb"||l=="iw"||starts_with(l,"he-")) return "Noto Sans Hebrew";
     if(starts_with(l,"th")) return "Noto Sans Thai";
@@ -112,15 +118,17 @@ void SubtitleRenderer::configure(const std::string& fonts) {
     d_->library=ass_library_init(); if(!d_->library) return;
     ass_set_message_cb(d_->library,ass_message,nullptr);
     // Bundle fonts: no system provider or redistributed console fonts required.
-    for(const char* name:{"Inter-Regular.ttf","Inter-SemiBold.ttf","NotoSans-Regular.ttf","NotoSans-Bold.ttf",
+    for(const char* name:{"Inter-Regular.ttf","Inter-SemiBold.ttf","Montserrat-Medium.ttf","NotoSans-Regular.ttf","NotoSans-Bold.ttf",
         "NotoSansHebrew-Regular.ttf","NotoSansHebrew-Bold.ttf",
-        "NotoNaskhArabicUI-Regular.ttf","NotoNaskhArabicUI-Bold.ttf","NotoSansCJKsc-Regular.ttf","NotoSansThai-Regular.ttf"}) {
+        "NotoNaskhArabicUI-Regular.ttf","NotoNaskhArabicUI-Bold.ttf","NotoSansCJKsc-Regular.ttf","NotoSansThai-Regular.ttf",subtitle_fonts::fallback_file}) {
         std::ifstream f(fonts+"/"+name,std::ios::binary);
         std::string data((std::istreambuf_iterator<char>(f)),{});
         if(!data.empty() && data.size()<24u<<20) ass_add_font(d_->library,name,data.data(),int(data.size()));
     }
     d_->renderer=ass_renderer_init(d_->library); if(!d_->renderer) return;
-    ass_set_fonts(d_->renderer,(fonts+"/Inter-Regular.ttf").c_str(),"Inter",ASS_FONTPROVIDER_NONE,nullptr,1);
+    // Requested style families remain primary. With no system provider, the
+    // default family must itself cover missing glyphs, including Thai.
+    ass_set_fonts(d_->renderer,subtitle_fonts::fallback_path(fonts).c_str(),subtitle_fonts::fallback_family,ASS_FONTPROVIDER_NONE,nullptr,1);
     ass_set_frame_size(d_->renderer,W,H);
     ass_set_shaper(d_->renderer,ASS_SHAPING_COMPLEX);
     ass_set_cache_limits(d_->renderer,6000,32);
@@ -183,9 +191,12 @@ void SubtitleRenderer::packet(int id,const AVPacket* p,double pts,double duratio
 
         job.bytes+=e.bytes;job.bitmap=std::move(e);
     }
+    // Charge queued container storage too; many tiny bitmap rectangles or
+    // empty clear packets must not bypass the byte budget.
+    job.bytes+=sizeof(SubtitlePacket)+job.chunks.capacity()*sizeof(decltype(job.chunks)::value_type)+job.bitmap.tiles.capacity()*sizeof(Tile);
     if(job.bytes>kBitmapBudget)return;
     std::lock_guard<std::mutex> lock(d_->pending_mutex);
-    while(!d_->pending.empty() && (d_->pending.size()>=256 || d_->pending_bytes+job.bytes>kBitmapBudget)) {
+    while(!d_->pending.empty() && (d_->pending.size()>=kPendingPacketLimit || d_->pending_bytes+job.bytes>kBitmapBudget)) {
         d_->pending_bytes-=d_->pending.front().bytes;d_->pending.pop_front();
     }
     d_->pending_bytes+=job.bytes;d_->pending.push_back(std::move(job));
@@ -244,13 +255,13 @@ SubtitleOverlay SubtitleRenderer::render(int id,double seconds,int vw,int vh,dou
         if(!t.authored && (style!=d_->last_style || id!=d_->last_id)) for(int i=0;i<t.ass->n_styles;++i) {
             auto& st=t.ass->styles[i];
             const char* chosen=family(t.language);
-            if(std::strcmp(chosen,"Inter")==0) chosen=font==2 ? "Montserrat" : "Inter";
+            if(std::strcmp(chosen,"Inter")==0) chosen=font==2 ? "Montserrat Medium" : "Inter";
             free(st.FontName); st.FontName=strdup(chosen);
             st.FontSize=subtitle_size::height(size); st.Bold=font==1?1:0;
             st.PrimaryColour=colour==1?0xFFFF0000u:colour==2?0x00FFFF00u:0xFFFFFF00u;
             st.Outline=effect==1?2:0; st.Shadow=effect==2?2:0; st.BorderStyle=background?3:1;
             st.OutlineColour=background?unsigned(255-background*255/100):0; st.BackColour=0; st.MarginV=110;
-            ass_set_fonts(d_->renderer,(d_->fonts+"/Inter-Regular.ttf").c_str(),chosen,ASS_FONTPROVIDER_NONE,nullptr,1);
+            ass_set_fonts(d_->renderer,subtitle_fonts::fallback_path(d_->fonts).c_str(),subtitle_fonts::fallback_family,ASS_FONTPROVIDER_NONE,nullptr,1);
         }
         ass_set_storage_size(d_->renderer,vw>0?vw:W,vh>0?vh:H);
         ASS_Image* images=ass_render_frame(d_->renderer,t.ass,llround(seconds*1000),&changed);

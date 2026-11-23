@@ -9,6 +9,13 @@ This native adaptation incorporates [Sp9nky/unofficial-stremio-ps5-port](https:/
 
 ## Code included in this repository
 
+The optional Free Live TV feature uses public catalogue and programme data
+from [jyotiprakash101/nuvio-livetv](https://github.com/jyotiprakash101/nuvio-livetv),
+the data source used by Horizon Home Kit. Its independently written GPL client
+copies no upstream implementation code. Data-source credits and reviewed
+revisions are in `app/licenses/free-live-tv/NOTICE.txt`; channel listings and
+video content retain the rights/notices of their respective providers.
+
 | Where | What | License |
 | --- | --- | --- |
 | `gl/update_channel.cpp`, `update/helper.cpp` | Bundled helper handoff follows BlackBearReloaded's [ProsperoEden](https://github.com/blackbearreloaded/ProsperoEden/tree/868669fe63d44cf41ffe3412aeaac2527cff5f57/headless/update_check), commit `868669fe63d44cf41ffe3412aeaac2527cff5f57`, and the native app kit. The FFPFSC transaction is specific to Nuvio; it uses the documented public HTTP API of [ShadowMount+ 1.7](https://github.com/drakmor/ShadowMountPlus/blob/4cde42a2293756132735d8e4280eb71f089865ee/docs/api.md), rather than its private control protocol. | GPL-3.0-or-later |
@@ -21,7 +28,7 @@ This native adaptation incorporates [Sp9nky/unofficial-stremio-ps5-port](https:/
 | `native/hui_runtime_shims.c` | process-level runtime shims for the OpenGL runtime, from ps5-homebrew-ui's `src/runtime/runtime_shims.c` (itself adapted from ps5-opengl's `native-app/runtime_shims.c`) | GPL-3.0-or-later |
 | `third_party/qrcodegen.c`, `third_party/qrcodegen.h` | [Nayuki QR Code generator](https://github.com/nayuki/QR-Code-generator), C library; license embedded in both files | MIT |
 | `third_party/json.hpp` | [nlohmann/json](https://github.com/nlohmann/json) 3.12.0 (Niels Lohmann) | MIT |
-| `third_party/stb_image.h` | [stb_image](https://github.com/nothings/stb) 2.30 (Sean Barrett): loads the artwork and icons | MIT / public domain |
+| `third_party/stb_image.h` | [stb_image](https://github.com/nothings/stb) 2.32 (Sean Barrett): loads the artwork and icons | MIT / public domain |
 | `src/hwdec_ps5.cpp` (hardware video decoding), `native/stubs/videodec2.c` | ported from [Nuvio PS5](https://github.com/theghostonline/Nuvio-PS5) (`app/engine/media/src/evo_vdec_native.c`, Husam Osman, itself built on an open-source GPL-3.0 PS5 media player); the libSceVideodec2 structures and call sequence come from there and from [ProsperoLight](https://github.com/blackbearreloaded/ProsperoLight) (BlackBearReloaded) and [SharpProspero](https://github.com/SvenGDK/SharpProspero) (SvenGDK) | GPL-3.0-or-later |
 | HEVC Main10 smaller-pipeline retry in `src/hwdec_ps5.cpp` | adapted from [EVO Player's native decoder](https://github.com/sainsaji/EVO-PLAYER-PS5/blob/21524a4a6effa65312be2026042e44a96efca4c6/projects/evoplayer/media/src/evo_vdec_native.c), commit `21524a4a6effa65312be2026042e44a96efca4c6` | GPL-3.0-or-later |
 | `gl/hdr_output.cpp` (in-place HDR10 VideoOut transitions) | call sequence and VideoOut ABI adapted from [EVO Player's native AGC renderer](https://github.com/sainsaji/EVO-PLAYER-PS5/blob/9715f6ee9bf9b53461d6fdf9a2e11b4c48357783/projects/evoplayer/media/src/evo_agc_runtime.c), commit `9715f6ee9bf9b53461d6fdf9a2e11b4c48357783`; VideoOut type definitions credited there to SharpProspero (SvenGDK) | GPL-3.0-or-later |
@@ -49,7 +56,7 @@ license:
 | [FFmpeg](https://ffmpeg.org/) (libavformat, libavcodec, libavutil, libswresample, libswscale), built with `--enable-gpl --enable-version3` | GPL-3.0-or-later |
 | [x264](https://www.videolan.org/developers/x264.html) (pulled in by that FFmpeg build) | GPL-2.0-or-later |
 | [libcurl](https://curl.se/) 8.23.0 | curl license (MIT/X derivative) |
-| [OpenSSL](https://www.openssl.org/) 3.5.9 | Apache-2.0 |
+| [OpenSSL](https://www.openssl.org/) 4.1.0 | Apache-2.0 |
 | [libpsl](https://github.com/rockdaboot/libpsl) | MIT; Public Suffix List data MPL-2.0 |
 | [libwebp](https://chromium.googlesource.com/webm/libwebp) and libsharpyuv (the posters' format) | BSD-3-Clause |
 | [zlib](https://zlib.net/) | zlib |
@@ -64,7 +71,7 @@ license:
 | What | License |
 | --- | --- |
 | [ps5-payload-sdk](https://github.com/ps5-payload-dev/sdk): compiler wrappers, headers, sysroot | GPL-3.0-or-later (FreeBSD headers BSD) |
-| [LLVM/Clang/lld](https://llvm.org/) 18 | Apache-2.0 WITH LLVM-exception |
+| [LLVM/Clang/lld](https://llvm.org/) 23.1.5 | Apache-2.0 WITH LLVM-exception |
 | [ps5-native-app-boilerplate](https://github.com/blackbearreloaded/ps5-native-app-boilerplate) (BlackBearReloaded): native-app converter, signer, asset validation; its converter and FSELF writer are derived from [SharpProspero](https://github.com/SvenGDK/SharpProspero) (SvenGDK) | GPL-3.0-or-later; GPL-3.0 |
 | [MkPFS](https://github.com/PSBrew/MkPFS) (PSBrew): packs the `.ffpfsc` image | GPL-3.0 |
 | [DirectXTex texconv](https://github.com/microsoft/DirectXTex) (Microsoft): converts the home-screen pictures | MIT |
@@ -216,3 +223,35 @@ VLC late-clock rebuffering and post-preroll discard policy patches are adapted f
 The next revision compares [NuvioTV beta.9](https://github.com/NuvioMedia/NuvioTV/releases/tag/1.1.0-beta.9), its [Night Mode](https://github.com/NuvioMedia/NuvioTV/pull/4366) and [LFE downmix](https://github.com/NuvioMedia/NuvioTV/pull/4367) changes, [NuvioTVSmart 1.3.1](https://github.com/NuvioMedia/NuvioTVSmart/releases/tag/1.3.1) chapter/title, subtitle timing and trailer-language behavior, and [ProsperoTV guide correction](https://github.com/ThatGuyKalvin/ProsperoTV/commit/d8410e5b4bd6). The linked-channel C++ PCM processor, conservative cue-timing matcher, session integration and guide offset handling are Max’d-specific implementations. Chapter label classification adapts the GPL-3.0 Smart TV rules; ordinary chapters and post-credit scenes retain their protection. Existing upstream copyright notices remain.
 
 Three ISC-licensed libass hardening patches retain their original source notice in [third_party/libass/LICENSE](third_party/libass/LICENSE). Patch commits and checksums are recorded in dependencies.json and [the patch notes](third_party/libass/README.md). The next package includes the ISC notice.
+
+## 1.0.0.20 feature references
+
+[abbaskip/Nuvio-ReSeq](https://github.com/abbaskip/Nuvio-ReSeq/tree/3c7bd94dd1ae596fef6ff983518b121b5e261040) (GPL-3.0), especially its TVDB, Stalker portal and Drive-sync behavior, was reviewed as a compatibility reference. The native C++ feature modules are implemented in this source tree and keep the app's GPL-3.0-or-later notices. No Android runtime or provider application credentials were imported.
+
+Optional episode-order metadata is supplied by [TheTVDB.com](https://thetvdb.com/), with the user's own appropriate API access. Google Drive is an optional user-authorised encrypted backup destination. Max'd is not endorsed by these services or portal/content providers.
+
+## 1.0.0.24 component refresh
+
+The isolated build uses LLVM 23.1.5, Payload SDK 0.45 and the PacBrew 0.41.1 library prefix, with a fully rebuilt source-pinned overlay. Native/EVO/VLC share FFmpeg 9.0.2; libVLC remains 3.0.24. EVO decoder/presentation sources are 0.13.7 with the recorded Nuvio HEVC patch. Its private Dolby Vision parser and standalone frontend are not linked. VLC port 0.6.1 was reviewed; its standalone frontend changes do not replace the embedded modules.
+
+The refresh includes zlib 1.4, zstd 1.5.7, XZ 5.8.4, libpsl 0.23.3, fontconfig 2.18.3, libiconv 1.19.1, miniupnpc 2.3.3, dht 0.28, libebml 1.4.7 and utf8cpp 4.2.1. Original component licenses and new notices are preserved. The packaged CA data is the checksum-verified November 5 Mozilla/curl bundle. STB image, truetype and image-write headers are updated at their recorded upstream commit.
+
+Montserrat is 7.222. Noto Naskh Arabic 2.021 hinted faces replace legacy Arabic UI faces while retaining the loader filenames; their OFL notice ships with them. Existing Inter faces already match release 4.1. Other bundled font sources remain pinned. All eight menu languages retain their existing translations. Provider package integrity, compatibility adapters and notices are recorded in third_party/provider-runtime.
+
+## NuvioTVLauncher feature inspiration
+
+The native start-page, remembered TV groups, channel customization and backup
+selection behavior was inspired by Br0ck25/NuvioTVLauncher (GPL-3.0), reviewed at
+7867b98484a6fb2c4af4914abe494c825c2fc541. Max'd uses independent C++ implementations.
+See app/licenses/nuvio-tv-launcher/ for credits and source provenance, including
+NuvioMedia/NuvioTV and homelessbrian/NuvioPlusIPTV. Android-specific code is not bundled.
+
+## Thai subtitle fallback
+
+`app/fonts/NuvioSubtitleFallback-Regular.ttf` is a renamed OFL-1.1 derivative
+of the unchanged bundled Noto Sans, Noto Sans Thai and Inter regular faces.
+It preserves their complete Unicode coverage and merges their layout tables;
+no console font is used. See its adjacent NOTICE and original font licenses.
+The reproducible fontTools recipe and input/output pins are recorded in
+`dependencies.json`. Native/EVO and VLC use it when the requested subtitle
+font cannot supply a glyph, including Thai text without a language tag.

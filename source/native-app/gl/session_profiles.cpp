@@ -1,12 +1,19 @@
+#include "../ui/i18n.hpp"
 // Nuvio account profiles: metadata and PINs use the account service; all local
 // history and source switches are scoped to the selected account/profile.
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "session.hpp"
+#include "watched_history.hpp"
 #include "nuvio_account.h"
+#include "config_backup.h"
+#include "age_ratings.hpp"
+#include "start_page.hpp"
 #include <algorithm>
 
 namespace sx {
 void Session::load_profile_settings() {
+    std::string recovery_error;
+    if(!config_backup::recover(profile_dir_,recovery_error)){profile_ready_=false;say(recovery_error,15,true);return;}
     live_load();
     media_load();
     torrent_load();
@@ -14,10 +21,17 @@ void Session::load_profile_settings() {
     prefs_.subtitle_langs = "eng"; prefs_.audio_langs.clear(); prefs_.auto_subtitles = true;
     json j;
     load_json(profile_dir_ + "/profile-settings.json", j);
+    prefs_.age_rating_country=age_ratings::load_preference(j);
+    prefs_.start_page=start_page::choices[start_page::index(jstr(j,"start_page"))].id;
+    top_navigation=jbool(j,"top_navigation",false);
+    const auto language=jstr(j,"search_keyboard_language",prefs_.ui_language);
+    search_keyboard_language_=search_keyboard::languages[search_keyboard::language_index(language)].code;
     if (jobj(j, "extra_addons").is_array())
         for (const auto& u : j["extra_addons"]) if (u.is_string()) prefs_.extra_addons.push_back(u.get<std::string>());
     if (jobj(j, "provider_enabled").is_object()) prefs_.provider_enabled = j["provider_enabled"];
     if (jobj(j,"provider_settings").is_object()) prefs_.provider_settings=j["provider_settings"];
+    prefs_.source_preferences=source_policy::load(j);
+    sports_load(j);
     prefs_.subtitle_langs = jstr(j, "subtitle_languages", "eng");
     prefs_.audio_langs = jstr(j, "audio_languages"); prefs_.auto_subtitles = jbool(j, "auto_subtitles", true);
     if (inherit_plugins_) {
@@ -34,14 +48,24 @@ void Session::save_profile_settings() {
     if (!profile_ready_ || profile_dir_.empty()) return;
     json j;
     load_json(profile_dir_ + "/profile-settings.json", j);
+    age_ratings::save_preference(j,prefs_.age_rating_country);
+    j["start_page"]=prefs_.start_page;
+    j["top_navigation"]=top_navigation;
+    j["search_keyboard_language"]=search_keyboard_language_;
+    source_policy::save(j,prefs_.source_preferences);
+    sports::save(j,sports_prefs_);
     j["extra_addons"] = prefs_.extra_addons;
     if (!inherit_plugins_) {j["provider_enabled"] = prefs_.provider_enabled;j["provider_settings"]=prefs_.provider_settings;}
     j["subtitle_languages"] = prefs_.subtitle_langs;
     j["audio_languages"] = prefs_.audio_langs;
     j["auto_subtitles"] = prefs_.auto_subtitles;
-    if (!save_json(profile_dir_ + "/profile-settings.json", j)) say("Could not save profile preferences", 8.0, true);
+    if (!save_json(profile_dir_ + "/profile-settings.json", j)) say(sx::i18n::tr("Could not save profile preferences"), 8.0, true);
 }
 void Session::clear_profile_views() {
+    ime_.cancel();text_done_=nullptr;
+    features_reset();
+    person_leave();*cast_cancel_=true;++cast_generation_;detail_seed_.reset();
+    sports_reset();
     media_reset();
     torrent_reset();
     reset_library_search();
@@ -57,7 +81,7 @@ void Session::clear_profile_views() {
     cancel_autoplay(); resuming_ = false; open_req_.reset(); want_streams_video_.clear();
     tracking_status_ = json::object(); ++tracking_generation_; ++library_generation_;
     library_.clear(); progress_.clear(); watched_.clear(); addons_.clear(); board_.clear();
-    library_loaded_ = false; library_loading_ = false; addons_loading_ = false;
+    library_loaded_ = false; library_loading_ = false; addons_loading_ = false; title_action_busy_ = false;
     board_loading_ = false; disc_loading_ = false; disc_end_ = false;
     disc_items_.clear(); disc_types_.clear(); discover.items.clear();
     board.rows.clear(); board_map_.clear(); meta_cache_.clear(); meta_asked_.clear(); meta_inflight_ = 0;
@@ -91,11 +115,12 @@ void Session::profile_apply(const json& result) {
     if (signed_in()) tracking_refresh();
     load_profile_settings(); load_progress(); refresh_library(); refresh_addons(); refresh_settings();
     changed_ |= kDiscover | kDiscoverNew | kSearch | kSearchNew;
-    board.status = "Loading this profile's catalogs...";
+    board.status = sx::i18n::tr("Loading this profile's catalogs...");
     load_addons(); if (signed_in()) load_library();
+    start_page_apply();
 }
 void Session::profile_choose(int id, bool locked) {
-    if (watching || resuming_) { say("Stop playback before switching profiles", 6.0); return; }
+    if (watching || resuming_) { say(sx::i18n::tr("Stop playback before switching profiles"), 6.0); return; }
     const auto select = [this, id](const std::string& pin) {
         if (profiles_loading_) return;
         const auto key = prefs_.auth_key;
@@ -106,16 +131,16 @@ void Session::profile_choose(int id, bool locked) {
         // account context. The user cannot start an old stream in that gap.
         if (restore) { save_progress(); save_profile_settings(); }
         clear_profile_views(); profile_ready_ = false; profiles_loading_ = true;
-        board.status = "Opening profile...";
-        say("Opening profile...");
+        board.status = sx::i18n::tr("Opening profile...");
+        say(sx::i18n::tr("Opening profile..."));
         bg<ApiResult>([key, id, pin] { return api_profile_select(key, id, pin); }, [this, restore, outgoing](ApiResult& r) {
             profiles_loading_ = false;
             if (!r.ok) {
                 if (restore) profile_apply(outgoing);
-                else board.status = "Choose a profile in Settings > Account & Services > Profiles.";
+                else board.status = sx::i18n::tr("Choose a profile in Settings > Account & Services > Profiles.");
                 say(r.error, 10.0, true); return;
             }
-            profile_apply(r.result); say("Profile: " + jstr(active_profile_, "name"));
+            profile_apply(r.result); say(sx::i18n::tr("Profile: ") + jstr(active_profile_, "name"));
         });
     };
     if (locked) {
@@ -145,14 +170,14 @@ void Session::profile_pin_input(const hui::InputFrame& input) {
     pin.clear();
 }
 void Session::profiles_menu(bool startup) {
-    if (!signed_in()) { say("Sign in to Nuvio to use account profiles", 6.0); return; }
-    if (watching || resuming_) { say("Stop playback before switching profiles", 6.0); return; }
+    if (!signed_in()) { say(sx::i18n::tr("Sign in to Nuvio to use account profiles"), 6.0); return; }
+    if (watching || resuming_) { say(sx::i18n::tr("Stop playback before switching profiles"), 6.0); return; }
     if (profiles_loading_) return;
     profiles_loading_ = true;
     const auto key = prefs_.auth_key;
     bg<ApiResult>([key] { return api_profiles_get(key); }, [this, startup](ApiResult& r) {
         profiles_loading_ = false;
-        if (!r.ok) { say(r.error + ". Open Settings > Account & Services > Profiles to retry.", 12.0, true); return; }
+        if (!r.ok) { say(r.error + sx::i18n::tr(". Open Settings > Account & Services > Profiles to retry."), 12.0, true); return; }
         profiles_ = jobj(r.result, "profiles");
         prefs_.auth_key = jstr(r.result, "authKey", prefs_.auth_key);
         std::vector<std::string> choices;
@@ -163,14 +188,14 @@ void Session::profiles_menu(bool startup) {
         }
         const auto snapshot = profiles_;
         const int count = int(choices.size());
-        choices.push_back("Create profile"); choices.push_back("Cancel");
-        open_dropdown(startup ? "Who's watching?" : "Nuvio profiles", choices, selected,
+        choices.push_back(sx::i18n::tr("Create profile")); choices.push_back(sx::i18n::tr("Cancel"));
+        open_dropdown(startup ? sx::i18n::tr("Who's watching?") : sx::i18n::tr("Nuvio profiles"), choices, selected,
             [this, snapshot, count](int index) {
                 if (index >= 0 && index < count) {
                     const auto& p = snapshot[static_cast<size_t>(index)];
                     profile_choose(int(jnum(p, "profile_index")), jbool(p, "pin_enabled"));
                 } else if (index == count) {
-                    say("Enter a name for the new profile", 8.0);
+                    say(sx::i18n::tr("Enter a name for the new profile"), 8.0);
                     ask_text([this](const std::string& name) {
                         if (trim(name).empty()) return;
                         profiles_loading_ = true;
@@ -183,8 +208,15 @@ void Session::profiles_menu(bool startup) {
                     });
                 }
             });
-        dropdown.message = "History, addons and plugins belong to each profile. Shared sources follow your Nuvio profile settings.";
+        dropdown.message = sx::i18n::tr("History, addons and plugins belong to each profile. Shared sources follow your Nuvio profile settings.");
     }, true);
+}
+void Session::refresh_watched_views() {
+    refresh_board();refresh_library();
+    for(auto& t:discover.items)if(t.type=="movie")t.watched=watched_history::movie(t.type,t.id,watched_);
+    for(auto& row:search.rows)for(auto& t:row.items)if(t.type=="movie")t.watched=watched_history::movie(t.type,t.id,watched_);
+    if(d_open_) {detail.title.watched=watched_history::movie(d_item_.type,d_item_.id,watched_);detail_set_season(d_season_idx_,false);}
+    changed_|=kDiscover|kSearch|kDetail;
 }
 void Session::load_watched() {
     if (!signed_in() || !profile_ready_) return;
@@ -194,17 +226,12 @@ void Session::load_watched() {
         if (revision != watched_revision_) return;
         if (!r.ok) { series_history_ready_=false;refresh_board();refresh_library();say(r.error, 8.0, true); return; }
         series_history_ready_=jbool(r.result,"synced");
-        std::set<std::string> remote;
-        for (const auto& entry : jobj(r.result, "entries")) {
-            auto id = jstr(entry, "content_id");
-            if (id.empty()) continue;
-            if (jobj(entry, "season").is_number() && jobj(entry, "episode").is_number())
-                id += ":" + std::to_string(int(jnum(entry, "season"))) + ":" + std::to_string(int(jnum(entry, "episode")));
-            remote.insert(id);
+        watched_history::Snapshot remote;
+        if(!watched_history::decode(jobj(r.result,"entries"),remote)) {
+            series_history_ready_=false;say(i18n::tr("Watched history is unreadable; local marks retained"),8,true);return;
         }
-        watched_ = std::move(remote); save_progress();
-        refresh_board();refresh_library();
-        if (d_open_) detail_set_season(d_season_idx_);
+        watched_=std::move(remote.watched);save_progress();
+        refresh_watched_views();
     });
 }
 void Session::sync_watched_mark(const std::string& video, const std::string& title, bool watched,
@@ -215,7 +242,7 @@ void Session::sync_watched_mark(const std::string& video, const std::string& tit
     bg<ApiResult>([key, video, title, watched, content, season, episode] { return api_watched_update(key, video, title, watched, content, season, episode); },
         [this](ApiResult& r) {
             if (!r.ok) say(r.error, 8.0, true);
-            else if (!jbool(r.result, "synced")) say("Watched history saved on this PS5; Nuvio sync will retry.", 6.0);
+            else if (!jbool(r.result, "synced")) say(sx::i18n::tr("Watched history saved on this PS5; Nuvio sync will retry."), 6.0);
         });
 }
 void Session::sync_source(const std::string& url, bool plugin, bool remove, bool automatic) {
@@ -226,7 +253,7 @@ void Session::sync_source(const std::string& url, bool plugin, bool remove, bool
     bg<ApiResult>([key, url, plugin, remove] { return api_profile_source_update(key, url, plugin, remove); },
         [this](ApiResult& r) {
             if (!r.ok) say(r.error, 10.0, true);
-            else { say("Sources synced to this Nuvio profile"); load_addons(); }
+            else { say(sx::i18n::tr("Sources synced to this Nuvio profile")); load_addons(); }
         });
 }
 } // namespace sx

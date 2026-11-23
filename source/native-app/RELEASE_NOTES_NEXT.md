@@ -1,3 +1,58 @@
+# Automatic channel-list refresh
+
+- Add Off, 1, 3, 6, 12 and 24-hour choices in Settings → Live TV, with a six-hour
+  per-profile default and encrypted-backup support.
+- Refresh the currently loaded free/personal source or unified list while the app
+  is open. Avoid overlapping downloads and defer/cancel during playback or menus.
+- Keep channels and guides on complete/partial refresh failure; reject stale
+  source/profile replies and keep the existing loader bounds and private copies.
+
+# Search and navigation (#19)
+
+- Multilingual controller search keyboard, with quick language switching and
+  PS5 keyboard handoff for Chinese characters, kanji or other text.
+- Title suggestions from the current profile's configured searchable catalogues.
+- Optional top navigation with a Search tab and all enabled app sections.
+- Keep private PIN/password entry, local search scopes and playback shortcuts.
+
+See [controls and test checklist](SEARCH_NAVIGATION.md). Physical PS5 testing is
+still needed for these new controls.
+
+# Unreleased Sports Hub
+
+- Add an optional per-profile Sports Hub, disabled by default, with a dedicated Settings section. Enable/disable, choose sports and competitions, follow teams/leagues/names, choose a coverage region, hide scores, restrict to channel candidates and adjust the display time offset.
+- Adapt ReSeq’s sport → league → team selection flow to the native controller UI. Retain search and focus while following multiple teams. Disabling retains selections and cancels sports work.
+- Browse schedules, My Sports, started/upcoming events and results. Use the shared public ReSeq catalogue and limited focused-event score requests; stale snapshots never present live scores as current. Date-only fixtures show time TBD.
+- Match programme titles and broadcasters against the selected Live TV source, label uncertain broadcaster candidates, and offer manual channel search. Playback still requires the user’s own configured source.
+- Keep sports matching bounded and index channel names for large playlists. Include catalogue provenance, GPL notice and public-data attribution.
+
+This is an unpublished native adaptation of Nuvio-ReSeq at d46b29a. Public sports coverage varies; physical PS5 and provider testing remain pending.
+
+# Unreleased source selection
+
+- Add per-profile source preferences for minimum resolution, maximum advertised file size, preferred language and HDR. Unknown metadata stays eligible.
+- Check supplied filenames for archives/non-video files, likely samples and clearly different episodes. Handle episode ranges, season packs and mapped anime numbering conservatively. Cinema-recording labels receive a warning, with optional exclusion.
+- Explain source ranking and warnings on stream cards. Open Source options beside the addon filters to play the top-ranked source, adjust preferences or show all enabled sources for the current search.
+- Apply the same filters to next-episode source selection. Never silently relax user filters or enable torrents through Show all.
+
+Inspired by MKCinema’s source-selection features; implemented in native C++ with no new service or dependency. Source metadata remains unverified; physical PS5 testing is pending.
+
+# Unreleased torrent integration
+
+- Show the selected filename separately from Resume, Start over and Choose another file controls.
+- Show launch stages, transfer speed, verified data ready ahead and actual buffered playback seconds.
+- Recover with retry, restart or alternate file/source while preserving saved progress; reject stale callbacks.
+- Group optional torrent controls, allocated cache usage, safe cleanup and Web Drop status in settings.
+- Export a privacy-filtered diagnostic summary as on-screen text, a plain-text QR for phone copying, or a local text file.
+
+- Resume the most recently watched file in a torrent, or restart only that file. Keep other files’ progress and ignore stale profile callbacks.
+- Resolve the actual selected file before applying/saving torrent progress, including automatic magnet-file selection. Save progress for streams with unknown duration.
+- Use short head-only probing for MKV/TS/M2TS, while preserving MP4 tail-metadata access and indexed resume behavior.
+- Report buffering when actual torrent data has arrived, rather than inferring it from peer count alone.
+- Interrupt blocked torrent reads for new seeks. Bound index-search reads, roll failed seeks back to a confirmed demux position, and report unrecoverable failures without reopen loops. Decoder/audio errors remain visible.
+
+Based on the latest torrent-edition source at c8837a9. This is an unpublished development candidate based on official 1.0.0.11; physical PS5/swarm testing remains pending.
+
 # Included in 1.0.0.11
 
 - Dependency security: replace the legacy Cheerio fork with maintained browser-compatible selectors, removing the known nth-check denial-of-service advisory while retaining provider module aliases.

@@ -1,7 +1,9 @@
-Unofficial Stremio PS5 Port - license notices
+Nuvio Max'd - license notices
 
-The app is licensed under the GNU GPL v3.0 (LICENSE, next to this folder in
-the app; source: https://github.com/Sp9nky/unofficial-stremio-ps5-port).
+Nuvio Max'd is maintained by HandshakeHackin under GNU GPL v3.0.
+Project/source: https://github.com/HandshakeHackin/Nuvio-maxd-releases
+Derived from Sp9nky's unofficial-stremio-ps5-port and the credited Nuvio/native
+app work below. See CREDITS.txt and LICENSE at the app root.
 It contains or links the components below; each keeps its own license, whose
 text is in this folder. THIRD_PARTY.md lists where each one is used.
 
@@ -73,3 +75,6 @@ native/tube_frame_pacing.h at that commit. HDR switching and GPU lifetime
 safeguards follow the in-place VideoOut and frame-retirement approach,
 adapted to Nuvio's OpenGL renderer. The matching source archive contains
 the scheduler and adaptations; the GPL license is included in this package.
+
+NuvioTVLauncher feature inspiration (GPL-3.0): native C++ start-page and Live TV
+controls. Credits and reviewed source: nuvio-tv-launcher/NOTICE.txt, UPSTREAM.json.

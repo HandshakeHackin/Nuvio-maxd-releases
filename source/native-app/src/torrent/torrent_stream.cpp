@@ -6,6 +6,8 @@ extern "C" {
 }
 
 #include <cstdlib>
+#include <charconv>
+#include <limits>
 
 #include "../util.h"
 #include "engine.h"
@@ -20,13 +22,16 @@ int64_t seek_cb(void* opaque, int64_t offset, int whence) {
 }  // namespace
 
 bool TorrentStream::parse_url(const std::string& url, std::string* hash, int* idx) {
-	if (!is_url(url)) return false;
-	std::string rest = url.substr(10);
-	size_t slash = rest.find('/');
-	if (slash != 40) return false;
-	*hash = rest.substr(0, 40);
-	*idx = std::atoi(rest.c_str() + 41);
-	return true;
+    if (!hash || !idx || !is_url(url)) return false;
+    const std::string rest = url.substr(10);
+    if (rest.size() < 42 || rest[40] != '/') return false;
+    for (size_t i=0;i<40;++i)
+        if (!((rest[i]>='0' && rest[i]<='9') || (rest[i]>='a' && rest[i]<='f') || (rest[i]>='A' && rest[i]<='F'))) return false;
+    int file = -1;
+    const auto result=std::from_chars(rest.data()+41,rest.data()+rest.size(),file);
+    if(result.ec!=std::errc{} || result.ptr!=rest.data()+rest.size() || file<0) return false;
+    *hash=lower(rest.substr(0,40));*idx=file;
+    return true;
 }
 
 std::string TorrentStream::make_url(const std::string& hash, int idx) {
@@ -35,12 +40,14 @@ std::string TorrentStream::make_url(const std::string& hash, int idx) {
 
 int TorrentStream::read(uint8_t* buf, int n) {
 	if (!t_) return AVERROR(EIO);
-	int k = bt::Engine::get().read(t_, reader_, file_, pos_, buf, n, abort_, read_interrupt_);
+	int k = bt::Engine::get().read(t_, reader_, file_, pos_, buf, n, abort_, read_interrupt_, read_deadline_.load());
 	if (k > 0) {
 		pos_ += k;
 		return k;
 	}
 	if (k == 0) return AVERROR_EOF;
+	if (k == -3) return AVERROR(ETIMEDOUT);
+	if (k == -4) return AVERROR(EINVAL);
 	if (k == -2) failure_ = "the torrent was stopped";
 	const bool interrupted = (abort_ && abort_->load()) || (read_interrupt_ && read_interrupt_->load());
 	return k == -1 && interrupted ? AVERROR_EXIT : AVERROR(EIO);
@@ -49,12 +56,14 @@ int TorrentStream::read(uint8_t* buf, int n) {
 int64_t TorrentStream::seek(int64_t offset, int whence) {
 	if (whence & AVSEEK_SIZE) return size_;
 	whence &= ~AVSEEK_FORCE;
-	int64_t target;
-	if (whence == SEEK_SET) target = offset;
-	else if (whence == SEEK_CUR) target = pos_ + offset;
-	else if (whence == SEEK_END) target = size_ + offset;
-	else return AVERROR(EINVAL);
-	if (target < 0) return AVERROR(EINVAL);
+    int64_t base = 0;
+    if (whence == SEEK_CUR) base = pos_;
+    else if (whence == SEEK_END) base = size_;
+    else if (whence != SEEK_SET) return AVERROR(EINVAL);
+    if ((offset > 0 && base > std::numeric_limits<int64_t>::max()-offset) ||
+        (offset < 0 && offset < -base)) return AVERROR(EINVAL);
+    const int64_t target=base+offset;
+    if (target < 0 || target > size_) return AVERROR(EINVAL);
 	pos_ = target;
 	if (t_) bt::Engine::get().seek_reader(t_, reader_, file_, pos_);
 	return target;

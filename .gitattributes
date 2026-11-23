@@ -5,3 +5,8 @@
 
 # Upstream patch context lines intentionally retain their checksum-pinned whitespace.
 /source/native-app/third_party/libass/*.patch -whitespace
+
+# Preserve exact checksum-pinned upstream headers and license text.
+/source/native-app/third_party/stb_image.h -whitespace
+/source/native-app/app/fonts/NotoNaskhArabicUI-NOTICE.txt -whitespace
+/source/native-app/app/licenses/xz-0BSD.txt -whitespace

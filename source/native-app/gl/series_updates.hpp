@@ -2,6 +2,7 @@
 #pragma once
 #include "airtime.hpp"
 #include "stremio.h"
+#include "watched_history.hpp"
 #include <algorithm>
 #include <map>
 #include <set>
@@ -60,15 +61,15 @@ public:
       return id + ":" + std::to_string(v.season) + ":" +
              std::to_string(v.number);
     };
+    auto marked=[&](const Episode& v){return watched_history::episode(watched,id,v.id,v.season,v.number);};
     for (const auto &v : it->second.episodes)
-      if (watched.count(v.id) || watched.count(canonical(v)))
+      if (marked(v))
         completed = std::max(completed, {v.season, v.number});
     if (completed.first <= 0)
       return {};
     const Episode *next = nullptr;
     for (const auto &v : it->second.episodes) {
-      if (std::pair{v.season, v.number} <= completed || watched.count(v.id) ||
-          watched.count(canonical(v)) || v.id == in_progress ||
+      if (std::pair{v.season, v.number} <= completed || marked(v) || v.id == in_progress ||
           canonical(v) == in_progress)
         continue;
       auto released = airtime::iso(v.released);

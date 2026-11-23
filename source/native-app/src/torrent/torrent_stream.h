@@ -28,6 +28,9 @@ public:
 	static void set_read_interrupt(AVIOContext* pb, const std::atomic<bool>* interrupt) {
 		if (auto* ts = of(pb)) ts->read_interrupt_ = interrupt;
 	}
+    static void set_read_deadline(AVIOContext* pb, double deadline) {
+        if (auto* ts = of(pb)) ts->read_deadline_ = deadline;
+    }
 	static void close_avio(AVIOContext** pb);
 
 	// The first bytes of the file, without moving (waits for them).
@@ -46,4 +49,5 @@ private:
 	const std::atomic<bool>* abort_ = nullptr;
 	const std::atomic<bool>* read_interrupt_ = nullptr;
 	std::string failure_;
+    std::atomic<double> read_deadline_{0};
 };

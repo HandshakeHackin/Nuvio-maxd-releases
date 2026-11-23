@@ -61,12 +61,13 @@ std::string attr(const std::string &text, const std::string &key) {
   return {};
 }
 std::string resolve(const std::string &base, const std::string &value) {
+  if(base.empty() && !http_url(value))return {};
   CURLU *u = curl_url();
   if (!u)
     return {};
   std::string out;
   char *url = nullptr;
-  if (curl_url_set(u, CURLUPART_URL, base.c_str(), 0) == CURLUE_OK &&
+  if ((base.empty() || curl_url_set(u, CURLUPART_URL, base.c_str(), 0) == CURLUE_OK) &&
       curl_url_set(u, CURLUPART_URL, value.c_str(), 0) == CURLUE_OK &&
       curl_url_get(u, CURLUPART_URL, &url, 0) == CURLUE_OK) {
     out = url;

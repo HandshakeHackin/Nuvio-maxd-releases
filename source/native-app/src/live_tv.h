@@ -13,12 +13,16 @@ struct Channel {
   std::vector<std::string> headers;
   std::vector<std::string> groups; // all Xtream memberships; group is the display label
   std::string epg_id{}; // XMLTV identity; Xtream stream ID remains id.
+  std::string source_id{},source_name{}; // Origin for combined views; never provider credentials.
+  std::string guide_country{}; // Built-in public catalogue origin, for per-channel guides.
   bool in_group(const std::string& name) const;
 };
 struct Result {
   std::vector<Channel> channels;
   std::string error;
   std::string guide_url{};
+  std::string notice{}; // A usable partial public catalogue; error remains fatal.
+  bool partial_failure=false; // Distinguish missing sources from deliberate size limits.
 };
 // Bounded requests shared with the separate IPTV VOD library.
 HttpResponse download(const std::string&,const std::atomic<bool>*,bool redirects,size_t limit=max_bytes);

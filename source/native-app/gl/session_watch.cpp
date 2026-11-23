@@ -1,9 +1,11 @@
+#include "../ui/i18n.hpp"
 #include "../src/subtitle_size.hpp"
 // Playing: starting a stream (the app's own torrent engine, a streaming server or a
 // direct link), the player's state for the screens, tracks, subtitles, and what
 // was watched.
 
 #include "session.hpp"
+#include "watched_history.hpp"
 #include "track_restore.hpp"
 #include "trailers.h"
 #include "diagnostics.h"
@@ -15,6 +17,7 @@
 
 #include "http.h"
 #include "torrent/engine.h"
+#include "torrent/playback_policy.hpp"
 #include "torrent/torrent_stream.h"
 
 #include <algorithm>
@@ -30,6 +33,14 @@ namespace
 {
 std::string badge_metadata(const ::Stream& stream) {
     return stream_display::plain(stream.name.substr(0,2048)+" "+stream.description.substr(0,4096)+" "+stream.filename.substr(0,2048));
+}
+
+bool playable_torrent_file(const std::string& path) {
+    const auto name=lower(path);
+    for(const char* extension:{".mkv",".mp4",".avi",".m4v",".mov",".ts",
+                               ".m2ts",".webm",".wmv",".mpg",".mpeg",".flv"})
+        if(ends_with(name,extension))return true;
+    return false;
 }
 
 constexpr double kInfoSeconds = 5.0;
@@ -131,6 +142,7 @@ void Session::detail_play(int index, bool with_server)
 
 void Session::play_stream(const ::Stream &st, bool transcode, bool trailer)
 {
+    const bool force_start=start_over_next_;start_over_next_=false;
     const bool was_resuming = resuming_;
     const auto refuse = [&](const char *message) {
         if (was_resuming)
@@ -145,7 +157,7 @@ void Session::play_stream(const ::Stream &st, bool transcode, bool trailer)
     const bool resolving = services_.can_resolve(st);
     if (!st.allowed(prefs_.builtin_torrents) && !resolving)
     {
-        refuse("Choose a direct/debrid stream. Peer-to-peer torrents are off in Settings.");
+        refuse(sx::i18n::tr("Choose a direct/debrid stream. Peer-to-peer torrents are off in Settings."));
         return;
     }
     const bool torrent = st.torrent() && !resolving;
@@ -154,18 +166,18 @@ void Session::play_stream(const ::Stream &st, bool transcode, bool trailer)
     const bool builtin = torrent && !transcode && (prefs_.builtin_torrents || srv.empty());
     if (torrent && !builtin && srv.empty())
     {
-        refuse("Torrent streams need your Nuvio streaming server: set it in Settings.");
+        refuse(sx::i18n::tr("Torrent streams need your Nuvio streaming server: set it in Settings."));
         return;
     }
     if (transcode && srv.empty())
     {
-        refuse("Transcoding needs your Nuvio streaming server: set it in Settings.");
+        refuse(sx::i18n::tr("Transcoding needs your Nuvio streaming server: set it in Settings."));
         return;
     }
     if (watching && !resuming_)
         return;
     resuming_ = false;
-    w_trailer_=trailer;
+    w_trailer_=trailer;w_transcode_=transcode;
 
     // What is being played, for progress and the player's titles.
     w_item_ = d_item_;
@@ -201,7 +213,7 @@ void Session::play_stream(const ::Stream &st, bool transcode, bool trailer)
             {
                 season = v.season;
                 episode = v.episode;
-                subtitle = "S" + std::to_string(v.season) + " E" + std::to_string(v.episode) +
+                subtitle = "S" + std::to_string(display_season(v)) + " E" + std::to_string(display_episode(v)) +
                            (v.title.empty() ? "" : "  \xC2\xB7  " + v.title);
             }
     }
@@ -212,6 +224,8 @@ void Session::play_stream(const ::Stream &st, bool transcode, bool trailer)
 
     // Adopt the selected request before cancelling the other browsing candidates.
     w_season_ = season; w_episode_number_ = episode;
+    if(detail.series && !w_trailer_)for(const auto& v:d_meta_.videos)if(v.id==w_video_id_){season=display_season(v);episode=display_episode(v);}
+    w_source_season_=season;w_source_episode_=episode;
     if (resolving) prepared_->promote(st, season, episode);
     detail_preparation_cancel();
 
@@ -229,7 +243,9 @@ void Session::play_stream(const ::Stream &st, bool transcode, bool trailer)
     if(w_item_.type=="torrent")start=torrent_resume(w_item_.id);
     if(w_item_.type=="media-video")start=media_resume_;
     if(iptv::library_type(w_item_.type))start=iptv_resume(w_item_.id);
-    if(w_trailer_)subtitle="Trailer";
+    if(source_switch_position_>=0){start=source_switch_position_;source_switch_position_=-1;}
+    if(force_start)start=0;
+    if(w_trailer_)subtitle=sx::i18n::tr("Trailer");
     const int gen = ++w_gen_;
     launch = LaunchState();
     launch.title = title;
@@ -243,10 +259,11 @@ void Session::play_stream(const ::Stream &st, bool transcode, bool trailer)
         if (!v.size.empty())
             launch.quality += "  \xC2\xB7  " + v.size;
     }
-    launch.stages = {"Finding sources", "Connecting to peers", "Filling the buffer", "Starting"};
-    if(w_item_.type == "tv") launch.stages = {"Choosing channel", "Connecting", "Buffering live video", "Starting"};
-    if(iptv::library_type(w_item_.type))launch.stages={"Opening IPTV title","Connecting to provider","Buffering video","Starting"};
-    if (resolving) launch.stages = {"Checking service cache", "Resolving original file", "Filling the buffer", "Starting"};
+    launch.stages = {sx::i18n::tr("Finding peers"), sx::i18n::tr("Getting file information"), sx::i18n::tr("Buffering video"), sx::i18n::tr("Starting")};
+    if(!torrent)launch.stages={sx::i18n::tr("Opening source"),sx::i18n::tr("Connecting"),sx::i18n::tr("Buffering video"),sx::i18n::tr("Starting")};
+    if(w_item_.type == "tv") launch.stages = {sx::i18n::tr("Choosing channel"), sx::i18n::tr("Connecting"), sx::i18n::tr("Buffering live video"), sx::i18n::tr("Starting")};
+    if(iptv::library_type(w_item_.type))launch.stages={sx::i18n::tr("Opening IPTV title"),sx::i18n::tr("Connecting to provider"),sx::i18n::tr("Buffering video"),sx::i18n::tr("Starting")};
+    if (resolving) launch.stages = {sx::i18n::tr("Checking service cache"), sx::i18n::tr("Resolving original file"), sx::i18n::tr("Filling the buffer"), sx::i18n::tr("Starting")};
     launch.stage = 0;
     launch.progress = -1.0f;
     launch.torrent = torrent;
@@ -263,7 +280,7 @@ void Session::play_stream(const ::Stream &st, bool transcode, bool trailer)
     w_episode_ = episode_playback::Flow();
     watch_reset_anime();
     w_eof_recorded_ = false;
-    nuvio_diagnostics::record({{"outputFailed",false},{"playerFailed",false}});
+    nuvio_diagnostics::record({{"engine",builtin?"native":prefs_.vlc_player?"vlc":prefs_.evo_player?"evo":"native"},{"bufferedSeconds",0},{"outputFailed",false},{"playerFailed",false},{"errorCode","none"},{"videoCodec","unknown"},{"audioCodec","unknown"}});
     w_next_.reset();
     w_next_streams_.clear();
     w_next_requested_ = false;
@@ -272,7 +289,7 @@ void Session::play_stream(const ::Stream &st, bool transcode, bool trailer)
     w_episode_tick_ = now_seconds();
     if (w_episode_cancel_) *w_episode_cancel_ = true;
     w_episode_cancel_ = std::make_shared<std::atomic<bool>>(false);
-    if(!w_trailer_ && w_item_.type != "tv" && w_item_.type != "media-video" && w_item_.type != "torrent" && !iptv::library_type(w_item_.type)) watch_load_segments(season, episode);
+    if(!w_trailer_ && w_item_.type != "tv" && w_item_.type != "media-video" && w_item_.type != "torrent" && !iptv::library_type(w_item_.type)) watch_load_segments(w_season_, w_episode_number_);
     if (detail.series && !w_trailer_)
         if (const auto* next = episode_playback::next_video(d_meta_.videos, w_video_id_, now_epoch_ms())) w_next_ = *next;
     art_dirty_ = true;
@@ -282,6 +299,7 @@ void Session::play_stream(const ::Stream &st, bool transcode, bool trailer)
         std::string url, error;
         std::vector<std::string> headers;
         int file_idx = -1;
+        std::string file_name;
     };
     if (builtin)
         torrent_stats_start(TorrentStream::make_url(st.info_hash, -1), st.info_hash);
@@ -321,9 +339,9 @@ void Session::play_stream(const ::Stream &st, bool transcode, bool trailer)
                     if (err == "cancelled")
                         r.error = "cancelled";
                     else if (err == "timed out")
-                        r.error = "No peers sent this torrent's file list in 15 minutes. Try another stream.";
+                        r.error = sx::i18n::tr("No peers sent this torrent's file list in 15 minutes. Try another stream.");
                     else
-                        r.error = "The torrent couldn't start (" + err + ").";
+                        r.error = sx::i18n::tr("The torrent couldn't start (") + err + ").";
                     return r;
                 }
                 int idx = s.file_idx;
@@ -331,13 +349,14 @@ void Session::play_stream(const ::Stream &st, bool transcode, bool trailer)
                     idx = bt::Engine::guess_file(files, season, episode);
                 if (idx < 0)
                 {
-                    r.error = "This torrent has no video file.";
+                    r.error = sx::i18n::tr("This torrent has no video file.");
                     return r;
                 }
                 dlog("torrent %s: playing file %d, %s", s.info_hash.c_str(), idx, files[static_cast<std::size_t>(idx)].path.c_str());
                 eng.select_file(s.info_hash, idx);
                 r.url = TorrentStream::make_url(s.info_hash, idx);
                 r.file_idx = idx;
+                r.file_name = files[size_t(idx)].path;
                 return r;
             }
             if (torrent)
@@ -403,9 +422,9 @@ void Session::play_stream(const ::Stream &st, bool transcode, bool trailer)
                         if (h.error == "cancelled")
                             r.error = "cancelled";
                         else if (h.error.find("timed out") != std::string::npos)
-                            r.error = "Your streaming server found no peers for this torrent in 15 minutes. Try another stream.";
+                            r.error = sx::i18n::tr("Your streaming server found no peers for this torrent in 15 minutes. Try another stream.");
                         else
-                            r.error = "Your streaming server: " + h.describe();
+                            r.error = sx::i18n::tr("Your streaming server: ") + h.describe();
                         return r;
                     }
                     if (idx < 0)
@@ -434,17 +453,16 @@ void Session::play_stream(const ::Stream &st, bool transcode, bool trailer)
             }
             return r;
         },
-        [this, gen, start, title, subtitle, srv, s, builtin, resolving, services_gen](Res &r) {
+        [this, gen, start, force_start, title, subtitle, srv, s, builtin, resolving, services_gen](Res &r) {
             if (gen != w_gen_ || !launch_open)
                 return;
             if (resolving && services_gen != services_generation_) {
-                watch_stop(false); say("Connected Services changed. Select the stream again.", 7.0); return;
+                watch_stop(false); say(sx::i18n::tr("Connected Services changed. Select the stream again."), 7.0); return;
             }
             if (!r.error.empty())
             {
-                watch_stop(false);
-                if (r.error != "cancelled")
-                    say(r.error, 8.0, true);
+                if(r.error=="cancelled")watch_stop(false);
+                else watch_fail(r.error);
                 return;
             }
             if (builtin)
@@ -455,7 +473,18 @@ void Session::play_stream(const ::Stream &st, bool transcode, bool trailer)
             // and the streaming server's torrent streams. Not for transcoding, which is
             // a playlist of pieces.
             const bool par = !w_trailer_ && w_item_.type != "tv" && w_item_.type != "media-video" && w_item_.type != "torrent" && !iptv::library_type(w_item_.type) && r.url.find("/hlsv2/") == std::string::npos;
-            watch_start(r.url, r.headers, start, title, subtitle, par);
+            double actual_start = start;
+            if (builtin && w_item_.type == "torrent" && r.file_idx >= 0) {
+                // The default file is chosen after metadata arrives; do not attribute
+                // another file's progress to the temporary index-zero placeholder.
+                w_item_.id = "torrent:" + s.info_hash + ":" + std::to_string(r.file_idx);
+                w_video_id_ = w_item_.id;
+                w_stream_.file_idx=r.file_idx;
+                const auto slash=r.file_name.find_last_of("/\\");
+                w_item_.name=r.file_name.empty()?w_item_.name:r.file_name.substr(slash==std::string::npos?0:slash+1);
+                actual_start = force_start?0:torrent_resume(w_item_.id);
+            }
+            watch_start(r.url, r.headers, actual_start, title, subtitle, par);
         });
 }
 
@@ -517,7 +546,7 @@ void Session::torrent_stats_start(const std::string &url, const std::string &inf
     t_known_ = -1;
     t_speed_ = 0;
     t_progress_ = -1;
-    t_has_meta_ = false;
+    t_has_meta_ = false; t_cached_bytes_=t_ready_bytes_=t_file_bytes_=0;
     t_visible_ = true;
     t_next_poll_ = 0;
     t_polling_ = false;
@@ -537,6 +566,7 @@ void Session::torrent_stats_poll()
         double peers = 0, speed = 0, progress = -1;
         int known = -1; // the app's own engine only
         bool has_meta = false;
+        int64_t cached=0,ready=0,size=0;
     };
     bg<Stats>(
         [url]() {
@@ -549,7 +579,7 @@ void Session::torrent_stats_poll()
                 s.speed = es.download_rate;
                 s.progress = es.file_progress;
                 s.known = es.known_peers;
-                s.has_meta = es.has_metadata;
+                s.has_meta = es.has_metadata; s.cached=es.cached_bytes;s.ready=es.ready_bytes;s.size=es.file_size;
                 return s;
             }
             const HttpResponse h = http_get(url, 5);
@@ -566,14 +596,14 @@ void Session::torrent_stats_poll()
             return s;
         },
         [this, gen](Stats &s) {
-            t_polling_ = false;
-            t_next_poll_ = now_seconds() + 1;
-            if (gen != t_gen_ || !s.ok)
-                return;
-            t_peers_ = static_cast<int>(s.peers);
-            t_speed_ = s.speed;
+            if(gen!=t_gen_)return;
+            t_polling_=false;t_next_poll_=now_seconds()+1;
+            if(!s.ok)return;
+            t_peers_=std::isfinite(s.peers)?int(std::clamp(s.peers,0.0,100000.0)):0;
+            t_speed_=std::isfinite(s.speed)?std::clamp(s.speed,0.0,16.0*1024*1024*1024):0;
+            t_cached_bytes_=std::max<int64_t>(0,s.cached);t_ready_bytes_=std::max<int64_t>(0,s.ready);t_file_bytes_=std::max<int64_t>(0,s.size);
             if (s.progress >= 0)
-                t_progress_ = s.progress;
+                t_progress_ = std::isfinite(s.progress)?std::clamp(s.progress,0.0,1.0):0;
             t_known_ = s.known;
             t_has_meta_ = s.has_meta;
         });
@@ -592,6 +622,7 @@ void Session::watch_update()
     if(multiview_active){multi_update();return;}
     const double now = now_seconds();
     const Player::State st = player_.state();
+    if(player_.take_seek_rejected()) say(sx::i18n::tr("That torrent position is not available yet. Playback returned to the previous position."),7.0);
     player_.log_stats();
     media_tick();
     // The PlayStation's menu is over the app (the PS button), or the app is in the background: pause.
@@ -608,16 +639,8 @@ void Session::watch_update()
 
     if (st == Player::State::Failed)
     {
-        const std::string err = player_.error();
         nuvio_diagnostics::record(player_.diagnostic_snapshot());
-        watch_stop(false);
-        nuvio_diagnostics::record({{"playerFailed",true}});
-        say(iptv::library_type(w_item_.type)
-                ? iptv::failure_message(err)
-                : w_item_.type=="media-video" ? "Media server playback failed: "+err+". Select the title again and try Compatible playback (server HLS), or reconnect in Settings if access was denied."
-                : "Playback failed: " + err +
-                      (w_stream_.torrent() ? ". The torrent may have no seeders; try another stream." : ""),
-            iptv::library_type(w_item_.type) ? 14.0 : 8.0, true);
+        watch_fail(player_.error());
         return;
     }
     if (st == Player::State::Ended)
@@ -643,11 +666,11 @@ void Session::watch_update()
         // knows how far it has got; then the player opens it and fills its buffer.
         if (st == Player::State::Idle)
         {
-            launch.stage = t_known_ <= 0 ? 0 : (t_has_meta_ ? 2 : 1);
+            launch.stage = t_has_meta_ && (t_cached_bytes_>0 || t_speed_>0)?2:t_known_>0?1:0;
         }
         else if (st == Player::State::Opening)
         {
-            launch.stage = 1;
+            launch.stage = t_visible_ && TorrentStream::is_url(t_stats_url_)?(t_has_meta_ && (t_cached_bytes_>0 || t_speed_>0)?2:t_known_>0?1:0):1;
         }
         else if (buffering)
         {
@@ -661,6 +684,7 @@ void Session::watch_update()
             w_started_ = true;
         }
     }
+    launch.ready=TorrentStream::is_url(t_stats_url_)?bt::buffer_summary(t_ready_bytes_,player_.playable_buffered_seconds()):"";
     launch.peers = std::to_string(t_peers_);
     {
         char buf[32];
@@ -669,7 +693,7 @@ void Session::watch_update()
         if (t_progress_ >= 0)
         {
             std::snprintf(buf, sizeof(buf), "%d%%", static_cast<int>(t_progress_ * 100.0 + 0.5));
-            launch.done = buf;
+            launch.done = t_file_bytes_>0?bt::readable_bytes(t_cached_bytes_)+sx::i18n::tr(" cached of ")+bt::readable_bytes(t_file_bytes_)+" file":std::string(buf)+sx::i18n::tr(" of file fetched");
         }
     }
 
@@ -760,10 +784,11 @@ void Session::watch_update()
         {
             std::snprintf(buf, sizeof(buf), "%.1f MB/s  \xC2\xB7  %d peers", t_speed_ / (1024.0 * 1024.0), t_peers_);
             playing.net = buf;
+            playing.buffer_info=TorrentStream::is_url(t_stats_url_)?bt::buffer_summary(t_ready_bytes_,player_.playable_buffered_seconds()):"";
         }
         else
         {
-            playing.net.clear();
+            playing.net.clear();playing.buffer_info.clear();
         }
     }
     std::string audio_label;
@@ -778,7 +803,7 @@ void Session::watch_update()
     }
     playing.subs = (w_sub_active_ >= 0 && w_sub_active_ < static_cast<int>(w_subs_.size()))
                        ? w_subs_[static_cast<std::size_t>(w_sub_active_)].label
-                       : "Off";
+                       : sx::i18n::tr("Off");
     // The decoder, frame rate and buffer: on the controls, and in the log every 10 seconds.
     if (now - w_stats_at_ > 0.5)
     {
@@ -805,8 +830,7 @@ void Session::watch_update()
     if (player_.too_heavy() && !w_heavy_warned_)
     {
         w_heavy_warned_ = true;
-        say("This video is too heavy to decode smoothly. Pick a 1080p stream, or press Square on a stream to transcode it "
-            "on the server.",
+        say(sx::i18n::tr("This video is too heavy to decode smoothly. Pick a 1080p stream, or press Square on a stream to transcode it on the server."),
             10.0);
     }
 }
@@ -830,7 +854,7 @@ void Session::arm_presentation_timing() {
 void Session::fallback_to_sdr() {
     hdr_fallback_session_=true;
     upload_video(true);
-    say("Native HDR output was rejected. Playing in SDR.",6);
+    say(sx::i18n::tr("Native HDR output was rejected. Playing in SDR."),6);
 }
 
 void Session::upload_video(bool reuse_picture)
@@ -844,14 +868,14 @@ void Session::upload_video(bool reuse_picture)
     std::string error;
     const bool hdr = prefs_.native_hdr && !hdr_fallback_session_ && pic->colors == YuvColors::Hdr10;
     if (hdr && (!pic->hdr10_compatible || pic->format == VideoFormat::Rgba)) {
-        fail_video_output("This source has no supported HDR10 base picture. Choose an HDR10 or SDR stream.");
+        fail_video_output(sx::i18n::tr("This source has no supported HDR10 base picture. Choose an HDR10 or SDR stream."));
         return;
     }
     if (!video_surface_.upload(*pic, &error, hdr))
     {
         dlog("player: presentation failed: %s", error.c_str());
         watch_stop(false);
-        say(error + ". Try another stream.", 10.0);
+        say(error + sx::i18n::tr(". Try another stream."), 10.0);
         return;
     }
     if (!video_texture || pic->w != video_w || pic->h != video_h)
@@ -859,7 +883,7 @@ void Session::upload_video(bool reuse_picture)
         dlog("player: presenting %dx%d at native resolution via GPU (%s%s); sample aspect %.4f",
              pic->w, pic->h, pic->format == VideoFormat::Rgba ? "RGBA" :
              pic->format == VideoFormat::Nv12 ? "8-bit YUV" : "10-bit YUV",
-             pic->format == VideoFormat::Nv12_10 ? (pic->shift ? ", high bits" : ", low bits") : "",
+             pic->format == VideoFormat::Nv12_10 ? (pic->shift ? sx::i18n::tr(", high bits") : sx::i18n::tr(", low bits")) : "",
              pic->sar);
         if (!hdr && pic->colors == YuvColors::Hdr10)
             dlog("player: SDR conversion uses luminance tone mapping, BT.1886 display response and gamut fitting; reference peak %.0f nits",
@@ -872,13 +896,13 @@ void Session::upload_video(bool reuse_picture)
     video_texture = video_surface_.texture();
     video_hdr = hdr;
     video_w = pic->w; video_h = pic->h; video_sar = pic->sar;
-    const std::string quality = "Picture " + std::to_string(pic->w) + "x" + std::to_string(pic->h) +
+    const std::string quality = sx::i18n::tr("Picture ") + std::to_string(pic->w) + "x" + std::to_string(pic->h) +
         (pic->format == VideoFormat::Nv12_10 ? " 10-bit" : " 8-bit") +
         (pic->colors == YuvColors::Hdr10 ? (hdr ? " HDR10" : " HDR10 → SDR") : " SDR") +
-        " · Render " + std::to_string(output_w_) + "x" + std::to_string(output_h_) +
-        (hdr ? (HdrOutput::confirmed() ? " HDR10 10-bit (output confirmed) · " : " HDR10 10-bit (checking output) · ")
-             : " SDR 8-bit · ") + (output_hz_ ? std::to_string(output_hz_) + " Hz" : "refresh unverified") +
-        " · Audio " + player_.audio_output();
+        sx::i18n::tr(" · Render ") + std::to_string(output_w_) + "x" + std::to_string(output_h_) +
+        (hdr ? (HdrOutput::confirmed() ? sx::i18n::tr(" HDR10 10-bit (output confirmed) · ") : sx::i18n::tr(" HDR10 10-bit (checking output) · "))
+             : sx::i18n::tr(" SDR 8-bit · ")) + (output_hz_ ? std::to_string(output_hz_) + " Hz" : sx::i18n::tr("refresh unverified")) +
+        sx::i18n::tr(" · Audio ") + player_.audio_output();
     if(playing.badges.empty() || playing.quality!=quality)
         playing.badges=playback_badges::build(badge_metadata(w_stream_),pic->w,pic->h,true,
             pic->colors==YuvColors::Hdr10,pic->format==VideoFormat::Nv12_10,
@@ -902,12 +926,12 @@ void Session::watch_stop(bool ended)
     if(w_started_ && ended && iptv::library_type(w_item_.type))iptv_progress(true);
     if (ended && trailers::records_history(w_trailer_,w_item_.type) && !w_video_id_.empty())
     {
-        watched_.insert(w_video_id_);
+        watched_history::completed(watched_,w_item_.type,w_item_.id,w_video_id_,w_season_,w_episode_number_);
         save_progress();
     }
     ++w_gen_;
     watch_reset_anime();
-    prepared_->cancel(w_stream_, w_season_, w_episode_number_);
+    prepared_->cancel(w_stream_, w_source_season_, w_source_episode_);
     next_preparation_cancel();
     if (w_episode_cancel_) *w_episode_cancel_ = true;
     if (launch_cancel_)
@@ -943,9 +967,8 @@ void Session::fail_video_output(const std::string& error) {
     dlog("player: output failed: %s",error.c_str());
     dlog("player: HDR evidence %s",HdrOutput::status().c_str());
     nuvio_diagnostics::record(player_.diagnostic_snapshot());
-    watch_stop(false);
-    nuvio_diagnostics::record({{"phase","output-rejected"},{"outputFailed",true},{"hdrResult",unsigned(HdrOutput::result())}});
-    say(error,14.0,true);
+    watch_fail(error);
+    nuvio_diagnostics::record({{"phase","output-rejected"},{"outputFailed",true},{"errorCode","output-failed"},{"hdrResult",unsigned(HdrOutput::result())}});
 }
 
 void Session::watch_save_progress(bool final, bool force_finished)
@@ -970,8 +993,9 @@ void Session::watch_save_progress(bool final, bool force_finished)
     p.up_next = finished ? next_episode_id() : std::string();
     p.duration = dur;
     p.updated = now_epoch_ms();
-    if (finished)
-        watched_.insert(w_video_id_);
+    if (finished) {
+        watched_history::completed(watched_,w_item_.type,w_item_.id,w_video_id_,w_season_,w_episode_number_);
+    }
     save_progress();
 
     const double delta = w_last_saved_pos_ >= 0 ? std::max(0.0, std::min(pos - w_last_saved_pos_, kSaveEvery * 2)) : 0;
@@ -1095,6 +1119,7 @@ void Session::watch_input(const hui::InputFrame &in)
 
     if (playing.menu)
     {
+        if(in.is_pressed(Action::west)){watch_options();return;}
         const std::size_t audio_count = playing.audio_tracks.size(), sub_count = playing.subtitle_tracks.size();
         const int columns=playing.chapters.empty()?2:3;
         if (in.nav == Direction::left)
@@ -1142,7 +1167,7 @@ void Session::watch_input(const hui::InputFrame &in)
             if(step) {
                 const int gain=std::clamp(prefs_.audio_gain_percent+step,50,300);
                 if(player_.set_audio_gain(gain)) {prefs_.audio_gain_percent=gain;adjusted=true;}
-                else say("Audio boost needs PCM output. Select PCM in Settings before reopening this stream.",7);
+                else say(sx::i18n::tr("Audio boost needs PCM output. Select PCM in Settings before reopening this stream."),7);
             }
         }
         if(in.is_pressed(Action::north) && playing.menu_column<2) {
@@ -1180,7 +1205,7 @@ void Session::watch_input(const hui::InputFrame &in)
     else if(w_item_.type == "tv" && (in.is_pressed(Action::l3) || in.nav == Direction::left ||
             in.nav == Direction::right || in.is_pressed(Action::page_prev) || in.is_pressed(Action::page_next)))
     {
-        say("Seeking is unavailable for live channels",4);
+        say(sx::i18n::tr("Seeking is unavailable for live channels"),4);
     }
     else if (in.is_pressed(Action::l3))
     {
@@ -1208,7 +1233,7 @@ void Session::watch_input(const hui::InputFrame &in)
         const int n = static_cast<int>(w_subs_.size());
         if (n == 0)
         {
-            say("No subtitles for this video");
+            say(sx::i18n::tr("No subtitles for this video"));
         }
         else
         {
@@ -1223,7 +1248,7 @@ void Session::watch_input(const hui::InputFrame &in)
         const auto tracks = player_.audio_tracks();
         if (tracks.size() < 2)
         {
-            say(tracks.empty() ? "No audio" : "Only one audio track");
+            say(tracks.empty() ? "No audio" : sx::i18n::tr("Only one audio track"));
         }
         else
         {
@@ -1233,23 +1258,101 @@ void Session::watch_input(const hui::InputFrame &in)
                     cur = i;
             const auto &t = tracks[(cur + 1) % tracks.size()];
             player_.select_audio(t.stream);
-            say("Audio: " + t.label);
+            say(sx::i18n::tr("Audio: ") + t.label);
         }
     }
     else if (in.is_pressed(Action::jump_prev))
     {
         w_sub_delay_ -= 0.25;watch_manual_subtitle_timing();
-        say("Subtitle delay " + std::to_string(static_cast<int>(std::lround(w_sub_delay_ * 1000))) + " ms");
+        say(sx::i18n::tr("Subtitle delay ") + std::to_string(static_cast<int>(std::lround(w_sub_delay_ * 1000))) + " ms");
     }
     else if (in.is_pressed(Action::jump_next))
     {
         w_sub_delay_ += 0.25;watch_manual_subtitle_timing();
-        say("Subtitle delay " + std::to_string(static_cast<int>(std::lround(w_sub_delay_ * 1000))) + " ms");
+        say(sx::i18n::tr("Subtitle delay ") + std::to_string(static_cast<int>(std::lround(w_sub_delay_ * 1000))) + " ms");
     }
     else if (in.is_pressed(Action::back))
     {
         watch_stop(false);
     }
+}
+
+void Session::watch_options(int selected) {
+    if(!watching || launch_open)return;
+    playing.menu=false;
+    const auto profile=profile_generation_;const int generation=w_gen_;
+    open_dropdown(sx::i18n::tr("Playback options"),{w_item_.type=="tv"&&w_item_.id.rfind("live:",0)==0?sx::i18n::tr("Backup channels"):sx::i18n::tr("Choose another source"),sx::i18n::tr("Choose another torrent file"),sx::i18n::tr("Subtitle appearance"),sx::i18n::tr("Audio sync: -0.10 s"),sx::i18n::tr("Audio sync: +0.10 s"),sx::i18n::tr("Audio sync: -0.20 s"),sx::i18n::tr("Audio sync: +0.20 s"),sx::i18n::tr("Reset audio sync")},selected,
+        [this,profile,generation](int pick){
+        if(profile!=profile_generation_ || generation!=w_gen_ || !watching)return;
+        if(pick==0){if(w_item_.type=="tv"&&w_item_.id.rfind("live:",0)==0)live_backups(w_item_.id.substr(5));else watch_sources();return;}
+        if(pick==1){
+            if(!prefs_.builtin_torrents || w_stream_.info_hash.empty() || !TorrentStream::is_url(t_stats_url_)){
+                say(sx::i18n::tr("File selection needs an active built-in torrent stream."),6);return;
+            }
+            const auto stream=w_stream_;const auto request=++playback_file_request_;
+            open_dropdown(sx::i18n::tr("Loading torrent files"),{sx::i18n::tr("Cancel")},0,[](int){});
+            dropdown.purpose=DropdownState::Purpose::torrent_files;
+            const auto cancel=launch_cancel_;
+            bg<std::vector<bt::FileInfo>>([stream,cancel]{
+                std::vector<bt::FileInfo> files;
+                bt::Engine::get().wait_metadata(stream.info_hash,files,cancel.get(),10,nullptr);
+                return files;
+            },[this,profile,generation,stream,request](auto& files){
+                if(profile!=profile_generation_ || generation!=w_gen_ || !watching || request!=playback_file_request_ || !dropdown_open || dropdown.purpose!=DropdownState::Purpose::torrent_files)return;
+                std::vector<std::string> labels;std::vector<int> indices;
+                for(size_t i=0;i<files.size() && labels.size()<200;++i)
+                    if(playable_torrent_file(files[i].path)){labels.push_back(stream_display::plain(files[i].path));indices.push_back(int(i));}
+                if(labels.empty()){dropdown_cancel();say(sx::i18n::tr("No video files are available yet."),5);return;}
+                open_dropdown(sx::i18n::tr("Torrent files"),labels,0,[this,profile,generation,stream,labels,indices](int i){
+                    if(profile!=profile_generation_ || generation!=w_gen_ || !watching || i<0 || i>=int(indices.size()))return;
+                    watch_stop(false);
+                    torrent_play_hash(stream.info_hash,labels[size_t(i)],stream.sources,{},indices[size_t(i)]);
+                });
+                dropdown.message=sx::i18n::tr("Each file uses its own saved progress. Choosing a file closes the current stream.");
+            });return;
+        }
+        if(pick==2){watch_style();return;}
+        if(pick<3 || pick>7)return;
+        const int steps[]={-100,100,-200,200};
+        prefs_.audio_delay_ms=pick==7?0:std::clamp(prefs_.audio_delay_ms+steps[pick-3],-2000,2000);
+        player_.set_audio_delay(prefs_.audio_delay_ms/1000.0);save_prefs();refresh_settings();watch_build_menu();watch_options(pick);
+    });
+    char delay[48];std::snprintf(delay,sizeof(delay),"%+.2f s",prefs_.audio_delay_ms/1000.0);
+    dropdown.message=std::string(sx::i18n::tr("Audio delay: "))+delay+sx::i18n::tr(". Positive plays sound later. L2/R2 in the track menu adjusts by 0.05 s.");
+}
+
+void Session::watch_sources() {
+    if(!watching || w_trailer_ || w_item_.type=="tv" || d_item_.id!=w_item_.id || d_video_id_!=w_video_id_ || d_streams_.empty()){
+        say(sx::i18n::tr("Open this title's sources to choose another stream. Live channels use Live TV."),7);return;
+    }
+    const auto profile=profile_generation_;const int generation=w_gen_;
+    const auto streams=d_streams_;std::vector<std::string> labels;
+    for(const auto& stream:streams)labels.push_back(stream_display::plain(stream.addon+" · "+stream.name+" · "+stream.description).substr(0,240));
+    open_dropdown(sx::i18n::tr("Choose another source"),labels,0,[this,profile,generation,streams](int i){
+        if(profile!=profile_generation_ || generation!=w_gen_ || !watching || i<0 || i>=int(streams.size()))return;
+        const auto stream=streams[size_t(i)];
+        if(!stream.allowed(prefs_.builtin_torrents) && !services_.can_resolve(stream)){say(sx::i18n::tr("This source is unavailable with your current torrent settings."),7);return;}
+        const double position=std::max(0.0,player_.position());
+        watch_stop(false);source_switch_position_=position;
+        play_stream(stream,false);source_switch_position_=-1;
+    });
+    dropdown.message=sx::i18n::tr("Closes the current source and resumes this title at the saved position. Different releases may have different timings.");
+}
+
+void Session::watch_style() {
+    if(!watching)return;
+    const auto profile=profile_generation_;const int generation=w_gen_;
+    const auto valid=[this,profile,generation]{return watching && profile==profile_generation_ && generation==w_gen_;};
+    const auto changed=[this,valid]{if(!valid())return;save_prefs();refresh_settings();playing.subtitle_style=prefs_.subtitle_style;playing.sub_size=subtitle_size::index(prefs_.sub_size);watch_style();};
+    open_dropdown(sx::i18n::tr("Subtitle appearance"),{sx::i18n::tr("Size: ")+prefs_.sub_size,sx::i18n::tr("Font"),sx::i18n::tr("Colour"),sx::i18n::tr("Effect"),sx::i18n::tr("Background")},0,[this,valid,changed](int pick){
+        if(!valid())return;
+        if(pick==0)open_dropdown(sx::i18n::tr("Subtitle size"),std::vector<std::string>(subtitle_size::labels.begin(),subtitle_size::labels.end()),subtitle_size::index(prefs_.sub_size),[this,valid,changed](int i){if(valid()&&i>=0&&i<int(subtitle_size::ids.size())){prefs_.sub_size=subtitle_size::ids[size_t(i)];changed();}});
+        else if(pick==1)open_dropdown(sx::i18n::tr("Subtitle font"),{sx::i18n::tr("Regular"),sx::i18n::tr("Bold"),sx::i18n::tr("Display")},prefs_.subtitle_style.font,[this,valid,changed](int i){if(valid()&&i>=0&&i<3){prefs_.subtitle_style.font=i;changed();}});
+        else if(pick==2)open_dropdown(sx::i18n::tr("Subtitle colour"),{sx::i18n::tr("White"),sx::i18n::tr("Yellow"),sx::i18n::tr("Cyan")},prefs_.subtitle_style.colour,[this,valid,changed](int i){if(valid()&&i>=0&&i<3){prefs_.subtitle_style.colour=i;changed();}});
+        else if(pick==3)open_dropdown(sx::i18n::tr("Subtitle effect"),{sx::i18n::tr("Plain"),sx::i18n::tr("Outline"),sx::i18n::tr("Shadow")},prefs_.subtitle_style.effect,[this,valid,changed](int i){if(valid()&&i>=0&&i<3){prefs_.subtitle_style.effect=i;changed();}});
+        else if(pick==4)open_dropdown(sx::i18n::tr("Subtitle background"),{sx::i18n::tr("Off"),"25%","50%","75%","100%"},prefs_.subtitle_style.background/25,[this,valid,changed](int i){if(valid()&&i>=0&&i<5){prefs_.subtitle_style.background=i*25;changed();}});
+    });
+    dropdown.message=sx::i18n::tr("Changes apply live and are saved for this profile. Image subtitles cannot be restyled; authored ASS/VLC rendering may retain its own styling.");
 }
 
 void Session::watch_refresh_tracks()
@@ -1301,7 +1404,7 @@ void Session::watch_build_menu()
             playing.audio_active = static_cast<int>(i);
     }
     playing.subtitle_tracks.clear();
-    playing.subtitle_tracks.push_back("Off");
+    playing.subtitle_tracks.push_back(sx::i18n::tr("Off"));
     for (const WatchSub &s : w_subs_)
     {
         std::string label = s.label;
@@ -1325,7 +1428,9 @@ void Session::watch_build_menu()
     char delay[48];
     std::snprintf(delay, sizeof(delay), "%+.2f s", w_sub_delay_);
     playing.subtitle_delay = delay;
-    playing.audio_adjustments=std::to_string(prefs_.audio_gain_percent)+"% · "+std::to_string(prefs_.audio_delay_ms)+" ms";
+    char audio_delay[64];
+    std::snprintf(audio_delay,sizeof(audio_delay),"%+.2f s (%+d ms)",prefs_.audio_delay_ms/1000.0,prefs_.audio_delay_ms);
+    playing.audio_adjustments=std::to_string(prefs_.audio_gain_percent)+"% · "+audio_delay;
 }
 
 // ---------------------------------------------------------------------------
@@ -1360,7 +1465,7 @@ void Session::watch_sync_subtitles() {
         w_sub_sync_busy_=false;
         for(auto& row:w_subs_)if(row.embedded<0 && row.url==url) {
             row.sync_busy=false;
-            if(result.confident && prefs_.subtitle_auto_sync && !row.sync_manual){row.sync_scale=result.scale;row.sync_offset=result.offset;row.synced=true;w_menu_dirty_=true;say("External subtitles synchronized to the file",5);}
+            if(result.confident && prefs_.subtitle_auto_sync && !row.sync_manual){row.sync_scale=result.scale;row.sync_offset=result.offset;row.synced=true;w_menu_dirty_=true;say(sx::i18n::tr("External subtitles synchronized to the file"),5);}
         }
     });
 }
@@ -1372,19 +1477,20 @@ void Session::watch_select_sub(int index)
     if (index < 0 || index >= static_cast<int>(w_subs_.size()))
     {
         w_sub_active_ = -1;
-        say("Subtitles off");
+        say(sx::i18n::tr("Subtitles off"));
         w_menu_dirty_ = true;
         return;
     }
     w_sub_active_ = index;
     WatchSub &ws = w_subs_[static_cast<std::size_t>(index)];
-    say("Subtitles: " + ws.label);
+    say(sx::i18n::tr("Subtitles: ") + ws.label);
     if (ws.embedded < 0 && ws.cues.empty() && !ws.loading)
     {
         ws.loading = true;
         ws.failed = false;
         const std::string url = ws.url, lang = ws.lang;
         const int gen = w_gen_;
+        const auto cancel = w_episode_cancel_;
         struct Res
         {
             std::vector<Cue> cues;
@@ -1392,19 +1498,19 @@ void Session::watch_select_sub(int index)
             std::string error;
         };
         bg<Res>(
-            [url, lang]() {
+            [url, lang, cancel]() {
                 Res r;
-                const HttpResponse h = http_get(url, 30);
+                const HttpResponse h = http_get_subtitle(url, cancel.get());
                 if (!h.ok())
                 {
                     r.error = h.describe();
                     return r;
                 }
-                if(h.body.size()>8u<<20) { r.error="Subtitle file is too large"; return r; }
+                if(h.body.size()>8u<<20) { r.error=sx::i18n::tr("Subtitle file is too large"); return r; }
                 r.utf8=to_utf8(h.body,lang);
                 r.cues = parse_subtitle_file(r.utf8);
                 if (r.cues.empty())
-                    r.error = "That subtitle file is empty or unreadable";
+                    r.error = sx::i18n::tr("That subtitle file is empty or unreadable");
                 return r;
             },
             [this, gen, url](Res &r) {
@@ -1422,7 +1528,7 @@ void Session::watch_select_sub(int index)
                     s.failed = !r.error.empty();
                 }
                 if (!r.error.empty())
-                    say("Could not download the subtitles: " + r.error, 5.0, true);
+                    say(sx::i18n::tr("Could not download the subtitles: ") + r.error, 5.0, true);
                 w_menu_dirty_ = true;
             });
     }
@@ -1505,7 +1611,7 @@ void Session::watch_next_episode()
         w_next_answered_ >= w_next_pending_ && now_seconds() - w_next_fetched_ < 90;
     const auto candidates = w_next_streams_;
     if (cached && w_next_pick_ >= 0 && w_next_pick_ < static_cast<int>(candidates.size()))
-        prepared_->promote(candidates[w_next_pick_], next.season, next.episode);
+        prepared_->promote(candidates[w_next_pick_], display_season(next), display_episode(next));
     if (watching)
     {
         watch_save_progress(true, true);
@@ -1513,7 +1619,7 @@ void Session::watch_next_episode()
     }
 
     for (std::size_t i = 0; i < d_seasons_.size(); ++i)
-        if (d_seasons_[i] == next.season && static_cast<int>(i) != d_season_idx_)
+        if (d_seasons_[i] == display_season(next) && static_cast<int>(i) != d_season_idx_)
             detail_set_season(static_cast<int>(i));
     for (std::size_t i = 0; i < d_season_videos_.size(); ++i)
         if (d_season_videos_[i]->id == next.id)
@@ -1524,10 +1630,10 @@ void Session::watch_next_episode()
 
     autoplay_pending_ = true;
     autoplay_previous_ = previous;
-    std::string heading = "S" + std::to_string(next.season) + " E" + std::to_string(next.episode);
+    std::string heading = "S" + std::to_string(display_season(next)) + " E" + std::to_string(display_episode(next));
     if (!next.title.empty())
         heading += "  \xC2\xB7  " + next.title;
-    say("Next: " + heading);
+    say(sx::i18n::tr("Next: ") + heading);
     detail_load_streams(next.id, heading, cached ? &candidates : nullptr);
 }
 

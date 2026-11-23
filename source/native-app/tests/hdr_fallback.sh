@@ -17,7 +17,7 @@ struct Session {
  void say(const char*,int){++messages;}
  void fallback_to_sdr();
 '''+method+'};\n')
-b.joinpath('session.cpp').write_text('#include "session.hpp"\n'+s[a:z])
+b.joinpath('session.cpp').write_text('#include "session.hpp"\n#include "i18n.hpp"\n'+s[a:z])
 PY
-${HOST_CXX:-g++} -std=c++20 -Wall -Wextra -Werror -I"$B" -I"$R/gl" "$B/session.cpp" "$R/tests/hdr_fallback_host.cpp" -o "$B/test"
+${HOST_CXX:-g++} -std=c++20 -Wall -Wextra -Werror -I"$B" -I"$R/gl" -I"$R/ui" "$B/session.cpp" "$R/tests/hdr_fallback_host.cpp" -o "$B/test"
 "$B/test"

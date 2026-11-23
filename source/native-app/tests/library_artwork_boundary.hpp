@@ -41,6 +41,7 @@ struct Session {
     bool signed_in() const {return account;}
     bool search_open=false;
     std::string global_query;
+    std::string search_query;
     void begin_search();
     void start_search(const std::string& q) {global_query=q;}
     void filter_activate(Page,int);
@@ -49,12 +50,14 @@ struct Session {
     void open_dropdown(const std::string&,const std::vector<std::string>& options,int,const std::function<void(int)>& done) {choices=options;pick=done;}
     std::function<void(const std::string&)> typed;
     std::string keyboard_title;
-    void ask_text(const std::function<void(const std::string&)>& done,const std::string& title="") {typed=done;keyboard_title=title;}
+    void ask_search(const std::function<void(const std::string&)>& done,const std::string& title,const std::string& = "",bool = false){ask_text(done,title);}
+  void ask_text(const std::function<void(const std::string&)>& done,const std::string& title="") {typed=done;keyboard_title=title;}
     void reset_library_search();
     void library_search();
     void library_clear_search();
     sx::SeriesUpdates series_updates_;
     std::set<std::string> watched_, series_updates_pending_;
+
     std::shared_ptr<std::atomic<bool>> series_updates_cancel_;
     unsigned series_updates_generation_=0;
     int series_updates_inflight_=0;

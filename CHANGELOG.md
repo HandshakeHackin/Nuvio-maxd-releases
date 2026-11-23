@@ -1,3 +1,35 @@
+# 1.0.1.0 — free live TV and a unified guide
+
+- Optional free live TV with a disclaimer and multiple-country selection.
+- One guide for personal IPTV and enabled free channels.
+- Per-profile automatic channel refresh: Off, 1, 3, 6, 12 or 24 hours, default six. Playback and menus defer refresh; failures retain the previous list and guide.
+- Multilingual search keyboard, configured-catalogue suggestions and optional top navigation.
+- SIMKL device sign-in, Thai subtitles, start-page selection and saved TV group/channel controls.
+- Issue #25's proposed embedded-caption and subtitle-download changes are included; confirmation remains outstanding.
+- The dismissible Unverified build notice remains because the original offline signing key was unavailable.
+
+# 1.0.0.19 — detail actions and controller hints
+
+Library membership sync and movie/season/series watched controls from title details (#22); discoverable episode marking; controller glyphs on cast and person pages (#21). Bounded private offline queues, bulk confirmation and profile/service guards. See source/native-app/TITLE_ACTIONS.md.
+
+# 1.0.0.18 — menu languages
+
+Add Spanish, French, Arabic, Simplified Chinese, Japanese and Korean menus, a registry-driven language picker, 425-message core coverage, English fallback, accent/Arabic/CJK menu search and catalog/font/persistence regressions. Keep audio/subtitle and profile/source settings independent.
+
+# 1.0.0.17
+
+- Add saved English/German menus, bundled translations, German-aware settings search and language-independent dialog identities.
+- Add TMDB cast/crew photos, person biographies and movie/TV credit browsing through configured addons, with bounded loading, cancellation and back navigation.
+- Preserve the reporter-confirmed 1.0.0.16 USB reader behavior and profile-local playlist copies.
+
+## 1.0.0.16 experimental
+
+Unconfirmed USB access candidate: an explicit, bounded reader helper uses the existing local payload loader while Max'd remains sandboxed. Strict playlist validation, private atomic profile copies and diagnostics remain. Physical-console confirmation is pending.
+
+## 1.0.0.15 experimental
+
+Unconfirmed issue #20 USB detection candidate: enumerate mounts despite metadata failure, use known entry-type hints, add private per-mount diagnostics and cancellable scanning. Import security checks and profile-local atomic copies are retained. PS5 confirmation pending.
+
 # Nuvio Max'd 1.0.0.10 experimental — remote remapping attempt
 
 ## Remote buttons

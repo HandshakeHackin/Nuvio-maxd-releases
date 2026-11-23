@@ -52,11 +52,13 @@ std::string NetStream::peek(size_t){return "";}
 std::string NetStream::failure(){return "";}
 std::string NetStream::effective_url(){return "";}
 #endif
+#ifndef NUVIO_TEST_REAL_TORRENT
 AVIOContext* TorrentStream::open_avio(const std::string&,const std::atomic<bool>*,std::string*){return nullptr;}
 bool TorrentStream::is_ours(AVIOContext*){return false;}
 TorrentStream* TorrentStream::of(AVIOContext*){return nullptr;}
 void TorrentStream::close_avio(AVIOContext**){}
 std::string TorrentStream::peek(size_t){return "";}
+#endif
 std::unique_ptr<EvoDecoder> EvoDecoder::open(const AVCodecParameters*,std::string&){return nullptr;}
 EvoDecoder::~EvoDecoder()=default;
 int EvoDecoder::send(const uint8_t*,int,int64_t){return -1;}
@@ -102,6 +104,7 @@ int main(int argc,char** argv) try {
     require(argc>=3,"fixtures missing");
     Player p; Player::Options o;o.url=argv[1];o.surround=true;
     p.open(o); run_until(p,[&]{return p.position()>.25 && !p.buffering();});
+    require(p.stats().find("container ")!=std::string::npos && p.stats().find("Mb/s")!=std::string::npos,"reported container bitrate missing from player details");
     const auto subs=p.subtitle_tracks();
     require(subs.size()==1 && subs[0].lang=="eng" && subs[0].is_default && !subs[0].forced,"embedded track metadata/default disposition lost");
     require(p.audio_output().find("7.1")!=std::string::npos,"surround output missing");

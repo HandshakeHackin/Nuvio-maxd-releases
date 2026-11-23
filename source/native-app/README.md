@@ -1,5 +1,110 @@
 # Native Nuvio Max'd for PS5
 
+## Automatic channel updates
+
+Choose **Settings → Live TV → Channel list auto-refresh**: Off, 1, 3, 6, 12 or
+24 hours. The default is six hours, saved per profile. Loaded free/personal lists
+and the unified guide refresh while Max'd is open; playback and menus defer the
+request. Failures keep the previous working list. See [details](PLAYLIST_REFRESH.md).
+
+## Search and navigation (#19)
+
+Search now has a multilingual controller keyboard and title suggestions from
+configured searchable catalogues. Press L1/R1 to change the keyboard language
+or Options for the PS5 keyboard. Enable **Settings → App & Updates → Top
+navigation** for a dedicated Search tab. The choice is saved for each profile.
+See the [quick guide and testing checklist](SEARCH_NAVIGATION.md).
+
+## Thai subtitle compatibility (#27)
+
+A bundled fallback supports for Thai text with missing or incorrect
+language tags, including ASS files requesting unavailable fonts. Downloaded
+Windows-874/TIS-620 files marked as Thai are decoded correctly. Original fonts,
+styles and timing remain available. See [test details](TESTING-ISSUE27.md).
+
+## Unified TV guide — 1.0.1.0
+
+Open **Settings → Live TV → Unified TV guide** to browse your IPTV sources
+and enabled free channels together. Channels show their source and keep their
+own guide, favorites and playback details. Individual source views remain
+available. See [details](UNIFIED_TV_GUIDE.md).
+
+## Optional free live TV
+
+Enable **Settings → Live TV → Free live TV**, accept the disclaimer, choose one or more
+countries and open the free channels. No IPTV subscription or setup server is
+needed. Personal playlists remain available. Free channels are supplied by
+third parties; availability and quality vary. See [details and sources](FREE_LIVE_TV.md).
+
+## Subtitle test fix (#25)
+
+The next test build keeps more embedded subtitle packets during multilingual
+read-ahead bursts and gives subtitle downloads a longer connection window with
+one retry. Downloads remain bounded and cancel when leaving the video.
+See [test details](TESTING-ISSUE25.md). PS5 confirmation is still needed.
+
+## Start page and TV controls
+
+Choose a start page for each profile in Settings → App & Updates. Live TV now
+remembers each source's last group. Press Options on a channel to rename it,
+hide it or choose another copy; restore hidden channels in Sources & filters.
+The new settings are translated and included in encrypted backups.
+See [details and credits](LAUNCHER_FEATURES.md) and [test checklist](TESTING-1.0.0.28.md).
+
+## Offline release checks
+
+Signed package metadata and file hashes identify changes to release files,
+including credits and license notices. Verification runs locally in a background
+worker; a dismissible warning preserves normal playback and profile settings.
+See **Settings → App & Updates → Build authenticity & credits** and
+[implementation, signing and limits](BUILD_INTEGRITY.md).
+
+
+## 1.0.0.26: age ratings
+
+Movie and series details show published TMDB certifications beside their metadata.
+Choose **Settings → Account & Services → Age-rating country**. The badge names
+its country; US is the fallback and missing ratings stay hidden. The preference
+is saved per profile. See [behavior and checks](AGE_RATINGS.md).
+
+## Component versions
+
+The app now builds with LLVM 23.1.5, PacBrew 0.41.1, FFmpeg 9.0.2 and
+OpenSSL 4.1.0, with refreshed EVO, provider, compression, networking and text
+dependencies. SDK 0.45 and OpenGL 1.0.2 remain pinned. Use the
+[isolated build instructions](DEPENDENCY_REFRESH_BUILD.txt) and
+[release checklist](TESTING-1.0.0.26.md).
+
+## 1.0.0.19: detail actions and controller hints
+
+Press **Options** on movie/series details to manage library membership, watched
+marks or trailers. Bulk season/series changes ask for confirmation and use known
+released episodes. Cast/person pages now show controller icons. See
+[behavior, sync scope and checks](TITLE_ACTIONS.md).
+
+## 1.0.0.18: more menu languages
+
+Choose English, German, Spanish, French, Arabic, Simplified Chinese, Japanese or
+Korean in Settings > App & Updates > Language, then restart Max'd. The six new
+catalogs cover 425 core menu/control messages, with English fallback for remaining
+help and status text. Arabic text is shaped/reordered; CJK fonts are bundled.
+Audio/subtitle preferences and addon content remain independent. See
+[coverage, contributing and checks](MENU_LANGUAGES.md).
+
+
+## 1.0.0.17: interface language and people browsing
+
+Choose **Settings → App & Updates → Language → Deutsch**, then restart the app
+for German menus. English remains available and is the fallback. This is a local
+app preference; audio/subtitle languages and addon metadata remain independent.
+
+On a movie/series detail page press **R2** for the cast/crew photo row. Select a
+person for biography, birth details and movie/TV credits. Select a credit to open
+its title through the configured addons. Circle returns through the bounded
+history. Missing metadata/photos use fallbacks. No extra payload is needed for
+these two features. See [implementation and checks](PEOPLE_AND_LANGUAGES.md).
+
+
 The interface uses BlackBearReloaded's `ps5-homebrew-ui` (Prospero UI), with
 spring-driven carousels, artwork crossfades and translucent player panels. Series
 have a selectable season row and a horizontal episode carousel with 640×360
@@ -7,8 +112,7 @@ thumbnails, descriptions and watch-progress indicators. Films show their poster
 beside metadata and stream cards. These layouts follow the artwork-focused
 approach in [Stremio-Plus](https://github.com/LoZazaMastro/Stremio-Plus).
 
-This folder contains the Nuvio Max'd source for the **v0.5.17 native experimental
-release**. The OpenGL
+This folder contains the Nuvio Max'd **1.0.1.0 native PS5 source**. The OpenGL
 interface, addon requests and player run together in one process and are
 packaged as a single FFPFSC image.
 
@@ -26,9 +130,9 @@ v0.5.17 adds subtitle styling with a live preview, custom D-pad and shoulder-but
 
 ## Experimental EVO video engine
 
-v0.5.15 includes the video decoder and presentation core from the latest EVO
-Player release, **0.12.0**, pinned to commit `9ee9a5420c73b5be448610e5f0a90a29a75592f3`.
-Choose **Settings → Playback engine → EVO Player 0.12.0 (experimental)**,
+The optional engine includes EVO Player **0.13.7**'s video decoder and
+presentation core, pinned to commit `08bcab5de76cb7507ecc0bc3e1d4bca9bea13788`.
+Choose **Settings → Playback engine → EVO Player 0.13.7 (experimental)**,
 then open a stream. The saved choice applies to the next stream; Nuvio native
 remains the default and can be selected again from the same menu.
 

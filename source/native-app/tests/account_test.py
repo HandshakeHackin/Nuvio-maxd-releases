@@ -28,6 +28,9 @@ class Backend(http.server.BaseHTTPRequestHandler):
         raw = self.rfile.read(int(self.headers['Content-Length']))
         self.respond(parse_qs(raw.decode()) if self.headers.get('Content-Type', '').startswith('application/x-www-form-urlencoded') else json.loads(raw))
 
+    do_PATCH = do_POST
+    do_PUT = do_POST
+
     def respond(self, body):
         state = self.server.state
         state['calls'].append((self.path, body, self.headers.get('Authorization')))
@@ -35,6 +38,24 @@ class Backend(http.server.BaseHTTPRequestHandler):
             self.send_json(403, {}); return
         path = self.path
         pathname = path.split('?', 1)[0]
+        if path == '/feature/etag':
+            data = json.dumps({'method': self.command, 'body': body}).encode()
+            self.send_response(200)
+            self.send_header('ETag', '"fixture-revision"')
+            self.send_header('Content-Length', str(len(data)))
+            self.end_headers()
+            self.wfile.write(data)
+            return
+        if path == '/feature/large':
+            self.send_response(200); self.end_headers()
+            try:
+                self.wfile.write(b'x' * 4096)
+            except (BrokenPipeError, ConnectionResetError):
+                pass  # The bounded client deliberately aborts this response.
+            return
+        if path == '/feature/redirect':
+            self.send_response(302); self.send_header('Location', self.server.base + '/feature/etag'); self.end_headers()
+            return
         if path == '/update/redirect':
             self.send_response(302)
             self.send_header('Location', 'http://127.0.0.1:1/never-send-release-data')
@@ -192,8 +213,24 @@ class Backend(http.server.BaseHTTPRequestHandler):
             state[field] = [r for r in state.get(field, []) if key(r) not in removed]
             self.send_json(200, {})
         elif path.endswith('sync_pull_library'):
-            assert body == {'p_profile_id': state.get('expected_profile', 1), 'p_limit': 500, 'p_offset': 0}
-            self.send_json(200, [{'content_id': 'tt123', 'content_type': 'movie', 'name': 'Test title'}])
+            if state.get('library_malformed'):
+                self.send_json(200, {'unexpected':'not a snapshot'}); return
+            assert body['p_profile_id'] == state.get('expected_profile', 1) and body['p_limit'] == 500
+            items = state.setdefault('library_' + str(body['p_profile_id']), [{'content_id': 'tt123', 'content_type': 'movie', 'name': 'Test title'}])
+            self.send_json(503 if state.get('library_offline') else 200, items[body['p_offset']:body['p_offset']+500])
+        elif path.endswith(('sync_push_library_items', 'sync_delete_library_items')):
+            assert body['p_profile_id'] == state.get('expected_profile', 1)
+            if state.get('library_offline'):
+                self.send_json(503, {}); return
+            assert body['p_origin_client_id'].startswith('nuvio-ps5-')
+            adding = path.endswith('sync_push_library_items')
+            rows = body['p_items' if adding else 'p_keys']
+            field = 'library_' + str(body['p_profile_id'])
+            current = state.setdefault(field, [{'content_id': 'tt123', 'content_type': 'movie', 'name': 'Test title'}])
+            key = lambda row: (row['content_id'], row['content_type'])
+            keys = {key(row) for row in rows}
+            state[field] = [row for row in current if key(row) not in keys] + (rows if adding else [])
+            self.send_json(200, {})
         elif path.endswith('sync_pull_watch_progress'):
             assert body == {'p_profile_id': state.get('expected_profile', 1)}
             self.send_json(503 if state.get('progress_offline') else 200, state.get('progress_rows', []) if body['p_profile_id'] == 1 else state.get('progress_rows_' + str(body['p_profile_id']), []))
@@ -835,6 +872,54 @@ class AccountTests(unittest.TestCase):
         self.assertFalse(self.command('create_profile', auth_key=key, name='Extra')['ok'])
         self.assertEqual(len(self.state['profiles']), 1)
 
+    def test_configuration_restore_preserves_history_and_retires_old_context(self):
+        key = self.pair()['result']['authKey']
+        path = self.profile_path()
+        (path / 'profile-settings.json').write_text(json.dumps({'subtitle_languages': 'eng', 'account_session': 'excluded'}))
+        (path / 'progress.json').write_text('history-fixture')
+        captured = self.command('configuration_capture', auth_key=key, directory=str(path))
+        self.assertTrue(captured['ok'], captured)
+        data = captured['result']
+        self.assertNotIn('account_session', data['snapshot']['files']['profile-settings.json'])
+        data['snapshot']['files']['profile-settings.json'] = json.dumps({'subtitle_languages': 'deu'})
+        restored = self.command('configuration_restore', auth_key=key, directory=str(path), **data)
+        self.assertTrue(restored['ok'], restored)
+        self.assertNotEqual(restored['result']['authKey'], key)
+        self.assertEqual(json.loads((path / 'profile-settings.json').read_text()), {'subtitle_languages': 'deu'})
+        self.assertEqual((path / 'progress.json').read_text(), 'history-fixture')
+        self.assertFalse(self.command('configuration_capture', auth_key=key, directory=str(path))['ok'])
+        self.assertFalse(self.command('progress_write', auth_key=key, changes=[self.progress_item()])['ok'])
+
+    def test_configuration_restore_rejects_foreign_profile_and_stale_review(self):
+        key = self.pair()['result']['authKey']
+        path = self.profile_path()
+        captured = self.command('configuration_capture', auth_key=key, directory=str(path))['result']
+        (path / 'profile-settings.json').write_text(json.dumps({'subtitle_languages': 'fra'}))
+        self.assertFalse(self.command('configuration_restore', auth_key=key, directory=str(path), **captured)['ok'])
+        self.assertEqual(json.loads((path / 'profile-settings.json').read_text())['subtitle_languages'], 'fra')
+        selected = self.command('select_profile', auth_key=key, profile=2)['result']
+        second_path = Path(selected['path'])
+        second_capture = self.command('configuration_capture', auth_key=selected['authKey'], directory=str(second_path))['result']
+        self.assertFalse(self.command('configuration_restore', auth_key=selected['authKey'], directory=str(second_path), snapshot=captured['snapshot'], hash=second_capture['hash'])['ok'])
+        self.assertFalse(self.command('configuration_capture', auth_key=selected['authKey'], directory=str(path))['ok'])
+        self.assertFalse(self.command('configuration_capture', directory=str(second_path))['ok'])
+
+    def test_feature_transport_bounds_verbs_etag_and_no_credential_redirects(self):
+        for method in ('GET', 'POST', 'PUT', 'PATCH'):
+            result = self.command('feature_request', url=self.server.base + '/feature/etag', method=method, body='{"fixture":true}' if method != 'GET' else '')
+            self.assertTrue(result['ok'], result)
+            self.assertEqual(result['etag'], '"fixture-revision"')
+            self.assertEqual(json.loads(result['body'])['method'], method)
+        count = len(self.state['calls'])
+        result = self.command('feature_request', url=self.server.base + '/feature/redirect')
+        self.assertEqual(result['status'], 302)
+        self.assertEqual(len(self.state['calls']), count + 1)
+        large = self.command('feature_request', url=self.server.base + '/feature/large', limit=32)
+        self.assertFalse(large['ok']); self.assertEqual(large['body'], '')
+        count = len(self.state['calls'])
+        self.assertFalse(self.command('feature_request', url=self.server.base + '/feature/etag', cancel=True)['ok'])
+        self.assertEqual(len(self.state['calls']), count)
+
     def test_profile_switch_scopes_history_and_rejects_delayed_jobs(self):
         key = self.pair()['result']['authKey']
         self.command('progress_write', auth_key=key, changes=[self.progress_item()])
@@ -1106,6 +1191,101 @@ class AccountTests(unittest.TestCase):
         status=self.command('tracking',action='status')['result']
         self.assertEqual(status['library'],'nuvio')
         self.assertEqual(status['libraryPreferred'],'simkl')
+
+    def test_library_membership_is_separate_from_resume_and_history(self):
+        key = self.pair()['result']['authKey']
+        self.assertTrue(self.command('library', auth_key=key)['ok'])
+        self.assertTrue(self.command('progress_write', auth_key=key, changes=[self.progress_item()])['ok'])
+        item = dict(_id='tt999', type='movie', name='あ'*400, stream='https://private.invalid/token', headers={'secret':'secret'})
+        self.assertTrue(self.command('membership', auth_key=key, item=item, add=True)['result']['synced'])
+        sent = next(body['p_items'][0] for path, body, _ in self.state['calls'] if path.endswith('sync_push_library_items'))
+        self.assertNotIn('stream', sent)
+        self.assertNotIn('headers', sent)
+        self.assertIsNone(sent['addon_base_url'])
+        self.assertLessEqual(len(sent['name'].encode('utf-8')),1024)
+        self.assertEqual(sent['name'],'あ'*341)
+        self.assertIn('tt999', {row['_id'] for row in self.command('library')['result'] if not row.get('temp')})
+        self.assertTrue(self.command('membership', item=dict(_id='tt123', type='movie'), add=False)['ok'])
+        rows = self.command('library')['result']
+        original = next(row for row in rows if row['_id']=='tt123')
+        self.assertTrue(original['removed'] and original['temp'])
+        self.assertGreater(original['state']['timeOffset'],0)
+        self.assertFalse(any(path.endswith(('sync_push_watched_items','sync_delete_watched_items')) for path, _, _ in self.state['calls']))
+        self.assertEqual((self.profile_path()/'library-sync.json').stat().st_mode & 0o777,0o600)
+
+    def test_library_snapshot_removal_and_malformed_reply_preserve_correct_membership(self):
+        self.assertTrue(self.pair()['ok'])
+        self.assertIn('tt123',{r['_id'] for r in self.command('library')['result']})
+        self.state['library_1']=[]
+        self.assertNotIn('tt123',{r['_id'] for r in self.command('library')['result'] if not r.get('temp')})
+        self.state['library_1']=[dict(content_id='tt456',content_type='series',name='Saved')]
+        self.command('library');self.state['library_malformed']=True
+        self.assertIn('tt456',{r['_id'] for r in self.command('library')['result']})
+        self.state['library_malformed']=False
+        self.state['library_1']=[dict(content_id='tt'+str(n+1000),content_type='movie',name='Movie') for n in range(10001)]
+        self.assertIn('tt456',{r['_id'] for r in self.command('library')['result']})
+
+    def test_membership_offline_restart_latest_intent_and_remote_changes(self):
+        key = self.pair()['result']['authKey']
+        self.command('library')
+        self.state['library_offline'] = True
+        item = dict(_id='tt456', type='series', name='Offline series')
+        result = self.command('membership', item=item, add=True)
+        self.assertTrue(result['ok']); self.assertFalse(result['result']['synced'])
+        self.command('membership', item=item, add=False)
+        self.command('membership', item=item, add=True)
+        pending = json.loads((self.profile_path()/'library-sync.json').read_text())['pending']
+        self.assertEqual(len(pending),1)
+        self.command('restore')
+        self.state['library_1'].append(dict(content_id='tt_other', content_type='movie',name='Other device'))
+        self.state['library_offline'] = False
+        rows = self.command('library')['result']
+        self.assertTrue({'tt456','tt_other','tt123'} <= {r['_id'] for r in rows})
+        self.assertEqual(json.loads((self.profile_path()/'library-sync.json').read_text())['pending'],[])
+        key = self.command('profiles')['result']['authKey']
+        other = self.command('select_profile',auth_key=key,profile=2)['result']['authKey']
+        self.state['expected_profile'] = 2
+        self.assertFalse(self.command('membership',auth_key=key,item=item,add=False)['ok'])
+        self.assertNotIn('tt456',{r['_id'] for r in self.command('library',auth_key=other)['result']})
+
+    def test_membership_source_change_and_unreadable_cache_do_not_write(self):
+        key = self.pair()['result']['authKey']
+        self.assertFalse(self.command('membership',auth_key=key,item=dict(_id='tt456',type='movie'),add=True,source='trakt')['ok'])
+        target=self.profile_path()/'library-sync.json';target.write_text('unreadable')
+        self.assertFalse(self.command('membership',item=dict(_id='tt456',type='movie'),add=True)['ok'])
+        self.assertEqual(target.read_text(),'unreadable')
+        self.assertFalse(any(path.endswith('sync_push_library_items') for path,_,_ in self.state['calls']))
+
+    def test_watched_batch_atomic_validation_offline_retry_and_movie_unmark(self):
+        key = self.pair()['result']['authKey']
+        entries=[dict(content_id='tt456',content_type='series',title='Series',season=1,episode=e) for e in range(1,4)]
+        self.state['watched_1']=[dict(content_id='tt_other',content_type='movie',title='Other',season=None,episode=None,watched_at=1700000000000)]
+        self.assertFalse(self.command('watched_batch',entries=entries+[dict(entries[0],episode=-1)],watched=True)['ok'])
+        self.assertEqual(len(self.state['watched_1']),1)
+        self.assertFalse(self.command('watched_batch',entries=entries,watched=True,source='trakt')['ok'])
+        self.state['watched_offline']=True
+        result=self.command('watched_batch',entries=entries,watched=True)
+        self.assertTrue(result['ok']);self.assertFalse(result['result']['synced'])
+        self.command('restore');self.state['watched_offline']=False
+        self.assertEqual(len(self.command('watched_get')['result']['entries']),4)
+        push=[body for path,body,_ in self.state['calls'] if path.endswith('sync_push_watched_items')]
+        self.assertEqual(len(push),1)
+        self.assertTrue(self.command('watched_batch',entries=entries,watched=False)['ok'])
+        self.assertEqual([r['content_id'] for r in self.state['watched_1']],['tt_other'])
+        movie=dict(content_id='tt789',content_type='movie',season=None,episode=None,title='Movie')
+        self.assertTrue(self.command('watched_batch',entries=[movie],watched=True)['ok'])
+        self.assertTrue(self.command('watched_batch',entries=[movie],watched=False)['ok'])
+        deleted=[body for path,body,_ in self.state['calls'] if path.endswith('sync_delete_watched_items')][-1]['p_keys'][0]
+        self.assertNotIn('season',deleted);self.assertNotIn('episode',deleted)
+        self.assertEqual(len(self.state['watched_1']),1)
+        # A larger unrelated history is preserved by a bulk action.
+        self.state['watched_1']=[dict(content_id='tt'+str(n+1000),content_type='movie',title='Other device',season=None,episode=None,watched_at=1700000000000) for n in range(500)]
+        self.command('watched_get')
+        batch=[dict(content_id='tt_bulk',content_type='series',title='Bulk',season=1,episode=n+1) for n in range(100)]
+        self.assertTrue(self.command('watched_batch',entries=batch,watched=True)['ok'])
+        self.assertEqual(len(self.state['watched_1']),600)
+        self.assertTrue(self.command('watched_batch',entries=batch,watched=False)['ok'])
+        self.assertEqual(len(self.state['watched_1']),500)
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

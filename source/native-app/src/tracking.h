@@ -18,8 +18,9 @@ public:
     json action(const std::string& action, const json& args, std::string& error);
     std::string source(bool progress) const;
     bool library(json& items, std::string& error);
+    bool membership(const json& item, bool add, bool& synced, std::string& error);
     bool progress(json& rows, std::string& error);
-    bool write(const json& items, std::string& error);
+    bool write(const json& items, std::string& error, bool* persisted = nullptr);
     bool watched(json& rows, std::string& error);
     bool unsent(const json& item) const;
     bool mark(const std::string& content, int season, int episode, bool watched, std::string& error);
@@ -33,10 +34,15 @@ private:
     bool connected(const std::string& p) const;
     HttpResponse request(const std::string& p, const std::string& path, const json* body = nullptr, bool auth = true);
     bool validate(const std::string& p, std::string& error);
-    bool refresh(const std::string& p, std::string& error);
+    bool refresh(const std::string& p, std::string& error, bool force = false);
+    bool request_with_refresh(const std::string& p, const std::string& path, const json* body, HttpResponse& response, std::string& error);
+    bool simkl_library_snapshot(json& out, std::string& error);
     bool fetch(const std::string& p, const std::string& path, json& out, std::string& error);
     bool flush(const std::string& p, std::string& error);
     bool read_library(json& items, std::string& error);
+    bool read_mdblist(json& rows, std::string& error);
+    bool read_mdblist_watched(json& rows, std::string& error);
+    bool flush_membership(const std::string& provider, std::string& error);
     bool read_progress(json& rows, std::string& error);
 };
 }

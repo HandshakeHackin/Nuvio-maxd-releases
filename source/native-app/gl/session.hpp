@@ -10,11 +10,13 @@
 #pragma once
 
 #include "art.hpp"
+#include "person.hpp"
 #include "app_update.hpp"
 #include "episode_playback.hpp"
 #include "content.hpp"
 #include "ime.hpp"
 #include "model.hpp"
+#include "sports_hub.hpp"
 #include "connected_services.h"
 #include "connected_preparer.h"
 #include "overlays.hpp"
@@ -26,15 +28,20 @@
 #include "tasks.h"
 #include "stream_result_cache.hpp"
 #include "live_tv.h"
+#include "live_refresh.hpp"
+#include "free_tv.h"
+#include "unified_tv.h"
 #include "live_guide.h"
 #include "series_updates.hpp"
 #include "iptv_library.h"
 #include "torrent/engine.h"
 #include "media_server.h"
 #include "plex.h"
+#include "build_integrity.h"
 #include <mutex>
 #include "audio/cues.hpp"
 #include "core/input.hpp"
+#include "search_keyboard.hpp"
 
 #include <array>
 #include <atomic>
@@ -64,12 +71,14 @@ class Session
         int iptv = 0;
         int media = 0;
         int torrents = 0;
+        int sports = 0;
         int live = 0;
         int episode = 0;
         int search_row = 0, search_col = 0;
         int stream = -1;
         std::string stream_addon;
         bool streams_open = false;
+        int cast=0,person_movie=0,person_series=0;
     };
 
     // What changed since take_changed() last said. kDiscoverNew / kLibraryNew mean
@@ -84,8 +93,9 @@ class Session
         kLive = 2048,
         kIptv = 4096,
         kIptvNew = 8192,
-        kMedia = 16384, kMediaNew = 32768, kTorrentPage = 65536,
+        kMedia = 16384, kMediaNew = 32768, kTorrentPage = 65536, kSports = 131072,
         kDetail = 32,
+        kPerson=262144,
         kDiscoverNew = 64,
         kLibraryNew = 128,
         kSearch = 256,
@@ -156,6 +166,19 @@ class Session
     void release_notes_dismiss();
 
     // ---- what the screens draw ----
+    AddonsContent sports_content;
+    bool sports_visible=false;
+    void sports_toggle();
+    void sports_menu(int selected=0);
+    void sports_region();
+    void sports_browse(const std::string& sport="");
+    void sports_following();
+    void sports_scores();
+    void sports_channel_filter();
+    void sports_clock();
+    void sports_activate(int index);
+    void sports_search();
+    void sports_reload(bool force=false);
     LibraryContent media_content;
     bool media_visible=false;
     void media_menu();
@@ -183,14 +206,22 @@ class Session
     int multiview_focus=0,multiview_audio=0;
     std::array<MultiTileView,4> multiview_tiles;
     void live_menu();
+    void live_usb_import(bool replace=false,bool reader=false);
+    std::shared_ptr<std::atomic<bool>> live_usb_cancel_;
     void live_reload();
     void live_groups();
     void live_search();
     void live_cycle();
     void live_activate(int index, bool favorite = false);
+    void live_channel_menu(int index);
+    void live_backups(const std::string& key);
+    void live_hidden_channels();
+    bool live_edit_commit(const json& previous);
+    void start_page_menu();
+    void start_page_apply();
     AddonsContent torrents_content;
     bool torrents_visible = false;
-    void torrent_menu();
+    void torrent_menu(bool settings_only = false);
     void torrent_rescan();
     void torrent_search();
     void torrent_cycle();
@@ -200,9 +231,32 @@ class Session
     void torrent_show_web_drop_qr();
     SettingsContent settings;
     DetailContent detail;
+    PersonContent person;
+    bool person_open=false;
+    void cast_load();
+    void age_rating_country_menu();
+    void integrity_start();
+    void integrity_menu();
+    void integrity_maybe_warn();
+    bool person_show(int member);
+    void detail_browse_people(){resume_play_=false;cancel_autoplay();}
+    void person_retry();
+    void person_leave();
+    void person_restore(PersonContent);
+    void person_pick(const people::Credit&);
+    bool take_person_title(Item* out){if(!person_target_)return false;*out=std::move(*person_target_);person_target_.reset();return true;}
+    void open_title_item(const Item&);
+    Item detail_item()const{return d_item_;}
+    unsigned profile_epoch()const{return profile_generation_;}
     BoardContent search; // the results of a search, rows like the Board's
     std::string search_query;
     bool search_open = false; // the results are on show
+    bool top_navigation = false; // profile-local; applied without restarting
+    bool search_keyboard_open = false;
+    search_keyboard::State search_entry;
+    void search_keyboard_input(const hui::InputFrame&);
+    void search_keyboard_cancel();
+    void open_search_page();
     std::string clock; // "21:45"
 
     // ---- playing ----
@@ -220,8 +274,9 @@ class Session
     unsigned configured_w_ = 0, configured_h_ = 0;
     bool typing() const
     {
-        return ime_.active() || pin_open;
+        return ime_.active() || pin_open || search_keyboard_open;
     }
+    bool system_typing() const {return ime_.active();}
 
     // ---- pop-ups ----
     bool pin_open = false;
@@ -243,8 +298,13 @@ class Session
     void detail_pick_episode(int index);
     void detail_change_season(int delta);
     void detail_toggle_watched(int index);
+    void detail_actions();
+    void detail_membership(bool add);
+    void detail_apply_marks(const json& entries,bool marking);
+    bool title_action_busy_ = false;
     void detail_play(int index, bool with_server);
     void detail_reload_streams();
+    void source_options();
     void detail_trailers();
     void cancel_autoplay()
     {
@@ -320,6 +380,7 @@ class Session
     void save_prefs();
     void load_progress();
     void save_progress();
+    void refresh_watched_views();
     bool signed_in() const
     {
         return !prefs_.auth_key.empty();
@@ -365,13 +426,15 @@ class Session
     void live_play(const live_tv::Channel&);
     void multi_choose(std::vector<live_tv::Channel> chosen={}, int replace=-1);
     void multi_start(const std::vector<live_tv::Channel>&);
-    void multi_open(int tile, bool audio);
+    void multi_open(int tile, bool audio, const std::string& resolved = {}, const std::vector<std::string>& headers = {});
     void multi_stop();
     void multi_update();
     void multi_input(const hui::InputFrame&);
     std::array<std::unique_ptr<Player>,4> multi_players_;
     std::array<VideoSurface,4> multi_surfaces_;
     std::array<live_tv::Channel,4> multi_channels_;
+    std::array<unsigned,4> multi_resolve_generation_{};
+    std::array<std::shared_ptr<std::atomic<bool>>,4> multi_resolve_cancel_{};
 
     void media_plex_start(const std::string& replace_id="");
     void media_plex_poll();
@@ -423,7 +486,7 @@ class Session
     void iptv_reload(bool refresh=false);
     void iptv_progress(bool finished=false);
     double iptv_resume(const std::string&) const;
-    void iptv_play(const iptv::Entry&);
+    void iptv_play(const iptv::Entry&, const std::string& resolved = {}, const std::vector<std::string>& headers = {});
     std::vector<iptv::Account> iptv_accounts_;
     json iptv_state_ = json::object();
     iptv::Catalog iptv_catalog_;
@@ -436,13 +499,57 @@ class Session
     unsigned iptv_generation_=0,iptv_probe_generation_=0;
     std::shared_ptr<std::atomic<bool>> iptv_cancel_;
     std::shared_ptr<std::atomic<bool>> iptv_probe_cancel_;
+    bool sports_valid(unsigned p,unsigned g,unsigned d=0)const{return p==profile_generation_&&g==sports_generation_&&(!d||d==sports_dialog_)&&profile_ready_&&sports_visible&&!watching&&!resuming_;}
+    void sports_load(const json&);
+    void sports_reset();
+    void sports_save();
+    void sports_build();
+    void sports_tick(int focus);
+    void sports_league(const std::string&);
+    void sports_teams(const std::string&,const std::string& query="",int selected=0);
+    void sports_channel_search(const sports::Event&);
+    void sports_event(const sports::Event&);
+    std::vector<sports::Guide> sports_guide() const;
+    sports::Preferences sports_prefs_;
+    sports::Catalogue sports_catalogue_;
+    sports::Snapshot sports_snapshot_;
+    std::vector<sports::Event> sports_rows_;
+    std::map<std::string,std::vector<sports::Team>> sports_teams_;
+    std::map<std::string,double> sports_team_expiry_,sports_score_expiry_;
+    std::shared_ptr<std::atomic<bool>> sports_cancel_;
+    unsigned sports_generation_=0,sports_dialog_=0;
+    bool sports_loading_=false,sports_score_loading_=false,sports_team_loading_=false;
+    int sports_view_=0;
+    std::vector<size_t> sports_guide_indices_;
+    int sports_guide_cursor_=0;
+    double sports_last_feed_=-1000;
+    size_t sports_page_=0,sports_total_=0;
+    std::string sports_query_,sports_notice_;
+    double sports_next_feed_=0,sports_next_tick_=0,sports_next_score_=0;
     void live_load();
-    void live_save();
+    bool live_save();
     void live_build();
+    void live_refresh_menu();
+    void live_refresh_reset();
+    void live_refresh_load();
+    void live_refresh_tick();
+    bool live_refresh_begin();
+    bool live_refresh_blocked() const;
+    void live_refresh_complete(live_refresh::Outcome);
+    live_refresh::Timer live_refresh_timer_;
+    bool live_refresh_requested_=false,live_refresh_inflight_=false,live_refresh_failed_=false;
     void live_guide_reset();
+    void live_guide_unified_update(int);
+    const live_guide::Listings* live_guide_programmes(const live_tv::Channel&) const;
+    int live_guide_offset(const live_tv::Channel&) const;
+    struct UnifiedGuideDocument {std::shared_ptr<const std::string> body;double expires=0,touched=0;};
+    std::map<std::string,UnifiedGuideDocument> live_guide_documents_;
+    std::map<std::string,double> live_guide_source_retry_;
+    std::set<std::string> live_guide_sources_pending_;
     void live_guide_update(int focus);
-    void live_guide_configure();
-    void live_guide_clock();
+    void live_guide_configure(const std::string& source_id={});
+    void live_guide_source_menu(bool);
+    void live_guide_clock(const std::string& source_id={});
     int live_guide_offset() const;
     std::pair<std::string,std::string> live_guide_labels(const live_tv::Channel&) const;
     live_guide::Result live_guide_xml_;
@@ -467,6 +574,21 @@ class Session
     unsigned live_generation_ = 0;
     int live_view_ = 0;
     bool live_loading_ = false;
+    void live_unified_open();
+    std::map<std::string,std::string> live_source_guides_;
+    void free_tv_toggle();
+    void free_tv_apply(bool,const std::vector<std::string>&);
+    void free_tv_country_menu();
+    void free_tv_country_choices(std::vector<std::string>,int);
+    void free_tv_open();
+    unsigned free_tv_generation_=0;
+    bool free_tv_country_loading_=false;
+    std::shared_ptr<std::atomic<bool>> free_tv_cancel_;
+    std::vector<free_tv::Country> free_tv_countries_;
+    void diagnostic_menu();
+    void diagnostic_qr();
+    void watch_fail(const std::string& error);
+    bool start_over_next_=false, w_transcode_=false;
     void torrent_reset();
     void torrent_load();
     void torrent_save();
@@ -475,7 +597,7 @@ class Session
     double torrent_resume(const std::string &id) const;
     void torrent_play_hash(const std::string &info_hash, const std::string &name,
                            const std::vector<std::string> &trackers,
-                           const std::vector<std::string> &webseeds, int file_idx);
+                           const std::vector<std::string> &webseeds, int file_idx, bool from_beginning = false);
     void torrent_present_files(const std::string &info_hash, const std::string &name,
                                const std::vector<bt::FileInfo> &files,
                                const std::vector<std::string> &trackers,
@@ -529,12 +651,27 @@ class Session
     void next_preparation_update();
     // detail
     void detail_apply_meta();
-    void detail_set_season(int index);
+    void detail_set_season(int index,bool reset_focus=true);
     void detail_load_streams(const std::string &video_id, const std::string &heading,
                              const std::vector<::Stream>* prefetched = nullptr);
     void detail_refresh_streams();
     void detail_fill_title();
     bool watched(const std::string &video_id) const;
+    void tvdb_menu();
+    void detail_tvdb_menu();
+    void detail_tvdb_load(const std::string&,bool restoring=false);
+    bool detail_tvdb_restore();
+    bool tvdb_busy_=false;
+    unsigned tvdb_generation_=0;
+    void features_reset();
+    void backup_menu();
+    void backup_passphrase(int);
+    void backup_run(int,const std::string&);
+    void backup_confirm_restore(const json&,const std::string&,const std::string&);
+    void backup_drive_login();
+    void backup_drive_poll();
+    bool backup_busy_=false;
+    std::shared_ptr<std::atomic<bool>> features_cancel_=std::make_shared<std::atomic<bool>>(false);
     // artwork
     void refresh_art(const Cursor &cursor);
 
@@ -566,6 +703,11 @@ class Session
     void watch_save_progress(bool final, bool force_finished = false);
     void watch_show_info();
     void watch_build_menu();
+    void watch_options(int selected=0);
+    void watch_style();
+    void watch_sources();
+    double source_switch_position_ = -1;
+    unsigned playback_file_request_=0;
     void watch_refresh_tracks();
     void watch_select_sub(int index);
     void watch_sync_subtitles();
@@ -594,6 +736,9 @@ class Session
     void want_meta(const Item &item);
 
     std::string base_dir_, data_dir_, profile_dir_;
+    build_integrity::Result integrity_result_;
+    std::shared_ptr<std::atomic<bool>> integrity_cancel_=std::make_shared<std::atomic<bool>>(false);
+    bool integrity_checking_=false,integrity_warning_pending_=false,integrity_warning_shown_=false;
     json profiles_ = json::array(), active_profile_ = json::object();
     std::set<std::string> source_attempted_;
     unsigned profile_generation_ = 0, watched_revision_ = 0;
@@ -700,6 +845,11 @@ class Session
 
     // detail
     Item d_item_;
+    std::optional<Item> detail_seed_,person_target_;
+    std::shared_ptr<std::atomic<bool>> person_cancel_=std::make_shared<std::atomic<bool>>(false);
+    std::shared_ptr<std::atomic<bool>> cast_cancel_=std::make_shared<std::atomic<bool>>(false);
+    unsigned person_generation_=0,cast_generation_=0;
+    people::Member selected_person_;
     ::Meta d_meta_;
     bool d_meta_loaded_ = false;
     std::vector<int> d_seasons_;
@@ -710,6 +860,7 @@ class Session
     std::vector<::Stream> d_streams_; // in the order the screen shows them
     std::vector<::Stream> d_found_;   // as the addons sent them
     bool d_cache_warm_=false;
+    bool d_show_all_sources_=false;
     int d_gen_ = 0, d_pending_ = 0, d_answered_ = 0, d_meta_gen_ = 0;
     StreamResultCache stream_result_cache_;
     std::string d_stream_cache_key_;
@@ -729,6 +880,19 @@ class Session
     std::vector<BoardRow> search_;
     std::vector<int> search_map_;
     int search_gen_ = 0, search_pending_ = 0;
+    void ask_search(const std::function<void(const std::string&)>& done,const std::string& title,const std::string& initial="",bool suggestions=false);
+    void search_keyboard_changed();
+    void search_suggestions_tick();
+    std::function<void(const std::string&)> search_keyboard_done_;
+    std::string search_keyboard_language_="en";
+    std::shared_ptr<std::atomic<bool>> suggest_cancel_=std::make_shared<std::atomic<bool>>(false);
+    unsigned suggest_generation_=0;
+    int suggest_inflight_=0,suggest_completed_=0,suggest_errors_=0;
+    double suggest_after_=0,suggest_deadline_=0;
+    bool suggest_prepared_=false;
+    std::vector<std::string> suggest_urls_;
+    std::size_t suggest_next_=0;
+    std::vector<std::vector<search_keyboard::Suggestion>> suggest_rows_;
 
     // playing
     ConsoleLights::Status console_light_status_=ConsoleLights::Status::idle;
@@ -743,6 +907,7 @@ class Session
     std::string w_video_id_;
     ::Stream w_stream_;
     int w_season_ = -1, w_episode_number_ = -1;
+    int w_source_season_=-1,w_source_episode_=-1;
     std::vector<WatchSub> w_subs_;
     int w_sub_active_ = -1; // index in w_subs_, -1 off
     double w_sub_delay_ = 0;
@@ -763,6 +928,7 @@ class Session
     bool t_polling_ = false, t_visible_ = false;
     int t_peers_ = 0, t_known_ = -1;
     double t_speed_ = 0, t_progress_ = -1;
+    int64_t t_cached_bytes_=0,t_ready_bytes_=0,t_file_bytes_=0;
     bool t_has_meta_ = false;
     // the next episode, picked once its streams are in
     bool autoplay_pending_ = false;

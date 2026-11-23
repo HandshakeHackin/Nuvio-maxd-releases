@@ -1,0 +1,31 @@
+Nuvio Max'd
+Maintained by HandshakeHackin.
+Optional Free Live TV catalogue: jyotiprakash101/nuvio-livetv, as used by
+Horizon Home Kit; source listings from iptv-org, Free-TV, AdeelWajid,
+dearbulut and Matt Huisman's i.mjh.nz (Samsung TV Plus, Pluto TV and Roku).
+See licenses/free-live-tv/NOTICE.txt for catalogue and guide credits.
+Original project: https://github.com/HandshakeHackin/Nuvio-maxd-releases
+
+Nuvio Max'd is an unofficial native PS5 client, licensed under GPL-3.0.
+Forking and redistribution are permitted under the license. Required copyright,
+license notices and corresponding-source obligations still apply.
+
+This work builds on Nuvio, BlackBearReloaded's native app boilerplate,
+Prospero UI and OpenGL toolkit, Sp9nky's unofficial-stremio-ps5-port,
+Husam Osman's Nuvio PS5 work, and the credited EVO, VLC, FFmpeg, provider,
+font and other library authors. Their work retains its own licenses.
+
+See LICENSE, THIRD_PARTY.md and licenses/ for the full component notices.
+Nuvio Max'd is not affiliated with or endorsed by Nuvio, Sony or Stremio.
+
+Release-file verification runs offline. It identifies whether packaged files
+match a signed release; it does not identify users or redistributors, report
+installations, or restrict playback. Modified source can remove these checks.
+
+Start-page and Live TV usability features are inspired by Br0ck25/NuvioTVLauncher,
+NuvioMedia/NuvioTV and homelessbrian/NuvioPlusIPTV. See
+licenses/nuvio-tv-launcher/NOTICE.txt and UPSTREAM.json for the reviewed source.
+
+Nuvio Subtitle Fallback combines the bundled Noto Sans, Noto Sans Thai and
+Inter fonts under SIL OFL 1.1, with its own family name. Original fonts are
+unchanged. See fonts/NuvioSubtitleFallback-NOTICE.txt and adjacent licenses.

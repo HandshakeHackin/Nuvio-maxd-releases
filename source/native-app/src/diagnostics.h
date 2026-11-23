@@ -7,4 +7,6 @@ nlohmann::json filter_context(const nlohmann::json&);
 void init(const std::string& directory, const std::string& version);
 void record(const nlohmann::json& context);
 void shutdown();
+std::string classify_error(const std::string& error);
+std::string support_summary(const std::string& version);
 }

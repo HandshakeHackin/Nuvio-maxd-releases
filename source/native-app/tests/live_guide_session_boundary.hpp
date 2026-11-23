@@ -1,6 +1,7 @@
 // Fake task/UI boundaries; all guide Session methods are production code.
 #pragma once
 #include "../src/live_guide.h"
+#include "../src/unified_tv.h"
 #include "../src/util.h"
 #include "../ui/content.hpp"
 #include <deque>
@@ -38,9 +39,13 @@ inline GuideTasks g_tasks;
 namespace sx {
 struct Session {
   Page page_ = Page::livetv;
+  bool sports_visible=false;
+  std::vector<size_t> sports_guide_indices_;
+  int sports_guide_cursor_=0;
   bool watching = false, multiview_active = false, live_loading_ = false;
   unsigned profile_generation_ = 1;
   json live_state_;
+  std::map<std::string,std::string> live_source_guides_;
   std::string live_source_ = "source", live_filter_;
   size_t live_page_ = 0;
   std::vector<live_tv::Channel> live_channels_;
@@ -50,13 +55,14 @@ struct Session {
   std::vector<std::string> choices;
   std::function<void(int)> picked;
   void open_dropdown(const std::string&, const std::vector<std::string>& rows, int, std::function<void(int)> fn) {choices=rows;picked=std::move(fn);}
+  void ask_search(const std::function<void(const std::string&)>& done,const std::string& title,const std::string& = "",bool = false){ask_text(done,title);}
   void ask_text(const std::function<void(const std::string &)> &fn,
                 const std::string &) {
     typed = fn;
   }
   void say(const std::string &, double, bool = false) {}
   void live_build() { ++builds; }
-  void live_save() { ++saves; }
+  bool live_save() { ++saves;return true; }
 #include "live_guide_session_fields.hpp"
   template <class T>
   void bg(std::function<T()> w, std::function<void(T &)> d,

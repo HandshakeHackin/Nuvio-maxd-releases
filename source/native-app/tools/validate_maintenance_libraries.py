@@ -23,4 +23,6 @@ for name,digest in maintenance['targetFileSha256'].items():
         'Maintenance dependency differs: '+name+
         '. Build the pinned overlay with tools/build_maintenance_libraries.sh BASE_SDK WORK_DIRECTORY')
 assert hashlib.sha256((root/'third_party/json.hpp').read_bytes()).hexdigest()==pins['json']['sha256'], 'Vendored JSON differs'
+for name,digest in pins.get('dependencyRefresh20261113',{}).get('assetSha256',{}).items():
+    assert hashlib.sha256((root/name).read_bytes()).hexdigest()==digest, 'Refreshed asset differs: '+name
 print('Maintenance libraries verified: '+', '.join(k+' '+v['version'] for k,v in maintenance['sources'].items())+'; JSON '+pins['json']['version'])

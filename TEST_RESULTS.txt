@@ -1,13 +1,22 @@
-Nuvio Max'd 1.0.0.8 experimental validation
+Nuvio Max'd 1.0.1.0 validation
+CI source: 6c7fa804f2eb32882725d48f2b87aaf9dce1410e
+The publication commit changes release documentation only. Application code, assets, dependency pins and CI workflows match this passing CI commit; native build/package metadata identifies the publication commit.
 
-Source: 8a7b7d2e8f951c9ff8dfec9caac7ff847c50c94e (clean)
-GitHub CI: https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/41945656033 — both jobs passed
-PS5 app and bundled updater: compiled, linked and signed
-Image: fully verified and deeply extracted; 156 files match; zero container errors/warnings
-ZIP: all 156 files match the image; safe entries; 0777 permissions
-Matching source archive: 886 file hashes verified
-Local full host suite, 33 UI preview scenes, dedicated issue #14 and curl socket checks: passed
-FFmpeg 7.0.3 EVO, authenticated HLS, MP4/Matroska seek and subtitle fixtures: passed
-Two codec/scaler output pins intentionally refreshed with owner approval after independent clean source builds produced identical outputs; all upstream source pins and other 454 maintenance outputs preserved.
+Passed:
+- Complete PS5 application compile/link; ZIP and deep native-image extraction match.
+- SELF entry point PPSA99288/eboot.bin, source metadata, all immutable file hashes, matching source archive.
+- Automatic channel refresh: real personal HTTP and public catalogue; every interval; failure/partial retention; playback/menu cancellation; private save/backup; profile races.
+- New refresh menus and changelog rendered in all eight languages; strict startup and shutdown checks.
+- 136 feature/backup checks, account profiles and credential isolation, IPTV and media-server playback, USB readers/private atomic copies, guide, library, streams, trackers, codecs and renderer checks.
+- Remaining full host suite completed through the FFPFSC updater: 46 cases, zero failures.
+- Provider graph security audit: zero vulnerabilities. Upstream dependency check: 26 components; four upgrades available for compatibility review.
 
-PS5 hardware, HDR output, real accounts/servers and console-restart persistence remain unverified. This is an experimental prerelease.
+Hosted CI passed for the same source commit:
+- https://github.com/HandshakeHackin/Nuvio-maxd-releases/actions/runs/45185260870
+- account-and-transport and vlc-playback: success, 2026-11-23.
+
+Signing and console status:
+- The owner approved publication with the dismissible Unverified build notice. The original key was not restored; no replacement key was generated.
+- Physical PS5 testing of the new timer/UI is not claimed.
+
+Dependency pins: all app libraries/headers/core/graphics/source assets verified. Three unused SDK target CLI executables differ only in proven 16-byte random linker build IDs; the original full-output check is retained as failed, not reported as a full 741-file match.

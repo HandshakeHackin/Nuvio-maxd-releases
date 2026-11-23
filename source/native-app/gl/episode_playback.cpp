@@ -267,9 +267,9 @@ const Video* next_video(const std::vector<Video>& videos, const std::string& cur
     if (it == videos.end()) return nullptr;
     const Video* next = nullptr;
     for (const auto& v : videos) {
-        if (v.id.empty() || v.id == current || v.season <= 0 || v.episode <= 0 ||
-            v.season < it->season || (v.season == it->season && v.episode <= it->episode)) continue;
-        if (!next || v.season < next->season || (v.season == next->season && v.episode < next->episode)) next = &v;
+        if (v.id.empty() || v.id == current || display_season(v) <= 0 || display_episode(v) <= 0 ||
+            display_season(v) < display_season(*it) || (display_season(v) == display_season(*it) && display_episode(v) <= display_episode(*it))) continue;
+        if (!next || display_season(v) < display_season(*next) || (display_season(v) == display_season(*next) && display_episode(v) < display_episode(*next))) next = &v;
     }
     if (!next) return nullptr;
     const auto released = iso8601_to_ms(next->released);

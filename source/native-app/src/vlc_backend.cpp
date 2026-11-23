@@ -2,6 +2,7 @@
 // YUV frames for the existing OpenGL renderer; console audio remains PCM.
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "vlc_backend.h"
+#include "subtitle_fonts.hpp"
 #include "pcm_out.h"
 #include "util.h"
 #include "vlc_colour.h"
@@ -454,8 +455,7 @@ bool VlcBackend::open(const Options &o) {
         libvlc_media_add_option_flag(media, text.c_str(), libvlc_media_option_trusted);
     };
 #ifdef NUVIO_VLC_STATIC
-    option(":freetype-font=/app0/fonts/NotoSans-Regular.ttf");
-    option(":freetype-monofont=/app0/fonts/NotoSans-Regular.ttf");
+    for(const auto& font_option:subtitle_fonts::vlc_options())option(font_option);
 #endif
     if (o.software) {
         // VLC boolean options use the no- prefix; '=0' can still enable them.
@@ -774,6 +774,26 @@ std::string VlcBackend::audio_output() const {
     std::lock_guard<std::mutex> guard(d_->mutex);
     return d_->pcm.is_open() ? d_->pcm.description() : "unavailable";
 }
+std::pair<std::string,std::string> VlcBackend::diagnostic_codecs() const {
+    std::pair<std::string,std::string> result{"unknown","unknown"};
+    if(!d_->player)return result;
+    auto* media=libvlc_media_player_get_media(d_->player);if(!media)return result;
+    libvlc_media_track_t** tracks=nullptr;const auto count=libvlc_media_tracks_get(media,&tracks);
+    const int selected_video=libvlc_video_get_track(d_->player),selected_audio=libvlc_audio_get_track(d_->player);
+    for(unsigned i=0;i<count;++i)if(tracks[i]) {
+        std::string raw(4,' ');for(int j=0;j<4;++j)raw[size_t(j)]=char((tracks[i]->i_codec>>(j*8))&255);
+        const auto code=lower(raw);
+        std::string name="other";
+        for(const auto& pair:std::initializer_list<std::pair<const char*,const char*>>{
+            {"h264","h264"},{"avc1","h264"},{"hevc","hevc"},{"hvc1","hevc"},{"vp90","vp9"},{"av01","av1"},
+            {"mpgv","mpeg2video"},{"mp4v","mpeg4"},{"mp4a","aac"},{"a52 ","ac3"},{"eac3","eac3"},
+            {"dts ","dts"},{"trhd","truehd"},{"flac","flac"},{"opus","opus"},{"vorb","vorbis"},{"mpga","mp3"}})
+            if(code==pair.first){name=pair.second;break;}
+        if(tracks[i]->i_type==libvlc_track_video && tracks[i]->i_id==selected_video)result.first=name;
+        else if(tracks[i]->i_type==libvlc_track_audio && tracks[i]->i_id==selected_audio)result.second=name;
+    }
+    libvlc_media_tracks_release(tracks,count);libvlc_media_release(media);return result;
+}
 std::string VlcBackend::codec_summary() const {
     std::string result = "VLC";
     if (d_->player) {
@@ -799,8 +819,21 @@ std::string VlcBackend::codec_summary() const {
     return result + " · " + audio_output();
 }
 std::string VlcBackend::stats() const {
+    std::string rate=" · measured input rate unavailable";
+    if(d_->player){
+        auto* media=libvlc_media_player_get_media(d_->player);
+        if(media){
+            libvlc_media_stats_t stats{};
+            // VLC 3 records bytes per microsecond; multiply by eight for Mb/s.
+            if(libvlc_media_get_stats(media,&stats) && std::isfinite(stats.f_input_bitrate) && stats.f_input_bitrate>0){
+                char text[80];std::snprintf(text,sizeof(text)," · measured input %.2f Mb/s",stats.f_input_bitrate*8.0);
+                rate=text;
+            }
+            libvlc_media_release(media);
+        }
+    }
     return codec_summary() + " · shown " + std::to_string(d_->shown.load()) + " · UI skipped " +
-           std::to_string(d_->dropped.load());
+           std::to_string(d_->dropped.load())+rate;
 }
 void VlcBackend::log_stats() {
     const double now = now_seconds();
@@ -864,6 +897,7 @@ void VlcBackend::select_subtitle(int, double) {}
 std::string VlcBackend::audio_output() const {
     return "unavailable";
 }
+std::pair<std::string,std::string> VlcBackend::diagnostic_codecs() const {return {"unknown","unknown"};}
 std::string VlcBackend::codec_summary() const {
     return "VLC unavailable";
 }

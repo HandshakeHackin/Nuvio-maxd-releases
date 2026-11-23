@@ -9,8 +9,8 @@ from pathlib import Path
 def validate():
     root = Path(__file__).resolve().parents[1] / 'third_party/evo'
     pin = json.loads((root / 'UPSTREAM.json').read_text())
-    assert pin['version'] == '0.13.0'
-    assert pin['commit'] == '2db44b5294657b12bf91666154a05f029ddb5aa2'
+    assert pin['version'] == '0.13.7'
+    assert pin['commit'] == '08bcab5de76cb7507ecc0bc3e1d4bca9bea13788'
     for patch in pin.get('localPatches', []):
         assert hashlib.sha256((root / patch['path']).read_bytes()).hexdigest() == patch['sha256'], patch['path']
     for path, expected in pin['fileSha256'].items():

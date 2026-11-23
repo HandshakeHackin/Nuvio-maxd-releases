@@ -6,6 +6,9 @@ on:
   pull_request:
     paths:
       - 'source/native-app/third_party/provider-runtime/package*.json'
+      - 'source/native-app/dependencies.json'
+      - 'source/native-app/tools/check_dependency_updates.py'
+      - 'source/native-app/tests/test_dependency_updates.py'
       - '.github/workflows/dependency-audit.yml'
 permissions:
   contents: read
@@ -15,6 +18,8 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Test dependency update detection
+        run: python3 -m unittest discover -s source/native-app/tests -p test_dependency_updates.py
       - name: Check stable upstream dependency tags
         env:
           GH_TOKEN: ${{ github.token }}

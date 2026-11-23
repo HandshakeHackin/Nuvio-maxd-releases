@@ -5,6 +5,7 @@
 #include "chapters.hpp"
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 class VlcBackend {
   public:
@@ -51,6 +52,7 @@ class VlcBackend {
     void select_subtitle(int, double delay);
     std::string audio_output() const;
     std::string codec_summary() const;
+    std::pair<std::string,std::string> diagnostic_codecs() const;
     std::string stats() const;
     void log_stats();
 

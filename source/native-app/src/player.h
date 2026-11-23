@@ -67,7 +67,7 @@ public:
 		int initial_audio_stream = -1; // retained only for a necessary seek reopen
 		bool start_paused = false;
 		bool vlc = false;
-		bool evo = false; // EVO Player 0.13.0 decoder and presentation core
+		bool evo = false; // EVO Player 0.13.7 decoder and presentation core
 	};
 	enum class State { Idle, Opening, Playing, Ended, Failed };
 
@@ -79,6 +79,11 @@ public:
 
 	State state() const { return vlc_ ? State(vlc_->state()) : state_.load(); }
 	std::string error() const;
+    double playable_buffered_seconds() const {
+        const double v=vq_.duration(),a=aq_.duration();
+        return video_stream_>=0 && audio_stream_>=0?(v<a?v:a):video_stream_>=0?v:a;
+    }
+    bool take_seek_rejected() { return seek_rejected_.exchange(false); }
 
 	bool paused() const { return vlc_ ? vlc_->paused() : paused_.load(); }
 	void set_paused(bool p);
@@ -190,6 +195,9 @@ private:
 	std::atomic<State> state_{State::Idle};
 	mutable std::mutex err_m_;
 	std::string error_;
+    std::atomic<bool> seek_rejected_{false};
+    std::atomic<int64_t> container_bitrate_{0};
+    std::atomic<int> diagnostic_video_codec_{0}, diagnostic_audio_codec_{0};
 
 	std::thread demux_, video_, audio_;
 	std::atomic<bool> abort_{false};
@@ -222,6 +230,7 @@ private:
 	std::mutex seek_m_;
 	bool seek_req_ = false;
 	std::atomic<bool> seek_pending_{false};
+	std::atomic<bool> seek_in_progress_{false};
 	std::atomic<bool> demux_reading_{false};
 	std::atomic<bool> seek_refill_{false};
 	std::atomic<double> reopen_target_{-1};

@@ -1,0 +1,32 @@
+{
+  "issue": 19,
+  "baseCommit": "3c62b437b85c24adc5575224ae786ffd19613be1",
+  "implemented": [
+    "multilingual controller search editor",
+    "configured-catalogue title suggestions",
+    "optional profile-local top navigation with dedicated Search tab"
+  ],
+  "checksPassed": [
+    "Unicode bounds, Hangul composition and input actions",
+    "production suggestion session: debounce, cancellation, stale replies and two-slot recovery",
+    "production shell: tab traversal, Search/back behavior and shortcut ownership",
+    "IME Unicode prefill, clearing and secret-entry protections",
+    "profile PIN entry",
+    "all eight menu locales, 12 catalogue tests, 4458 glyph rasters",
+    "local Library search and existing metadata/artwork",
+    "Live TV/XMLTV and unified guide sessions",
+    "IPTV and media-server sessions",
+    "Sports Hub",
+    "136 feature/backup checks",
+    "Settings categories and launcher sessions",
+    "translated search/top-navigation/changelog OpenGL previews"
+  ],
+  "nativeBuild": "complete app compiled before final source metadata; final delivery report records clean commit and package verification",
+  "fullHostSuiteRun": false,
+  "physicalPS5Verified": false,
+  "limits": [
+    "Chinese and Japanese kanji conversion use the PS5 system keyboard.",
+    "New controller/system-IME behavior still needs a PS5 test.",
+    "Suggestions require configured searchable addon catalogues."
+  ]
+}

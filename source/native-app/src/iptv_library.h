@@ -12,6 +12,7 @@ using Json = nlohmann::json;
 enum class Kind { movies, series, episodes };
 struct Account {
   std::string id, name, server, user, password;
+  std::string type{}, mac{}, serial{};
 };
 struct Category {
   std::string id, name;
@@ -19,6 +20,7 @@ struct Category {
 struct Entry {
   std::string id, name, category, poster, extension, year;
   int season = 0, episode = 0;
+  std::string command{};
 };
 struct Catalog {
   std::vector<Entry> entries;

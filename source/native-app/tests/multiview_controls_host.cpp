@@ -1,5 +1,6 @@
 // Execute the production grid input handler at its UI/device boundaries.
 #include "core/input.hpp"
+#include "../ui/i18n.hpp"
 #include "live_tv.h"
 #include <array>
 #include <vector>

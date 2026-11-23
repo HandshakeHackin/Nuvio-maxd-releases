@@ -2,6 +2,35 @@
   "repository": "https://github.com/chewlord76/nuvio-torrent-edition",
   "commit": "8e34590582ad89c0f12182289f83c2526bd47c4a",
   "license": "GPL-3.0-or-later",
-  "adaptedFiles": ["src/torrent/bencode.cpp", "src/torrent/bencode.h", "src/torrent/engine.cpp", "src/torrent/engine.h", "src/torrent/torrent_stream.cpp", "src/torrent/torrent_stream.h", "gl/session_torrents.cpp", "tests/torrent_streaming_host.cpp", "tests/torrent_session_boundary.hpp"],
-  "localChanges": "Opt-in lifecycle, bounded paired temporary Web Drop with console confirmation, bounded scans and metadata, cancellable worker shutdown, existing media server and playback integration preserved. HDR fallback implemented separately without changing saved preferences."
+  "adaptedFiles": [
+    "src/torrent/bencode.cpp",
+    "src/torrent/bencode.h",
+    "src/torrent/engine.cpp",
+    "src/torrent/engine.h",
+    "src/torrent/torrent_stream.cpp",
+    "src/torrent/torrent_stream.h",
+    "gl/session_torrents.cpp",
+    "tests/torrent_streaming_host.cpp",
+    "tests/torrent_session_boundary.hpp"
+  ],
+  "localChanges": "Opt-in lifecycle, bounded paired temporary Web Drop with console confirmation, bounded scans and metadata, cancellable worker shutdown, existing media server and playback integration preserved. HDR fallback implemented separately without changing saved preferences.",
+  "reviewedCommit": "c8837a9e5f431ddf21b3aedb532f37c6923175d6",
+  "selectiveRefresh": {
+    "features": [
+      "Per-file most-recent resume and restart controls",
+      "Metadata-resolved file identity before resume",
+      "Container-aware torrent startup and accurate buffering stage",
+      "Cancellable bounded seek index reads and safe failed-seek recovery"
+    ],
+    "rejectedDirectChanges": [
+      "Disable seeking for all torrent formats",
+      "Erase every file resume point when restarting one file",
+      "Suppress decoder-recovery and audio-switch seek failures"
+    ],
+    "upstreamFileSha256": {
+      "gl/session_torrents.cpp": "af117e70751f4f53716dca11e0ecce10525b92d094f48ab2f0b9f3f4d7e8a10b",
+      "gl/session_watch.cpp": "020958fe67d60ffe6d76b950f047d66a810a9b76f29abc73e61eb79cd0cdf51d",
+      "src/player.cpp": "5db03861d5b50f6ec65805171e6cf59a94fd814167403a649f7174ca7cd083fc"
+    }
+  }
 }

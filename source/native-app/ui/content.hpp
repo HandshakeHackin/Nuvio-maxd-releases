@@ -6,6 +6,7 @@
 #include <cstdint>
 #include "../src/chapters.hpp"
 #include "subtitle_style.hpp"
+#include "../src/age_rating_types.hpp"
 #include <string>
 #include <vector>
 
@@ -28,6 +29,7 @@ struct Title
     bool watched = false;   // finished: a green check on its poster
     std::uint32_t poster = 0;   // GL texture, 0 until the artwork has arrived
     std::uint32_t backdrop = 0; // GL texture, 0 until the artwork has arrived
+    std::string certification{}; // Published country + label; detail page only
 };
 
 struct Row
@@ -35,6 +37,7 @@ struct Row
     std::string title; // "Continue Watching", "Popular - Movie"
     std::vector<Title> items;
     std::string key;   // which catalog it is, so a row keeps the cursor when others appear above it
+    bool continue_watching=false;
 };
 
 struct BoardContent
@@ -66,21 +69,29 @@ struct LibraryContent
     std::string status; // while there are no items
 };
 
+struct GuideProgramme { int64_t start=0,end=0; std::string title; };
+
 struct Addon
 {
     std::string name;
     std::string version;     // "v2.4.1"
     std::string types;       // "movie  series  tv"
     std::string description;
+    std::vector<GuideProgramme> programmes;
     std::string programme_now, programme_next; // Live TV guide only
     std::string initial;     // shown when the addon has no logo
     std::uint32_t logo = 0;  // GL texture, 0 until it has arrived
     std::uint32_t colour = 0x7b5bf5; // the tile's colour while there is no logo
     bool local = false;      // runs on this console, not on a server
+    std::string identity{};
+    std::string source_label{}; // Combined Live TV views only.
 };
 
 struct AddonsContent
 {
+    std::string guide_heading{};
+    bool guide_grid=false;
+    int64_t guide_now=0;
     std::vector<Addon> items;
 };
 
@@ -139,12 +150,19 @@ struct Stream
     std::string addon;      // provider filter and card heading
     std::string identity;   // keeps the selected source when another addon answers
     std::string language;
+    std::string assessment;
+    bool source_warning=false;
     bool prepared = false;
     std::vector<StreamBadge> badges;
 };
 
 struct DetailContent
 {
+    std::vector<age_ratings::Rating> certifications;
+    struct PersonCard {std::string id,name,role,photo_url;std::uint32_t photo=0;bool crew=false;std::string character{};};
+    std::vector<PersonCard> people;
+    std::string people_status;
+    bool people_loading=false;
     Title title;
     std::string directors;
     std::string cast;
@@ -175,6 +193,7 @@ struct PlayerState
     double duration = 0.0;
     double buffered = 0.0;  // seconds, how far ahead is ready
     bool paused = false;
+    std::string buffer_info;
     int buffering = -1;     // percent while stalled, negative when playing
     std::string net;        // "8.4 MB/s  ·  32 peers"
     std::string audio;      // "English  5.1"
@@ -217,6 +236,7 @@ struct LaunchState
     int stage = 0;                   // the one in progress; earlier ones are done
     float progress = -1.0f;          // how full the buffer is, negative when not known yet
     bool torrent = true;
+    std::string ready; // verified bytes ahead and decoded playable seconds
     std::string peers; // "32"
     std::string speed; // "8.4 MB/s"
     std::string done;  // "12%"
@@ -242,6 +262,8 @@ enum class Page
     iptv,
     servers,
     torrents,
+    sports,
+    search,
 };
 
 } // namespace sx

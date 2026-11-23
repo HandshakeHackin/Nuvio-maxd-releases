@@ -1,4 +1,7 @@
+#include "../ui/i18n.hpp"
 #include "shell.hpp"
+#include "search_keyboard_draw.hpp"
+#include "top_navigation.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -11,12 +14,12 @@ using hui::Direction;
 
 namespace
 {
-constexpr int kPageCount = 9;
+constexpr int kPageCount = 11;
 }
 
 Shell::Shell(const Env &env, Session &session)
-    : env_(env), s_(session), board_(env), search_board_(env), discover_(env), library_(env), iptv_library_(env,Page::iptv), media_library_(env,Page::servers), addons_(env), live_tv_(env,Page::livetv), torrents_page_(env,Page::torrents), settings_(env),
-      detail_(env), player_ui_(env)
+    : env_(env), s_(session), board_(env), search_board_(env), discover_(env), library_(env), iptv_library_(env,Page::iptv), media_library_(env,Page::servers), addons_(env), live_tv_(env,Page::livetv), torrents_page_(env,Page::torrents), sports_page_(env,Page::sports), settings_(env),
+      detail_(env), person_(env), player_ui_(env)
 {
     board_.set_content(&s_.board);
     search_board_.set_search(&s_.search_query);
@@ -28,6 +31,7 @@ Shell::Shell(const Env &env, Session &session)
     addons_.set_content(&s_.addons);
     live_tv_.set_content(&s_.live_content);
     torrents_page_.set_content(&s_.torrents_content);
+    sports_page_.set_content(&s_.sports_content);
     settings_.set_content(&s_.settings);
     go_page(0);
 }
@@ -41,11 +45,13 @@ Session::Cursor Shell::cursor() const
     c.library = library_.cursor_index();
     c.media=media_library_.cursor_index();
     c.torrents=torrents_page_.cursor_index();
+    c.sports=sports_page_.cursor_index();
     c.iptv=iptv_library_.cursor_index();
     c.live=live_tv_.cursor_index();
     c.episode = detail_.episode_index();
     c.stream = detail_.stream_index();
     c.stream_addon = detail_.stream_addon();
+    c.cast=detail_.cast_index();c.person_movie=person_.focus().movie;c.person_series=person_.focus().series;
     c.streams_open = screen_ == Screen::detail && detail_.mode() == Detail::Mode::streams;
     c.search_row = search_board_.cursor_row();
     c.search_col = search_board_.cursor_col();
@@ -54,13 +60,19 @@ Session::Cursor Shell::cursor() const
 
 void Shell::go_page(int page)
 {
+    history_.clear();s_.person_leave();
     page_ = std::clamp(page, 0, kPageCount - 1);
     if(page_==6 && !s_.iptv_visible)page_=0;
     if(page_==7 && !s_.media_visible)page_=0;
     if(page_==8 && !s_.torrents_visible)page_=0;
+    if(page_==9 && !s_.sports_visible)page_=0;
     screen_ = Screen::page;
+    top_focused_=false;top_page_=page_;
     switch (page_)
     {
+    case 10:
+        s_.open_search_page();screen_=Screen::search;search_board_.enter();
+        break;
     case 0:
         board_.enter();
         break;
@@ -72,6 +84,9 @@ void Shell::go_page(int page)
         break;
     case 3:
         addons_.enter();
+        break;
+    case 9:
+        sports_page_.enter();
         break;
     case 8:
         torrents_page_.enter();
@@ -94,6 +109,7 @@ void Shell::go_page(int page)
 
 void Shell::open_title(const Title &title, const std::string &streams_video)
 {
+    history_.clear();s_.person_leave();
     came_from_ = screen_;
     s_.open_title(title, streams_video);
     detail_.set_content(&s_.detail);
@@ -104,6 +120,7 @@ void Shell::open_title(const Title &title, const std::string &streams_video)
 // Back from a title's page: to the page or the search results it was opened from.
 void Shell::leave_title()
 {
+    if(browse_back())return;
     s_.close_detail();
     if (came_from_ == Screen::search && s_.search_open)
     {
@@ -119,6 +136,7 @@ void Shell::leave_title()
 // What the session changed since the last frame, passed on to the screens that show it.
 void Shell::apply_changes()
 {
+    if(nav_epoch_!=s_.profile_epoch()) {nav_epoch_=s_.profile_epoch();history_.scope(nav_epoch_);if(screen_==Screen::person||screen_==Screen::detail)go_page(page_);}
     const unsigned c = s_.take_changed();
     if (c & Session::kBoard)
         board_.refresh();
@@ -134,6 +152,8 @@ void Shell::apply_changes()
         addons_.refresh();
     if(c & Session::kLive)live_tv_.refresh();
     if(c & Session::kTorrentPage)torrents_page_.refresh();
+    if(c & Session::kSports)sports_page_.refresh();
+    if(page_==9&&!s_.sports_visible)go_page(0);
     if(page_==8&&!s_.torrents_visible)go_page(0);
     if(c & Session::kMediaNew)media_library_.set_content(&s_.media_content);
     else if(c & Session::kMedia)media_library_.refresh();
@@ -145,6 +165,7 @@ void Shell::apply_changes()
         settings_.refresh();
     if (c & Session::kDetail)
         detail_.refresh();
+    if(c & Session::kPerson)person_.refresh();
     if (c & Session::kSearchNew)
     {
         search_board_.set_content(&s_.search);
@@ -157,6 +178,14 @@ void Shell::apply_changes()
     else if (c & Session::kSearch)
     {
         search_board_.refresh();
+    }
+    Item person_title;
+    if(s_.take_person_title(&person_title)&&screen_==Screen::person){
+        if(history_.full())s_.say(sx::i18n::tr("Browsing history is full. Go back before opening another title."),7);
+        else {
+            BrowseFrame frame;frame.person=true;frame.content=s_.person;frame.focus=person_.focus();history_.push(std::move(frame));
+            s_.person_leave();s_.open_title_item(person_title);detail_.set_content(&s_.detail);detail_.enter();screen_=Screen::detail;
+        }
     }
     Title requested;
     std::string requested_streams;
@@ -172,16 +201,30 @@ void Shell::apply_changes()
 
 void Shell::route_detail(const hui::InputFrame &input, float dt)
 {
-    if (input.pressed != 0 || input.nav != Direction::none)
-        s_.cancel_autoplay(); // any button cancels playing the next episode
-    if(input.is_pressed(Action::menu)) {s_.detail_trailers();return;}
+    if(input.pressed!=0||input.nav!=Direction::none)s_.cancel_autoplay();
+    if(input.is_pressed(Action::jump_next)){s_.detail_browse_people();detail_.toggle_cast();return;}
+    if(detail_.mode()==Detail::Mode::people){
+        if(input.is_pressed(Action::back)){detail_.toggle_cast();return;}
+        if(input.is_pressed(Action::north))s_.cast_load();
+        if(input.is_pressed(Action::confirm)){
+            const int index=detail_.cast_index();
+            if(index>=0&&index<int(s_.detail.people.size())){
+                if(history_.full())s_.say(sx::i18n::tr("Browsing history is full. Go back before opening another person."),7);
+                else if(s_.person_show(index)){BrowseFrame frame;frame.title=s_.detail_item();frame.detail=detail_.focus();history_.push(std::move(frame));person_.set_content(&s_.person);screen_=Screen::person;}
+            }
+        }
+        detail_.update(input,dt);return;
+    }
+    if(input.is_pressed(Action::menu)) {s_.detail_actions();return;}
     const bool streams = detail_.mode() == Detail::Mode::streams;
     const bool series = s_.detail.series;
     // Back leaves the page, except from a series' streams, where it goes back to the episodes.
     const bool leave = input.is_pressed(Action::back) && !(series && streams);
     if (streams)
     {
-        if (input.is_pressed(Action::north) || (input.is_pressed(Action::confirm) && detail_.reload_focused()))
+        if (input.is_pressed(Action::confirm) && detail_.source_options_focused())
+            s_.source_options();
+        else if (input.is_pressed(Action::north) || (input.is_pressed(Action::confirm) && detail_.reload_focused()))
             s_.detail_reload_streams();
         else if (input.is_pressed(Action::confirm))
             s_.detail_play(detail_.stream_index(), false);
@@ -206,14 +249,34 @@ void Shell::route_detail(const hui::InputFrame &input, float dt)
         leave_title();
 }
 
+bool Shell::browse_back() {
+    auto frame=history_.pop();if(!frame)return false;
+    s_.person_leave();s_.close_detail();
+    if(frame->person){s_.person_restore(std::move(frame->content));person_.set_content(&s_.person);person_.restore(frame->focus);screen_=Screen::person;}
+    else {s_.open_title_item(frame->title);detail_.set_content(&s_.detail);detail_.enter();detail_.restore(frame->detail);screen_=Screen::detail;}
+    return true;
+}
+void Shell::route_person(const hui::InputFrame& input,float dt) {
+    if(input.is_pressed(Action::back)){if(!browse_back()){s_.person_leave();go_page(page_);}return;}
+    if(input.is_pressed(Action::north))s_.person_retry();
+    if(input.is_pressed(Action::confirm))if(const auto* credit=person_.selected())s_.person_pick(*credit);
+    person_.update(input,dt);
+}
+
 void Shell::route_search(const hui::InputFrame &input, float dt)
 {
     search_board_.update(input, dt);
     const bool on_rail = search_board_.rail_focused();
+    if(s_.top_navigation&&on_rail){
+        if(input.is_pressed(Action::north)||input.is_pressed(Action::confirm)||input.is_pressed(Action::menu))s_.begin_search();
+        else if(input.is_pressed(Action::back)){s_.close_search();go_page(0);}
+        else {top_focused_=true;top_page_=10;}
+        return;
+    }
     if (input.is_pressed(Action::back))
     {
         s_.close_search();
-        go_page(page_);
+        go_page(page_==10?0:page_);
         return;
     }
     if (input.is_pressed(Action::north) || input.is_pressed(Action::menu))
@@ -291,6 +354,15 @@ void Shell::route_page(const hui::InputFrame &input, float dt)
         if (!on_rail && input.is_pressed(Action::west))
             s_.addons_reload();
         break;
+    case 9:
+        sports_page_.update(input,dt);on_rail=sports_page_.rail_focused();cursor=sports_page_.rail_cursor();
+        if(!on_rail){
+            if(confirm)s_.sports_activate(sports_page_.cursor_index());
+            else if(input.is_pressed(Action::north))s_.sports_search();
+            else if(input.is_pressed(Action::menu)||input.is_pressed(Action::west))s_.sports_menu();
+            if(!input.is_pressed(Action::back))return;
+        }
+        break;
     case 8:
         torrents_page_.update(input,dt);on_rail=torrents_page_.rail_focused();cursor=torrents_page_.rail_cursor();
         if(!on_rail){
@@ -328,7 +400,7 @@ void Shell::route_page(const hui::InputFrame &input, float dt)
             if(confirm)s_.live_activate(live_tv_.cursor_index());
             else if(input.is_pressed(Action::west))s_.live_activate(live_tv_.cursor_index(),true);
             else if(input.is_pressed(Action::north))s_.live_search();
-            else if(input.is_pressed(Action::menu))s_.live_menu();
+            else if(input.is_pressed(Action::menu))s_.live_channel_menu(live_tv_.cursor_index());
             else if(input.is_pressed(Action::page_prev))s_.live_groups();
             else if(input.is_pressed(Action::page_next))s_.live_cycle();
             if(!input.is_pressed(Action::back))return;
@@ -346,6 +418,7 @@ void Shell::route_page(const hui::InputFrame &input, float dt)
         }
         break;
     }
+    if(on_rail&&s_.top_navigation){top_focused_=true;top_page_=page_;return;}
     // Circle from any page but the Board goes to the Board (and from the Board it does nothing: the end of
     // the way back).
     if (page_ != 0 && input.is_pressed(Action::back))
@@ -379,6 +452,35 @@ void Shell::route_page(const hui::InputFrame &input, float dt)
     }
 }
 
+bool Shell::route_top_navigation(const hui::InputFrame& input) {
+    if(!s_.top_navigation){top_focused_=false;return false;}
+    if(screen_!=Screen::page&&screen_!=Screen::search)return false;
+    const auto active=screen_==Screen::search?Page::search:static_cast<Page>(page_);
+    const auto tabs=top_navigation::tabs(s_.iptv_visible,s_.media_visible,s_.torrents_visible,s_.sports_visible);
+    int selected=top_navigation::index(tabs,top_focused_?static_cast<Page>(top_page_):active);
+    const bool shoulder=top_navigation::shoulders(true,true,top_focused_,active)&&(input.is_pressed(Action::page_prev)||input.is_pressed(Action::page_next));
+    if(shoulder){
+        selected=(selected+int(tabs.size())+(input.is_pressed(Action::page_prev)?-1:1))%int(tabs.size());
+        const bool focused=top_focused_;if(s_.search_open&&tabs[selected].page!=Page::search)s_.close_search();
+        go_page(int(tabs[selected].page));top_focused_=focused;top_page_=int(tabs[selected].page);
+        sound_.play(hui::audio::Cue::tab);return true;
+    }
+    if(!top_focused_)return false;
+    if(input.nav==Direction::left)selected=std::max(0,selected-1);
+    else if(input.nav==Direction::right)selected=std::min(int(tabs.size())-1,selected+1);
+    top_page_=int(tabs[selected].page);
+    if(input.is_pressed(Action::confirm)){
+        if(s_.search_open&&top_page_!=10)s_.close_search();
+        go_page(top_page_);if(page_==10)s_.begin_search();
+    }else if(input.is_pressed(Action::back)&&active==Page::search){
+        s_.close_search();go_page(0);
+    }else if(input.nav==Direction::down||input.is_pressed(Action::back)){
+        top_focused_=false;go_page(int(active));
+        if(active==Page::search&&s_.search.rows.empty())s_.begin_search();
+    }else if(input.is_pressed(Action::north))s_.begin_search();
+    return true;
+}
+
 unsigned Shell::view_key() const
 {
     return static_cast<unsigned>(screen_) * 64u + static_cast<unsigned>(page_) + (s_.dropdown_open ? 1000u : 0u);
@@ -394,6 +496,7 @@ unsigned Shell::focus_signature()
     mix(c.discover);
     mix(c.library);
     mix(c.episode);
+    mix(c.cast);mix(c.person_movie);mix(c.person_series);mix(person_.focus().row);
     mix(c.search_row);
     mix(c.search_col);
     mix(board_.rail_focused());
@@ -409,6 +512,7 @@ unsigned Shell::focus_signature()
     mix(addons_.rail_focused());
     mix(addons_.rail_cursor());
     mix(addons_.cursor_index());
+    mix(sports_page_.rail_focused());mix(sports_page_.rail_cursor());mix(sports_page_.cursor_index());
     mix(torrents_page_.rail_focused());mix(torrents_page_.rail_cursor());mix(torrents_page_.cursor_index());
     mix(live_tv_.rail_focused());mix(live_tv_.rail_cursor());mix(live_tv_.cursor_index());
     mix(settings_.rail_focused());
@@ -448,6 +552,8 @@ void Shell::update(const hui::InputFrame &input, float dt)
     }();
 
     const bool pin_held=s_.pin_open;
+    const bool search_keyboard_held=s_.search_keyboard_open;
+    const bool system_keyboard_held=s_.system_typing();
     const bool release_notes_held=s_.release_notes_open;
     if (s_.release_notes_open) {
         if(boot_out_>=0.35f && (input.is_pressed(Action::confirm) || input.is_pressed(Action::back))) s_.release_notes_dismiss();
@@ -462,7 +568,10 @@ void Shell::update(const hui::InputFrame &input, float dt)
             d.selected = std::max(0, d.selected - 1);
         else if (input.nav == Direction::down)
             d.selected = std::min(std::max(0, count - 1), d.selected + 1);
-        if (input.is_pressed(Action::confirm))
+        if (d.purpose==DropdownState::Purpose::free_tv_countries && input.is_pressed(Action::west)) {
+            d.selected=0;s_.dropdown_confirm();
+        }
+        else if (input.is_pressed(Action::confirm))
             s_.dropdown_confirm();
         else if (input.is_pressed(Action::back))
             s_.dropdown_cancel();
@@ -472,8 +581,10 @@ void Shell::update(const hui::InputFrame &input, float dt)
         if (input.is_pressed(Action::back))
             s_.sign_in_cancel();
     }
+    else if(s_.search_keyboard_open&&!system_keyboard_held&&typing_hold_<=0.0f)
+        s_.search_keyboard_input(input);
     // The keyboard dialog has the controller; its last button presses must not reach the screens.
-    typing_hold_ = s_.typing() ? 0.35f : std::max(0.0f, typing_hold_ - dt);
+    typing_hold_ = (s_.system_typing()||s_.pin_open) ? 0.35f : std::max(0.0f, typing_hold_ - dt);
     // The pop-ups hold the controller while they are up; the screens underneath keep moving.
     // The first moments: the mark is up until the first screen has its catalogs and posters; the
     // screens underneath are idle, and start their entrance when it lifts.
@@ -494,7 +605,7 @@ void Shell::update(const hui::InputFrame &input, float dt)
         boot_out_ += dt;
     }
     const bool booting = boot_out_ < 0.35f;
-    const bool held = pin_held || s_.pin_open || release_notes_held || s_.dropdown_open || s_.sign_in_open || dropdown_t_.value > 0.3f || typing_hold_ > 0.0f || booting;
+    const bool held = pin_held || s_.pin_open || search_keyboard_held || s_.search_keyboard_open || release_notes_held || s_.dropdown_open || s_.sign_in_open || dropdown_t_.value > 0.3f || typing_hold_ > 0.0f || booting;
     const hui::InputFrame &in = held ? idle : input;
 
     if (s_.watching)
@@ -506,10 +617,12 @@ void Shell::update(const hui::InputFrame &input, float dt)
         player_ui_.state = s_.playing;
         player_ui_.update(dt);
     }
+    else if(!held&&route_top_navigation(in)) {}
     else if (screen_ == Screen::detail)
     {
         route_detail(in, dt);
     }
+    else if(screen_==Screen::person)route_person(in,dt);
     else if (screen_ == Screen::search)
     {
         route_search(in, dt);
@@ -552,7 +665,7 @@ void Shell::draw(hui::gfx::DrawList &list, hui::gfx::BackdropSpec &backdrop) con
             backdrop.mode=hui::gfx::BackdropMode::none;
             using hui::gfx::Color;
             list.rounded_rect({0,0,theme::kScreenW,theme::kScreenH},0,Color::rgb(0x070b14));
-            text(list,env_.fonts.semibold,"Live TV · Four screens (experimental)",40,55,30,theme::ink);
+            text(list,env_.fonts.semibold,sx::i18n::tr("Live TV · Four screens (experimental)"),40,55,30,theme::ink);
             for(int i=0;i<4;++i) {
                 const auto& tile=s_.multiview_tiles[i];
                 const float x=40.0f+(i%2)*940.0f,y=85.0f+(i/2)*460.0f;
@@ -564,7 +677,7 @@ void Shell::draw(hui::gfx::DrawList &list, hui::gfx::BackdropSpec &backdrop) con
                 text(list,env_.fonts.semibold,env_.fonts.semibold.font->fit(tile.name,24,870),x+20,y+402,24,theme::ink);
                 text(list,env_.fonts.regular,env_.fonts.regular.font->fit(tile.status,20,870),x+20,y+429,20,theme::ink_2);
             }
-            text(list,env_.fonts.regular,"D-pad: focus · Cross: listen · Square: replace · Triangle: full screen · Circle: stop",40,1040,24,theme::ink_2);
+            text(list,env_.fonts.regular,sx::i18n::tr("D-pad: focus · Cross: listen · Square: replace · Triangle: full screen · Circle: stop"),40,1040,24,theme::ink_2);
         }
         else if (s_.launch_open)
         {
@@ -590,6 +703,7 @@ void Shell::draw(hui::gfx::DrawList &list, hui::gfx::BackdropSpec &backdrop) con
     {
         detail_.draw(list, backdrop);
     }
+    else if(screen_==Screen::person)person_.draw(list,backdrop);
     else if (screen_ == Screen::search)
     {
         search_board_.draw(list, backdrop);
@@ -610,6 +724,9 @@ void Shell::draw(hui::gfx::DrawList &list, hui::gfx::BackdropSpec &backdrop) con
         case 3:
             addons_.draw(list, backdrop);
             break;
+        case 9:
+            sports_page_.draw(list,backdrop);
+            break;
         case 8:
             torrents_page_.draw(list,backdrop);
             break;
@@ -627,6 +744,14 @@ void Shell::draw(hui::gfx::DrawList &list, hui::gfx::BackdropSpec &backdrop) con
             break;
         }
     }
+    if(s_.top_navigation&&!s_.watching&&(screen_==Screen::page||screen_==Screen::search)){
+        const auto tabs=top_navigation::tabs(s_.iptv_visible,s_.media_visible,s_.torrents_visible,s_.sports_visible);
+        const auto active=screen_==Screen::search?Page::search:static_cast<Page>(page_);
+        draw_top_navigation(list,env_,active,top_navigation::index(tabs,top_focused_?static_cast<Page>(top_page_):active),top_focused_);
+        if(screen_==Screen::search&&!s_.search_query.empty())
+            text(list,env_.fonts.semibold,env_.fonts.semibold.font->fit(i18n::tr("Search: ")+s_.search_query,26,1550),theme::kLeft,156,26,theme::ink_2);
+    }
+    if(s_.search_keyboard_open)draw_search_keyboard(list,env_,s_.search_entry);
     if (dropdown_t_.value > 0.01f)
         draw_dropdown(list, env_, s_.dropdown, dropdown_t_.value);
     if (sign_in_t_.value > 0.01f)

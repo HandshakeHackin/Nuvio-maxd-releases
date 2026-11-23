@@ -57,6 +57,21 @@ std::uint16_t g_text[kMaxChars + 8];
 ImeParam g_param;
 std::uint16_t g_title[128];
 
+void utf16_of(const std::string& input,std::uint16_t* out,std::size_t capacity) {
+    if(!is_valid_utf8(input)||capacity<1)return;
+    std::size_t used=0;
+    for(std::size_t i=0;i<input.size();){
+        const auto c=static_cast<unsigned char>(input[i++]);
+        int extra=c<128?0:(c&0xe0)==0xc0?1:(c&0xf0)==0xe0?2:3;
+        std::uint32_t cp=c&(extra==0?127:extra==1?31:extra==2?15:7);
+        for(int n=0;n<extra;++n)cp=(cp<<6)|(static_cast<unsigned char>(input[i++])&63);
+        if(cp==0||used+(cp>=0x10000?2:1)>=capacity)break;
+        if(cp>=0x10000){cp-=0x10000;out[used++]=0xd800+(cp>>10);out[used++]=0xdc00+(cp&1023);}
+        else out[used++]=static_cast<std::uint16_t>(cp);
+    }
+    out[used]=0;
+}
+
 // The dialog writes UTF-16. Some firmware versions have been seen to widen the
 // units to 32 bits; both are read.
 std::string utf8_of(const std::uint16_t *u)
@@ -103,7 +118,7 @@ std::string utf8_of(const std::uint16_t *u)
 
 } // namespace
 
-bool Ime::open(const std::string& title, bool secret)
+bool Ime::open(const std::string& title, bool secret,const std::string& initial)
 {
     if (active_)
         return true;
@@ -116,6 +131,7 @@ bool Ime::open(const std::string& title, bool secret)
         return false;
     }
     std::memset(g_text, 0, sizeof(g_text));
+    if(!secret)utf16_of(initial,g_text,kMaxChars+1);
     std::memset(&g_param, 0, sizeof(g_param));
     g_param.user_id = static_cast<std::uint32_t>(user);
     // Public OrbisImeOption ABI: PASSWORD=4, NO_LEARNING=32,
@@ -129,7 +145,7 @@ bool Ime::open(const std::string& title, bool secret)
     g_param.max_text_length = kMaxChars;
     g_param.buffer = g_text;
     std::memset(g_title,0,sizeof(g_title));
-    for(size_t i=0;i<title.size() && i<127;++i)g_title[i]=static_cast<unsigned char>(title[i]);
+    utf16_of(title,g_title,128);
     g_param.title=g_title;
     // The dialog sits at the top right, not in the corner it opens in by default: its top right corner
     // is put at this point of the 1920 x 1080 screen (alignments: 0 left/top, 1 centre, 2 right/bottom).
@@ -187,13 +203,18 @@ Ime::State Ime::poll(std::string *text)
     return out;
 }
 
+void Ime::cancel() {
+    if(active_)sceImeDialogTerm();
+    std::memset(g_text,0,sizeof(g_text));active_=false;
+}
+
 } // namespace sx
 
 #else // not on the console: there is no keyboard dialog
 
 namespace sx
 {
-bool Ime::open(const std::string& title, bool secret)
+bool Ime::open(const std::string&, bool,const std::string&)
 {
     return false;
 }
@@ -201,6 +222,7 @@ Ime::State Ime::poll(std::string *)
 {
     return State::idle;
 }
+void Ime::cancel(){active_=false;}
 } // namespace sx
 
 #endif

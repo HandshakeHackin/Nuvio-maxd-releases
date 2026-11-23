@@ -93,6 +93,7 @@ struct Session {
     choices = c;
     pick = std::move(f);
   }
+  void ask_search(const std::function<void(const std::string&)>& done,const std::string& title,const std::string& = "",bool = false){ask_text(done,title);}
   void ask_text(std::function<void(const std::string &)> f,
                 const std::string & = "", bool = false) {
     typed = std::move(f);

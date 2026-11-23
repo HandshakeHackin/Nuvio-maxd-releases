@@ -1,0 +1,14 @@
+NuvioTVLauncher feature inspiration
+
+Project: https://github.com/Br0ck25/NuvioTVLauncher
+Reviewed commit: 7867b98484a6fb2c4af4914abe494c825c2fc541
+Reviewed: 2026-11-16
+License: GNU General Public License v3.0 (see the packaged LICENSE).
+
+Thank you to Br0ck25 and the NuvioTVLauncher contributors, NuvioMedia/NuvioTV,
+and homelessbrian/NuvioPlusIPTV for their work on the documented start-page,
+remembered-group and channel-management features.
+
+Max'd implements these ideas in its existing native C++ PS5 interface. Android
+launcher/accessibility/ADB/VPN code is not included. The original projects keep
+their own authorship and licenses. Max'd is not endorsed by those projects.

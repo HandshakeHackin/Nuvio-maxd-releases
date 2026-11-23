@@ -1,5 +1,6 @@
 #pragma once
 #include "subtitles.h"
+#include "../ui/i18n.hpp"
 #include "subtitle_sync.hpp"
 #include "stremio.h"
 #include "util.h"

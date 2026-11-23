@@ -1,0 +1,12 @@
+{
+  "repository": "https://github.com/abbaskip/Nuvio-ReSeq",
+  "commit": "d46b29a47487919057819602b614d5f7fbde7cba",
+  "license": "GPL-3.0",
+  "description": "Sport and competition catalogue facts and matching aliases derived from SportsCatalog.kt and SportsModels.kt. Native Sports Hub code is independently implemented.",
+  "publicScheduleFeed": "https://abbaskip.github.io/Nuvio-ReSeq/sports-base.json",
+  "dataSources": [
+    "ESPN",
+    "TheSportsDB",
+    "sporting-events.org (attribution: https://sporting-events.org/)"
+  ]
+}

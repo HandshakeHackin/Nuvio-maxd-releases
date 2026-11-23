@@ -8,10 +8,14 @@
 #include <unistd.h>
 
 using tracking::Store;
+void mdblist_membership_cases();
+void mdblist_watched_cases();
 struct Fake {
     struct Call { std::string url; bool post; json body; std::vector<std::string> headers; };
     std::vector<Call> calls;
-    int device_status=0;
+    int device_status=0, simkl_refresh_status=200, simkl_sync_revision=0;
+    std::string simkl_poll_error;
+    bool simkl_read_only=false, simkl_stale=false;
     bool offline=false, unauthorized=false, malformed=false, reject_key=false, pending=false, paginate=false, reject_item=false;
     HttpResponse operator()(const std::string& url,const std::string* body,const std::vector<std::string>& headers) {
         assert(starts_with(url,"https://api.trakt.tv/") || starts_with(url,"https://api.simkl.com/") || starts_with(url,"https://api.mdblist.com/"));
@@ -28,10 +32,24 @@ struct Fake {
             if(device_status)return {device_status,"{}","","",0};
             if (pending) return {400,"{}","","",0};
             out={{"access_token","private-access"},{"refresh_token","private-refresh"},{"created_at",now_epoch_ms()/1000},{"expires_in",86400}};
-        } else if (url.find("/oauth/pin?")!=std::string::npos) {
-            assert(!body); out={{"result","OK"},{"user_code","PIN"},{"expires_in",600},{"interval",3}};
-        } else if (url.find("/oauth/pin/PIN")!=std::string::npos) {
-            assert(!body); out=pending ? json{{"result","KO"}} : json{{"result","OK"},{"access_token","private-simkl"}};
+        } else if (url=="https://api.simkl.com/oauth2/device") {
+            assert(body && calls.back().body["client_id"]=="client" && calls.back().body["scope"]=="media:read media:write");
+            out={{"device_code","private-simkl-device"},{"user_code","ABCD-EFGH"},{"expires_in",900},{"interval",5},
+                 {"verification_uri_complete","https://untrusted.example/steal"}};
+        } else if (url=="https://api.simkl.com/oauth2/token") {
+            const auto& form=calls.back().body;
+            assert(body && form["client_id"]=="client" && !form.contains("client_secret"));
+            if (form["grant_type"]=="refresh_token") {
+                assert(form["refresh_token"]=="simkl_rt_fixture" && !form.contains("device_code"));
+                if (simkl_refresh_status!=200)
+                    return {simkl_refresh_status, simkl_refresh_status==400 ? R"({"error":"invalid_grant"})" : "{}", "", "", 0};
+                simkl_stale=false;
+            } else {
+                assert(form["grant_type"]=="urn:ietf:params:oauth:grant-type:device_code" && form["device_code"]=="private-simkl-device");
+                if (!simkl_poll_error.empty()) return {400,json({{"error",simkl_poll_error}}).dump(),"","",0};
+            }
+            out={{"access_token","simkl_at_fixture"},{"refresh_token","simkl_rt_fixture"},{"expires_in",604800},
+                {"scope",simkl_read_only ? "media:read" : "media:read media:write"}};
         } else if (url.find("/users/settings")!=std::string::npos) {
             assert(bool(body)==(url.find("simkl")!=std::string::npos));
             out={{"user",{{"name","Tester"}}},{"account",{{"id",123}}}};
@@ -39,14 +57,29 @@ struct Fake {
             assert(url.find("apikey=")!=std::string::npos); out={{"user_id",123}};
             if (reject_key) return {401,"private-rejected-key","","",0};
         } else if(url.find("/sync/activities")!=std::string::npos) {
-            assert(body);out={{"all","2026-10-18T00:00:00Z"}};
+            assert(bool(body)==(url.find("client_id=")==std::string::npos));
+            const std::string ts="2026-10-18T00:00:0"+std::to_string(simkl_sync_revision)+"Z";
+            out={{"all",ts},{"movies",{{"completed",ts},{"removed_from_list",simkl_sync_revision==2 ? ts : ""}}}};
+        } else if(body && (url=="https://api.trakt.tv/sync/watchlist" || url=="https://api.trakt.tv/sync/watchlist/remove" || url.find("/watchlist/items/add?")!=std::string::npos || url.find("/watchlist/items/remove?")!=std::string::npos)) {
+            const bool add=url.find("remove")==std::string::npos;
+            if(url.find("mdblist.com")!=std::string::npos) {
+                const auto bucket=calls.back().body.contains("movies")?"movies":"shows";
+                assert(!calls.back().body[bucket][0].contains("ids"));
+                out={{add?"added":"removed",{{bucket,1}}}};
+            } else out={{add?"added":"deleted",{{"movies",1},{"shows",1}}}};
         } else if (url.find("/sync/watchlist?")!=std::string::npos) {
             assert(!body); out=json::array({{{"movie",{{"title","Movie"},{"ids",{{"imdb","tt123"}}}}}}});
         } else if (url.find("/watchlist/items?")!=std::string::npos) {
             out={{"movies",json::array({{{"title","MDB movie"},{"imdb_id",url.find("cursor=next")==std::string::npos ? "tt123" : "tt456"}}})},{"shows",json::array()},
                 {"pagination",{{"next_cursor",paginate && url.find("cursor=next")==std::string::npos ? json("next") : json(nullptr)}}}};
         } else if (url.find("/sync/all-items?")!=std::string::npos) {
-            out=json::parse(R"({"movies":[{"status":"completed","movie":{"title":"SIMKL movie","ids":{"imdb":"tt123"}}}],"shows":[{"show":{"ids":{"imdb":"tt789"}},"seasons":[{"number":1,"episodes":[{"number":2,"watched_at":"2026-10-18T00:00:00Z"}]}]}]})");
+            if (url.find("extended=simkl_ids_only")!=std::string::npos)
+                return {200,R"({"movies":[{"movie":{"ids":{"simkl":321}}}]})","","",0};
+            if (url.find("date_from=")!=std::string::npos)
+                return {200,simkl_sync_revision==1
+                    ? R"({"movies":[{"status":"completed","movie":{"title":"SIMKL delta","ids":{"imdb":"tt321","simkl":321}}}]})"
+                    : "{}", "", "", 0};
+            out=json::parse(R"({"movies":[{"status":"completed","movie":{"title":"SIMKL movie","ids":{"imdb":"tt123","simkl":123}}}],"shows":[{"show":{"ids":{"imdb":"tt789","simkl":789}},"seasons":[{"number":1,"episodes":[{"number":2,"watched_at":"2026-10-18T00:00:00Z"}]}]}]})");
         } else if (url.find("/sync/playback")!=std::string::npos) {
             assert(!body); out=json::array({{{"id",42},{"progress",25},{"runtime",100},{"paused_at","2026-10-18T00:00:00Z"},
                 {"movie",{{"title","Movie"},{"runtime",100},{"ids",{{"imdb","tt123"}}}}}},
@@ -54,8 +87,16 @@ struct Fake {
                 {{"progress",999},{"movie",{{"runtime",100},{"ids",{{"imdb","ttbad"}}}}}}});
         } else if (url.find("/sync/watched/movies")!=std::string::npos) out=json::array({{{"movie",{{"ids",{{"imdb","tt123"}}}}}}});
         else if (url.find("/sync/watched/shows")!=std::string::npos) out=json::array();
-        else if (url.find("/sync/watched?")!=std::string::npos) out={{"movies",json::array({{{"movie",{{"ids",{{"imdb","tt123"}}}}}}})}};
-        else if (url.find("/scrobble/")!=std::string::npos || url.find("/sync/history")!=std::string::npos || url.find("/sync/watched")!=std::string::npos) { assert(body); out={{"action","pause"}}; }
+        else if (url.find("/sync/watched?")!=std::string::npos) out={{"movies",json::array({{{"movie",{{"ids",{{"imdb","tt123"}}}}}}})},{"shows",json::array()},{"seasons",json::array()},{"episodes",json::array()},{"pagination",{{"has_more",false}}}};
+        else if (url.find("/scrobble/")!=std::string::npos || url.find("/sync/history")!=std::string::npos || url.find("/sync/watched")!=std::string::npos) {
+            assert(body);
+            if (starts_with(url,"https://api.simkl.com/") && url.find("client_id=")!=std::string::npos) {
+                assert(url.find("client_id=client&app-name=nuvio-maxd&app-version=")!=std::string::npos);
+                assert(std::find(headers.begin(),headers.end(),"Authorization: Bearer simkl_at_fixture")!=headers.end());
+                if (simkl_stale) return {401,R"({"error":"invalid_token"})","","",0};
+            }
+            out={{"action","pause"}};
+        }
         else { std::cerr<<"Unexpected fixture path "<<url<<"\n"; assert(false); }
         return {status,malformed ? "not json" : out.dump(),"","",0};
     }
@@ -109,7 +150,7 @@ int main() {
     fake.unauthorized=true;error.clear();assert(!restored.progress(progress,error));assert(restored.source(true)=="nuvio");
     assert(restored.status()["progressPreferred"]=="trakt");fake.unauthorized=false;
     restored.action("disconnect",{{"provider","trakt"}},error); assert(restored.status()["progressPreferred"]=="nuvio");
-    // MDBList validates before replacing a key, supports cursor pagination and independent selectors.
+    // MDBList validates before replacing a key, retains cursor compatibility and independent selectors.
     Store mdb(root,transport);error.clear();fake.reject_key=true;
     mdb.action("key",{{"provider","mdblist"},{"api_key","rejected"}},error);assert(!error.empty() && !mdb.status()["accounts"]["mdblist"]["connected"].get<bool>());
     fake.reject_key=false;error.clear();mdb.action("key",{{"provider","mdblist"},{"api_key","private-mdb"}},error);assert(error.empty());
@@ -122,16 +163,84 @@ int main() {
     assert(mdb.write(json::array({removal}),error) && fake.calls.back().url.find("/scrobble/clear?")!=std::string::npos);
     assert(mdb.mark("tt123",-1,-1,true,error) && fake.calls.back().url.find("/sync/watched?")!=std::string::npos);
     assert(mdb.progress(progress,error) && mdb.watched(watched,error));
-    // SIMKL PIN flow, POST user validation, tracked library and resume.
-    mdb.action("configure",{{"provider","simkl"},{"client_id","client"}},error);
-    auto simkl=mdb.action("device_start",{{"provider","simkl"}},error);assert(error.empty() && simkl["url"]=="https://simkl.com/pin");
-    fake.pending=true; assert(mdb.action("device_poll",{{"provider","simkl"}},error)["pending"]==true);fake.pending=false;
-    mdb.action("device_poll",{{"provider","simkl"}},error);assert(error.empty());
-    mdb.action("source",{{"field","library"},{"value","simkl"}},error);
-    mdb.action("source",{{"field","progress"},{"value","simkl"}},error);
-    assert(mdb.library(library,error) && library.size()==2 && mdb.watched(watched,error) && watched.size()==2);
-    assert(mdb.progress(progress,error) && mdb.write(json::array({episode}),error));
-    assert(fake.calls.back().url=="https://api.simkl.com/scrobble/stop");
+    // A clean profile pairs with the bundled V2 client, never exposes the private device code,
+    // rate-limits poll retries and doesn't connect on a read-only grant.
+    const json simkl_args{{"provider","simkl"}};
+    tracking::set_applications({{"simkl",{{"client_id","client"}}}});
+    const auto poll_ready=[&](const std::string& dir) {
+        json saved; assert(load_json(dir+"/tracking.json",saved));
+        saved["pairing_simkl"]["next_poll"]=0; assert(save_json(dir+"/tracking.json",saved));
+    };
+    Store settings(root,transport);
+    auto simkl=settings.action("device_start",simkl_args,error);
+    assert(error.empty() && simkl["url"]=="https://simkl.com/pin" && simkl["qr_url"]=="https://simkl.com/pin?user_code=ABCD-EFGH");
+    assert(simkl.dump().find("private-simkl-device")==std::string::npos);
+    auto calls=fake.calls.size();
+    assert(settings.action("device_poll",simkl_args,error)["pending"]==true && fake.calls.size()==calls);
+    poll_ready(root);
+    Store poll(root,transport);
+    fake.simkl_poll_error="authorization_pending";
+    assert(poll.action("device_poll",simkl_args,error)["interval"]==5 && error.empty());
+    poll_ready(root); Store slow_poll(root,transport);
+    fake.simkl_poll_error="slow_down";
+    assert(slow_poll.action("device_poll",simkl_args,error)["interval"]==10 && error.empty());
+    poll_ready(root); Store scoped_poll(root,transport);
+    fake.simkl_poll_error.clear(); fake.simkl_read_only=true;
+    scoped_poll.action("device_poll",simkl_args,error);
+    assert(error.find("permission")!=std::string::npos && scoped_poll.status()["accounts"]["simkl"]["connected"]==false);
+    fake.simkl_read_only=false; error.clear();
+    scoped_poll.action("device_start",simkl_args,error); assert(error.empty());
+    poll_ready(root); Store ready(root,transport);
+    ready.action("device_poll",simkl_args,error); assert(error.empty());
+    assert(ready.status()["accounts"]["simkl"]["connected"]==true && ready.status().dump().find("simkl_at_")==std::string::npos);
+    assert(ready.source(false)=="mdblist" && ready.source(true)=="mdblist");
+    ready.action("source",{{"field","library"},{"value","simkl"}},error);
+    ready.action("source",{{"field","progress"},{"value","simkl"}},error);
+    assert(ready.library(library,error) && library.size()==2 && ready.watched(watched,error) && watched.size()==2);
+    assert(ready.progress(progress,error));
+    calls=fake.calls.size(); fake.simkl_stale=true;
+    assert(ready.write(json::array({episode}),error));
+    assert(fake.calls.size()==calls+3 && fake.calls[calls+1].url=="https://api.simkl.com/oauth2/token");
+    assert(starts_with(fake.calls.back().url,"https://api.simkl.com/scrobble/stop?"));
+    assert(ready.mark("tt123",-1,-1,true,error) && starts_with(fake.calls.back().url,"https://api.simkl.com/sync/history?"));
+    assert(load_json(root+"/tracking.json",disk)); disk["accounts"]["simkl"]["expires_at"]=1;
+    assert(save_json(root+"/tracking.json",disk));
+    Store expired_simkl(root,transport); fake.simkl_refresh_status=503; calls=fake.calls.size();
+    assert(!expired_simkl.write(json::array({item}),error) && fake.calls.size()==calls+1);
+    assert(expired_simkl.status()["accounts"]["simkl"]["connected"]==true);
+    assert(load_json(root+"/tracking.json",disk) && disk["pending_simkl"].size()==1);
+    fake.simkl_refresh_status=200;
+    assert(expired_simkl.progress(progress,error) && load_json(root+"/tracking.json",disk) && disk["pending_simkl"].empty());
+    // Updates use date_from, removals use a lightweight ID index, and an empty
+    // watchlist is a valid snapshot, not an authentication or fallback error.
+    const auto age_snapshot=[&] {
+        assert(load_json(root+"/tracking.json",disk));
+        disk["simkl_v2_library"]["checked"]=0;
+        assert(save_json(root+"/tracking.json",disk));
+    };
+    age_snapshot(); fake.simkl_sync_revision=1;
+    Store delta(root,transport);
+    assert(delta.library(library,error) && library.size()==3);
+    assert(fake.calls.back().url.find("date_from=")!=std::string::npos);
+    age_snapshot(); fake.simkl_sync_revision=2;
+    Store deletions(root,transport);
+    assert(deletions.library(library,error) && library.size()==1 && library[0]["_id"]=="tt321");
+    assert(fake.calls.back().url.find("extended=simkl_ids_only")!=std::string::npos);
+    fake.simkl_sync_revision=0;
+    std::filesystem::create_directories(root+"/revoked");
+    assert(load_json(root+"/tracking.json",disk) && save_json(root+"/revoked/tracking.json",disk));
+    Store revoked(root+"/revoked",transport);
+    fake.simkl_refresh_status=400; fake.simkl_stale=true;
+    assert(!revoked.write(json::array({item}),error) && revoked.status()["accounts"]["simkl"]["reconnect"]==true);
+    fake.simkl_refresh_status=200; fake.simkl_stale=false;
+    // Saved legacy tokens continue using their original client ID and API contract.
+    std::filesystem::create_directories(root+"/legacy");
+    Store legacy(root+"/legacy",transport);
+    error.clear();
+    legacy.action("import",{{"provider","simkl"},{"credential",{{"client_id","old-owner"},{"access_token","legacy-token"}}}},error);
+    assert(error.empty() && legacy.status()["accounts"]["simkl"]["connected"]==true);
+    assert(std::find(fake.calls.back().headers.begin(),fake.calls.back().headers.end(),"simkl-api-key: old-owner")!=fake.calls.back().headers.end());
+    assert(load_json(root+"/legacy/tracking.json",disk) && disk["accounts"]["simkl"]["client_id"]=="old-owner");
     // App refresh rotation, request origins and headers.
     load_json(root+"/tracking.json",disk);
     disk["accounts"]["trakt"]={{"verified",true},{"client_id","client"},{"client_secret","private-secret"},{"access_token","old"},{"refresh_token","old-refresh"},{"expires_at",1}};
@@ -144,6 +253,38 @@ int main() {
     assert(expiring.unsent(rejected) && !expiring.unsent(item));
     load_json(root+"/tracking.json",disk);assert(disk["pending_trakt"].empty() && disk["failed_trakt"].size()==1);
     fake.reject_item=false;
+    // Membership writes never become scrobbles/history, use the Library selector,
+    // survive outage/restart and stay with the exact tracker account.
+    std::filesystem::create_directories(root+"/membership");
+    load_json(root+"/tracking.json",disk);disk["library"]="trakt";disk["progress"]="mdblist";
+    save_json(root+"/membership/tracking.json",disk);Store member(root+"/membership",transport);
+    bool synced=false;auto member_item=json{{"_id","tt555"},{"type","movie"},{"name","Movie"},{"stream","https://secret.invalid"}};
+    fake.offline=true;error.clear();assert(member.membership(member_item,true,synced,error)&&!synced);
+    load_json(root+"/membership/tracking.json",disk);assert(disk["membership_pending_trakt"].size()==1&&disk.dump().find("secret.invalid")==std::string::npos);
+    error.clear();assert(member.membership(member_item,false,synced,error)&&!synced);
+    load_json(root+"/membership/tracking.json",disk);assert(disk["membership_pending_trakt"].size()==1&&!disk["membership_pending_trakt"][0]["add"].get<bool>());
+    fake.offline=false;Store retry_member(root+"/membership",transport);assert(retry_member.library(library,error));
+    bool membership_request=false;for(const auto& c:fake.calls)if(c.url=="https://api.trakt.tv/sync/watchlist/remove"){
+        assert(c.body["movies"][0]["ids"]["imdb"]=="tt555");membership_request=true;}
+    assert(membership_request);
+    retry_member.action("source",{{"field","library"},{"value","mdblist"}},error);
+    assert(retry_member.membership(member_item,true,synced,error)&&synced&&fake.calls.back().url.find("/watchlist/items/add?")!=std::string::npos);
+    retry_member.action("source",{{"field","library"},{"value","simkl"}},error);
+    const auto before=fake.calls.size();error.clear();assert(!retry_member.membership(member_item,false,synced,error));assert(fake.calls.size()==before&&error.find("read-only")!=std::string::npos);
+    retry_member.action("source",{{"field","library"},{"value","trakt"}},error);fake.offline=true;
+    assert(retry_member.membership(member_item,true,synced,error));fake.offline=false;
+    retry_member.action("disconnect",{{"provider","trakt"}},error);load_json(root+"/membership/tracking.json",disk);assert(!disk.contains("membership_pending_trakt"));
+    // A season's explicit watched marks use one grouped history request.
+    Store batching(root,transport); error.clear();
+    batching.action("source",{{"field","progress"},{"value","simkl"}},error); assert(error.empty());
+    json batch=json::array();for(int n=1;n<=3;++n)batch.push_back({{"_id","tt789"},{"type","series"},{"state",{{"trackingWatched",true},{"nuvioSeason",1},{"nuvioEpisode",n}}}});
+    error.clear();const auto call_start=fake.calls.size();bool persisted=false;assert(batching.write(batch,error,&persisted)&&persisted);
+    int history_calls=0;for(std::size_t i=call_start;i<fake.calls.size();++i)if(starts_with(fake.calls[i].url,"https://api.simkl.com/sync/history?")) {++history_calls;assert(fake.calls[i].body["shows"].size()==1&&fake.calls[i].body["shows"][0]["seasons"][0]["episodes"].size()==3);}
+    assert(history_calls==1);
+    fake.malformed=true;error.clear();assert(!batching.mark("tt999",-1,-1,true,error));
+    assert(error.find("did not confirm")!=std::string::npos);
+    load_json(root+"/tracking.json",disk);assert(!disk["pending_simkl"].empty());
+    fake.malformed=false;error.clear();assert(batching.watched(watched,error));
     // A different profile has no connections or choices, and malformed state is not overwritten.
     std::filesystem::create_directories(root+"/other");Store other(root+"/other",transport);assert(other.source(true)=="nuvio" && !other.status()["accounts"]["trakt"]["connected"].get<bool>());
     write_file(root+"/other/tracking.json","unreadable");Store broken(root+"/other",transport);
@@ -153,10 +294,11 @@ int main() {
     std::filesystem::create_directories(root+"/cancel");
     std::atomic<bool> cancelled{false}; Store setup(root+"/cancel",transport);
     error.clear(); setup.action("configure",{{"provider","simkl"},{"client_id","client"}},error);
-    setup.action("device_start",{{"provider","simkl"}},error);
+    setup.action("device_start",simkl_args,error);
+    poll_ready(root+"/cancel");
     auto cancel_transport=[&](const auto& url,const auto* body,const auto& headers) {
         auto response=fake(url,body,headers);
-        if(url.find("/oauth/pin/PIN")!=std::string::npos) cancelled=true;
+        if(url=="https://api.simkl.com/oauth2/token") cancelled=true;
         return response;
     };
     Store cancelling(root+"/cancel",cancel_transport,&cancelled);
@@ -204,6 +346,8 @@ int main() {
     Store unconfigured(root+"/unconfigured",transport);
     assert(unconfigured.status()["accounts"]["trakt"]["configured"]==false);
     error.clear();unconfigured.action("device_start",{{"provider","trakt"}},error);assert(error.find("no registered")!=std::string::npos);
+    mdblist_membership_cases();
+    mdblist_watched_cases();
     std::filesystem::remove_all(root);
     std::cout<<"Tracker contracts passed: pairing, validation, refresh, sources, pagination, resume, scrobble, watched marks, offline retry, redaction, permissions and profile isolation\n";
 }

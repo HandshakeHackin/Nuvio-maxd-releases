@@ -1,0 +1,16 @@
+cffi==2.1.1
+click==8.5.1
+cryptography==50.0.2
+customtkinter==6.0.0
+darkdetect==0.8.0
+fonttools==4.68.0
+isal==1.9.1
+meson==1.12.1
+mkpfs==1.1.0
+ninja==1.13.2
+numpy==2.5.4
+packaging==26.3
+pillow==13.0.0
+pycparser==3.12
+zlib-ng==1.1.0
+zstandard==0.25.0

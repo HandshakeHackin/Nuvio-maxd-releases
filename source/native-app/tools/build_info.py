@@ -1,5 +1,6 @@
 """Record the source and dependency pins used for a native image."""
 import json
+import os
 import hashlib
 from pathlib import Path
 import subprocess
@@ -31,18 +32,37 @@ except (subprocess.CalledProcessError, ValueError):
 
 display_profile = validate_display_metadata(json.loads(
     (Path(sys.argv[1]).parent / 'sce_sys/param.json').read_text()))
+language_registry=json.loads((root/'ui/locales/languages.json').read_text())
+language_counts={item['code']:len(json.loads((root/'ui/locales'/(item['code']+'.json')).read_text())['strings']) for item in language_registry}
 info = {
     'name': "Nuvio Max'd",
-    'version': '1.0.0.11-native',
+    'version': '1.0.1.0-native',
     'releaseChannel': 'stable',
+    'buildIntegrity': {'offline': True, 'signature': 'Ed25519', 'fileHashes': 'SHA-256', 'signedRelease': bool(os.environ.get('NUVIO_RELEASE_SIGNING_KEY')), 'creditsRequired': True, 'warningOnly': True, 'startupAndManualChecks': True, 'noDeviceIdentifiers': True, 'noNetworkReporting': True, 'maxManifestBytes': 131072, 'maxFiles': 512, 'maxFileBytes': 134217728, 'maxTotalBytes': 268435456, 'deadlineSeconds': 30, 'hardwareVerified': False},
+    'ageRatings': {'source': 'TMDB', 'detailPage': True, 'countryChoices': 32, 'defaultCountry': 'US', 'fallbackCountry': 'US', 'badgeIncludesCountry': True, 'profileLocal': True, 'profileBackup': True, 'hideWhenMissing': True, 'extraTitleRequests': False, 'parentalFiltering': False, 'countryScanLimit': 256, 'releaseScanLimit': 256, 'maxLabelBytes': 48, 'hardwareVerified': False},
+    'watchedStateFix': {'mdblistNestedEpisodes': True, 'boundedHistoryPagination': True, 'activitySummariesExpanded': False, 'explicitEpisodesOnly': True, 'legacyScopeCacheRetired': True, 'watchedRefreshPreservesFocus': True, 'historyBasedMovieIndicators': True, 'localMarksRetainedOnIncompleteRead': True, 'liveAccountVerified': False},
+    'mdblistMembershipFix': {'scalarAndMediaReceipts': True, 'removedReceipt': True, 'rawRemoteReconciliation': True, 'boundedOffsetPagination': True, 'guardedIdShapeCompatibility': True, 'liveAccountVerified': False},
+    'interfaceLanguages': {'available': [item['code'] for item in language_registry], 'default': 'en', 'savedLocally': True, 'restartToApply': True, 'englishFallback': True, 'catalogEntries': language_counts['en'], 'translationsPerLanguage': language_counts, 'coreMenuEntries': len(json.loads((root/'ui/locales/core.json').read_text())['strings']), 'advancedHelpMayUseEnglish': True, 'arabicTextShaping': True, 'rtlTextLanguages': ['ar'], 'mirrorsScreenLayout': False, 'changesPlaybackLanguages': False, 'hardwareVerified': False},
+    'configurationBackup': {'authenticatedEncryption': True, 'cipher': 'AES-256-GCM', 'kdf': 'PBKDF2-HMAC-SHA256-600000', 'profileScope': True, 'rollbackJournal': True, 'manualGoogleDriveSync': True, 'conditionalCloudUpdates': True, 'googleApplicationBundled': False, 'maxPlainBytes': 16777216, 'excludesAccountSessionsAndHistory': True, 'hardwareVerified': False},
+    'tvdbOrdering': {'profileCredentials': True, 'perSeriesOrder': True, 'verifiedOneToOneMappings': True, 'canonicalHistoryIdentity': True, 'splitCombinedMappings': False, 'metadataProvider': 'TheTVDB.com', 'hardwareVerified': False},
+    'stalkerPortal': {'liveTv': True, 'guide': True, 'moviesAndSeries': True, 'providerAssignedMac': True, 'memoryOnlyTokens': True, 'boundedPagination': True, 'credentialRedirects': False, 'hardwareVerified': False},
+    'detailActions': {'libraryMembership': True, 'nuvioLibrarySync': True, 'trackerLibraryWrites': ['trakt','mdblist'], 'simklLibraryReadOnly': True, 'movieWatchedToggle': True, 'seriesSeasonWatchedBatch': True, 'bulkEpisodeLimit': 5000, 'confirmBulkChanges': True, 'futureUnknownDateGuard': True, 'profileAndServiceGuards': True, 'privateOfflineQueues': True, 'keepsResumeSeparate': True, 'controllerGlyphHints': True, 'hardwareVerified': False},
+    'peopleBrowsing': {'castAndCrewPhotos': True, 'personBiography': True, 'movieAndTvCredits': True, 'configuredAddonPlayback': True, 'titleIdMapping': 'TMDB external IDs to IMDb, supported TMDB IDs otherwise', 'maxCastMembers': 80, 'maxCreditsPerKind': 256, 'historyDepth': 8, 'profileScopedCancellation': True, 'metadataProvider': 'TMDB', 'hardwareVerified': False},
+    'issue10PlaybackControls': {'sourceSwitchPosition': True, 'torrentFilePicker': True, 'liveSubtitleAppearance': True, 'audioDelayStepsMs': [100, 200], 'containerAndMeasuredRatesDistinguished': True, 'hardwareVerified': False},
+    'sportsHub': {'optional': True, 'profileSelections': True, 'sportLeagueTeamPicker': True, 'regions': True, 'scoreSpoilers': True, 'guideChannelCandidates': True, 'boundedPublicCatalogue': True, 'referenceCommit': 'd46b29a47487919057819602b614d5f7fbde7cba', 'hardwareVerified': False},
+    'sourceSelection': {'metadataChecks': True, 'profilePreferences': True, 'qualityLanguageSizeHdr': True, 'explicitRankedPlay': True, 'showAllOverride': True, 'nextEpisodeFiltering': True, 'hardwareVerified': False},
+    'torrentExperience': {'explicitFileResume': True, 'verifiedBufferTelemetry': True, 'recoveryActions': True, 'safeCacheCleanup': True, 'redactedDiagnosticTextQr': True, 'hardwareVerified': False},
     'titleId': sys.argv[2],
+    'thaiSubtitleFix': {'issue': 27, 'untaggedAndMislabeledUtf8': True, 'genericAssFontFallback': True, 'nativeAndEvo': True, 'vlcBundledFonts': True, 'legacyThaiEncoding': ['Windows-874','TIS-620'], 'legacyDecodingRequiresThaiHint': True, 'utf8AndBomPrecedence': True, 'fallbackFont': 'NuvioSubtitleFallback-Regular.ttf', 'fallbackFontSha256': 'ad1b566bcc58e60627fa875eb28fda12b7014a09e258f8bd5c5396de7e1c4c71', 'fallbackCodePoints': 4021, 'originalFontsUnchanged': True, 'fontProviderRequiresSystemFonts': False, 'hardwareVerified': False},
+    'unifiedTvGuide': {'allSourcesView': True, 'sourceIdentitiesPreserved': True, 'profileLocal': True, 'personalAndFree': True, 'perSourceGuideAndClock': True, 'xmltvAndProviderGuides': True, 'explicitCrossSourceBackups': True, 'maxSources': 17, 'maxChannels': 100000, 'maxRetainedChannelBytes': 33554432, 'loadTimeoutSeconds': 120, 'sourceLoadTimeoutSeconds': 30, 'guideConcurrency': 2, 'guideCacheChannels': 256, 'retainedXmlDocumentsBytes': 33554432, 'hardwareVerified': False},
+    'freeLiveTv': {'defaultEnabled': False, 'profileLocal': True, 'disclaimerRequired': True, 'disclaimerVersion': 1, 'disclaimerLanguages': [item['code'] for item in language_registry], 'subscriptionRequired': False, 'countrySelection': True, 'multipleCountries': True, 'maxSelectedCountries': 256, 'maxCombinedCatalogueBytes': 33554432, 'loadTimeoutMs': 90000, 'personalSourcesPreserved': True, 'catalogueProject': 'jyotiprakash101/nuvio-livetv', 'sources': ['iptv-org','Free-TV','AdeelWajid/iptv_validated_list','dearbulut/iptv','Samsung TV Plus','Pluto TV','Roku Channel'], 'maxCatalogueBytes': 8388608, 'maxCountryBytes': 262144, 'maxCountryChannels': 10000, 'maxChannels': 100000, 'perChannelGuide': True, 'maxGuideBytes': 1048576, 'guideConcurrency': 2, 'guideCacheChannels': 256, 'credentialsUploaded': False, 'hardwareVerified': False},
     'providerPlugins': {'engine': 'QuickJS 2026-06-04', 'repositories': True, 'perProviderOptIn': True, 'consoleSocketMode': 'direct SO_NBIO via wrapped pinned curlx_nonblock; retains public-address checks', 'hardwareVerified': False},
     'mediaRemote': {'hdmiCec': True, 'buttonRemapping': True, 'pressToAssign': True, 'testButtonDetection': True, 'appLocalOnly': True, 'controllerUnchanged': True, 'hardwareVerified': False},
     'iptvLibrary': {'conditionalSidebar': True, 'xtreamVod': True, 'profileLocalResume': True, 'cachedCatalogs': True, 'providerErrorGuidance': True, 'alphabetNavigation': True, 'savedCatalogSearch': 'active-profile movies/series; provider-labelled; bounded and cancellable', 'hardwareVerified': False},
     'upstreamRefresh': {'date': '2026-10-27', 'rectangleYuvUploads': True, 'nativeVp9Profile2': True, 'xtreamMultiCategory': True, 'addonManifestRevalidation': 'best effort, bounded worker budget', 'hardwareVerified': False},
     'dependencyMaintenance20261103': {'ffmpeg': '7.0.3', 'expat': '2.10.0', 'libpng': '1.6.59', 'freetype': '2.15.0', 'harfbuzz': '15.0.0', 'fribidi': '1.0.18', 'libassHardeningPatches': 5, 'nativeEvoHevcBaseLayerFilter': True, 'graphicsPinsUnchanged': True, 'hardwareVerified': False},
     'dependencyMaintenance20261105': {'harfbuzz': '15.1.0', 'libxml2': '2.15.4', 'libwebp': '1.6.0', 'cheerio': '1.2.0 slim', 'selectorAdvisoryFixed': 'GHSA-rp65-9cf3-cjxr', 'ps5XmlRandomSource': 'SDK arc4random_buf', 'ffmpegPinsPreserved': True, 'hardwareVerified': False},
-    'maintenanceUpdates': {'libass': '0.17.5', 'curl': '8.23.0', 'openssl': '3.5.9', 'json': '3.12.0', 'videoModulePreloadBeforeGraphics': True, 'boundedArtworkQueues': True, 'hevcSpsColourFallback': True, 'playbackTrackReopenRecovery': True, 'vlcOwnedHttpFailureStopsAccessFallback': True, 'embeddedChapters': ['native', 'evo', 'vlc'], 'hardwareVerified': False},
+    'maintenanceUpdates': {'libass': '0.17.5', 'curl': '8.23.0', 'openssl': '4.1.0', 'json': '3.12.0', 'videoModulePreloadBeforeGraphics': True, 'boundedArtworkQueues': True, 'hevcSpsColourFallback': True, 'playbackTrackReopenRecovery': True, 'vlcOwnedHttpFailureStopsAccessFallback': True, 'embeddedChapters': ['native', 'evo', 'vlc'], 'hardwareVerified': False},
     'issueTestFixes': {'issues': [12, 13], 'sharedSubtitleSizeScale': [42, 50, 60, 75, 100], 'independentLibraryArtwork': True, 'metadataConcurrencyLimit': 4, 'reporterConfirmationPending': False, 'reporterConfirmedFixes': [12, 13]},
     'librarySearch': {'activeProfileOnly': True, 'selectedLibrarySourceOnly': True, 'localLoadedTitlesOnly': True, 'typeAndSortFilters': True, 'clearOnProfileOrSourceChange': True, 'hardwareVerified': False},
     'newEpisodeIndicators': {'activeLibrarySeries': True, 'syncedHistoryRequired': True, 'airedDatesRequired': True, 'skipInProgress': True, 'profileScoped': True, 'metadataConcurrencyLimit': 2, 'hardwareVerified': False},
@@ -60,16 +80,36 @@ info = {
     'experimentalAv': {'driverOwnedHdrSwitch': True, 'pcmDefault': True, 'audioModes': ['pcm','auto','bitstream'], 'bitstreamCodecs': ['AC3','EAC3','DTS core'], 'trueHdDtsHd': 'decoded PCM; S16 output preferred for compatibility', 'autoHonorsStereo': True, 'hardwareVerified': False, 'driverPatchSha256': hashlib.sha256((root/'gl/scanout_driver_extension.inc').read_bytes()).hexdigest(), 'driverObjectSha256': hashlib.sha256(Path(sys.argv[3]).read_bytes()).hexdigest()},
     'consoleLightSync': {'default': True, 'setting': 'Appearance & Lighting', 'channels': ['blue','white','amber'], 'approximateLogoColours': True, 'backgroundWorker': True, 'maxUpdatesPerSecond': 5, 'restoreOnDisableAndExit': True, 'respectSystemOwnership': True, 'hardwareVerified': False},
     'settingsCategories': True,
-    'localTestBuild': {'revision': '1.0.0.11', 'multiviewExperimental': True, 'hardwareVerified': False},
+    'launcherUsability': {'preferredStartPage': True, 'profileLocal': True, 'disabledPageFallback': 'home', 'automaticPlayback': False, 'rememberGroupPerSource': True, 'renameChannels': True, 'hideAndRestoreChannels': True, 'originalChannelIdentityRetained': True, 'customChannelLimit': 1000, 'backupChannels': True, 'backupSource': 'current loaded view; source identity and headers retained', 'backupLimit': 32, 'hiddenBackupsIncluded': True, 'headersKeptPerChannel': True, 'automaticSwitching': False, 'encryptedConfigurationBackup': True, 'hardwareVerified': False},
+    'localTestBuild': {'revision': '1.0.1.0', 'multiviewExperimental': True, 'hardwareVerified': False},
     'playbackBadges': {'sourceResolution': True, 'sourceHdr': True, 'selectedAudioChannels': True, 'releaseType': True, 'codecs': True, 'decodedFactsOverrideFilename': True, 'hardwareVerified': False},
     'settingsSearch': {'allCategories': True, 'caseInsensitive': True, 'hardwareVerified': False},
-    'liveTv': {'sources': ['M3U', 'Xtream Codes'], 'groups': True, 'search': True, 'favorites': True, 'profileLocal': True, 'nowNextGuide': True, 'xmltv': True, 'xtreamShortEpg': True, 'profileLocalGuideToggle': True, 'guideDocumentMaxBytes': 33554432, 'recording': False, 'catchup': False, 'hardwareVerified': False},
+    'liveTv': {'sources': ['M3U', 'Xtream Codes', 'Stalker / Ministra', 'USB playlists', 'Free Live TV'], 'groups': True, 'search': True, 'favorites': True, 'profileLocal': True, 'usbPlaylistNativeIoFix': True, 'usbMountDiagnostics': True, 'usbReaderHelper': {'explicitChoice': True, 'roots': 8, 'readOnly': True, 'changesAppCredentials': False, 'payloadRuntimePreparesOwnCapabilities': True, 'extraListener': False, 'loader': '127.0.0.1:9021', 'oneRequestPerLaunch': True, 'profileWritesInApp': True, 'hardwareVerified': False}, 'usbDirectoryTypeFallback': 'picker hints only; import metadata required', 'usbPlaylistImport': True, 'usbImportedCopyProfileLocal': True, 'usbPlaylistHardwareVerified': False, 'nowNextGuide': True, 'optionalTimeGrid': True, 'maxListingsPerChannel': 96, 'xmltv': True, 'xtreamShortEpg': True, 'profileLocalGuideToggle': True, 'guideDocumentMaxBytes': 33554432, 'recording': False, 'catchup': False, 'hardwareVerified': False},
     'trailers': {'entry': 'Options → Watch trailer', 'sources': ['addon metadata', 'TMDB', 'supported public YouTube formats'], 'browsingAutoplay': False, 'updatesWatchHistory': False, 'hardwareVerified': False},
     'recentSources': {'sessionOnly': True, 'profileScoped': True, 'torrentTtlSeconds': 300, 'directHttpTtlSeconds': 60, 'backgroundRefresh': True, 'reloadBypassesCache': True},
     'nativeSeekRecovery': {'retiresOldEofBeforeSeekGateRelease': True, 'queueAndSeekDiagnostics': True, 'fullCandidateHardwareVerified': False},
     'nativeAudioSwitch': {'preservesPositionAndPause': True, 'retiresPreviousTrackPackets': True, 'reporterConfirmedTestBuild': '0.5.34.4', 'confirmation': 'https://github.com/HandshakeHackin/Nuvio-maxd-releases/issues/8#issuecomment-6294939778', 'fullCandidateHardwareVerified': False},
     'presentationTiming': {'source': 'VideoOut completed flip process timestamp', 'paths': ['GPU command', 'CPU submit'], 'minimumSamples': 3, 'maximumVideoLeadMs': 40, 'maximumSampleDelayMs': 100, 'staleAfterMs': 1000, 'physicalTvReceiverLatencyMeasured': False, 'hardwareVerified': False},
     'vlc': json.loads((root/'third_party/vlc/UPSTREAM.json').read_text()),
+    'dependencyRefresh20261113': json.loads((root/'dependencies.json').read_text())['dependencyRefresh20261113'],
+    'channelListRefresh': {
+        'intervalHours': [0, 1, 3, 6, 12, 24], 'defaultHours': 6, 'profileLocal': True,
+        'freeAndPersonalSources': True, 'unifiedView': True, 'startsAfterFirstLoad': True,
+        'whileAppOpenOnly': True, 'playbackAndMenusDeferred': True, 'automaticDownloadCancellation': True,
+        'failedOrPartialRefreshKeepsLastListAndGuide': True, 'manualRefreshWithOff': True,
+        'retryBackoffSeconds': [300, 600, 1200, 2400, 3600], 'encryptedBackup': True,
+        'hardwareVerified': False,
+    },
+    'searchNavigation': {
+        'issue': 19, 'keyboardLanguages': ['en', 'de', 'es', 'fr', 'he', 'ar', 'ru', 'th', 'ja', 'ko', 'zh-Hans'],
+        'chineseAndKanjiConversion': 'PS5 system IME', 'hangulComposition': True,
+        'configuredCatalogSuggestions': True, 'suggestionDebounceMs': 500, 'maximumSuggestionCatalogs': 8,
+        'maximumSuggestionRequests': 2, 'maximumSuggestions': 6, 'suggestionResponseLimit': 524288,
+        'suggestionRequestTimeoutMs': 4000, 'suggestionDeadlineMs': 12000,
+        'optionalTopNavigation': True, 'dedicatedSearchTab': True, 'allEnabledSectionsReachable': True,
+        'profileScopedPreferences': True, 'privateEntryUnchanged': True, 'playbackShortcutsPreserved': True,
+        'hardwareVerified': False,
+    },
     'hardwareVerified': False,
     'controllerLightbar': {'logoPalette': 'teal/white/pink-purple', 'cycleSeconds': 18, 'sharedBootEnvelope': True, 'steadyAfterBoot': False, 'steadyWithReducedMotion': True, 'reducedMotion': True, 'maxUpdatesPerSecond': 30, 'reconnectRecovery': True, 'systemResetOnClose': True, 'hardwareVerified': False},
     'graphicsRefresh': {'opengl': '1.0.2', 'periodicDriverStatistics': 'opt-in; teardown summary retained', 'streamReloadSelection': True, 'startupStageTiming': True, 'hardwareVerified': False},
@@ -116,9 +156,10 @@ info = {
     'displaySelection': 'PS5 configured resolution by default; 1080p, 1440p and 2160p overrides',
     'displayRefresh': {'default': 60, 'optional': 120, 'restartRequired': True, 'acceptedRateReadback': True, 'resolutionReducedForRefresh': False, 'hardwareVerified': False},
     'hdrToSdr': {'toneMap': 'luminance extended Reinhard', 'outputResponse': 'BT.1886 ideal black (2.4)', 'gamut': 'BT.2020 to BT.709 with luminance-preserving neutral-axis fitting', 'sourcePeak': 'MaxCLL, mastering display, otherwise 1000 nits', 'exposureGain': 1, 'hardwareVerified': False},
-    'playbackEngines': {'default': 'native', 'optional': ['EVO Player 0.13.0', 'VLC 3.0.24'], 'scope': 'integrated optional playback engines', 'hardwareVerified': False},
+    'playbackEngines': {'default': 'native', 'optional': ['EVO Player 0.13.7', 'VLC 3.0.24'], 'scope': 'integrated optional playback engines', 'hardwareVerified': False},
     'presentationSafety': {'lowRatePacing': 'PTS deadlines at accepted 120 Hz; GPU completion before scheduled swap', 'refreshLattice': '119.88 Hz calibration from ProsperoTube; console validation pending', 'reset': ['pause', 'buffering', 'seek', 'output mode change'], 'textureLifetime': 'GPU fences before overwrite and teardown', 'hardwareVerified': False},
     'videoConversion': 'Native-resolution YUV to RGB10_A2; compatible PQ/BT.2020 sources use experimental 10-bit HDR10 output',
+    'torrentRefresh': {'upstreamCommit': 'c8837a9e5f431ddf21b3aedb532f37c6923175d6', 'perFileResume': True, 'containerAwareStartup': True, 'boundedSeekRecovery': True, 'hardwareVerified': False},
     'torrentHub': {'optIn': True, 'magnetAndTorrentFiles': True, 'filePicker': True, 'profileLocalHistory': True, 'cacheGiB': [1, 2, 4, 6], 'numericDhtBootstrap': True, 'trackerWorkers': 2, 'pairedTemporaryWebDrop': True, 'consoleConfirmation': True, 'upstreamCommit': '8e34590582ad89c0f12182289f83c2526bd47c4a', 'hardwareVerified': False},
     'nativeHdr': {
         'default': True,

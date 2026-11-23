@@ -37,21 +37,27 @@ done
 # Private dependency view: rewrite libtool/pkg-config paths without touching SDK.
 python3 - "$SDK" "$PREFIX" <<'PREFIX_PY'
 from pathlib import Path
-import sys
+import re,sys
 sdk=Path(sys.argv[1]).resolve()/'target/user/homebrew'; p=Path(sys.argv[2]).resolve()
+def private_paths(text):
+ # SDK libtool metadata may spell its sysroot with a double separator.
+ # Normalize either spelling before replacing the bare cross prefix.
+ for base in [str(sdk.parents[2]),'/opt/ps5-payload-sdk']:
+  text=re.sub(re.escape(base)+r'/target/+user/homebrew',str(p),text)
+ return text.replace('/user/homebrew',str(p))
 for sub in ('include','lib'):
  for f in (sdk/sub).iterdir():
   if f.name=='pkgconfig':continue
   target=p/sub/f.name
   if f.suffix=='.la':
    if target.is_symlink():target.unlink()
-   target.write_text(f.read_text().replace(str(sdk),str(p)).replace('/opt/ps5-payload-sdk/target/user/homebrew',str(p)).replace('/user/homebrew',str(p)))
+   target.write_text(private_paths(f.read_text()))
   else:
    # Refresh SDK symlinks after an isolated dependency upgrade; retain VLC's own real files.
    if target.is_symlink() and target.resolve()!=f.resolve():target.unlink()
    if not target.exists():target.symlink_to(f)
 for f in (sdk/'lib/pkgconfig').glob('*.pc'):
- (p/'lib/pkgconfig'/f.name).write_text(f.read_text().replace(str(sdk),str(p)).replace('/opt/ps5-payload-sdk/target/user/homebrew',str(p)).replace('/user/homebrew',str(p)))
+ (p/'lib/pkgconfig'/f.name).write_text(private_paths(f.read_text()))
 PREFIX_PY
 export CC=$SDK/bin/prospero-clang CXX=$SDK/bin/prospero-clang++ AR=$SDK/bin/prospero-ar RANLIB=$SDK/bin/prospero-ranlib NM=$SDK/bin/prospero-nm STRIP=$SDK/bin/prospero-strip
 export VLC_PS5_PREFIX=$PREFIX PKG_CONFIG=$VENDOR/pkg-config PKG_CONFIG_LIBDIR=$PREFIX/lib/pkgconfig

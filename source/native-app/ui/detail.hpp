@@ -4,6 +4,7 @@
 #pragma once
 
 #include "cards.hpp"
+#include <algorithm>
 #include "content.hpp"
 #include "core/input.hpp"
 #include "gfx/backdrop_spec.hpp"
@@ -18,6 +19,7 @@ class Detail
     {
         episodes,
         streams,
+        people,
     };
 
     explicit Detail(const Env &env) : env_(env)
@@ -37,6 +39,7 @@ class Detail
     {
         return filters_focused_ || stream_ < 0 || stream_ >= static_cast<int>(visible_.size()) ? -1 : visible_[stream_];
     }
+    bool source_options_focused() const { return filters_focused_ && filter_cursor_ == -2; }
     bool reload_focused() const { return filters_focused_ && filter_cursor_ == -1; }
     bool filters_focused() const { return filters_focused_; }
     int addon_filter() const { return filter_; }
@@ -50,13 +53,20 @@ class Detail
         return mode_;
     }
     void set_mode(Mode mode);
+    struct Focus {Mode mode=Mode::streams,previous=Mode::streams;int cast=0,episode=0,season=0;};
+    Focus focus()const{return {mode_,cast_previous_,cast_,episode_,season_cursor_};}
+    void restore(Focus f){cast_=f.cast;episode_=f.episode;season_cursor_=f.season;cast_previous_=f.previous;cast_scroll_.position.snap(std::max(0,cast_*220-1500));set_mode(f.mode);}
+    int cast_index()const{return cast_;}
+    void toggle_cast(){if(mode_==Mode::people)set_mode(cast_previous_);else{cast_previous_=mode_;set_mode(Mode::people);}}
 
   private:
+    friend struct DetailTestAccess;
     hui::gfx::Rect episode_rect(int index, bool final_position) const;
     hui::gfx::Rect season_rect(int index, bool final_position) const;
     float season_width(int index) const;
     hui::gfx::Rect stream_rect(int index, bool final_position) const;
     void draw_info(hui::gfx::DrawList &list) const;
+    void draw_people(hui::gfx::DrawList&)const;
     void draw_episodes(hui::gfx::DrawList &list) const;
     void draw_streams(hui::gfx::DrawList &list) const;
     void draw_hints_row(hui::gfx::DrawList &list) const;
@@ -68,6 +78,9 @@ class Detail
     const Env &env_;
     const DetailContent *content_ = nullptr;
     Mode mode_ = Mode::streams;
+    Mode cast_previous_=Mode::streams;
+    int cast_=0;
+    hui::ui::Scroller cast_scroll_;
     int streams_serial_ = 0;
     bool streams_wanted_ = false; // the user asked for an episode's streams
     int hint_serial_ = 0;

@@ -16,10 +16,18 @@ ApiResult api_profile_select(const std::string& key, int profile, const std::str
 ApiResult api_profile_create(const std::string& key, const std::string& name);
 std::string nuvio_profile_path();
 std::string nuvio_profile_key();
+ApiResult api_configuration_capture(const std::string& key,const std::string& expected_directory,const std::atomic<bool>* cancel=nullptr);
+ApiResult api_configuration_restore(const std::string& key,const std::string& expected_directory,const json& snapshot,const std::string& expected_hash);
 ApiResult api_profile_source_update(const std::string& key, const std::string& url,
                                    bool plugin, bool remove);
 
 ApiResult api_watched_get(const std::string& key);
+// Explicit title membership; never writes playback progress or watched history.
+ApiResult api_library_membership_update(const std::string& key, const json& item, bool add,
+                                        const std::string& expected_source);
+// Atomic local batch, one bounded cloud synchronization for movie/season/series actions.
+ApiResult api_watched_batch(const std::string& key, const json& entries, bool watched,
+                            const std::string& expected_source);
 ApiResult api_watched_update(const std::string& key, const std::string& video_id,
                             const std::string& title, bool watched, const std::string& content = "",
                             int season = -1, int episode = -1);

@@ -69,6 +69,7 @@ struct WebDropSubmission {
 };
 
 struct Stats {
+    int64_t cached_bytes = 0, ready_bytes = 0, file_size = 0;
 	bool found = false;           // the torrent is running
 	bool has_metadata = false;
 	int peers = 0;                // connected
@@ -90,6 +91,9 @@ public:
 	void set_cache_bytes(int64_t cache_bytes);
 	int64_t cache_bytes() const;
 	void shutdown();
+    int64_t cache_storage_bytes() const;
+    bool enabled() const;
+    bool clear_cache(std::string* error);
 	void set_enabled(bool enabled);
 	void stop_web_drop();
 
@@ -142,9 +146,9 @@ public:
 	void close_reader(const std::shared_ptr<Torrent>& t, int reader_id);
 	// Reads up to n bytes of the file at pos, waiting for them to arrive.
 	// Returns the count, 0 at the end of the file, -1 on abort/interrupt, -2 when the
-	// torrent was stopped.
+	// torrent was stopped, -3 on deadline, -4 on invalid read arguments.
 	int read(const std::shared_ptr<Torrent>& t, int reader_id, int file_idx, int64_t pos, uint8_t* buf, int n,
-	         const std::atomic<bool>* abort, const std::atomic<bool>* read_interrupt = nullptr);
+	         const std::atomic<bool>* abort, const std::atomic<bool>* read_interrupt = nullptr, double deadline = 0);
 
 	// Picks the file to play: by season/episode in the name for a series,
 	// else the largest video. -1 when there's no file.

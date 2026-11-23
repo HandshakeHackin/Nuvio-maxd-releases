@@ -153,9 +153,25 @@ void library_search_controls() {
     expect(page.rail_focused(),"empty Library search traps the navigation rail");
 }
 
+void sports_navigation_combinations() {
+    for(int mask=0;mask<16;++mask){
+        sx::Rail rail;rail.update(1.f/60,bool(mask&1),bool(mask&2),bool(mask&4),bool(mask&8));rail.focus(true);
+        std::vector<int> expected={0,1,2,3,4,5};for(int i=0;i<4;++i)if(mask&(1<<i))expected.push_back(6+i);
+        for(size_t i=1;i<expected.size();++i){rail.move(1);expect(rail.cursor()==expected[i],"visible rail page skipped");}
+        rail.move(1);expect(rail.cursor()==expected.back(),"rail moved beyond final page");
+        for(size_t i=expected.size()-1;i>0;--i){rail.move(-1);expect(rail.cursor()==expected[i-1],"rail reverse traversal failed");}
+        if(mask&8){rail.reset(sx::Page::sports);rail.update(1.f/60,bool(mask&1),bool(mask&2),bool(mask&4),false);expect(rail.cursor()==0,"disabled sports page retained focus");}
+    }
+    Fixture f;sx::Addons page(f.env,sx::Page::sports);sx::AddonsContent content;
+    sx::Addon a;a.name="first";a.identity="first";sx::Addon b;b.name="chosen";b.identity="chosen";content.items={a,b};
+    page.set_content(&content);page.enter();move(page,hui::Direction::right);expect(page.cursor_index()==1,"sports event inaccessible");
+    content.items.insert(content.items.begin(),a);page.refresh();expect(page.cursor_index()==2,"schedule refresh changed focused event");
+}
+
 }
 int main() {
     const struct { const char* name; void (*run)(); } tests[] = {
+        {"sports_navigation_combinations",sports_navigation_combinations},
         {"library_search_controls",library_search_controls},
         {"torrent_visibility_combinations",torrent_visibility_combinations},
         {"iptv_visibility_changes",iptv_visibility_changes},

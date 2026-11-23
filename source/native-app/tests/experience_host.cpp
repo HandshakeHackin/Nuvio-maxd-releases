@@ -101,7 +101,13 @@ int main() {
  const auto dir=std::filesystem::temp_directory_path()/("nuvio-diagnostics-"+std::to_string(getpid()));
  std::filesystem::create_directories(dir);
  save_json((dir/"runtime.json").string(),{{"cleanExit",false},{"droppedFrames",66}});
- nuvio_diagnostics::init(dir.string(),"test");nuvio_diagnostics::record({{"droppedFrames",24},{"paused",true},{"token","secret"}});nuvio_diagnostics::shutdown();
+ nuvio_diagnostics::init(dir.string(),"test");nuvio_diagnostics::record({{"droppedFrames",24},{"paused",true},{"token","secret"}});nuvio_diagnostics::record({{"engine","native"},{"videoCodec","h264"},{"audioCodec","aac"},{"errorCode","playback-failed"},{"url","https://user:password@example/private?token=secret"},{"title","PRIVATE TITLE"}});
+ const auto report=nuvio_diagnostics::support_summary("1.0.0.11");
+ assert(report.find("h264")!=std::string::npos && report.find("playback-failed")!=std::string::npos);
+ for(const auto& secret:{"password","example","PRIVATE","secret","token="})assert(report.find(secret)==std::string::npos);
+ nuvio_diagnostics::record({{"engine","https://secret"},{"videoCodec","private.mkv"},{"audioCodec","Bearer secret"},{"errorCode","token=secret"},{"bufferedSeconds",true}});
+ assert(nuvio_diagnostics::support_summary("https://secret").find("secret")==std::string::npos);
+ nuvio_diagnostics::shutdown();
  nlohmann::json recorded,previous; assert(load_json((dir/"runtime.json").string(),recorded) && recorded["cleanExit"]==true && recorded["droppedFrames"]==24 && !recorded.contains("token"));
  assert(load_json((dir/"runtime-previous.json").string(),previous) && previous["droppedFrames"]==66);
  const auto child=fork(); assert(child>=0);

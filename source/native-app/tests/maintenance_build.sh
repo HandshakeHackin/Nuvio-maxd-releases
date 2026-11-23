@@ -18,3 +18,16 @@ check_rejected "$TASK_BUILD_TMP"
 ln -s "$TASK_BUILD_TMP/sdk" "$TASK_BUILD_TMP/work/sdk"
 check_rejected "$TASK_BUILD_TMP/work"
 echo 'Maintenance builder refuses overlapping or aliased base/overlay SDKs before any writes'
+
+# The refreshed compiler/SDK preparation must reject the same cases before
+# downloading archives, creating a cache, or touching the recovered SDK.
+for work in "$TASK_BUILD_TMP" "$TASK_BUILD_TMP/work"; do
+  if python3 "$ROOT/tools/prepare_dependency_refresh.py" "$work" \
+       --base-sdk "$TASK_BUILD_TMP/sdk" > "$TASK_BUILD_TMP/result" 2>&1; then
+    echo 'Unsafe dependency refresh destination was accepted' >&2; exit 1
+  fi
+  [[ "$(cat "$TASK_BUILD_TMP/result")" == *'must not overlap'* ]]
+  [ "$(cat "$TASK_BUILD_TMP/sdk/sentinel")" = 'original SDK' ]
+  [ ! -d "$work/downloads" ]
+done
+echo 'Dependency refresh refuses overlapping and symlink-aliased SDKs before any writes'

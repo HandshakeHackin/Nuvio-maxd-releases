@@ -33,6 +33,9 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
     expected = {str(f.relative_to(args.app)): sha(f) for f in args.app.rglob('*') if f.is_file()}
     actual = {str(f.relative_to(extracted)): sha(f) for f in extracted.rglob('*') if f.is_file()}
     assert expected == actual, 'extracted files differ from staged app'
+    assert 'nuvio-usb-reader.elf' in actual
+    reader=(extracted/'nuvio-usb-reader.elf').read_bytes()
+    assert reader[:6]==b'\x7fELF\x02\x01' and struct.unpack_from('<H',reader,18)[0]==62
     assert 'nuvio-updater.elf' in actual
     helper = (extracted / 'nuvio-updater.elf').read_bytes()
     assert helper[:6] == b'\x7fELF\x02\x01'
@@ -43,7 +46,7 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
     param = json.loads((extracted / 'sce_sys/param.json').read_text())
     display_profile = validate_display_metadata(param)
     assert param['titleId'] == 'PPSA99288'
-    assert param['contentVersion'] == '07.000.011'
+    assert param['contentVersion'] == '07.001.000'
     assert param['localizedParameters']['en-US']['titleName'] == "Nuvio Max'd"
     assert param['contentId'] == 'UP9000-PPSA99288_00-NUVIOPS5NAT00001'
     assert param['applicationCategoryType'] == 0
@@ -55,7 +58,7 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
     assert struct.unpack_from('<HH', data, elf + 16) == (0xFE10, 62)
     assert struct.unpack_from('<Q', data, elf + 24)[0] != 0
     info = json.loads((extracted / 'build-info.json').read_text())
-    assert info['version'] == '1.0.0.11-native'
+    assert info['version'] == '1.0.1.0-native'
     assert info['userExperienceUpdates']['optionalDonationQr']
     assert info['userExperienceUpdates']['installSourceSelector'] and info['userExperienceUpdates']['sourceAwareUpdateReminders']
     assert info['experimentalAv']['driverOwnedHdrSwitch'] and info['experimentalAv']['pcmDefault']
@@ -64,6 +67,35 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
     assert info['graphicsRefresh']['streamReloadSelection'] and info['graphicsRefresh']['startupStageTiming']
     assert info['controllerLightbar']['sharedBootEnvelope'] and info['controllerLightbar']['systemResetOnClose']
     assert info['name'] == "Nuvio Max'd"
+    assert info['releaseChannel']=='stable'
+    assert info['buildIntegrity']['offline'] and info['buildIntegrity']['warningOnly']
+    assert info['buildIntegrity']['signature']=='Ed25519' and info['buildIntegrity']['signedRelease']
+    assert info['buildIntegrity']['noNetworkReporting'] and info['buildIntegrity']['creditsRequired']
+    assert all(info['launcherUsability'][k] for k in ['preferredStartPage','profileLocal','rememberGroupPerSource','renameChannels','hideAndRestoreChannels','originalChannelIdentityRetained','backupChannels','headersKeptPerChannel','encryptedConfigurationBackup'])
+    assert not info['launcherUsability']['automaticSwitching'] and not info['launcherUsability']['automaticPlayback']
+    assert info['launcherUsability']['customChannelLimit']==1000 and info['launcherUsability']['backupLimit']==32
+    assert 'licenses/nuvio-tv-launcher/UPSTREAM.json' in actual and 'licenses/nuvio-tv-launcher/NOTICE.txt' in actual
+    subprocess.run(['python3', str(Path(__file__).resolve().parent/'create_release_manifest.py'), str(extracted), '--verify'],check=True,capture_output=True)
+    assert info['ageRatings']['detailPage'] and info['ageRatings']['profileLocal']
+    assert info['ageRatings']['countryChoices']==32 and info['ageRatings']['fallbackCountry']=='US'
+    assert info['ageRatings']['badgeIncludesCountry'] and info['ageRatings']['hideWhenMissing']
+    assert not info['ageRatings']['extraTitleRequests'] and not info['ageRatings']['parentalFiltering']
+    dependencies = info['dependencies']
+    assert dependencies['sdk']['pacbrewVersion'] == '0.41.1'
+    assert dependencies['hostToolchain']['version'] == '23.1.5'
+    assert dependencies['maintenanceLibraries']['sources']['OpenSSL']['version'] == '4.1.0'
+    assert dependencies['maintenanceLibraries']['sources']['ffmpeg']['version'] == '9.0.2'
+    # These retained source faces are not loaded or packaged by gl/build.sh.
+    source_only_fonts = {'app/fonts/NotoSans-Italic.ttf',
+                         'app/fonts/NotoEmoji-VariableFont_wght.ttf'}
+    for path, digest in info['dependencyRefresh20261113']['assetSha256'].items():
+        if path.startswith('app/') and path not in source_only_fonts:
+            assert actual[path[4:]] == digest, path
+    assert info['interfaceLanguages']['available']==['en','de','es','fr','ar','zh-Hans','ja','ko'] and info['interfaceLanguages']['englishFallback']
+    assert info['detailActions']['libraryMembership'] and info['detailActions']['controllerGlyphHints']
+    assert info['mdblistMembershipFix']['rawRemoteReconciliation'] and info['mdblistMembershipFix']['boundedOffsetPagination']
+    assert info['detailActions']['trackerLibraryWrites']==['trakt','mdblist'] and info['detailActions']['bulkEpisodeLimit']==5000
+    assert info['peopleBrowsing']['castAndCrewPhotos'] and info['peopleBrowsing']['personBiography'] and info['peopleBrowsing']['movieAndTvCredits']
     assert info['updater']['repository'] == 'HandshakeHackin/Nuvio-maxd-releases'
     assert not info['sourceDirty']
     assert info['cloudProgressSync'] is True
@@ -82,9 +114,9 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
     assert actual['sce_module/libc.prx'] == info['dependencies']['boilerplate']['runtimeSha256']
     assert info['hardwareVerified'] is False
     assert info['playbackEngines']['default'] == 'native'
-    assert info['playbackEngines']['optional'] == ['EVO Player 0.13.0', 'VLC 3.0.24']
+    assert info['playbackEngines']['optional'] == ['EVO Player 0.13.7', 'VLC 3.0.24']
     evo = info['dependencies']['evoPlayer']
-    assert evo['version'] == '0.13.0' and evo['commit'] == '2db44b5294657b12bf91666154a05f029ddb5aa2'
+    assert evo['version'] == '0.13.7' and evo['commit'] == '08bcab5de76cb7507ecc0bc3e1d4bca9bea13788'
     for name in ('LICENSE', 'UPSTREAM.json', 'INTEGRATION.md'):
         assert 'licenses/evo-player/' + name in actual
     assert info['applicationDisplayProfile'] == display_profile
@@ -105,14 +137,37 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
     assert info['displayRefresh']['resolutionReducedForRefresh'] is False
     assert info['hdrToSdr']['exposureGain'] == 1
     test_log = args.host_test_log.read_text()
+    assert 'MDBList membership: 43 regression cases passed' in test_log
+    assert 'MDBList watched history: 33 regression cases passed' in test_log
+    assert 'Watched Session: production snapshot/revisit' in test_log
+    assert 'legacy cache retirement, unchanged focus hints' in test_log
+    assert 'watched_refresh_keeps_carousel_position: PASS' in test_log
+    assert all(mode+': GL error 0x0' in test_log for mode in ['watched-movie','watched-movie-unmarked','watched-home','watched-person','de-watched-movie','ar-watched-movie','ja-watched-movie','ko-watched-movie'])
+    assert info['watchedStateFix']['explicitEpisodesOnly'] and not info['watchedStateFix']['activitySummariesExpanded'] and info['watchedStateFix']['legacyScopeCacheRetired'] and info['watchedStateFix']['watchedRefreshPreservesFocus'] and info['watchedStateFix']['historyBasedMovieIndicators']
     assert 'Remote remapping: learning, consumed capture' in test_log
     assert 'Remote Session: action selection, assign/edit/remove/reset' in test_log
     assert info['mediaRemote']['buttonRemapping'] and info['mediaRemote']['appLocalOnly']
+    assert 'USB diagnostics: missing/access/empty mounts, metadata fallback, unknown types, enumeration errors, privacy, cancellation and global count/depth limits passed' in test_log
+    assert 'USB reader: bounded protocol, loopback loader, fragmented/buffered transfers, invalid replies, cancellation, validation, private atomic copies and profile isolation passed' in test_log
+    assert 'Localization: eight saved languages' in test_log
+    assert 'Localization dialogs: eight native language names' in test_log
+    assert 'People metadata: movie/TV credits' in test_log
+    assert 'People UI: cast/person focus' in test_log
+    assert re.search(r'Feature cores: (\d+) checks passed',test_log) and int(re.search(r'Feature cores: (\d+) checks passed',test_log)[1])>=99
+    assert info['configurationBackup']['authenticatedEncryption'] and info['stalkerPortal']['liveTv'] and info['tvdbOrdering']['canonicalHistoryIdentity']
+    assert 'Title actions: production menus, library toggle' in test_log
+    assert all(mode+': GL error 0x0' in test_log for mode in ['title-actions','title-actions-movie','watched-confirm','de-title-actions','ar-title-actions','zh-Hans-title-actions','ja-title-actions','ko-title-actions'])
+    assert 'People Session: cancelled/stale/profile completions' in test_log
+    assert all(mode+': GL error 0x0' in test_log for mode in ['de-person','de-cast','de-language','de-login','de-profile-pin','de-usb-language','de-person-last','de-cast-last'])
+    assert 'person: GL error 0x0' in test_log and 'cast: GL error 0x0' in test_log and 'language: GL error 0x0' in test_log
+    assert info['interfaceLanguages']['coreMenuEntries']>=425
+    assert info['interfaceLanguages']['arabicTextShaping'] and info['interfaceLanguages']['advancedHelpMayUseEnglish']
+    assert all(language+'-'+scene+': GL error 0x0' in test_log for language in ['es','fr','ar','zh-Hans','ja','ko'] for scene in ['language-picker','settings-categories','login','profile-pin','person','home','player','usb-language','release-notes'])
     assert 'ALL TORRENT STREAMING HOST TESTS PASSED!' in test_log
     assert 'HDR fallback: strict/SDR modes, failed restoration, retained picture, session reset and unchanged preferences passed' in test_log
     assert 'Controller lightbar: throttling, failure suppression, reconnect, reset and logo/reduced-motion envelopes passed' in test_log
     assert 'Production startup: actual entry point passes conditional-indentation compiler check' in test_log
-    assert re.search(r'Ran 80 tests', test_log) and '\nOK\n' in test_log
+    assert re.search(r'Ran 88 tests', test_log) and '\nOK\n' in test_log
     assert 'NetworkTests.test_parallel_dns_failure_does_not_walk_entire_file' in test_log
     assert re.search(r'Ran 8 tests', test_log)
     assert 'EVO integration: SDR/10-bit B-frame decode, EOF, reopen after seek, owned planes, 24/120 cadence, early/late frames and P5 rejection passed' in test_log
@@ -124,8 +179,8 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
     assert 'FAILED' not in test_log and 'FAIL (' not in test_log
     assert 'Traceback (most recent call last)' not in test_log
     assert 'AssertionError' not in test_log
-    assert 'UI navigation: 11 tests, 0 failures' in test_log
-    assert 'Stream presentation and navigation: 14 tests, 0 failures' in test_log
+    assert 'UI navigation: 12 tests, 0 failures' in test_log
+    assert 'Stream presentation and navigation: 16 tests, 0 failures' in test_log
     assert 'Hardware decoder setup and HEVC base-layer filtering: 11 tests, 0 failures' in test_log
     assert 'Video packing and GPU presentation: 24 tests, 0 failures' in test_log
     assert 'Display refresh lifecycle: 6 tests, 0 failures' in test_log
@@ -141,9 +196,14 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
     for preview in ('install-source', 'store-update', 'github-update', 'donation', 'audio-output'):
         assert preview + ': GL error 0x0' in test_log
     assert 'Playback lifecycle: open, pause, sample-trimmed forward/back seek passed' in test_log
+    assert 'Seek gate: blocked demux keeps buffering, paused target and newer seek override passed' in test_log
     assert 'Playback lifecycle: bitstream pause/seek and failed-port recovery to PCM passed' in test_log
     assert 'Playback lifecycle: hardware failure reseek to software without an A/V wait cycle passed' in test_log
     assert 'PS5 display output: 27 display output selection and probe-lifecycle assertions' in test_log
+    assert 'Age ratings: movie/TV parsing' in test_log
+    assert 'Age-rating Session: current preference on completion' in test_log
+    assert 'Launcher feature cores: stable identities' in test_log and 'Launcher Session: production channel lists/actions' in test_log
+    assert all(mode+': GL error 0x0' in test_log for mode in ['start-page','channel-options','backup-channels','hidden-channels']+[lang+'-'+scene for lang in ['de','es','fr','ar','zh-Hans','ja','ko'] for scene in ['start-page','channel-options','backup-channels','hidden-channels']])
     report = {
         'name': info['name'], 'version': info['version'], 'sourceCommit': info['sourceCommit'],
         'contentVersion': param['contentVersion'],
@@ -152,15 +212,21 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
         'containerErrors': 0, 'containerWarnings': 0,
         'extractedFileCount': len(actual), 'allExtractedFileHashesMatch': True,
         'executable': 'x86-64 ET_SCE_EXEC inside native PS5 SELF',
-        'hostHttpsTestsPassed': 80, 'hostUiNavigationTestsPassed': 11,
+        'hostHttpsTestsPassed': 88, 'hostUiNavigationTestsPassed': 12,
+        'hostUsbReaderTestsPassed': True, 'hostUsbMountDiagnosticsTestsPassed': True, 'usbPlaylistHardwareVerified': False,
         'hostTorrentIntegrationTestsPassed': True, 'hostHdrFallbackTestsPassed': True,
         'hostRemoteRemappingTestsPassed': True, 'hostRemoteSettingsTestsPassed': True,
         'mediaRemote': info['mediaRemote'],
+        'detailActions': info['detailActions'],
+        'launcherUsability': info['launcherUsability'],
+        'hostLauncherUsabilityRegressionsPassed': True,
+        'ageRatings': info['ageRatings'], 'hostAgeRatingRegressionsPassed': True,
+        'hostTitleActionsTestsPassed': True,
         'torrentHub': info['torrentHub'],
         'hostConnectedServicesTestsPassed': 19, 'connectedServices': info['connectedServices'],
         'hostInstantPlaybackTestsPassed': 26,
         'hostDecoderSetupTestsPassed': 11,
-        'hostStreamPresentationTestsPassed': 14,
+        'hostStreamPresentationTestsPassed': 15,
         'hostVideoPackingAndGpuTestsPassed': 24, 'hostNetworkTestsPassed': 8,
         'hostHdrOutputTestsPassed': 10, 'hostEpisodePlaybackTestsPassed': 61,
         'hostDisplaySelectionAssertionsPassed': 27,
@@ -181,6 +247,8 @@ with tempfile.TemporaryDirectory(prefix='nuvio-image-') as temp:
         'updater': info['updater'], 'hostUpdaterTestsPassed': 46,
         'episodePlayback': info['episodePlayback'],
         'displaySelection': info['displaySelection'],
+        'interfaceLanguages': info['interfaceLanguages'], 'peopleBrowsing': info['peopleBrowsing'],
+        'hostLocalizationTestsPassed': True, 'hostPeopleMetadataUiSessionTestsPassed': True,
         'hardwareVerified': False, 'verifiedFirmwares': [],
         'filesystemPermissions': 'ExFAT mount permissions require console verification',
         'fileSha256': actual,

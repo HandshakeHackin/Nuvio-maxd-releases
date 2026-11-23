@@ -26,6 +26,7 @@ class Registrations(unittest.TestCase):
     def test_default_owner_registration(self):
         value = json.loads((ROOT / 'app/tracker-applications.json').read_text())
         self.assertTrue(value['trakt']['client_id'])
+        self.assertRegex(value['simkl']['client_id'], r'^[a-f0-9]{64}$')
         self.validate(value, True)
 
     def test_public_only_overrides(self):

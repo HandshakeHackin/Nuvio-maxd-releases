@@ -1914,7 +1914,12 @@ void map_port() {
 	UPNPUrls urls;
 	IGDdatas data;
 	char lan[64] = "";
+#if MINIUPNPC_API_VERSION >= 18
+	char wan[64] = "";
+	int r = UPNP_GetValidIGD(devs, &urls, &data, lan, sizeof(lan), wan, sizeof(wan));
+#else
 	int r = UPNP_GetValidIGD(devs, &urls, &data, lan, sizeof(lan));
+#endif
 	freeUPNPDevlist(devs);
 	if (r != 1) {
 		dlog("upnp: no usable router (%d); only outgoing connections", r);
@@ -2340,6 +2345,38 @@ void Engine::set_cache_bytes(int64_t cache_bytes) {
 int64_t Engine::cache_bytes() const {
 	std::lock_guard<std::mutex> lock(impl().mu);
 	return impl().cache_bytes;
+}
+
+bool Engine::enabled() const { return impl().enabled; }
+int64_t Engine::cache_storage_bytes() const {
+    std::lock_guard<std::mutex> lock(impl().mu);
+    struct stat st{};
+    const auto path=impl().data_dir+"/torrent-cache.bin";
+    return lstat(path.c_str(),&st)==0 && S_ISREG(st.st_mode) ? int64_t(st.st_blocks)*512 : 0;
+}
+bool Engine::clear_cache(std::string* error) {
+    Impl& I=impl();
+    {
+        std::lock_guard<std::mutex> lock(I.mu);
+        for(const auto& t:I.torrents) if(!t->readers.empty()) {
+            if(error)*error="Stop torrent playback before clearing buffered data.";
+            return false;
+        }
+        if(I.data_dir.empty()){if(error)*error="Torrent storage is not configured.";return false;}
+        I.enabled=false; // Prevent pending metadata workers from starting a new torrent.
+    }
+    shutdown();
+    std::lock_guard<std::mutex> lock(I.mu);
+    const auto path=I.data_dir+"/torrent-cache.bin";
+    struct stat st{};
+    if(lstat(path.c_str(),&st)!=0) {
+        if(errno==ENOENT)return true;
+        if(error)*error="Could not inspect the torrent cache.";
+        return false;
+    }
+    if(!S_ISREG(st.st_mode)) {if(error)*error="Cache cleanup refused an unexpected file type.";return false;}
+    if(unlink(path.c_str())!=0) {if(error)*error="Could not remove buffered torrent data.";return false;}
+    return true;
 }
 
 void Engine::shutdown() {
@@ -2829,6 +2866,16 @@ Stats Engine::stats(const std::string& hex) {
 	if (t->has_meta && t->file >= 0) {
 		const FileInfo& f = t->files[size_t(t->file)];
 		if (f.size > 0) {
+            s.file_size=f.size;
+            int64_t head=f.offset;
+            for(const auto& reader:t->readers) if(reader.second>=f.offset && reader.second<=f.offset+f.size) {head=reader.second;break;}
+            for(int p=int(f.offset/t->plen);p<=int((f.offset+f.size-1)/t->plen);++p)
+                if(t->have[size_t(p)]) s.cached_bytes+=std::min(f.offset+f.size,int64_t(p+1)*t->plen)-std::max(f.offset,int64_t(p)*t->plen);
+            while(head<f.offset+f.size && t->have[size_t(head/t->plen)]) {
+                const auto end=std::min(f.offset+f.size,(head/t->plen+1)*t->plen);
+                s.ready_bytes+=end-head;head=end;
+            }
+
 			int first = int(f.offset / t->plen), last = int((f.offset + f.size - 1) / t->plen);
 			int got = 0;
 			for (int p = first; p <= last; p++) got += t->ever[size_t(p)];
@@ -2885,9 +2932,10 @@ void Engine::close_reader(const std::shared_ptr<Torrent>& t, int reader_id) {
 }
 
 int Engine::read(const std::shared_ptr<Torrent>& t, int reader_id, int file_idx, int64_t pos, uint8_t* buf, int n,
-                 const std::atomic<bool>* abort, const std::atomic<bool>* read_interrupt) {
+                 const std::atomic<bool>* abort, const std::atomic<bool>* read_interrupt, double deadline) {
 	Impl& I = impl();
 	std::unique_lock<std::mutex> lock(I.mu);
+	if (!t || file_idx < 0 || size_t(file_idx) >= t->files.size() || pos < 0 || n < 0 || (n > 0 && !buf)) return -4;
 	const FileInfo& f = t->files[size_t(file_idx)];
 	if (pos >= f.size || n <= 0) return 0;
 	int64_t abs = f.offset + pos;
@@ -2916,6 +2964,7 @@ int Engine::read(const std::shared_ptr<Torrent>& t, int reader_id, int file_idx,
 	while (!t->have[size_t(piece)]) {
 		if (t->stopped) return -2;
 		if ((abort && abort->load()) || (read_interrupt && read_interrupt->load())) return -1;
+		if (deadline > 0 && now_seconds() >= deadline) return -3;
 		I.cv.wait_for(lock, std::chrono::milliseconds(50));
 	}
 	int64_t in_piece = abs - int64_t(piece) * t->plen;

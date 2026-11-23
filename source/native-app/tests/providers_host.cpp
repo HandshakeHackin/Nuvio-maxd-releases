@@ -22,6 +22,14 @@ int main(int argc, char **argv) {
   const rows=cheerio.load('<ul><li data-id="a">One</li><li data-id="b">Two</li><li data-id="c">Three</li></ul><script>var source="a&b";</script>');
   if(rows('li:nth-child(2n+1)').map((i,e)=>rows(e).attr('data-id')).get().join(',')!=='a,c')throw Error('nth selector');
   if(rows('li').eq(1).text()!=='Two' || rows('script').html()!=='var source="a&b";')throw Error('HTML parser');
+  // Exercise the modern selector/DOM packages through the legacy Cheerio API.
+  if(rows('li').filter(':eq(1)').text()!=='Two' || rows('li:contains(Two)').length!==1 ||
+     rows('li[data-id="a"] + li').attr('data-id')!=='b' ||
+     rows('ul:has(li[data-id="c"])').length!==1)throw Error('selector adapters');
+  const editing=cheerio.load('<main><i>old</i><b>keep</b></main>');
+  editing('i').remove();editing('main').append('<em>new &amp; safe</em>');
+  if(editing('main').children().length!==2 || editing('em').text()!=='new & safe' ||
+     editing('main').html()!=='<b>keep</b><em>new &amp; safe</em>')throw Error('DOM adapters');
   const xml=cheerio.load('<root><Item id="one"/><Item id="two"/></root>',{xmlMode:true});
   if(xml('Item[id="two"]').length!==1 || xml('item').length!==0)throw Error('XML parser');
   let rejected=false;

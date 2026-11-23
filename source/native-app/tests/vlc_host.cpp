@@ -112,6 +112,8 @@ int main(int argc, char **argv) try {
         wait(b, [&] { return b.state() == 2 && b.picture_serial() == b.serial() && b.position() > .3; });
         require(b.position() < 2, "VLC skipped the requested start");
         require(!b.tracks(false).empty(), "VLC audio metadata missing");
+        const auto codecs=b.diagnostic_codecs();
+        require(codecs.first=="h264" && codecs.second=="aac", "VLC diagnostic codecs missing or unsafe");
         if(o.url.ends_with(".mkv")) {
             const auto chapters=b.chapters();require(chapters.size()==3 && chapters[1].title=="Middle" && chapters[1].start==4,"VLC chapters missing");
         }
@@ -128,6 +130,7 @@ int main(int argc, char **argv) try {
         }
         require(!b.tracks(true).empty() || o.url.find(".m3u8") != std::string::npos,
                 "embedded subtitle metadata missing");
+        require(b.stats().find("measured input")!=std::string::npos,"VLC details must distinguish measured input from container bitrate");
         std::cerr << "opened " << b.position() << " dur " << b.duration() << "\n";
         b.set_paused(true);
         std::this_thread::sleep_for(std::chrono::milliseconds(100));

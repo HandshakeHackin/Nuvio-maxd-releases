@@ -7,6 +7,7 @@
 #include "experience_preferences.hpp"
 #include "util.h"
 #include "remote_bindings.hpp"
+#include "source_preferences.hpp"
 
 #include <cstdint>
 #include <string>
@@ -45,6 +46,9 @@ struct Progress
 
 struct Prefs : ExperiencePreferences
 {
+    std::string start_page="home"; // chosen independently by each profile
+    std::string age_rating_country="US"; // profile-local; independent of UI language
+    source_policy::Preferences source_preferences;
     std::vector<RemoteBinding> remote_bindings;
     bool onboarding_done = false;
     std::string server_url;

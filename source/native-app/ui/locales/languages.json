@@ -1,0 +1,10 @@
+[
+  {"code":"en","nativeName":"English","direction":"ltr","metadataLanguage":"en"},
+  {"code":"de","nativeName":"Deutsch","direction":"ltr","metadataLanguage":"de"},
+  {"code":"es","nativeName":"Español","direction":"ltr","metadataLanguage":"es"},
+  {"code":"fr","nativeName":"Français","direction":"ltr","metadataLanguage":"fr"},
+  {"code":"ar","nativeName":"العربية","direction":"rtl","metadataLanguage":"ar"},
+  {"code":"zh-Hans","nativeName":"简体中文","direction":"ltr","metadataLanguage":"zh-CN"},
+  {"code":"ja","nativeName":"日本語","direction":"ltr","metadataLanguage":"ja"},
+  {"code":"ko","nativeName":"한국어","direction":"ltr","metadataLanguage":"ko"}
+]

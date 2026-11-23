@@ -15,6 +15,8 @@
 #include "logo_animation.hpp"
 #include "player.hpp"
 #include "settings.hpp"
+#include "person.hpp"
+#include "browse_history.hpp"
 #include "../gl/session.hpp"
 #include "../gl/ui_sound.hpp"
 
@@ -51,15 +53,24 @@ class Shell
         page,
         search,
         detail,
+        person,
     };
 
     void go_page(int page);
     void open_title(const Title &title, const std::string &streams_video = std::string());
     void route_page(const hui::InputFrame &input, float dt);
     void route_search(const hui::InputFrame &input, float dt);
+    bool route_top_navigation(const hui::InputFrame&);
+    bool top_focused_=false;
+    int top_page_=0;
     void route_detail(const hui::InputFrame &input, float dt);
     void apply_changes();
     void leave_title();
+    void route_person(const hui::InputFrame&,float);
+    bool browse_back();
+    struct BrowseFrame {bool person=false;Item title;Detail::Focus detail;PersonContent content;PersonPage::Focus focus;};
+    BrowseHistory<BrowseFrame> history_;
+    unsigned nav_epoch_=0;
 
     const Env &env_;
     Session &s_;
@@ -72,8 +83,10 @@ class Shell
     Addons addons_;
     Addons live_tv_;
     Addons torrents_page_;
+    Addons sports_page_;
     Settings settings_;
     Detail detail_;
+    PersonPage person_;
     PlayerUi player_ui_;
     Screen screen_ = Screen::page;
     Screen came_from_ = Screen::page; // what a title's page goes back to

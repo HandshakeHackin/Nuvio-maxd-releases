@@ -3,6 +3,7 @@
 #include <cstdarg>
 #include "http_credentials.hpp"
 #include "player.h"
+#include "torrent/playback_policy.hpp"
 #include "player_streams.hpp"
 #include "stream_colour.hpp"
 #include "bitstream.h"
@@ -161,6 +162,7 @@ void Player::open(const Options& opts) {
         const auto safe=playback_log::redact_urls(line);std::fputs(safe.c_str(),stderr);
     });});
 	close();
+    container_bitrate_=0;
     ++revision_;
 	if(opts.vlc) {
         subtitle_renderer_.clear();
@@ -176,9 +178,9 @@ void Player::open(const Options& opts) {
     gain_percent_=std::clamp(opts.gain_percent,50,300);pcm_.set_gain(gain_percent_);pcm_.set_night_mode(opts.night_mode);
 	evo_presenter_ = opts.evo ? std::make_unique<EvoPresenter>() : nullptr;
 	evo_presenter_serial_ = -1;
-	dlog("player: playback engine %s", opts.evo ? "EVO Player 0.13.0 (experimental)" : "Nuvio native");
+	dlog("player: playback engine %s", opts.evo ? "EVO Player 0.13.7 (experimental)" : "Nuvio native");
 	abort_ = false;
-	quick_ = false;
+	quick_ = false; seek_rejected_ = false; diagnostic_video_codec_=diagnostic_audio_codec_=0;
 	eof_ = false;
 	paused_ = opts.start_paused;
     audio_switch_ = -1; // never carry a pending choice into a different title
@@ -197,7 +199,7 @@ void Player::open(const Options& opts) {
 	have_picture_ = false;
 	video_lead_ = 0;
 	seek_req_ = false;
-	seek_pending_ = demux_reading_ = seek_refill_ = false;
+	seek_pending_ = seek_in_progress_ = demux_reading_ = seek_refill_ = false;
 	reopen_target_ = -1; displayed_serial_ = -1;
 	seek_started_at_ = 0; seek_first_picture_ms_ = -1;
 	vdrop_ = adrop_ = opts.start > 0 ? opts.start : -1;
@@ -365,7 +367,8 @@ void Player::demux_run() {
 			if (!abort_) fail("Could not open the stream (" + err + ")");
 			return;
 		}
-		NetStream::set_read_interrupt(main_pb_, &seek_pending_);
+		if (torrent) TorrentStream::set_read_interrupt(main_pb_, &seek_pending_);
+		else NetStream::set_read_interrupt(main_pb_, &seek_pending_);
 		fmt_->pb = main_pb_;
 		fmt_->flags |= AVFMT_FLAG_CUSTOM_IO;
 		// Matroska keeps tags, attachments and its index at the end of the
@@ -373,7 +376,7 @@ void Player::demux_run() {
 		// the part the server has least of, so it could take minutes before
 		// the first frame. Start from the beginning instead, without them;
 		// the first seek opens the file again with the index (see seek()).
-		std::string magic = torrent ? TorrentStream::of(main_pb_)->peek(4) : NetStream::of(main_pb_)->peek(64);
+		std::string magic = torrent ? TorrentStream::of(main_pb_)->peek(512) : NetStream::of(main_pb_)->peek(64);
 		if (!torrent) {
 			input_url = NetStream::of(main_pb_)->effective_url();
 			// Some providers serve genuine HLS at opaque addresses as octet-stream.
@@ -393,14 +396,14 @@ void Player::demux_run() {
 				return;
 			}
 		}
-		if (opts_.start <= 0 && starts_with(magic, "\x1A\x45\xDF\xA3")) {
+		if (opts_.start <= 0 && (torrent ? bt::head_only_start(magic, opts_.start) : starts_with(magic, "\x1A\x45\xDF\xA3"))) {
 			main_pb_->seekable = 0;
 			quick_ = true;
 			// Matroska describes its tracks in the header, so a short look
 			// is enough; with few seeders every MB here is a long wait.
-			fmt_->probesize = 1 << 20;
-			fmt_->max_analyze_duration = AV_TIME_BASE / 2;
-			dlog("player: Matroska, starting without reading the end of the file");
+			fmt_->probesize = torrent ? 2 << 20 : 1 << 20;
+			fmt_->max_analyze_duration = torrent ? AV_TIME_BASE : AV_TIME_BASE / 2;
+			dlog("player: head-only container startup; explicit seek can load deferred indexes");
 		}
 	}
 	int r = avformat_open_input(&fmt_, input_url.c_str(), content_format, &dict);
@@ -416,6 +419,7 @@ void Player::demux_run() {
 		avformat_close_input(&fmt_);
 		return;
 	}
+	container_bitrate_=std::max<int64_t>(0,fmt_->bit_rate);
 	if (fmt_->start_time != AV_NOPTS_VALUE) start_offset_ = double(fmt_->start_time) / AV_TIME_BASE;
 	if (fmt_->duration != AV_NOPTS_VALUE && fmt_->duration > 0) duration_ = double(fmt_->duration) / AV_TIME_BASE;
 
@@ -543,6 +547,8 @@ void Player::demux_run() {
 	}
     if (playback_streams::is_hls(fmt_))
         dlog("player: HLS selected video=%d audio=%d programs=%u; unused audio playlists disabled",vs,as,fmt_->nb_programs);
+	diagnostic_video_codec_=vs>=0?fmt_->streams[vs]->codecpar->codec_id:AV_CODEC_ID_NONE;
+    diagnostic_audio_codec_=as>=0?fmt_->streams[as]->codecpar->codec_id:AV_CODEC_ID_NONE;
 	video_stream_ = vs;
 	audio_stream_ = as;
 	if (vs < 0) vdrop_ = -1;
@@ -571,7 +577,7 @@ void Player::demux_run() {
 		start_target_ = opts_.live_tv ? 2 : mbps >= 40 ? 15 : mbps >= 20 ? 10 : mbps >= 10 ? 5 : 2;
 		dlog("player: about %.0f Mbit/s, buffering %.0f s before playing", mbps, start_target_);
 	}
-	if (opts_.start > 0) do_seek(opts_.start);
+	if (opts_.start > 0) { do_seek(opts_.start); if (state_ == State::Failed || abort_) return; }
 	state_ = State::Playing;
 	apply_run_state();
 
@@ -582,14 +588,24 @@ void Player::demux_run() {
 	int errors = 0;
 	while (!abort_) {
 		double target = -1;
+		bool claimed_seek = false;
+		struct SeekCompletion {
+			std::atomic<bool>& active;
+			bool& claimed;
+			~SeekCompletion() { if (claimed) active = false; }
+		} seek_completion{seek_in_progress_, claimed_seek};
 		{
 			std::lock_guard<std::mutex> lock(seek_m_);
 			if (seek_req_) {
+				claimed_seek = true;
+				seek_in_progress_ = true;
 				target = seek_target_;
 				seek_req_ = false;
                 // Retire the finished timeline before releasing the UI seek gate.
                 // do_seek can block on I/O while the old queues still look drained.
                 eof_ = false;
+				// Release the I/O interrupt so this seek can read its index.
+				// The separate presentation gate covers the blocking transition.
 				seek_pending_ = false;
 			}
 		}
@@ -611,7 +627,7 @@ void Player::demux_run() {
                     if (audio_stream_ >= 0) fmt_->streams[audio_stream_]->discard = AVDISCARD_ALL;
                     fmt_->streams[sw]->discard = AVDISCARD_DEFAULT;
                 }
-				audio_stream_ = sw;
+				audio_stream_ = sw; diagnostic_audio_codec_=fmt_->streams[sw]->codecpar->codec_id;
                 {
                     std::lock_guard<std::mutex> clock(clock_m_);
                     pcm_.close(false);
@@ -637,6 +653,11 @@ void Player::demux_run() {
 			}
 		}
 		if (target >= 0) do_seek(target);
+		if (claimed_seek) {
+			seek_in_progress_ = false;
+			claimed_seek = false;
+			apply_run_state(); // A refused seek may have resumed the old timeline.
+		}
 
 		update_buffering();
 
@@ -723,6 +744,13 @@ void Player::demux_run() {
 }
 
 void Player::do_seek(double target, bool switching_audio) {
+    const bool torrent = TorrentStream::is_url(opts_.url);
+    const double anchor = position();
+    struct DeadlineGuard {
+        AVIOContext* pb;
+        ~DeadlineGuard() { TorrentStream::set_read_deadline(pb,0); }
+    } deadline_guard{torrent ? main_pb_ : nullptr};
+    if(torrent) TorrentStream::set_read_deadline(main_pb_,now_seconds()+5);
 	const bool short_refill = state_ == State::Playing && !recovering_;
 	// Promote a quick Matroska open to a seekable input on its demux thread.
 	// FFmpeg can load deferred cues here without discarding the decoders/tracks.
@@ -741,7 +769,7 @@ void Player::do_seek(double target, bool switching_audio) {
 	if (r < 0) {
 		dlog("player: seek to %.1f failed: %s", target, av_err(r).c_str());
 		if (seek_pending_) return; // a newer request superseded this attempt
-		if (was_quick && !recovering_) {
+		if (was_quick && !torrent && !recovering_) {
 			// Some Matroska inputs cannot load their index in place. The UI
 			// performs the old reopen fallback; never join this demux thread here.
 			reopen_target_ = target;
@@ -749,7 +777,23 @@ void Player::do_seek(double target, bool switching_audio) {
 		}
 		if(recovering_.exchange(false)) { fail("Decoder recovery could not seek this source. Choose another stream."); return; }
         if (switching_audio) { fail("Could not resynchronize the selected audio track. Restart playback or choose another stream."); return; }
-		vdrop_ = adrop_ = -1; seek_refill_ = false; buffering_ = false; apply_run_state(); return;
+        if (!torrent) {
+            vdrop_ = adrop_ = -1; seek_refill_ = false; buffering_ = false; apply_run_state(); return;
+        }
+        if (abort_) return;
+        if (state_ != State::Playing) {
+            fail("The saved torrent position is unavailable. Try Play from beginning."); return;
+        }
+        // A failed demux seek may have consumed bytes. Restore a real demux
+        // timestamp before using the old timeline; never pretend it was untouched.
+        TorrentStream::set_read_deadline(main_pb_,now_seconds()+5);
+        fmt_->pb->error=0;fmt_->pb->eof_reached=0;
+        const int64_t previous=static_cast<int64_t>((anchor+start_offset_)*AV_TIME_BASE);
+        int restored=avformat_seek_file(fmt_,-1,INT64_MIN,previous,previous,0);
+        if(restored<0) restored=av_seek_frame(fmt_,-1,previous,AVSEEK_FLAG_BACKWARD);
+        if(seek_pending_ || abort_) return;
+        if(restored<0) { fail("Torrent seek could not recover safely. Restart playback or choose another stream.");return; }
+        target=anchor;seek_rejected_=true;
 	}
     read_chapters(); // quick Matroska seeks can load a deferred chapter table
 	subtitle_renderer_.seek();
@@ -1389,7 +1433,7 @@ void Player::set_clock_running(bool running) {
 }
 
 void Player::apply_run_state() {
-	bool run = !paused_ && !buffering_ && !seek_pending_ && reopen_target_ < 0 && vdrop_ < 0 && state_ == State::Playing;
+	bool run = !paused_ && !buffering_ && !seek_pending_ && !seek_in_progress_ && reopen_target_ < 0 && vdrop_ < 0 && state_ == State::Playing;
 	pcm_.pause(!run);
 	set_clock_running(run);
 }
@@ -1403,11 +1447,11 @@ void Player::set_paused(bool p) {
 bool Player::buffering(int* percent) const {
 	if(vlc_) return vlc_->buffering(percent);
 	if (percent) *percent = buffer_percent_;
-	return state_ == State::Opening || (state_ == State::Playing && buffering_);
+	return state_ == State::Opening || (state_ == State::Playing && (buffering_ || seek_in_progress_));
 }
 
 void Player::update_buffering() {
-	if (state_ != State::Playing || recovering_ || seek_pending_ || reopen_target_ >= 0) return;
+	if (state_ != State::Playing || recovering_ || seek_pending_ || seek_in_progress_ || reopen_target_ >= 0) return;
     if(AudioPort::shutdown_failed) {
         fail("The audio output could not be released safely. Close and reopen the app before playing again.");return;
     }
@@ -1501,7 +1545,7 @@ void Player::set_audio_delay(double seconds) {
 const Player::Picture* Player::present() {
 	if(vlc_) return vlc_->present();
 	const double reopen = reopen_target_.exchange(-1);
-	if (reopen >= 0 && !seek_pending_ && !abort_) {
+	if (reopen >= 0 && !seek_pending_ && !seek_in_progress_ && !abort_) {
 		Options o = opts_; o.start = reopen; o.start_paused = paused_;
         const int requested=audio_switch_.load();
         o.initial_audio_stream = requested>=0?requested:audio_stream_.load();
@@ -1512,7 +1556,7 @@ const Player::Picture* Player::present() {
 	}
 	const Picture* out = nullptr;
 	if (state_ == State::Playing) update_buffering();
-	if ((state_ == State::Playing || state_ == State::Ended) && !seek_pending_) {
+	if ((state_ == State::Playing || state_ == State::Ended) && !seek_pending_ && !seek_in_progress_) {
 		double clk;
 		{
 			std::lock_guard<std::mutex> lock(clock_m_);
@@ -1729,16 +1773,16 @@ void Player::log_stats() {
 }
 
 nlohmann::json Player::diagnostic_snapshot() {
-	if(vlc_) return {{"engine","vlc"},{"paused",vlc_->paused()},{"buffering",vlc_->buffering()},{"positionSeconds",vlc_->position()},{"durationSeconds",vlc_->duration()}};
+	if(vlc_) {const auto codecs=vlc_->diagnostic_codecs();return {{"videoCodec",codecs.first},{"audioCodec",codecs.second},{"engine","vlc"},{"paused",vlc_->paused()},{"buffering",vlc_->buffering()},{"positionSeconds",vlc_->position()},{"durationSeconds",vlc_->duration()}};}
     const double now=now_seconds(); const int shown=shown_.load();
-    nlohmann::json context={{"sourceFps",fps_},{"shownFrames",shown},{"decodedFrames",decoded_.load()},
+    nlohmann::json context={{"engine",opts_.evo?"evo":"native"},{"videoCodec",avcodec_get_name(static_cast<AVCodecID>(diagnostic_video_codec_.load()))},{"audioCodec",avcodec_get_name(static_cast<AVCodecID>(diagnostic_audio_codec_.load()))},{"sourceFps",fps_},{"shownFrames",shown},{"decodedFrames",decoded_.load()},
             {"droppedFrames",dropped_.load()},{"bufferedSeconds",std::max(vq_.duration(),aq_.duration())},
             {"paused",paused_.load()},{"buffering",buffering_.load()},{"audioGainPercent",gain_percent_.load()},{"audioDelaySeconds",audio_delay_.load()},
             {"state",int(state_.load())},{"positionSeconds",position()},{"videoPacketSeconds",vq_.duration()},{"audioPacketSeconds",aq_.duration()},
             {"queuedAudioSeconds",queued_audio_seconds()},{"videoSerial",vq_.serial()},{"displayedVideoSerial",displayed_serial_.load()},
             {"videoDropUntil",vdrop_.load()},{"audioDropUntil",adrop_.load()},
             {"eof",eof_.load()},{"audioDrained",audio_drained_.load()},{"videoDrained",video_drained_.load()},
-            {"seekPending",seek_pending_.load()},{"seekRefill",seek_refill_.load()},{"reopenTarget",reopen_target_.load()}};
+            {"seekPending",seek_pending_.load()},{"seekInProgress",seek_in_progress_.load()},{"seekRefill",seek_refill_.load()},{"reopenTarget",reopen_target_.load()}};
     if(diagnostic_time_>0 && now-diagnostic_time_>.1) context["shownFps"]=std::max(0,shown-diagnostic_shown_)/(now-diagnostic_time_);
     diagnostic_time_=now; diagnostic_shown_=shown; return context;
 }
@@ -1750,5 +1794,9 @@ std::string Player::stats() {
 	snprintf(buf, sizeof(buf), "%s · %.3g fps · buffered %.1fs · dropped %d of %d%s", codec_summary().c_str(), fps_,
 	         std::max(vq_.duration(), aq_.duration()), dropped_.load(), decoded_.load(),
 	         paused_ ? " · paused" : buffering_ ? " · buffering" : "");
-	return buf;
+	const auto bitrate=container_bitrate_.load();
+	char rate[64];
+	if(bitrate>0)std::snprintf(rate,sizeof(rate)," · container %.2f Mb/s",bitrate/1e6);
+	else std::snprintf(rate,sizeof(rate)," · container bitrate unavailable");
+	return std::string(buf)+rate;
 }

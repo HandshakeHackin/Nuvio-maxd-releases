@@ -2,6 +2,7 @@
 // choices, signing in, and short messages. Typing is the console's own keyboard.
 
 #pragma once
+#include "i18n.hpp"
 
 #include "chrome.hpp"
 #include "content.hpp"
@@ -26,8 +27,11 @@ void draw_boot_mark(hui::gfx::DrawList &list, const Env &env, float glow, float 
 
 struct DropdownState
 {
+    enum class Purpose {generic,usb_scan,usb_import,torrent_files,build_integrity,free_tv_countries};
+    Purpose purpose=Purpose::generic;
     std::string title;
     std::vector<std::string> options;
+    std::vector<bool> checked; // Optional independent ticks for multiple selections.
     std::string message; // under the title, for a question
     int active = 0;   // the current choice, ticked (-1: none)
     int selected = 0; // the cursor
@@ -35,6 +39,7 @@ struct DropdownState
     // A question about a title, in the middle of the screen: its poster, how far it is watched, and the
     // choices as large buttons (see draw_dialog). Without it the list drops from the top, for long lists.
     bool dialog = false;
+    bool wide = false; // Informational notices with a project URL and credits
     std::uint32_t poster = 0; // GL texture, 0 for none
     float progress = -1.0f;   // 0..1, negative for none
 };
@@ -44,9 +49,11 @@ void draw_pin_entry(hui::gfx::DrawList&, const Env&, const PinEntry&);
 
 struct SignInState
 {
+    bool donation=false;
+    bool text_payload = false; // QR contains safe plain text, not a network address
     bool link_only = false; // informational QR page; no authentication polling
-    std::string title = "Sign in to Nuvio";
-    std::string cancel_label = "Continue as guest";
+    std::string title = i18n::tr("Sign in to Nuvio");
+    std::string cancel_label = i18n::tr("Continue as guest");
     int qr_size = 0;
     std::vector<std::uint8_t> qr_modules;
     std::string link;       // "nuvio.tv/link"
