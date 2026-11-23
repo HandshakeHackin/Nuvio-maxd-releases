@@ -12,9 +12,7 @@
   <a href="https://github.com/HandshakeHackin/Nuvio-maxd-releases/issues">Report a problem</a>
 </p>
 
-**Official release: 1.0.0.26**
-
-**Development branch: 1.0.1.0** — adds multilingual search, title suggestions and optional top navigation, and combines IPTV sources and enabled free channels in one TV guide, with optional free live TV, a choice of start page, remembered TV groups, channel rename/hide controls and backup channel selection, alongside offline release-file checks. Published downloads below remain 1.0.0.26.
+**Release candidate: 1.0.1.0** — free live TV, a unified guide, multilingual search and a choice of menu layout. The published download remains 1.0.0.26 until this candidate passes release verification.
 
 Nuvio Max'd runs directly on a jailbroken PS5. Sign in with your phone or use
 Guest mode, then browse your library, addons, TV playlists and media servers.

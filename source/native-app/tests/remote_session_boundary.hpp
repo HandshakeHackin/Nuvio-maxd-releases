@@ -12,7 +12,7 @@ struct Session {
  double remote_capture_until_=0;
  int remote_capture_action_=-1,saves=0;
  bool dropdown_open=false,update_dialog_=false,install_source_dialog_=false;
- struct {DropdownState::Purpose purpose=DropdownState::Purpose::generic;std::string title,message;int danger=-1,active=0,selected=0;bool dialog=false;unsigned poster=0;double progress=-1;std::vector<std::string> options;} dropdown;
+ struct {DropdownState::Purpose purpose=DropdownState::Purpose::generic;std::string title,message;int danger=-1,active=0,selected=0;bool dialog=false,wide=false;unsigned poster=0;double progress=-1;std::vector<std::string> options;std::vector<bool> checked;} dropdown;
  std::vector<std::string>& choices=dropdown.options;
  std::vector<std::string> messages;
  std::function<void(int)> dropdown_chosen_;
