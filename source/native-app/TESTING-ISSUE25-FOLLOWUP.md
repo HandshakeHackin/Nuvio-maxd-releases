@@ -12,7 +12,8 @@ or provider fault. The actual console crash cause is still unconfirmed.
   10,000 cues. Only expired embedded events are pruned. Active dialogue remains;
   events stay bounded at 10,000 per track, and excess new read-ahead is omitted
   until space is available. External subtitle files retain their timeline for
-  backward seeks. The separate 4,096-packet / 32 MiB pending limit remains.
+  backward seeks. External auto-sync cannot advance the embedded retention clock.
+  The separate 4,096-packet / 32 MiB pending limit remains.
 - Curl handles share a thread-safe DNS-address cache with the normal 60-second
   expiry. Range downloads and subtitle GETs can reuse warm console lookups.
   A subtitle retry still bypasses cached failures. No connections, cookies,

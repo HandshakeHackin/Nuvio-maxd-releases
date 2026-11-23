@@ -737,6 +737,7 @@ void Session::watch_update()
     if(w_sub_active_>=0 && w_sub_active_<int(w_subs_.size())) embedded_stream=w_subs_[size_t(w_sub_active_)].embedded;
     if(st==Player::State::Playing)player_.select_embedded_subtitle(embedded_stream,w_sub_delay_);
     double subtitle_time=pos+player_.video_sync_offset()-w_sub_delay_;
+    const double embedded_time=subtitle_time;
     if(w_sub_active_>=0 && w_sub_active_<int(w_subs_.size())) {
         const auto& selected=w_subs_[size_t(w_sub_active_)];
         subtitle_time=(subtitle_time-selected.sync_offset)/selected.sync_scale;
@@ -744,13 +745,13 @@ void Session::watch_update()
     const auto& style=prefs_.subtitle_style;
     auto overlay=player_.subtitle_renderer().render(rich_id,subtitle_time,video_w,video_h,video_sar,
         playing.controls?125.0f:0.0f,style.font,style.colour,style.effect,style.background,
-        subtitle_size::index(prefs_.sub_size));
+        subtitle_size::index(prefs_.sub_size),embedded_time);
     if(!overlay.supported && rich_id < -1 && w_sub_active_>=0 && w_sub_active_<int(w_subs_.size())) {
         auto& selected=w_subs_[size_t(w_sub_active_)];
         if(!selected.rich_text.empty() && player_.subtitle_renderer().external(rich_id,selected.rich_text,selected.lang))
             overlay=player_.subtitle_renderer().render(rich_id,subtitle_time,video_w,video_h,video_sar,
                 playing.controls?125.0f:0.0f,style.font,style.colour,style.effect,style.background,
-                subtitle_size::index(prefs_.sub_size));
+                subtitle_size::index(prefs_.sub_size),embedded_time);
     }
     if(overlay.supported) sub.clear();
     if(overlay.changed) {

@@ -179,6 +179,9 @@ int main(int argc,char** argv) try {
             if(n%500==0)render(.5);
         }
         render(.5);require(visible,"dense read-ahead flushed the active dialogue");
+        require(renderer.external(-2,"1\n00:05:00,000 --> 00:05:03,000\nExternal timebase\n","eng"),"external sync fixture failed");
+        renderer.render(-2,300.5,1920,1080,1,0,1,0,1,0,1,.5);
+        render(.5);require(visible,"external subtitle sync pruned the source's current embedded dialogue");
         render(11);require(!visible,"dialogue failed to clear at its authored end");
         // Once old events expire, space must be reclaimed for later dialogue.
         render(60);packet(20000,60,3,"Dialogue after dense signs");render(61);

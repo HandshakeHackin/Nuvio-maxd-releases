@@ -245,13 +245,13 @@ void SubtitleRenderer::seek() {
     }
     d_->last_id=-1; ++d_->generation;
 }
-SubtitleOverlay SubtitleRenderer::render(int id,double seconds,int vw,int vh,double sar,float lift,int font,int colour,int effect,int background,int size) {
+SubtitleOverlay SubtitleRenderer::render(int id,double seconds,int vw,int vh,double sar,float lift,int font,int colour,int effect,int background,int size,double embedded_seconds) {
     std::lock_guard<std::mutex> lock(d_->mutex);
 #ifdef NUVIO_SUBTITLE_TEST_HOOK
     extern void subtitle_render_test_boundary();
     subtitle_render_test_boundary();
 #endif
-    d_->drain_pending(seconds);
+    d_->drain_pending(std::isfinite(embedded_seconds)?embedded_seconds:seconds);
     SubtitleOverlay out;
     auto it=d_->tracks.find(id);
     if(it==d_->tracks.end() || !d_->renderer) { out.changed=d_->last_id!=id || d_->last_had_pixels; d_->last_id=id; d_->last_had_pixels=false; return out; }

@@ -3,6 +3,7 @@
 #pragma once
 #include <cstdint>
 #include <memory>
+#include <limits>
 #include <string>
 #include <vector>
 struct AVCodecParameters;
@@ -23,7 +24,9 @@ public:
     void packet(int id, const AVPacket*, double pts, double duration, const AVSubtitle* decoded);
     bool external(int id, const std::string& utf8, const std::string& language);
     void seek();
-    SubtitleOverlay render(int id, double seconds, int video_w, int video_h, double sar, float lift, int font=1, int colour=0, int effect=1, int background=0, int size=1);
+    // External subtitle auto-sync may use a different timeline. Embedded event
+    // retention follows the source clock supplied separately by the player UI.
+    SubtitleOverlay render(int id, double seconds, int video_w, int video_h, double sar, float lift, int font=1, int colour=0, int effect=1, int background=0, int size=1, double embedded_seconds=std::numeric_limits<double>::quiet_NaN());
 private:
     struct Impl;
     std::unique_ptr<Impl> d_;
