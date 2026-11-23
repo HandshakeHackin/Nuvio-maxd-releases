@@ -1,5 +1,10 @@
 # Issue #25 subtitle test fix
 
+The reporter has since confirmed this first attempt did not resolve the Native
+Torbox behavior. See the [1.0.1.1 follow-up](TESTING-ISSUE25-FOLLOWUP.md) for the
+latest evidence, changes and test checklist. The text below records the earlier
+attempt.
+
 Issue #25 reports disappearing in-file captions and subtitle-download resolving
 timeouts. No console log, sample, playback engine or firmware has been supplied;
 these changes address reproducible failures and still need reporter confirmation.

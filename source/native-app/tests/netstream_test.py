@@ -19,6 +19,9 @@ class Server(http.server.BaseHTTPRequestHandler):
         pass
 
     def do_GET(self):
+        if self.path=='/captions':
+            self.send_response(200);self.send_header('Content-Length','15');self.end_headers()
+            self.wfile.write(b'Caption fixture');return
         if self.path.startswith('/media-'):
             assert self.headers.get('X-Maxd-Credential-Origin') is None
             if self.path=='/media-foreign': assert self.headers.get('X-Emby-Authorization') is None
@@ -67,11 +70,37 @@ class NetworkTests(unittest.TestCase):
         self.server.shutdown(); self.server.server_close(); self.thread.join(); self.temp.cleanup()
 
     def run_stream(self, path, mode='parallel'):
+        host='stream.fixture.invalid' if mode=='shared-dns' else '127.0.0.1'
         run = subprocess.run([str(ROOT / 'test-output/netstream-host'),
-            f'http://127.0.0.1:{self.server.server_port}{path}', mode, self.temp.name],
+            f'http://{host}:{self.server.server_port}{path}', mode, self.temp.name],
             capture_output=True, text=True, timeout=45)
         self.assertEqual(run.returncode, 0, run.stderr + run.stdout)
         return json.loads(next(line for line in reversed(run.stdout.splitlines()) if line.startswith('{')))
+
+    def test_reader_thread_exhaustion_returns_an_error(self):
+        result=self.run_stream('/video','thread-no-reader')
+        self.assertFalse(result['started'])
+        self.assertIn('thread',result['error'].lower())
+
+    def test_parallel_worker_exhaustion_falls_back_to_existing_reader(self):
+        result=self.run_stream('/video','thread-no-workers')
+        self.assertTrue(result['started'] and result['correct'])
+        self.assertEqual(result['error'],'')
+        self.assertTrue(result['seek_correct'])
+        self.assertFalse(any(r[2] for r in self.server.requests))
+
+    def test_partial_worker_capacity_remains_usable(self):
+        result=self.run_stream('/video','thread-two-workers')
+        self.assertTrue(result['started'] and result['correct'])
+        self.assertEqual(result['error'],'')
+        self.assertTrue(result['seek_correct'])
+        self.assertTrue(any(r[2] for r in self.server.requests))
+
+    def test_parallel_stream_and_subtitle_share_warmed_dns(self):
+        result=self.run_stream('/video','shared-dns')
+        self.assertTrue(result['started'] and result['correct'])
+        self.assertTrue(result['subtitle_ok'])
+        self.assertEqual(result['error'],'')
 
     def test_media_server_credentials_and_blocked_redirects(self):
         private=self.run_stream('/media-private','media-auth')

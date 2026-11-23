@@ -26,6 +26,7 @@ constexpr size_t kBitmapBudget=32u<<20;
 // packets before the next render. Keep a bounded burst window as well as the
 // byte budget; 256 packets across all languages discarded current captions.
 constexpr size_t kPendingPacketLimit=4096;
+constexpr int kTrackEventLimit=10000;
 struct Tile { int x=0,y=0,w=0,h=0; std::vector<uint8_t> rgba; };
 struct Event { double start=0,end=0; std::vector<Tile> tiles; size_t bytes=0; };
 struct SubtitlePacket {
@@ -75,16 +76,27 @@ struct SubtitleRenderer::Impl {
     std::deque<SubtitlePacket> pending;
     size_t pending_bytes=0;
     void discard_pending() {std::lock_guard<std::mutex> lock(pending_mutex);pending.clear();pending_bytes=0;}
-    void drain_pending() {
+    void drain_pending(double seconds) {
         std::deque<SubtitlePacket> jobs;
         {std::lock_guard<std::mutex> lock(pending_mutex);jobs.swap(pending);pending_bytes=0;}
+        // Dense ASS signs/animation can fill a track during read-ahead. A full
+        // flush erased still-visible dialogue. Reclaim expired events only,
+        // once per render; keep active/nearer buffered events at the hard cap.
+        if(std::isfinite(seconds)) for(auto& [id,t]:tracks) {
+            // External files retain their full timeline for backward seeks.
+            if(id>=0 && t.ass && t.ass->n_events>=kTrackEventLimit)
+                ass_prune_events(t.ass,llround(std::max(0.0,seconds)*1000));
+        }
         for(auto& job:jobs) {
             auto found=tracks.find(job.id);if(found==tracks.end())continue;
             auto& t=found->second;
             if(t.ass) {
-                if(t.ass->n_events>10000)ass_flush_events(t.ass);
+                if(t.ass->n_events>=kTrackEventLimit)continue;
                 if(t.authored)ass_process_chunk(t.ass,job.authored.data(),int(job.authored.size()),llround(job.pts*1000),llround(std::max(.001,job.duration)*1000));
-                else for(auto& chunk:job.chunks)ass_process_chunk(t.ass,chunk.first.data(),int(chunk.first.size()),chunk.second.first,chunk.second.second);
+                else for(auto& chunk:job.chunks) {
+                    if(t.ass->n_events>=kTrackEventLimit)break;
+                    ass_process_chunk(t.ass,chunk.first.data(),int(chunk.first.size()),chunk.second.first,chunk.second.second);
+                }
             } else if(t.bitmap && job.decoded) {
                 auto& e=job.bitmap;
                 if(!t.events.empty() && t.events.back().end>e.start)t.events.back().end=e.start;
@@ -239,7 +251,7 @@ SubtitleOverlay SubtitleRenderer::render(int id,double seconds,int vw,int vh,dou
     extern void subtitle_render_test_boundary();
     subtitle_render_test_boundary();
 #endif
-    d_->drain_pending();
+    d_->drain_pending(seconds);
     SubtitleOverlay out;
     auto it=d_->tracks.find(id);
     if(it==d_->tracks.end() || !d_->renderer) { out.changed=d_->last_id!=id || d_->last_had_pixels; d_->last_id=id; d_->last_had_pixels=false; return out; }

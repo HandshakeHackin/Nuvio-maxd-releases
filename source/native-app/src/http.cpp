@@ -4,12 +4,43 @@
 #include <algorithm>
 #include <chrono>
 #include <limits>
+#include <mutex>
 
 #include "util.h"
 
 const char* kUserAgent = "NuvioMaxd/0.5.28 (PlayStation 5; native)";
 
 static std::string g_ca_bundle;
+
+namespace {
+// Only DNS addresses are shared. Connections, cookies, headers and credentials
+// remain private to each easy handle. Warm playback/CDN lookups can be reused
+// by range workers and subtitle requests instead of starting resolver threads
+// for every parallel connection. Curl's normal 60-second expiry is retained.
+struct DnsCache {
+    std::mutex locks[CURL_LOCK_DATA_LAST];
+    CURLSH* handle=nullptr;
+    DnsCache() {
+        handle=curl_share_init();
+        if(!handle)return;
+        if(curl_share_setopt(handle,CURLSHOPT_USERDATA,this)!=CURLSHE_OK ||
+           curl_share_setopt(handle,CURLSHOPT_LOCKFUNC,lock)!=CURLSHE_OK ||
+           curl_share_setopt(handle,CURLSHOPT_UNLOCKFUNC,unlock)!=CURLSHE_OK ||
+           curl_share_setopt(handle,CURLSHOPT_SHARE,CURL_LOCK_DATA_DNS)!=CURLSHE_OK) {
+            curl_share_cleanup(handle);handle=nullptr;
+        }
+    }
+    ~DnsCache(){if(handle)curl_share_cleanup(handle);}
+    static void lock(CURL*,curl_lock_data data,curl_lock_access,void* opaque) {
+        if(data>CURL_LOCK_DATA_NONE && data<CURL_LOCK_DATA_LAST)
+            static_cast<DnsCache*>(opaque)->locks[data].lock();
+    }
+    static void unlock(CURL*,curl_lock_data data,void* opaque) {
+        if(data>CURL_LOCK_DATA_NONE && data<CURL_LOCK_DATA_LAST)
+            static_cast<DnsCache*>(opaque)->locks[data].unlock();
+    }
+};
+}
 
 std::string HttpResponse::describe() const {
 	if (!error.empty()) return error;
@@ -36,6 +67,8 @@ static int on_socket(void*, curl_socket_t s, curlsocktype) {
 #endif
 
 void http_setup_handle(void* curl) {
+    static DnsCache dns;
+    if(dns.handle)curl_easy_setopt(static_cast<CURL*>(curl),CURLOPT_SHARE,dns.handle);
 	// All clients, including JavaScript providers, must use the console DNS route.
 	curl_easy_setopt(static_cast<CURL*>(curl), CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
 #ifdef PLATFORM_PS5_NATIVE
@@ -133,9 +166,9 @@ static HttpResponse perform(const std::string& url, const std::string* post_body
 			if (remaining<=0) { rc=CURLE_OPERATION_TIMEDOUT; break; }
 			curl_easy_setopt(c, CURLOPT_TIMEOUT_MS, long(remaining));
 			curl_easy_setopt(c, CURLOPT_CONNECTTIMEOUT_MS, long(std::min<int64_t>(30000,remaining)));
-			// A failed name lookup must be retried through the resolver, not a
-			// cached negative result on the same easy handle.
-			curl_easy_setopt(c, CURLOPT_DNS_CACHE_TIMEOUT, 0L);
+            // Reuse positive playback/CDN results on the first attempt. A DNS
+            // retry bypasses cached failures and performs a fresh lookup.
+            curl_easy_setopt(c, CURLOPT_DNS_CACHE_TIMEOUT, attempt ? 0L : 60L);
 		}
 		r = HttpResponse{}; sink.oversized=false; errbuf[0]='\0';
 		rc = curl_easy_perform(c);

@@ -38,7 +38,13 @@ third parties; availability and quality vary. See [details and sources](FREE_LIV
 
 ## Subtitle test fix (#25)
 
-The next test build keeps more embedded subtitle packets during multilingual
+The **1.0.1.1 test** preserves active dialogue when dense ASS signs fill the
+event limit, shares DNS addresses between downloads, and handles stream-worker
+thread exhaustion. It follows the reporter's continued Native/Torbox failures;
+console confirmation remains outstanding. See the
+[follow-up and short test checklist](TESTING-ISSUE25-FOLLOWUP.md).
+
+The earlier attempt keeps more embedded subtitle packets during multilingual
 read-ahead bursts and gives subtitle downloads a longer connection window with
 one retry. Downloads remain bounded and cancel when leaving the video.
 See [test details](TESTING-ISSUE25.md). PS5 confirmation is still needed.

@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
+source "$ROOT/tests/host_libass.sh"
 mkdir -p "$ROOT/test-output"
 ${HOST_CXX:-g++} -std=c++20 -O1 -Wall -Wextra -Werror -Wno-misleading-indentation -DHAVE_FRIBIDI -pthread -I"$ROOT/src" -I"$ROOT/third_party" \
- "$ROOT/tests/thai_subtitles_host.cpp" "$ROOT/src/subtitle_renderer.cpp" "$ROOT/src/subtitles.cpp" "$ROOT/src/video_frame.cpp" "$ROOT/src/bidi.cpp" "$ROOT/src/util.cpp" \
- $(pkg-config --cflags --libs libavcodec libavutil libass fribidi harfbuzz libcurl) -o "$ROOT/test-output/thai-subtitles-host"
+ -I"$NUVIO_HOST_LIBASS_INCLUDE" "$ROOT/tests/thai_subtitles_host.cpp" "$ROOT/src/subtitle_renderer.cpp" "$ROOT/src/subtitles.cpp" "$ROOT/src/video_frame.cpp" "$ROOT/src/bidi.cpp" "$ROOT/src/util.cpp" \
+ -L"$NUVIO_HOST_LIBASS_LIBDIR" $(pkg-config --cflags --libs libavcodec libavutil libass fribidi harfbuzz libcurl) -o "$ROOT/test-output/thai-subtitles-host"
 "$ROOT/test-output/thai-subtitles-host" "$ROOT/app/fonts"
 
 python3 "$ROOT/tests/thai_font_pins.py"

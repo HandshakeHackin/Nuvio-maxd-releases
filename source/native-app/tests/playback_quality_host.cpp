@@ -153,6 +153,44 @@ int main(int argc,char** argv) try {
         renderer.seek(); o=renderer.render(0,.5,1920,1080,1,0);
         require(o.changed && o.rgba.empty(),"seek retained captions from the old timeline");
     });
+    test("dense embedded ASS signs never flush the visible dialogue",[&]{
+        SubtitleRenderer renderer; renderer.configure(argv[1]);
+        const std::string header="[Script Info]\nScriptType: v4.00+\nPlayResX: 1920\nPlayResY: 1080\n[V4+ Styles]\nFormat: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding\nStyle: Default,Inter,40,&H00FFFFFF,&H00FFFFFF,&H00000000,&H80000000,0,0,0,0,100,100,0,0,1,2,0,2,10,10,10,1\n[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n";
+        auto* par=avcodec_parameters_alloc(); par->codec_id=AV_CODEC_ID_ASS;
+        par->extradata=static_cast<uint8_t*>(av_mallocz(header.size()+AV_INPUT_BUFFER_PADDING_SIZE));
+        require(par->extradata,"ASS header allocation failed");
+        std::memcpy(par->extradata,header.data(),header.size());par->extradata_size=int(header.size());
+        renderer.add_track(0,par,"eng");avcodec_parameters_free(&par);
+        const auto packet=[&](int order,double start,double duration,const std::string& text) {
+            std::string data=std::to_string(order)+",0,Default,,0,0,0,,"+text;
+            AVPacket p{};p.data=reinterpret_cast<uint8_t*>(data.data());p.size=int(data.size());
+            renderer.packet(0,&p,start,duration,nullptr);
+        };
+        bool visible=false;
+        const auto render=[&](double time) {
+            auto o=renderer.render(0,time,1920,1080,1,0);
+            if(o.changed)visible=!o.rgba.empty();
+        };
+        packet(0,0,10,"Dialogue must remain visible");render(.5);require(visible,"initial dialogue missing");
+        // Animated sign tracks can contain thousands of tiny positioned events.
+        // Drain in batches below the independent pending-packet bound.
+        for(int n=1;n<=10040;++n) {
+            packet(n,20+n*.001,.01,"{\\pos(200,200)}Sign");
+            if(n%500==0)render(.5);
+        }
+        render(.5);require(visible,"dense read-ahead flushed the active dialogue");
+        render(11);require(!visible,"dialogue failed to clear at its authored end");
+        // Once old events expire, space must be reclaimed for later dialogue.
+        render(60);packet(20000,60,3,"Dialogue after dense signs");render(61);
+        require(visible,"expired signs prevented later dialogue");
+        renderer.seek();render(61);require(!visible,"seek did not clear dense ASS events");
+        std::string external=header+"Dialogue: 0,0:00:00.00,0:00:00.10,Default,,0,0,0,,First external cue\n";
+        for(int n=0;n<10001;++n)external+="Dialogue: 0,0:00:01.00,0:00:01.01,Default,,0,0,0,,Sign\n";
+        require(renderer.external(-2,external,"eng"),"dense external ASS load failed");
+        renderer.render(-2,11,1920,1080,1,0);renderer.seek();
+        auto restored=renderer.render(-2,.05,1920,1080,1,0);
+        require(!restored.rgba.empty(),"embedded-event pruning erased external subtitles before backward seek");
+    });
     test("styled ASS preserves positioned events and external cues survive a seek",[&]{
         SubtitleRenderer renderer; renderer.configure(argv[1]);
         const std::string ass="[Script Info]\nScriptType: v4.00+\nPlayResX: 1920\nPlayResY: 1080\n[V4+ Styles]\nFormat: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding\nStyle: Default,Inter,40,&H000000FF,&H00FFFFFF,&H00000000,&H80000000,0,0,0,0,100,100,0,0,1,2,0,2,10,10,10,1\n[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\nDialogue: 0,0:00:01.00,0:00:03.00,Default,,0,0,0,,{\\pos(400,200)}Styled text\n";

@@ -13,6 +13,7 @@ extern "C" {
 #include <chrono>
 #include <cstring>
 #include <functional>
+#include <system_error>
 
 #include "http.h"
 #include "util.h"
@@ -121,7 +122,7 @@ void NetStream::log_speed(int64_t bytes) {  // m_ held
 			if (s.index != idx + ahead || s.state != 2) break;
 			ahead++;
 		}
-		dlog("net: %.2f MB/s over %d connections, %lld MB downloaded ahead of the player%s", rate, kWorkers,
+		dlog("net: %.2f MB/s over %d connections, %lld MB downloaded ahead of the player%s", rate, int(workers_.size()),
 		     (long long)(ahead * (kChunk >> 20)), cache_ ? "" : " (in memory)");
 	} else {
 		dlog("net: %.2f MB/s over one connection", rate);
@@ -136,7 +137,11 @@ bool NetStream::start() {
 	std::unique_lock<std::mutex> lock(m_);
 	req_pos_ = 0;
 	gen_++;
-	thread_ = std::thread([this] { run(); });
+    try { thread_ = std::thread([this] { run(); }); }
+    catch(const std::system_error&) {
+        error_="Could not start stream reader thread. Stop playback and retry.";
+        return false;
+    }
 	while (!headers_done_ && error_.empty() && !eof_) {
 		if ((abort_ && abort_->load()) || (read_interrupt_ && read_interrupt_->load())) {
 			error_ = "cancelled";
@@ -174,9 +179,21 @@ void NetStream::start_parallel() {  // m_ held
 	par_started_ = now_seconds();
 	par_bytes_ = 0;
 	if (final_url_.empty()) final_url_ = url_;
-	for (int i = 0; i < kWorkers; i++) workers_.emplace_back([this] { worker(); });
+    for (int i = 0; i < kWorkers; i++) {
+        try {workers_.emplace_back([this] { worker(); });}
+        catch(const std::system_error&) {break;}
+    }
+    if(workers_.empty()) {
+        // The size probe's reader already exists. Resume it in single-stream
+        // mode rather than throwing out of the player's demux thread.
+        parallel_=false;parallel_wanted_=false;chunks_.clear();
+        if(cache_){fclose(cache_);remove(cache_path_.c_str());cache_=nullptr;}
+        req_pos_=pos_;++gen_;cv_.notify_all();
+        dlog("net: parallel workers unavailable; retaining one connection");
+        return;
+    }
 	dlog("net: %lld MB file, downloading with %d connections, up to %d MB ahead %s", (long long)(size_ >> 20),
-	     kWorkers, int(window_ * (kChunk >> 20)), cache_ ? "on storage" : "in memory");
+         int(workers_.size()), int(window_ * (kChunk >> 20)), cache_ ? "on storage" : "in memory");
 }
 
 // Storage failed (full, or refused): carry on with the read-ahead in memory.
