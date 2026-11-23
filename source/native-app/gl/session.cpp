@@ -91,6 +91,7 @@ enum SettingIndex
     kSportsEnable,kSportsOpen,kSportsRegion,kSportsBrowse,kSportsFollowing,kSportsScores,kSportsChannels,kSportsClock,
     kUiLanguage,kTvdb,kConfigBackup,kAgeRatingCountry,kBuildIntegrity,kStartPage,
     kFreeTv,kFreeTvCountry,kFreeTvOpen,kUnifiedTv,
+    kTopNavigation,
     kSettingCount
 };
 
@@ -228,6 +229,8 @@ bool Session::init(const std::string &base_dir, const std::string &data_dir, hui
 
 void Session::shutdown()
 {
+    search_keyboard_cancel();
+    ime_.cancel();text_done_=nullptr;
     if(integrity_cancel_)*integrity_cancel_=true;
     person_leave();*cast_cancel_=true;
     sports_reset();
@@ -516,6 +519,7 @@ void Session::load_addons()
 
 void Session::on_addons_loaded()
 {
+    if(search_keyboard_open)search_keyboard_changed();
     build_board();
     // Discover starts again from the new catalogs the next time it opens.
     disc_items_.clear();
@@ -741,6 +745,7 @@ void Session::refresh_settings()
         i18n::tr("Choose the country for title certifications. US ratings are used when unavailable. The badge shows its country. Saved for this profile; display only."));
     set(kUiLanguage,Kind::value,i18n::tr("Language"),i18n::native_name(prefs_.ui_language),i18n::tr("Use the app menus in your preferred language. Restart Max'd to apply.")+std::string(" ")+i18n::tr("Some help and status messages may appear in English."));
     set(kStartPage,Kind::value,i18n::tr("Open Max'd on"),i18n::tr(start_page::choices[start_page::index(prefs_.start_page)].label),i18n::tr("Choose the page to open after selecting this profile. Disabled Sports falls back to Home. Playback does not start automatically."));
+    set(kTopNavigation,Kind::toggle,i18n::tr("Top navigation"),"",i18n::tr("Show a top menu with a Search tab. Use L1/R1 to switch tabs; Live TV and torrent controls keep their shortcuts. Saved for this profile."),top_navigation);
     set(kMediaServers, SettingRow::Kind::action, sx::i18n::tr("Media servers (experimental)"), std::to_string(media_accounts_.size())+" connected", sx::i18n::tr("Connect Jellyfin, Emby or Plex. Browse server libraries and resume playback separately from addons."));
     set(kAccount, Kind::value, sx::i18n::tr("Nuvio account"), signed_in() ? prefs_.user_email : sx::i18n::tr("Not signed in"),
         signed_in() ? (confirm_sign_out_ ? sx::i18n::tr("Press Cross again to sign out.") : sx::i18n::tr("Press Cross to sign out."))
@@ -871,7 +876,7 @@ void Session::refresh_settings()
     group("Controls",{kRemoteButtons});
     set(kTvdb,Kind::action,i18n::tr("TheTVDB episode ordering"),"",i18n::tr("Use your TVDB API key, then choose an episode order from a series title menu."));
     set(kConfigBackup,Kind::action,i18n::tr("Configuration backup and sync"),"",i18n::tr("Encrypted profile configuration backups. Account sessions and playback history are excluded."));
-    group("App & Updates", {kStartPage,kTvdb,kConfigBackup,kUiLanguage,kBuildIntegrity,kReleaseNotes,kDiagnostics,kMetadataCredits,kDonation,kInstallSource,kUpdates,kExit});
+    group("App & Updates", {kStartPage,kTopNavigation,kTvdb,kConfigBackup,kUiLanguage,kBuildIntegrity,kReleaseNotes,kDiagnostics,kMetadataCredits,kDonation,kInstallSource,kUpdates,kExit});
     changed_ |= kSettings;
 }
 
@@ -886,6 +891,12 @@ void Session::settings_activate(int row)
     if(row==kConfigBackup){backup_menu();return;}
     if(row==kBuildIntegrity){integrity_menu();return;}
     if(row==kStartPage){start_page_menu();return;}
+    if(row==kTopNavigation){
+        if(!profile_ready_){say(i18n::tr("Choose a profile first."),6);return;}
+        const bool previous=top_navigation;top_navigation=!top_navigation;save_profile_settings();json stored;
+        if(!load_json(profile_dir_+"/profile-settings.json",stored)||jbool(stored,"top_navigation",previous)!=top_navigation){top_navigation=previous;say(i18n::tr("Could not save profile preferences"),6,true);}
+        refresh_settings();return;
+    }
     if(row==kAgeRatingCountry){age_rating_country_menu();return;}
     if(row==kUiLanguage){
         std::vector<std::string> names,codes;for(const auto& locale:i18n::locales()){names.emplace_back(locale.native_name);codes.emplace_back(locale.code);}
@@ -898,7 +909,7 @@ void Session::settings_activate(int row)
     }
     if(row==SettingsNavigation::search_action) {
         const auto profile=profile_generation_;
-        ask_text([this,profile](const std::string& query) {
+        ask_search([this,profile](const std::string& query) {
             if(profile!=profile_generation_ || trim(query).empty())return;
             const auto matches=SettingsNavigation::search(settings,query);
             if(matches.empty()){say(sx::i18n::tr("No matching settings. Try a shorter name or another word."),7.0);return;}
@@ -1503,6 +1514,7 @@ void Session::update(float dt, const Cursor &cursor)
         else service_login_poll();
     }
     poll_typing();
+    search_suggestions_tick();
     media_flush_auth();
     live_guide_update(cursor.live);
     sports_tick(cursor.sports);

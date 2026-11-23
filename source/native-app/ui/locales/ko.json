@@ -557,6 +557,25 @@
     "1.0.1.0: personal IPTV and enabled free channels share one unified TV guide.": "1.0.1.0: IPTV 소스와 활성화된 무료 채널을 하나의 통합 TV 편성표에서 볼 수 있습니다.",
     "Choose multiple countries for free TV. Availability and quality depend on third-party providers.": "무료 TV 국가를 여러 개 선택하세요. 제공 여부와 품질은 외부 제공업체에 따라 달라집니다.",
     "Channels keep their own source, guide, favorites and playback details.": "채널별 소스, 편성표, 즐겨찾기 및 재생 정보가 유지됩니다.",
-    "Open Settings > Live TV > Unified TV guide. Individual sources and four-screen TV remain available.": "설정 > 라이브 TV > 통합 TV 편성표에서 여세요. 개별 소스와 4화면 TV도 계속 이용할 수 있습니다."
+    "Open Settings > Live TV > Unified TV guide. Individual sources and four-screen TV remain available.": "설정 > 라이브 TV > 통합 TV 편성표에서 여세요. 개별 소스와 4화면 TV도 계속 이용할 수 있습니다.",
+    "Top navigation": "상단 탐색",
+    "Show a top menu with a Search tab. Use L1/R1 to switch tabs; Live TV and torrent controls keep their shortcuts. Saved for this profile.": "검색 탭이 있는 상단 메뉴를 표시합니다. L1/R1로 탭을 전환하며 라이브 TV와 토렌트의 단축키는 유지됩니다. 프로필별로 저장됩니다.",
+    "Type a title": "제목 입력",
+    "Title suggestions": "제목 추천",
+    "Space": "공백",
+    "PS5 keyboard": "PS5 키보드",
+    "L1 / R1: language · Square: shift · Options: PS5 keyboard": "L1 / R1: 언어 · 네모: 문자 전환 · Options: PS5 키보드",
+    "Cross: choose · Triangle: search · Circle: cancel": "엑스: 선택 · 세모: 검색 · 동그라미: 취소",
+    "Use the PS5 keyboard for kanji or Chinese characters.": "한자나 중국어 문자는 PS5 키보드를 사용하세요.",
+    "Press Triangle to search your configured catalogs.": "세모를 눌러 설정된 카탈로그를 검색하세요.",
+    "Search this section": "이 섹션 검색",
+    "Type at least two characters": "두 글자 이상 입력하세요",
+    "Some catalogs could not be reached. You can still search.": "일부 카탈로그에 연결할 수 없습니다. 검색은 계속할 수 있습니다.",
+    "No title suggestions. You can still search.": "추천 제목이 없습니다. 검색은 계속할 수 있습니다.",
+    "From your configured catalogs": "설정된 카탈로그에서",
+    "1.0.1.0: search with a multilingual controller keyboard and configured-catalog title suggestions.": "1.0.1.0: 다국어 컨트롤러 키보드와 설정된 카탈로그의 제목 추천.",
+    "Enable Top navigation in Settings > App & Updates for a dedicated Search tab.": "설정 > 앱 및 업데이트에서 상단 탐색을 켜면 검색 탭을 사용할 수 있습니다.",
+    "Personal IPTV and optional free channels share one guide; choose multiple countries for free TV.": "개인 IPTV와 선택형 무료 채널을 하나의 편성표에서 보고 무료 TV 국가를 여러 개 선택하세요.",
+    "Thai subtitle fallback and SIMKL sign-in fixes are included.": "태국어 자막 대체 글꼴과 SIMKL 로그인 수정이 포함됩니다."
   }
 }

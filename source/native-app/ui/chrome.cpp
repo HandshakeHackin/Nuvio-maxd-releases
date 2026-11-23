@@ -1,5 +1,6 @@
 #include "../ui/i18n.hpp"
 #include "chrome.hpp"
+#include "top_navigation.hpp"
 
 #include "core/tween.hpp"
 
@@ -100,6 +101,7 @@ void Rail::update(float dt, bool iptv_visible, bool servers_visible, bool torren
 
 void Rail::draw(hui::gfx::DrawList &list, const Env &env, float age) const
 {
+    if(env.top_navigation&&*env.top_navigation)return;
     // The pill under the cursor: violet with a white edge, only while the rail has the focus.
     if (glow_.value > 0.01f)
     {
@@ -146,6 +148,27 @@ void Rail::draw(hui::gfx::DrawList &list, const Env &env, float age) const
         } else text(list, env.fonts.regular, i18n::tr(kPageNames[i]), r.cx(), r.y + r.h-18.0f, theme::kLabel, tint, Align::center);
         list.pop_opacity();
     }
+}
+
+void draw_top_navigation(hui::gfx::DrawList& list,const Env& env,Page active,int cursor,bool focused) {
+    const auto tabs=top_navigation::tabs(env.iptv_visible&&*env.iptv_visible,env.media_servers_visible&&*env.media_servers_visible,env.torrents_visible&&*env.torrents_visible,env.sports_visible&&*env.sports_visible);
+    cursor=std::clamp(cursor,0,int(tabs.size())-1);
+    const auto visible=top_navigation::window(int(tabs.size()),cursor);
+    list.rounded_rect({0,0,1920,112},0,theme::ground);
+    draw_logo(list,env);
+    text(list,env.fonts.semibold,"L1",178,72,24,theme::ink_3);
+    for(int n=0;n<visible.count;++n){
+        const int index=visible.first+n;const auto& tab=tabs[index];
+        const Rect r{228+n*211.0f,28,201,60};
+        const bool under=focused&&index==cursor;
+        list.bordered_rect(r,18,under?theme::accent:tab.page==active?theme::surface_hi:theme::ground,under?3:0,theme::ink);
+        text(list,env.fonts.semibold,env.fonts.semibold.font->fit(i18n::tr(tab.label),25,181),r.cx(),r.cy()+8,25,tab.page==active||under?theme::ink:theme::ink_3,Align::center);
+        if(tab.page==active)list.rounded_rect({r.x+35,96,r.w-70,3},1,theme::accent_soft);
+    }
+    if(visible.first>0)text(list,env.fonts.regular,"‹",205,72,27,theme::ink_2);
+    if(visible.first+visible.count<int(tabs.size()))text(list,env.fonts.regular,"›",1718,72,27,theme::ink_2);
+    text(list,env.fonts.semibold,"R1",1750,72,24,theme::ink_3);
+    text(list,env.fonts.regular,env.clock,1880,72,24,theme::ink_3,Align::right);
 }
 
 void draw_logo(hui::gfx::DrawList &list, const Env &env)

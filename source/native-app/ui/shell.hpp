@@ -60,6 +60,9 @@ class Shell
     void open_title(const Title &title, const std::string &streams_video = std::string());
     void route_page(const hui::InputFrame &input, float dt);
     void route_search(const hui::InputFrame &input, float dt);
+    bool route_top_navigation(const hui::InputFrame&);
+    bool top_focused_=false;
+    int top_page_=0;
     void route_detail(const hui::InputFrame &input, float dt);
     void apply_changes();
     void leave_title();

@@ -36,6 +36,7 @@ struct Env
     const bool* media_servers_visible = nullptr;
     const bool* torrents_visible = nullptr;
     const bool* sports_visible = nullptr;
+    const bool* top_navigation = nullptr;
 };
 
 // The left navigation: five pages. When it holds the focus a
@@ -86,6 +87,8 @@ void draw_topbar(hui::gfx::DrawList &list, const Env &env, bool search_focused, 
 // shortens a long label with an ellipsis.
 float draw_chip(hui::gfx::DrawList &list, const Env &env, hui::ui::Button button, const char *label,
                 float x, float cy, bool strong = false, float max_text = 0.0f);
+
+void draw_top_navigation(hui::gfx::DrawList&,const Env&,Page active,int cursor,bool focused);
 
 // The yellow IMDb badge followed by the rating. Returns the width.
 float draw_imdb(hui::gfx::DrawList &list, const Env &env, const std::string &rating, float x,

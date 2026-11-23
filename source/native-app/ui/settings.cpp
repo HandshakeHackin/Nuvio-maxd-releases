@@ -82,7 +82,10 @@ void Settings::update(const hui::InputFrame &input, float dt)
     if (!navigation_consumed_ && !rail_input(input))
     {
         if (input.nav == Direction::up)
+        {
+            if(nav_.index==0&&env_.top_navigation&&*env_.top_navigation)to_rail();
             nav_.index = std::max(0, nav_.index - 1);
+        }
         else if (input.nav == Direction::down)
             nav_.index = std::min(count - 1, nav_.index + 1);
         else if (input.nav == Direction::left)

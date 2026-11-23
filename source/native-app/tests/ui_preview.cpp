@@ -13,6 +13,8 @@
 #include "start_page.hpp"
 #include "free_tv.h"
 #include "board.hpp"
+#include "search_keyboard_draw.hpp"
+#include "top_navigation.hpp"
 #include "library.hpp"
 #include "addons.hpp"
 #include <cmath>
@@ -63,6 +65,7 @@ int main(int argc, char** argv) {
     bool sports_visible=argc==4 && std::string(argv[3]).starts_with("sports-") && std::string(argv[3])!="sports-settings-off";
     if(argc==4 && std::string(argv[3])=="sports-all-nav"){media_visible=true;torrents_visible=true;iptv_visible=true;}
     iptv_visible=iptv_visible||media_visible;
+    if(mode.starts_with("top-navigation"))iptv_visible=media_visible=torrents_visible=sports_visible=true;
     const sx::Env env{fonts,icons,"21:45",&iptv_visible,&media_visible,&torrents_visible,&sports_visible};
     const auto artwork = [&](int w, int h, float tint) {
         std::vector<std::uint8_t> px(static_cast<std::size_t>(w)*h*4);
@@ -80,7 +83,19 @@ int main(int argc, char** argv) {
     };
     const auto backdrop_texture=artwork(1920,1080,0);
     const auto poster_texture=artwork(480,720,3);
-    if(mode=="free-tv-disclaimer") {
+    if(mode=="search-keyboard"||mode=="search-keyboard-he"||mode=="search-keyboard-th"||mode=="search-keyboard-ko"||mode=="top-navigation"||mode=="top-navigation-last") {
+        if(mode.starts_with("search-keyboard")){
+            sx::search_keyboard::State entry;entry.title=sx::i18n::tr("Search movies, series and more");entry.language=sx::search_keyboard::language_index(mode=="search-keyboard-he"?"he":mode=="search-keyboard-th"?"th":mode=="search-keyboard-ko"?"ko":sx::i18n::code());entry.text=entry.language==4?"שלום":entry.language==5?"العربية":entry.language==7?"ภาษาไทย":entry.language==9?"한국어":"Dune";entry.status=sx::i18n::tr("From your configured catalogs");entry.suggestions={{"tt1","movie","Dune: Part Two","2024"},{"tt2","series","Dune: Prophecy","2024"}};entry.row=2;entry.col=4;
+            sx::draw_search_keyboard(list,env,entry);
+        }else{
+            bool top=true;sx::Env top_env=env;top_env.top_navigation=&top;
+            sx::BoardContent content;sx::Row row;row.key="fixture";row.title=sx::i18n::tr("Movies");
+            for(const auto* name:{"Dune: Part Two","The Wild Robot","A Quiet Place","The Creator","Arrival","Interstellar"}){sx::Title title;title.id=name;title.type="movie";title.name=name;title.year="2024";title.poster=poster_texture;title.backdrop=backdrop_texture;row.items.push_back(title);}
+            content.rows.push_back(row);sx::Board page(top_env);page.set_content(&content);page.enter();hui::InputFrame idle;
+            for(int n=0;n<120;++n)page.update(idle,1.0f/60);hui::gfx::BackdropSpec backdrop;page.draw(list,backdrop);
+            sx::draw_top_navigation(list,top_env,sx::Page::board,mode=="top-navigation-last"?10:1,true);
+        }
+    }else if(mode=="free-tv-disclaimer") {
         sx::DropdownState d;d.title=sx::i18n::tr("Free live TV disclaimer");d.wide=true;
         d.options={sx::i18n::tr("Cancel"),sx::i18n::tr("I understand — enable free TV")};d.selected=d.active=0;d.message=sx::i18n::tr(free_tv::disclaimer);
         // The complete notice must fit the real overlay, without its ellipsis

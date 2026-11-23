@@ -40,6 +40,7 @@
 #include <mutex>
 #include "audio/cues.hpp"
 #include "core/input.hpp"
+#include "search_keyboard.hpp"
 
 #include <array>
 #include <atomic>
@@ -249,6 +250,12 @@ class Session
     BoardContent search; // the results of a search, rows like the Board's
     std::string search_query;
     bool search_open = false; // the results are on show
+    bool top_navigation = false; // profile-local; applied without restarting
+    bool search_keyboard_open = false;
+    search_keyboard::State search_entry;
+    void search_keyboard_input(const hui::InputFrame&);
+    void search_keyboard_cancel();
+    void open_search_page();
     std::string clock; // "21:45"
 
     // ---- playing ----
@@ -266,8 +273,9 @@ class Session
     unsigned configured_w_ = 0, configured_h_ = 0;
     bool typing() const
     {
-        return ime_.active() || pin_open;
+        return ime_.active() || pin_open || search_keyboard_open;
     }
+    bool system_typing() const {return ime_.active();}
 
     // ---- pop-ups ----
     bool pin_open = false;
@@ -862,6 +870,19 @@ class Session
     std::vector<BoardRow> search_;
     std::vector<int> search_map_;
     int search_gen_ = 0, search_pending_ = 0;
+    void ask_search(const std::function<void(const std::string&)>& done,const std::string& title,const std::string& initial="",bool suggestions=false);
+    void search_keyboard_changed();
+    void search_suggestions_tick();
+    std::function<void(const std::string&)> search_keyboard_done_;
+    std::string search_keyboard_language_="en";
+    std::shared_ptr<std::atomic<bool>> suggest_cancel_=std::make_shared<std::atomic<bool>>(false);
+    unsigned suggest_generation_=0;
+    int suggest_inflight_=0,suggest_completed_=0,suggest_errors_=0;
+    double suggest_after_=0,suggest_deadline_=0;
+    bool suggest_prepared_=false;
+    std::vector<std::string> suggest_urls_;
+    std::size_t suggest_next_=0;
+    std::vector<std::vector<search_keyboard::Suggestion>> suggest_rows_;
 
     // playing
     ConsoleLights::Status console_light_status_=ConsoleLights::Status::idle;

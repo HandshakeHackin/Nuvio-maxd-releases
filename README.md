@@ -14,7 +14,7 @@
 
 **Official release: 1.0.0.26**
 
-**Development branch: 1.0.1.0** — combines IPTV sources and enabled free channels in one TV guide, with optional free live TV, a choice of start page, remembered TV groups, channel rename/hide controls and backup channel selection, alongside offline release-file checks. Published downloads below remain 1.0.0.26.
+**Development branch: 1.0.1.0** — adds multilingual search, title suggestions and optional top navigation, and combines IPTV sources and enabled free channels in one TV guide, with optional free live TV, a choice of start page, remembered TV groups, channel rename/hide controls and backup channel selection, alongside offline release-file checks. Published downloads below remain 1.0.0.26.
 
 Nuvio Max'd runs directly on a jailbroken PS5. Sign in with your phone or use
 Guest mode, then browse your library, addons, TV playlists and media servers.
@@ -31,6 +31,9 @@ No companion PC app is required.
 See the [full release notes](https://github.com/HandshakeHackin/Nuvio-maxd-releases/blob/v1.0.0.26-native/RELEASE_NOTES.md) for the detailed changelog.
 
 ## Library, profiles and discovery
+
+- **New search controls (next build):** type with the multilingual controller keyboard, use L1/R1 to change languages, or open the PS5 keyboard with Options. Title suggestions come from your configured searchable catalogues.
+- **Optional top menu (next build):** turn on Settings → App & Updates → Top navigation for a dedicated Search tab. All enabled sections stay available. [Quick guide](source/native-app/SEARCH_NAVIGATION.md).
 
 - **Profiles and sync:** up to six profiles, PIN entry, and library/watch progress synced across Nuvio devices.
 - **Title actions:** add/remove titles and mark movies or episodes watched. Season/show changes ask for confirmation.

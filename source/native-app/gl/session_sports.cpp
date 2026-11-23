@@ -417,7 +417,7 @@ void Session::sports_search() {
   if (!sports_visible)
     return;
   const auto p = profile_generation_, g = sports_generation_;
-  ask_text(
+  ask_search(
       [this, p, g](const std::string &q) {
         if (p != profile_generation_ || g != sports_generation_ ||
             !sports_visible)
@@ -426,6 +426,6 @@ void Session::sports_search() {
         sports_page_ = 0;
         sports_build();
       },
-      sx::i18n::tr("Search Sports Hub (empty clears)"));
+      sx::i18n::tr("Search Sports Hub (empty clears)"),sports_query_);
 }
 } // namespace sx

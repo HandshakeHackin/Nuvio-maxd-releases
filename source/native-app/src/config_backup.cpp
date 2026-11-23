@@ -5,6 +5,7 @@
 #include "util.h"
 #include "age_ratings.hpp"
 #include "../ui/start_page.hpp"
+#include "../ui/search_languages.hpp"
 #include "live_channel_prefs.hpp"
 #include <algorithm>
 #include <cerrno>
@@ -63,7 +64,7 @@ Json project(const Json &j, const char *file) {
     for (const auto *k :
          {"extra_addons", "provider_enabled", "provider_settings",
           "subtitle_languages", "audio_languages", "auto_subtitles",
-          "source_preferences", "sports_hub", "age_rating_country", "start_page"})
+          "source_preferences", "sports_hub", "age_rating_country", "start_page", "top_navigation", "search_keyboard_language"})
       if (j.contains(k))
         out[k] = j[k];
   } else if (std::string(file) == "live-tv.json") {
@@ -102,6 +103,8 @@ bool valid_file(const std::string &name, const std::string &bytes,
     return false;
   }
   if (name == "profile-settings.json") {
+    if(j.contains("top_navigation")&&!j["top_navigation"].is_boolean()){error="Invalid navigation preference.";return false;}
+    if(j.contains("search_keyboard_language")&&(!j["search_keyboard_language"].is_string()||!sx::search_keyboard::valid_language(j["search_keyboard_language"].get_ref<const std::string&>()))){error="Invalid keyboard language.";return false;}
     if(j.contains("start_page")&&(!j["start_page"].is_string()||!sx::start_page::valid(j["start_page"].get_ref<const std::string&>()))) {error="Invalid start page.";return false;}
     if(j.contains("age_rating_country") &&
        (!j["age_rating_country"].is_string() ||

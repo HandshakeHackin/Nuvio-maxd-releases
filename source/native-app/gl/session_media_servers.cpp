@@ -439,7 +439,7 @@ void Session::media_search() {
   }
   auto profile = profile_generation_;
   auto id = media_accounts_[media_account_].id;
-  ask_text(
+  ask_search(
       [this, profile, id](const std::string &q) {
         if (profile != profile_generation_ ||
             media_account_ >= media_accounts_.size() ||
@@ -457,7 +457,7 @@ void Session::media_search() {
         media_reload();
         goto_ = Page::servers;
       },
-      sx::i18n::tr("Search this media server"));
+      sx::i18n::tr("Search this media server"),media_location_.query);
 }
 bool Session::media_back() {
   if (media_play_pending_) {

@@ -263,6 +263,7 @@ enum class Page
     servers,
     torrents,
     sports,
+    search,
 };
 
 } // namespace sx

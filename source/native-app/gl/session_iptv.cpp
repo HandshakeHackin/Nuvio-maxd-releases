@@ -554,7 +554,7 @@ void Session::iptv_saved_search(const std::string &query) {
 }
 void Session::iptv_search() {
   const auto profile = profile_generation_, generation = iptv_generation_;
-  ask_text(
+  ask_search(
       [this, profile, generation](const std::string &text) {
         if (profile != profile_generation_ || generation != iptv_generation_)
           return;
@@ -566,7 +566,7 @@ void Session::iptv_search() {
         } else
           iptv_saved_search(query);
       },
-      sx::i18n::tr("Search saved IPTV catalogs (empty returns to browsing)"));
+      sx::i18n::tr("Search saved IPTV catalogs (empty returns to browsing)"),iptv_query_);
 }
 void Session::iptv_menu() {
   const auto profile = profile_generation_;

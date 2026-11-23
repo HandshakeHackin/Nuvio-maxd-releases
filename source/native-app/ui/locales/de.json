@@ -1468,6 +1468,25 @@
     "1.0.1.0: personal IPTV and enabled free channels share one unified TV guide.": "1.0.1.0: Eigene IPTV-Quellen und aktivierte kostenlose Sender teilen einen gemeinsamen TV-Guide.",
     "Choose multiple countries for free TV. Availability and quality depend on third-party providers.": "Mehrere Länder für Free TV auswählen. Verfügbarkeit und Qualität hängen von Drittanbietern ab.",
     "Channels keep their own source, guide, favorites and playback details.": "Sender behalten ihre eigene Quelle, ihren Guide, ihre Favoriten und Wiedergabedaten.",
-    "Open Settings > Live TV > Unified TV guide. Individual sources and four-screen TV remain available.": "Unter Einstellungen > Live TV den gemeinsamen TV-Guide öffnen. Einzelne Quellen und Vierfach-TV bleiben verfügbar."
+    "Open Settings > Live TV > Unified TV guide. Individual sources and four-screen TV remain available.": "Unter Einstellungen > Live TV den gemeinsamen TV-Guide öffnen. Einzelne Quellen und Vierfach-TV bleiben verfügbar.",
+    "Top navigation": "Obere Navigation",
+    "Show a top menu with a Search tab. Use L1/R1 to switch tabs; Live TV and torrent controls keep their shortcuts. Saved for this profile.": "Zeigt ein oberes Menü mit Suche. L1/R1 wechselt die Tabs; Live-TV und Torrents behalten ihre Tasten. Gilt für dieses Profil.",
+    "Type a title": "Titel eingeben",
+    "Title suggestions": "Titelvorschläge",
+    "Space": "Leerzeichen",
+    "PS5 keyboard": "PS5-Tastatur",
+    "L1 / R1: language · Square: shift · Options: PS5 keyboard": "L1 / R1: Sprache · Quadrat: Umschalten · Options: PS5-Tastatur",
+    "Cross: choose · Triangle: search · Circle: cancel": "Kreuz: Auswählen · Dreieck: Suchen · Kreis: Abbrechen",
+    "Use the PS5 keyboard for kanji or Chinese characters.": "Für Kanji oder chinesische Zeichen die PS5-Tastatur nutzen.",
+    "Press Triangle to search your configured catalogs.": "Dreieck drücken, um deine Kataloge zu durchsuchen.",
+    "Search this section": "Diesen Bereich durchsuchen",
+    "Type at least two characters": "Mindestens zwei Zeichen eingeben",
+    "Some catalogs could not be reached. You can still search.": "Einige Kataloge sind nicht erreichbar. Die Suche bleibt verfügbar.",
+    "No title suggestions. You can still search.": "Keine Titelvorschläge. Die Suche bleibt verfügbar.",
+    "From your configured catalogs": "Aus deinen eingerichteten Katalogen",
+    "1.0.1.0: search with a multilingual controller keyboard and configured-catalog title suggestions.": "1.0.1.0: Mehrsprachige Controller-Tastatur und Titelvorschläge aus deinen Katalogen.",
+    "Enable Top navigation in Settings > App & Updates for a dedicated Search tab.": "Obere Navigation unter Einstellungen > App & Updates aktivieren, um einen Such-Tab zu nutzen.",
+    "Personal IPTV and optional free channels share one guide; choose multiple countries for free TV.": "Eigene IPTV- und optionale Gratis-Sender in einem Programmführer; mehrere Länder für Gratis-TV auswählbar.",
+    "Thai subtitle fallback and SIMKL sign-in fixes are included.": "Korrekturen für Thai-Untertitel und die SIMKL-Anmeldung sind enthalten."
   }
 }

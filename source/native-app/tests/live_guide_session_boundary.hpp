@@ -55,6 +55,7 @@ struct Session {
   std::vector<std::string> choices;
   std::function<void(int)> picked;
   void open_dropdown(const std::string&, const std::vector<std::string>& rows, int, std::function<void(int)> fn) {choices=rows;picked=std::move(fn);}
+  void ask_search(const std::function<void(const std::string&)>& done,const std::string& title,const std::string& = "",bool = false){ask_text(done,title);}
   void ask_text(const std::function<void(const std::string &)> &fn,
                 const std::string &) {
     typed = fn;

@@ -557,6 +557,25 @@
     "1.0.1.0: personal IPTV and enabled free channels share one unified TV guide.": "1.0.1.0: تجمع مصادر IPTV والقنوات المجانية المفعلة في دليل تلفزيون موحد.",
     "Choose multiple countries for free TV. Availability and quality depend on third-party providers.": "اختر بلدانًا متعددة للتلفزيون المجاني. يعتمد التوفر والجودة على مزودي الخدمة الخارجيين.",
     "Channels keep their own source, guide, favorites and playback details.": "تحتفظ القنوات بمصدرها ودليلها ومفضلاتها وبيانات تشغيلها.",
-    "Open Settings > Live TV > Unified TV guide. Individual sources and four-screen TV remain available.": "افتح الإعدادات > التلفزيون المباشر > دليل التلفزيون الموحد. تظل المصادر المنفردة والعرض بأربع شاشات متاحة."
+    "Open Settings > Live TV > Unified TV guide. Individual sources and four-screen TV remain available.": "افتح الإعدادات > التلفزيون المباشر > دليل التلفزيون الموحد. تظل المصادر المنفردة والعرض بأربع شاشات متاحة.",
+    "Top navigation": "التنقل العلوي",
+    "Show a top menu with a Search tab. Use L1/R1 to switch tabs; Live TV and torrent controls keep their shortcuts. Saved for this profile.": "يعرض قائمة علوية مع تبويب البحث. استخدم L1/R1 للتبديل؛ تحتفظ القنوات والتورنت باختصاراتها. يُحفظ لهذا الملف.",
+    "Type a title": "أدخل عنوانًا",
+    "Title suggestions": "اقتراحات العناوين",
+    "Space": "مسافة",
+    "PS5 keyboard": "لوحة PS5",
+    "L1 / R1: language · Square: shift · Options: PS5 keyboard": "L1 / R1: اللغة · مربع: تبديل · Options: لوحة PS5",
+    "Cross: choose · Triangle: search · Circle: cancel": "إكس: اختيار · مثلث: بحث · دائرة: إلغاء",
+    "Use the PS5 keyboard for kanji or Chinese characters.": "استخدم لوحة PS5 لإدخال الكانجي أو الحروف الصينية.",
+    "Press Triangle to search your configured catalogs.": "اضغط مثلث للبحث في الكتالوجات المُعدّة.",
+    "Search this section": "البحث في هذا القسم",
+    "Type at least two characters": "أدخل حرفين على الأقل",
+    "Some catalogs could not be reached. You can still search.": "تعذر الوصول إلى بعض الكتالوجات. لا يزال البحث متاحًا.",
+    "No title suggestions. You can still search.": "لا توجد اقتراحات. لا يزال البحث متاحًا.",
+    "From your configured catalogs": "من الكتالوجات المُعدّة",
+    "1.0.1.0: search with a multilingual controller keyboard and configured-catalog title suggestions.": "1.0.1.0: لوحة بحث متعددة اللغات واقتراحات من كتالوجاتك.",
+    "Enable Top navigation in Settings > App & Updates for a dedicated Search tab.": "فعّل التنقل العلوي في الإعدادات > التطبيق والتحديثات لإضافة تبويب البحث.",
+    "Personal IPTV and optional free channels share one guide; choose multiple countries for free TV.": "قنوات IPTV والقنوات المجانية الاختيارية في دليل واحد؛ اختر عدة دول للقنوات المجانية.",
+    "Thai subtitle fallback and SIMKL sign-in fixes are included.": "يتضمن إصلاحات الخط التايلاندي وترميز الترجمة وتسجيل الدخول إلى SIMKL."
   }
 }

@@ -40,7 +40,8 @@ struct Session {
   dropdown=DropdownState{};dropdown.title=title;dropdown.options=options;dropdown.active=dropdown.selected=active;dropdown_open=true;picked=std::move(done);
  }
  void choose(int n){auto fn=picked;dropdown_open=false;fn(n);}
- void ask_text(std::function<void(const std::string&)> fn,const std::string&){typed=std::move(fn);}
+ void ask_search(const std::function<void(const std::string&)>& done,const std::string& title,const std::string& = "",bool = false){ask_text(done,title);}
+  void ask_text(std::function<void(const std::string&)> fn,const std::string&){typed=std::move(fn);}
  void refresh_settings(){++refreshes;}
  void iptv_reset(){}void iptv_load(){}void iptv_probe(){}
  void live_build(){++builds;live_indices_.clear();for(size_t i=0;i<live_channels_.size();++i)live_indices_.push_back(i);}

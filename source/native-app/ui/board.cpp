@@ -234,6 +234,7 @@ void Board::update(const hui::InputFrame &input, float dt)
         case Direction::up:
         case Direction::down:
         {
+            if(input.nav==Direction::up&&row_==0&&env_.top_navigation&&*env_.top_navigation){rail_.focus(true);break;}
             // Rows with nothing in them are passed over.
             const int step = input.nav == Direction::up ? -1 : 1;
             for (int r = row_ + step; r >= 0 && r < rows; r += step)

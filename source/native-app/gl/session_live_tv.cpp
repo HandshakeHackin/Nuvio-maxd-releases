@@ -273,14 +273,14 @@ void Session::live_groups() {
 }
 void Session::live_search() {
   const auto generation = live_generation_;
-  ask_text(
+  ask_search(
       [this, generation](const std::string &text) {
         if (generation != live_generation_)
           return;
         live_query_ = label(trim(text));
         live_build();
       },
-      sx::i18n::tr("Search live channels (empty clears search)"));
+      sx::i18n::tr("Search live channels (empty clears search)"),live_query_);
 }
 void Session::live_cycle() {
   live_view_ = (live_view_ + 1) % 3;

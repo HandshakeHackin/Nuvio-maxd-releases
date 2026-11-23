@@ -557,6 +557,25 @@
     "1.0.1.0: personal IPTV and enabled free channels share one unified TV guide.": "1.0.1.0：IPTVソースと有効な無料チャンネルを1つの統合番組表に表示できます。",
     "Choose multiple countries for free TV. Availability and quality depend on third-party providers.": "無料テレビの国・地域を複数選択できます。提供状況と品質は第三者の配信元によって異なります。",
     "Channels keep their own source, guide, favorites and playback details.": "各チャンネルのソース、番組表、お気に入り、再生情報は保持されます。",
-    "Open Settings > Live TV > Unified TV guide. Individual sources and four-screen TV remain available.": "設定 > ライブテレビ > 統合テレビ番組表から開けます。個別ソースと4画面テレビも引き続き利用できます。"
+    "Open Settings > Live TV > Unified TV guide. Individual sources and four-screen TV remain available.": "設定 > ライブテレビ > 統合テレビ番組表から開けます。個別ソースと4画面テレビも引き続き利用できます。",
+    "Top navigation": "上部ナビゲーション",
+    "Show a top menu with a Search tab. Use L1/R1 to switch tabs; Live TV and torrent controls keep their shortcuts. Saved for this profile.": "検索タブのある上部メニューを表示。L1/R1でタブ切替。ライブTVとトレントの操作は維持されます。プロフィール別に保存。",
+    "Type a title": "作品名を入力",
+    "Title suggestions": "作品名の候補",
+    "Space": "空白",
+    "PS5 keyboard": "PS5キーボード",
+    "L1 / R1: language · Square: shift · Options: PS5 keyboard": "L1 / R1：言語 · □：文字切替 · Options：PS5キーボード",
+    "Cross: choose · Triangle: search · Circle: cancel": "×：選択 · △：検索 · ○：キャンセル",
+    "Use the PS5 keyboard for kanji or Chinese characters.": "漢字の変換にはPS5キーボードを使ってください。",
+    "Press Triangle to search your configured catalogs.": "△で設定済みカタログを検索。",
+    "Search this section": "この項目を検索",
+    "Type at least two characters": "2文字以上入力してください",
+    "Some catalogs could not be reached. You can still search.": "接続できないカタログがあります。検索は可能です。",
+    "No title suggestions. You can still search.": "候補がありません。検索は可能です。",
+    "From your configured catalogs": "設定済みカタログから",
+    "1.0.1.0: search with a multilingual controller keyboard and configured-catalog title suggestions.": "1.0.1.0：多言語コントローラーキーボードと設定済みカタログの作品候補。",
+    "Enable Top navigation in Settings > App & Updates for a dedicated Search tab.": "設定 > アプリと更新で上部ナビゲーションを有効にすると検索タブが使えます。",
+    "Personal IPTV and optional free channels share one guide; choose multiple countries for free TV.": "個人IPTVと任意の無料チャンネルを一つの番組表に。無料TVは複数国を選択できます。",
+    "Thai subtitle fallback and SIMKL sign-in fixes are included.": "タイ語字幕の代替フォントとSIMKLログインの修正を含みます。"
   }
 }

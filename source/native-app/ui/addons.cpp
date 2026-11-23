@@ -71,7 +71,10 @@ void Addons::update(const hui::InputFrame &input, float dt)
     const int count = static_cast<int>(content_->items.size());
     if(content_->guide_grid){
         if(!rail_input(input)){
-            if(input.nav==Direction::up)index_=std::max(0,index_-1);
+            if(input.nav==Direction::up){
+                if(index_==0&&env_.top_navigation&&*env_.top_navigation)to_rail();
+                index_=std::max(0,index_-1);
+            }
             else if(input.nav==Direction::down)index_=std::min(count-1,index_+1);
             else if(input.nav==Direction::right)guide_slot_=std::min(44,guide_slot_+1);
             else if(input.nav==Direction::left){if(guide_slot_>0)--guide_slot_;else to_rail();}
@@ -100,6 +103,7 @@ void Addons::update(const hui::InputFrame &input, float dt)
         case Direction::up:
             if (index_ >= kCols)
                 index_ -= kCols;
+            else if(env_.top_navigation&&*env_.top_navigation)to_rail();
             break;
         case Direction::down:
             if (index_ + kCols < count)

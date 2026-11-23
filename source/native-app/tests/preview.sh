@@ -17,7 +17,7 @@ ${HOST_CC:-gcc} -O2 -c "$ROOT/third_party/qrcodegen.c" -o "$B/qr-host.o"
 ${HOST_CXX:-g++} -std=c++20 -O1 -DGL_GLEXT_PROTOTYPES=1 -DHAVE_FRIBIDI "${bidi_cflags[@]}" \
     -I"$ROOT/ui" -I"$ROOT/src" -I"$ROOT/third_party" -I"$HUI/src" -I"$HUI/third_party/stb" \
     "$ROOT/tests/ui_preview.cpp" "$ROOT/tests/system_host.cpp" "$ROOT/ui/overlays.cpp" "$ROOT/ui/chrome.cpp" \
-    "$ROOT/ui/settings.cpp" "$ROOT/ui/page.cpp" "$ROOT/ui/player.cpp" "$ROOT/ui/board.cpp" "$ROOT/ui/library.cpp" "$ROOT/ui/addons.cpp" "$ROOT/ui/grid.cpp" "$ROOT/ui/dynamic_font.cpp" "$ROOT/ui/cards.cpp" "$ROOT/ui/detail.cpp" "$ROOT/ui/person.cpp" "$ROOT/src/bidi.cpp" \
+    "$ROOT/ui/search_keyboard.cpp" "$ROOT/ui/settings.cpp" "$ROOT/ui/page.cpp" "$ROOT/ui/player.cpp" "$ROOT/ui/board.cpp" "$ROOT/ui/library.cpp" "$ROOT/ui/addons.cpp" "$ROOT/ui/grid.cpp" "$ROOT/ui/dynamic_font.cpp" "$ROOT/ui/cards.cpp" "$ROOT/ui/detail.cpp" "$ROOT/ui/person.cpp" "$ROOT/src/bidi.cpp" \
     "$HUI"/src/gfx/*.cpp "$HUI/src/core/save_file.cpp" "$HUI/src/ui/glyphs.cpp" \
     "$B/qr-host.o" "${bidi_libs[@]}" ${HOST_GL_LIBS:--lEGL -lGL} -o "$B/ui-preview"
 if [ -z "${PREVIEW_MODES:-}" ]; then
@@ -41,6 +41,8 @@ if [ -z "${PREVIEW_MODES:-}" ]; then
     modes+=(age-movie age-series age-fallback age-missing age-country ar-age-country ar-age-movie zh-Hans-age-series ja-age-movie ko-age-series)
     modes+=(integrity-warning integrity-credits integrity-verified)
     modes+=(start-page channel-options backup-channels hidden-channels)
+    modes+=(search-keyboard search-keyboard-he search-keyboard-th search-keyboard-ko top-navigation top-navigation-last)
+    for language in de es fr ar zh-Hans ja ko;do modes+=("$language-search-keyboard" "$language-top-navigation-last");done
     modes+=(free-tv-settings free-tv-disclaimer free-tv-countries unified-guide)
     for language in de es fr ar zh-Hans ja ko;do modes+=("$language-free-tv-settings" "$language-free-tv-disclaimer" "$language-free-tv-countries" "$language-unified-guide");done
     for language in de es fr ar zh-Hans ja ko;do modes+=("$language-start-page" "$language-channel-options" "$language-backup-channels" "$language-hidden-channels");done

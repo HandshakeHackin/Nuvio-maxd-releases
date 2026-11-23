@@ -1,3 +1,14 @@
+# Search and navigation (#19)
+
+- Multilingual controller search keyboard, with quick language switching and
+  PS5 keyboard handoff for Chinese characters, kanji or other text.
+- Title suggestions from the current profile's configured searchable catalogues.
+- Optional top navigation with a Search tab and all enabled app sections.
+- Keep private PIN/password entry, local search scopes and playback shortcuts.
+
+See [controls and test checklist](SEARCH_NAVIGATION.md). Physical PS5 testing is
+still needed for these new controls.
+
 # Unreleased Sports Hub
 
 - Add an optional per-profile Sports Hub, disabled by default, with a dedicated Settings section. Enable/disable, choose sports and competitions, follow teams/leagues/names, choose a coverage region, hide scores, restrict to channel candidates and adjust the display time offset.

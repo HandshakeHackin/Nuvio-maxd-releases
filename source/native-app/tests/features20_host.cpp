@@ -37,6 +37,9 @@ int main(int argc, char **argv) {
                   {"provider_settings", {{"private-key", "secret-fixture"}}},
                   {"age_rating_country", "ES"},
                   {"start_page", "livetv"},
+                  {"top_navigation", true},
+                  {"search_keyboard_language", "he"},
+                  {"search_query", "never-back-up-query"},
                   {"account_session", "never-back-up"}}
                     .dump()),
             "write profile fixture");
@@ -62,7 +65,7 @@ int main(int argc, char **argv) {
             "capture configuration and imported playlist");
     require(captured.snapshot.dump().find("never-back-up") ==
                     std::string::npos &&
-                !captured.snapshot["files"].contains("connected-services.json"),
+                !captured.snapshot["files"].contains("connected-services.json") && captured.snapshot.dump().find("never-back-up-query")==std::string::npos,
             "exclude account session and connected-service tokens");
     require(
         !config_backup::valid_passphrase("备份密码") &&
@@ -80,6 +83,8 @@ int main(int argc, char **argv) {
                 decrypted.hash == captured.hash &&
                 J::parse(decrypted.snapshot["files"]["profile-settings.json"].get<std::string>())["age_rating_country"]=="ES" &&
                 J::parse(decrypted.snapshot["files"]["profile-settings.json"].get<std::string>())["start_page"]=="livetv" &&
+                J::parse(decrypted.snapshot["files"]["profile-settings.json"].get<std::string>())["top_navigation"]==true &&
+                J::parse(decrypted.snapshot["files"]["profile-settings.json"].get<std::string>())["search_keyboard_language"]=="he" &&
                 J::parse(decrypted.snapshot["files"]["live-tv.json"].get<std::string>())["channel_edits"]["123"]["12345"]["name"]=="My news" &&
                 J::parse(decrypted.snapshot["files"]["live-tv.json"].get<std::string>())["last_groups"]["123"]=="News",
             "encrypted round trip");
@@ -121,6 +126,10 @@ int main(int argc, char **argv) {
     for(const auto& value:{J(42),J("settings"),J("https://private.invalid")}) {
       auto malformed=captured.snapshot;malformed["files"]["profile-settings.json"]=J{{"start_page",value}}.dump();
       std::string reason;require(!config_backup::validate(malformed,scope,reason),"invalid start page rejected before restore");
+    }
+    for(const auto& settings:{J{{"top_navigation","yes"}},J{{"search_keyboard_language",42}},J{{"search_keyboard_language","unknown"}}}) {
+      auto malformed=captured.snapshot;malformed["files"]["profile-settings.json"]=settings.dump();
+      std::string reason;require(!config_backup::validate(malformed,scope,reason),"invalid search/navigation preferences rejected before restore");
     }
     for(const auto& edits:{J::array(),J{{"../source",J::object()}},J{{"123",{{"12345",{{"hidden","yes"}}}}}},J{{"123",{{"12345",{{"name",std::string(161,'x')}}}}}}}) {
       auto malformed=captured.snapshot;malformed["files"]["live-tv.json"]=J{{"channel_edits",edits}}.dump();

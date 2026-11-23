@@ -1,5 +1,7 @@
 #include "../ui/i18n.hpp"
 #include "shell.hpp"
+#include "search_keyboard_draw.hpp"
+#include "top_navigation.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -12,7 +14,7 @@ using hui::Direction;
 
 namespace
 {
-constexpr int kPageCount = 10;
+constexpr int kPageCount = 11;
 }
 
 Shell::Shell(const Env &env, Session &session)
@@ -65,8 +67,12 @@ void Shell::go_page(int page)
     if(page_==8 && !s_.torrents_visible)page_=0;
     if(page_==9 && !s_.sports_visible)page_=0;
     screen_ = Screen::page;
+    top_focused_=false;top_page_=page_;
     switch (page_)
     {
+    case 10:
+        s_.open_search_page();screen_=Screen::search;search_board_.enter();
+        break;
     case 0:
         board_.enter();
         break;
@@ -261,10 +267,16 @@ void Shell::route_search(const hui::InputFrame &input, float dt)
 {
     search_board_.update(input, dt);
     const bool on_rail = search_board_.rail_focused();
+    if(s_.top_navigation&&on_rail){
+        if(input.is_pressed(Action::north)||input.is_pressed(Action::confirm)||input.is_pressed(Action::menu))s_.begin_search();
+        else if(input.is_pressed(Action::back)){s_.close_search();go_page(0);}
+        else {top_focused_=true;top_page_=10;}
+        return;
+    }
     if (input.is_pressed(Action::back))
     {
         s_.close_search();
-        go_page(page_);
+        go_page(page_==10?0:page_);
         return;
     }
     if (input.is_pressed(Action::north) || input.is_pressed(Action::menu))
@@ -406,6 +418,7 @@ void Shell::route_page(const hui::InputFrame &input, float dt)
         }
         break;
     }
+    if(on_rail&&s_.top_navigation){top_focused_=true;top_page_=page_;return;}
     // Circle from any page but the Board goes to the Board (and from the Board it does nothing: the end of
     // the way back).
     if (page_ != 0 && input.is_pressed(Action::back))
@@ -437,6 +450,35 @@ void Shell::route_page(const hui::InputFrame &input, float dt)
         else
             open_title(*under);
     }
+}
+
+bool Shell::route_top_navigation(const hui::InputFrame& input) {
+    if(!s_.top_navigation){top_focused_=false;return false;}
+    if(screen_!=Screen::page&&screen_!=Screen::search)return false;
+    const auto active=screen_==Screen::search?Page::search:static_cast<Page>(page_);
+    const auto tabs=top_navigation::tabs(s_.iptv_visible,s_.media_visible,s_.torrents_visible,s_.sports_visible);
+    int selected=top_navigation::index(tabs,top_focused_?static_cast<Page>(top_page_):active);
+    const bool shoulder=top_navigation::shoulders(true,true,top_focused_,active)&&(input.is_pressed(Action::page_prev)||input.is_pressed(Action::page_next));
+    if(shoulder){
+        selected=(selected+int(tabs.size())+(input.is_pressed(Action::page_prev)?-1:1))%int(tabs.size());
+        const bool focused=top_focused_;if(s_.search_open&&tabs[selected].page!=Page::search)s_.close_search();
+        go_page(int(tabs[selected].page));top_focused_=focused;top_page_=int(tabs[selected].page);
+        sound_.play(hui::audio::Cue::tab);return true;
+    }
+    if(!top_focused_)return false;
+    if(input.nav==Direction::left)selected=std::max(0,selected-1);
+    else if(input.nav==Direction::right)selected=std::min(int(tabs.size())-1,selected+1);
+    top_page_=int(tabs[selected].page);
+    if(input.is_pressed(Action::confirm)){
+        if(s_.search_open&&top_page_!=10)s_.close_search();
+        go_page(top_page_);if(page_==10)s_.begin_search();
+    }else if(input.is_pressed(Action::back)&&active==Page::search){
+        s_.close_search();go_page(0);
+    }else if(input.nav==Direction::down||input.is_pressed(Action::back)){
+        top_focused_=false;go_page(int(active));
+        if(active==Page::search&&s_.search.rows.empty())s_.begin_search();
+    }else if(input.is_pressed(Action::north))s_.begin_search();
+    return true;
 }
 
 unsigned Shell::view_key() const
@@ -510,6 +552,8 @@ void Shell::update(const hui::InputFrame &input, float dt)
     }();
 
     const bool pin_held=s_.pin_open;
+    const bool search_keyboard_held=s_.search_keyboard_open;
+    const bool system_keyboard_held=s_.system_typing();
     const bool release_notes_held=s_.release_notes_open;
     if (s_.release_notes_open) {
         if(boot_out_>=0.35f && (input.is_pressed(Action::confirm) || input.is_pressed(Action::back))) s_.release_notes_dismiss();
@@ -537,8 +581,10 @@ void Shell::update(const hui::InputFrame &input, float dt)
         if (input.is_pressed(Action::back))
             s_.sign_in_cancel();
     }
+    else if(s_.search_keyboard_open&&!system_keyboard_held&&typing_hold_<=0.0f)
+        s_.search_keyboard_input(input);
     // The keyboard dialog has the controller; its last button presses must not reach the screens.
-    typing_hold_ = s_.typing() ? 0.35f : std::max(0.0f, typing_hold_ - dt);
+    typing_hold_ = (s_.system_typing()||s_.pin_open) ? 0.35f : std::max(0.0f, typing_hold_ - dt);
     // The pop-ups hold the controller while they are up; the screens underneath keep moving.
     // The first moments: the mark is up until the first screen has its catalogs and posters; the
     // screens underneath are idle, and start their entrance when it lifts.
@@ -559,7 +605,7 @@ void Shell::update(const hui::InputFrame &input, float dt)
         boot_out_ += dt;
     }
     const bool booting = boot_out_ < 0.35f;
-    const bool held = pin_held || s_.pin_open || release_notes_held || s_.dropdown_open || s_.sign_in_open || dropdown_t_.value > 0.3f || typing_hold_ > 0.0f || booting;
+    const bool held = pin_held || s_.pin_open || search_keyboard_held || s_.search_keyboard_open || release_notes_held || s_.dropdown_open || s_.sign_in_open || dropdown_t_.value > 0.3f || typing_hold_ > 0.0f || booting;
     const hui::InputFrame &in = held ? idle : input;
 
     if (s_.watching)
@@ -571,6 +617,7 @@ void Shell::update(const hui::InputFrame &input, float dt)
         player_ui_.state = s_.playing;
         player_ui_.update(dt);
     }
+    else if(!held&&route_top_navigation(in)) {}
     else if (screen_ == Screen::detail)
     {
         route_detail(in, dt);
@@ -697,6 +744,14 @@ void Shell::draw(hui::gfx::DrawList &list, hui::gfx::BackdropSpec &backdrop) con
             break;
         }
     }
+    if(s_.top_navigation&&!s_.watching&&(screen_==Screen::page||screen_==Screen::search)){
+        const auto tabs=top_navigation::tabs(s_.iptv_visible,s_.media_visible,s_.torrents_visible,s_.sports_visible);
+        const auto active=screen_==Screen::search?Page::search:static_cast<Page>(page_);
+        draw_top_navigation(list,env_,active,top_navigation::index(tabs,top_focused_?static_cast<Page>(top_page_):active),top_focused_);
+        if(screen_==Screen::search&&!s_.search_query.empty())
+            text(list,env_.fonts.semibold,env_.fonts.semibold.font->fit(i18n::tr("Search: ")+s_.search_query,26,1550),theme::kLeft,156,26,theme::ink_2);
+    }
+    if(s_.search_keyboard_open)draw_search_keyboard(list,env_,s_.search_entry);
     if (dropdown_t_.value > 0.01f)
         draw_dropdown(list, env_, s_.dropdown, dropdown_t_.value);
     if (sign_in_t_.value > 0.01f)

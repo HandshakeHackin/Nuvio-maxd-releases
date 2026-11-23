@@ -16,7 +16,7 @@ z=browse.index('// -------------------------------------------------------------
 methods=helper+browse[browse.index('Title Session::make_title'):browse.index('void Session::apply_meta')]+methods
 methods+='void Session::filter_activate(Page page,int filter) {\n'+browse[a:z].replace('else if','if',1)
 search=(r/'gl/session_search.cpp').read_text()
-methods+=search[search.index('void Session::begin_search()'):search.index('void Session::close_search()')]
+methods+=search[search.index('void Session::begin_search()'):search.index('void Session::open_search_page()')]
 assert 'reset_library_search();' in (r/'gl/session_profiles.cpp').read_text()
 assert 'reset_library_search();' in (r/'gl/session_tracking.cpp').read_text()
 a=core.index('    // Library\n',core.index('void Session::refresh_art'));z=core.index('    // IPTV artwork',a)

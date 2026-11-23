@@ -797,12 +797,12 @@ void Session::library_clear_search()
 void Session::library_search()
 {
     const auto profile = profile_generation_, generation = ++lib_search_generation_;
-    ask_text([this, profile, generation](const std::string& text) {
+    ask_search([this, profile, generation](const std::string& text) {
         if (profile != profile_generation_ || generation != lib_search_generation_) return;
         lib_query_ = sx::library_search::query(text);
         refresh_library();
         changed_ |= kLibraryNew;
-    }, sx::i18n::tr("Search your Library (empty clears search)"));
+    }, sx::i18n::tr("Search your Library (empty clears search)"),lib_query_);
 }
 
 void Session::refresh_library()

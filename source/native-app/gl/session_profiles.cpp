@@ -23,6 +23,9 @@ void Session::load_profile_settings() {
     load_json(profile_dir_ + "/profile-settings.json", j);
     prefs_.age_rating_country=age_ratings::load_preference(j);
     prefs_.start_page=start_page::choices[start_page::index(jstr(j,"start_page"))].id;
+    top_navigation=jbool(j,"top_navigation",false);
+    const auto language=jstr(j,"search_keyboard_language",prefs_.ui_language);
+    search_keyboard_language_=search_keyboard::languages[search_keyboard::language_index(language)].code;
     if (jobj(j, "extra_addons").is_array())
         for (const auto& u : j["extra_addons"]) if (u.is_string()) prefs_.extra_addons.push_back(u.get<std::string>());
     if (jobj(j, "provider_enabled").is_object()) prefs_.provider_enabled = j["provider_enabled"];
@@ -47,6 +50,8 @@ void Session::save_profile_settings() {
     load_json(profile_dir_ + "/profile-settings.json", j);
     age_ratings::save_preference(j,prefs_.age_rating_country);
     j["start_page"]=prefs_.start_page;
+    j["top_navigation"]=top_navigation;
+    j["search_keyboard_language"]=search_keyboard_language_;
     source_policy::save(j,prefs_.source_preferences);
     sports::save(j,sports_prefs_);
     j["extra_addons"] = prefs_.extra_addons;
@@ -57,6 +62,7 @@ void Session::save_profile_settings() {
     if (!save_json(profile_dir_ + "/profile-settings.json", j)) say(sx::i18n::tr("Could not save profile preferences"), 8.0, true);
 }
 void Session::clear_profile_views() {
+    ime_.cancel();text_done_=nullptr;
     features_reset();
     person_leave();*cast_cancel_=true;++cast_generation_;detail_seed_.reset();
     sports_reset();

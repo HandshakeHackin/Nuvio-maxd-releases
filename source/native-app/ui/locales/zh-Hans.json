@@ -557,6 +557,25 @@
     "1.0.1.0: personal IPTV and enabled free channels share one unified TV guide.": "1.0.1.0：您的 IPTV 来源和已启用的免费频道现可共用统一电视节目表。",
     "Choose multiple countries for free TV. Availability and quality depend on third-party providers.": "可为免费电视选择多个国家/地区。可用性和质量取决于第三方提供商。",
     "Channels keep their own source, guide, favorites and playback details.": "频道保留各自的来源、节目表、收藏和播放信息。",
-    "Open Settings > Live TV > Unified TV guide. Individual sources and four-screen TV remain available.": "打开设置 > 直播电视 > 统一电视节目表。仍可单独浏览来源或使用四屏电视。"
+    "Open Settings > Live TV > Unified TV guide. Individual sources and four-screen TV remain available.": "打开设置 > 直播电视 > 统一电视节目表。仍可单独浏览来源或使用四屏电视。",
+    "Top navigation": "顶部导航",
+    "Show a top menu with a Search tab. Use L1/R1 to switch tabs; Live TV and torrent controls keep their shortcuts. Saved for this profile.": "显示带搜索页的顶部菜单。用 L1/R1 切换标签；直播和种子页面保留原快捷键。按个人资料保存。",
+    "Type a title": "输入片名",
+    "Title suggestions": "片名建议",
+    "Space": "空格",
+    "PS5 keyboard": "PS5 键盘",
+    "L1 / R1: language · Square: shift · Options: PS5 keyboard": "L1 / R1：语言 · 方块：切换字符 · Options：PS5 键盘",
+    "Cross: choose · Triangle: search · Circle: cancel": "叉：选择 · 三角：搜索 · 圆：取消",
+    "Use the PS5 keyboard for kanji or Chinese characters.": "输入汉字请使用 PS5 键盘。",
+    "Press Triangle to search your configured catalogs.": "按三角键搜索已配置的目录。",
+    "Search this section": "搜索此栏目",
+    "Type at least two characters": "请至少输入两个字符",
+    "Some catalogs could not be reached. You can still search.": "部分目录无法连接，仍可继续搜索。",
+    "No title suggestions. You can still search.": "暂无片名建议，仍可继续搜索。",
+    "From your configured catalogs": "来自已配置的目录",
+    "1.0.1.0: search with a multilingual controller keyboard and configured-catalog title suggestions.": "1.0.1.0：多语言手柄键盘和已配置目录的片名建议。",
+    "Enable Top navigation in Settings > App & Updates for a dedicated Search tab.": "在设置 > 应用与更新中启用顶部导航，即可使用搜索标签。",
+    "Personal IPTV and optional free channels share one guide; choose multiple countries for free TV.": "个人 IPTV 与可选免费频道共用节目指南，免费电视可选择多个国家。",
+    "Thai subtitle fallback and SIMKL sign-in fixes are included.": "包含泰语字幕回退字体和 SIMKL 登录修复。"
   }
 }

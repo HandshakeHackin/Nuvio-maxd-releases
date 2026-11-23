@@ -45,6 +45,7 @@ void Library::update(const hui::InputFrame &input, float dt)
         filter_ = std::clamp(filter_, 0, std::max(0, filters - 1));
         if (in_filters_)
         {
+            if(input.nav==Direction::up&&env_.top_navigation&&*env_.top_navigation)to_rail();
             if (input.nav == Direction::left)
             {
                 if (filter_ == 0)

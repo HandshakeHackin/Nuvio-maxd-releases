@@ -1,5 +1,13 @@
 # Native Nuvio Max'd for PS5
 
+## Search and navigation (#19)
+
+Search now has a multilingual controller keyboard and title suggestions from
+configured searchable catalogues. Press L1/R1 to change the keyboard language
+or Options for the PS5 keyboard. Enable **Settings → App & Updates → Top
+navigation** for a dedicated Search tab. The choice is saved for each profile.
+See the [quick guide and testing checklist](SEARCH_NAVIGATION.md).
+
 ## Thai subtitle test fix (#27)
 
 The test build adds a bundled fallback for Thai text with missing or incorrect
