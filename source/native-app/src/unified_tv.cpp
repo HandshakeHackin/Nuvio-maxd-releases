@@ -43,7 +43,7 @@ Result fetch(const json& state,const std::atomic<bool>* cancel,const Fetch& fetc
  const auto public_source=std::find_if(rows.begin(),rows.end(),[](const auto& row){return jstr(row,"id")==free_tv::source_id;});
  if(public_source!=rows.end())std::rotate(rows.begin(),public_source,public_source+1);
  if(cancel&&*cancel){result.error="Live TV loading cancelled.";return out;}
- Budget budget(cancel,timeout);size_t count=0,used=0;bool failed=false,limited=false;
+ Budget budget(cancel,timeout);size_t count=0,used=0;bool failed=false,limited=false,partial_failure=false;
  std::map<std::uint64_t,size_t> seen;std::set<std::string> origins;
  for(const auto& row:rows) {
   if(cancel&&*cancel){out={};out.playlist.error="Live TV loading cancelled.";return out;}
@@ -55,7 +55,8 @@ Result fetch(const json& state,const std::atomic<bool>* cancel,const Fetch& fetc
   auto loaded=fetcher(row,&source_budget.cancel);
   if(cancel&&*cancel){out={};out.playlist.error="Live TV loading cancelled.";return out;}
   if(budget.stopped()){limited=true;break;}
-  if(source_budget.stopped()||!loaded.error.empty()){failed=true;continue;}
+  if(source_budget.stopped()||!loaded.error.empty()){failed=partial_failure=true;continue;}
+  partial_failure=partial_failure||loaded.partial_failure;
   if(!loaded.notice.empty())failed=true;
   out.guide_urls[id]=loaded.guide_url;
   auto name=jstr(row,"name").substr(0,256);
@@ -73,6 +74,7 @@ Result fetch(const json& state,const std::atomic<bool>* cancel,const Fetch& fetc
   if(limited)break;
  }
  if(cancel&&*cancel){out={};out.playlist.error="Live TV loading cancelled.";return out;}
+ result.partial_failure=partial_failure||budget.expired();
  if(result.channels.empty())result.error="No channels loaded. Check your Live TV sources and try again.";
  else if(limited)result.notice="Unified TV loading limit reached. Some sources may be missing; reload or choose a source.";
  else if(failed)result.notice="Some TV sources could not fully load. Available channels are shown; reload to retry.";

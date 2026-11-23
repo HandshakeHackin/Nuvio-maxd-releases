@@ -92,6 +92,7 @@ enum SettingIndex
     kUiLanguage,kTvdb,kConfigBackup,kAgeRatingCountry,kBuildIntegrity,kStartPage,
     kFreeTv,kFreeTvCountry,kFreeTvOpen,kUnifiedTv,
     kTopNavigation,
+    kLiveRefresh,
     kSettingCount
 };
 
@@ -861,7 +862,10 @@ void Session::refresh_settings()
     set(kFreeTvCountry,Kind::value,i18n::tr("Free TV countries"),free_country,i18n::tr("Choose one or more countries for the free channel list."));
     set(kFreeTvOpen,Kind::action,i18n::tr("Open free live TV"),"",i18n::tr(free_tv::enabled(live_state_)?"Watch free public channels without an IPTV subscription. Optional for this profile.":"Read the disclaimer and enable Free live TV first."));
     set(kUnifiedTv,Kind::action,i18n::tr("Unified TV guide"),"",i18n::tr("Browse your IPTV sources and enabled free channels together. Source names identify each channel."));
-    group("Live TV",{kUnifiedTv,kFreeTv,kFreeTvCountry,kFreeTvOpen});
+    set(kLiveRefresh,Kind::value,i18n::tr("Channel list auto-refresh"),i18n::tr(live_refresh::choices[live_refresh::index(live_refresh::hours(live_state_))].label),
+        i18n::tr("Refresh loaded free and personal channel lists while Max'd is open. Waits during playback and menus. Failed downloads keep the last working list. Guide updates are separate.")+
+        (live_refresh_failed_?std::string(" ")+i18n::tr("The last refresh failed; the previous channel list was kept."):""));
+    group("Live TV",{kUnifiedTv,kFreeTv,kFreeTvCountry,kFreeTvOpen,kLiveRefresh});
     set(kSportsEnable,Kind::toggle,sx::i18n::tr("Sports Hub"),"",sx::i18n::tr("Show Sports Hub in navigation for this profile. Off stops sports requests and keeps your selections."),sports_prefs_.enabled);
     const auto sports_state=sports_prefs_.enabled?"":sx::i18n::tr("Enable Sports Hub first");
     set(kSportsOpen,Kind::action,sx::i18n::tr("Open Sports Hub"),sports_state,sx::i18n::tr("Browse schedules, results and matching channels from your own Live TV sources."));
@@ -887,6 +891,7 @@ void Session::settings_activate(int row)
     if(row==kFreeTv){free_tv_toggle();return;}
     if(row==kFreeTvCountry){free_tv_country_menu();return;}
     if(row==kFreeTvOpen){free_tv_open();return;}
+    if(row==kLiveRefresh){live_refresh_menu();return;}
     if(row==kTvdb){tvdb_menu();return;}
     if(row==kConfigBackup){backup_menu();return;}
     if(row==kBuildIntegrity){integrity_menu();return;}
@@ -1515,6 +1520,7 @@ void Session::update(float dt, const Cursor &cursor)
     }
     poll_typing();
     search_suggestions_tick();
+    live_refresh_tick();
     media_flush_auth();
     live_guide_update(cursor.live);
     sports_tick(cursor.sports);

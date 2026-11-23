@@ -576,6 +576,16 @@
     "1.0.1.0: search with a multilingual controller keyboard and configured-catalog title suggestions.": "1.0.1.0：多语言手柄键盘和已配置目录的片名建议。",
     "Enable Top navigation in Settings > App & Updates for a dedicated Search tab.": "在设置 > 应用与更新中启用顶部导航，即可使用搜索标签。",
     "Personal IPTV and optional free channels share one guide; choose multiple countries for free TV.": "个人 IPTV 与可选免费频道共用节目指南，免费电视可选择多个国家。",
-    "Thai subtitle fallback and SIMKL sign-in fixes are included.": "包含泰语字幕回退字体和 SIMKL 登录修复。"
+    "Thai subtitle fallback and SIMKL sign-in fixes are included.": "包含泰语字幕回退字体和 SIMKL 登录修复。",
+    "Channel list auto-refresh": "频道列表自动刷新",
+    "Every hour": "每小时",
+    "Every 3 hours": "每 3 小时",
+    "Every 6 hours": "每 6 小时",
+    "Every 12 hours": "每 12 小时",
+    "Every 24 hours": "每 24 小时",
+    "Refresh loaded free and personal channel lists while Max'd is open. Waits during playback and menus. Failed downloads keep the last working list. Guide updates are separate.": "Max'd 打开时刷新已加载的免费和个人频道列表。播放或打开菜单时等待。下载失败时保留上次可用列表。节目指南单独更新。",
+    "The last refresh failed; the previous channel list was kept.": "上次刷新失败，已保留原频道列表。",
+    "Choose a channel-list refresh interval in Settings > Live TV. Playback is left alone.": "在设置 > 直播电视中选择频道刷新间隔。不会中断播放。",
+    "Multilingual search, configured-catalog title suggestions and an optional top menu with Search.": "多语言搜索、已配置目录的片名建议，以及带搜索标签的可选顶部菜单。"
   }
 }

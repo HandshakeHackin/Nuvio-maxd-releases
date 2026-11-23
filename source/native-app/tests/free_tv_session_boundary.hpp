@@ -2,6 +2,7 @@
 #pragma once
 #include "../src/free_tv.h"
 #include "../src/live_channel_prefs.hpp"
+#include "../src/live_refresh.hpp"
 #include "../ui/content.hpp"
 #include "../ui/overlays.hpp"
 #include <deque>
@@ -21,8 +22,11 @@ namespace sx {
 struct Session {
 #include "free_tv_session_fields.hpp"
 #include "free_tv_guide_fields.hpp"
+#include "live_refresh_session_fields.hpp"
  enum {kLive=2048};
  bool resuming_=false;
+ bool launch_open=false,sign_in_open=false,release_notes_open=false,keyboard_open=false;
+ bool typing() const {return keyboard_open;}
  void live_unified_open();std::map<std::string,std::string> live_source_guides_;
  bool profile_ready_=true,backup_busy_=false,watching=false,multiview_active=false,dropdown_open=false,live_loading_=false;
  unsigned profile_generation_=1,live_generation_=0,changed_=0;

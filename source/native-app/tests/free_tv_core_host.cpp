@@ -95,7 +95,7 @@ void free_tv_core_cases() {
  const auto partial=fetch(std::vector<std::string>{"us","uk"},nullptr,[&](const auto&,const auto*) {
   feature_http::Response r;if(++calls==1){r.status=200;r.body=json::array({rows.front()}).dump();}else r.error="private token";return r;
  });
- assert(partial.channels.size()==1&&partial.error.empty()&&!partial.notice.empty()&&partial.notice.find("private")==std::string::npos);
+ assert(partial.channels.size()==1&&partial.error.empty()&&!partial.notice.empty()&&partial.notice.find("private")==std::string::npos&&partial.partial_failure);
  calls=0;cancel=false;
  const auto stopped=fetch(std::vector<std::string>{"us","uk","de"},&cancel,[&](const auto&,const auto*) {
   feature_http::Response r;r.status=200;r.body=json::array({rows.front()}).dump();if(++calls==2)cancel=true;return r;

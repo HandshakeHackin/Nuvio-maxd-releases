@@ -1,5 +1,12 @@
 # Native Nuvio Max'd for PS5
 
+## Automatic channel updates
+
+Choose **Settings → Live TV → Channel list auto-refresh**: Off, 1, 3, 6, 12 or
+24 hours. The default is six hours, saved per profile. Loaded free/personal lists
+and the unified guide refresh while Max'd is open; playback and menus defer the
+request. Failures keep the previous working list. See [details](PLAYLIST_REFRESH.md).
+
 ## Search and navigation (#19)
 
 Search now has a multilingual controller keyboard and title suggestions from
@@ -8,9 +15,9 @@ or Options for the PS5 keyboard. Enable **Settings → App & Updates → Top
 navigation** for a dedicated Search tab. The choice is saved for each profile.
 See the [quick guide and testing checklist](SEARCH_NAVIGATION.md).
 
-## Thai subtitle test fix (#27)
+## Thai subtitle compatibility (#27)
 
-The test build adds a bundled fallback for Thai text with missing or incorrect
+A bundled fallback supports for Thai text with missing or incorrect
 language tags, including ASS files requesting unavailable fonts. Downloaded
 Windows-874/TIS-620 files marked as Thai are decoded correctly. Original fonts,
 styles and timing remain available. See [test details](TESTING-ISSUE27.md).
@@ -36,7 +43,7 @@ read-ahead bursts and gives subtitle downloads a longer connection window with
 one retry. Downloads remain bounded and cancel when leaving the video.
 See [test details](TESTING-ISSUE25.md). PS5 confirmation is still needed.
 
-## Next build: 1.0.0.28 — start page and TV controls
+## Start page and TV controls
 
 Choose a start page for each profile in Settings → App & Updates. Live TV now
 remembers each source's last group. Press Options on a channel to rename it,
@@ -105,8 +112,7 @@ thumbnails, descriptions and watch-progress indicators. Films show their poster
 beside metadata and stream cards. These layouts follow the artwork-focused
 approach in [Stremio-Plus](https://github.com/LoZazaMastro/Stremio-Plus).
 
-This folder contains the Nuvio Max'd source for the **v1.0.0.26 official
-release**. The OpenGL
+This folder contains the Nuvio Max'd **1.0.1.0 native PS5 source**. The OpenGL
 interface, addon requests and player run together in one process and are
 packaged as a single FFPFSC image.
 

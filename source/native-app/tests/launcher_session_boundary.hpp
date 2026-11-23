@@ -32,6 +32,7 @@ struct Session {
  void save_profile_settings(){if(!fail_profile_write)save_json(profile_dir_+"/profile-settings.json",json{{"start_page",prefs_.start_page}});}
  void open_dropdown(const std::string& t,const std::vector<std::string>& c,int index,std::function<void(int)> done){title=t;choices=c;selected=index;pick=std::move(done);dropdown.message.clear();}
  void ask_text(std::function<void(const std::string&)> done,const std::string&){enter=std::move(done);}
+ void live_refresh_load(){}
  void choose(int n){auto fn=pick;fn(n);}void type(const std::string& value){auto fn=enter;fn(value);}
  void live_reset(){++live_generation_;live_state_=json::object();live_channels_.clear();live_indices_.clear();live_group_.clear();live_query_.clear();live_filter_.clear();live_view_=0;}
  void iptv_load(){}

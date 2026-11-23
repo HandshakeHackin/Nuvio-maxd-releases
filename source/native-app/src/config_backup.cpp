@@ -7,6 +7,7 @@
 #include "../ui/start_page.hpp"
 #include "../ui/search_languages.hpp"
 #include "live_channel_prefs.hpp"
+#include "live_refresh.hpp"
 #include <algorithm>
 #include <cerrno>
 #include <fcntl.h>
@@ -69,7 +70,7 @@ Json project(const Json &j, const char *file) {
         out[k] = j[k];
   } else if (std::string(file) == "live-tv.json") {
     for (const auto *k : {"sources", "selected", "favorites", "recent",
-                          "guide_enabled", "guide_grid", "channel_edits", "last_groups",
+                          "guide_enabled", "guide_grid", "channel_edits", "last_groups", "playlist_refresh_hours",
                           "free_tv_enabled", "free_tv_country", "free_tv_countries", "free_tv_disclaimer_version", "free_tv_guide_offset_minutes"})
       if (j.contains(k))
         out[k] = j[k];
@@ -198,6 +199,7 @@ bool valid_file(const std::string &name, const std::string &bytes,
             return false;
           }
       }
+    if (!sx::live_refresh::valid(j)) { error="Invalid channel refresh interval."; return false; }
     for (const auto *k : {"guide_enabled", "guide_grid"})
       if (j.contains(k) && !j[k].is_boolean()) {
         error = "Invalid guide preference.";

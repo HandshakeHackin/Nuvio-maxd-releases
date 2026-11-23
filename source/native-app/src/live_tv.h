@@ -22,6 +22,7 @@ struct Result {
   std::string error;
   std::string guide_url{};
   std::string notice{}; // A usable partial public catalogue; error remains fatal.
+  bool partial_failure=false; // Distinguish missing sources from deliberate size limits.
 };
 // Bounded requests shared with the separate IPTV VOD library.
 HttpResponse download(const std::string&,const std::atomic<bool>*,bool redirects,size_t limit=max_bytes);

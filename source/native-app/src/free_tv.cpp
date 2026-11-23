@@ -128,6 +128,7 @@ live_tv::Result fetch(const std::vector<std::string>& regions,const std::atomic<
   }
  }
  if(cancel&&*cancel)return {{},unavailable};
+ out.partial_failure=failed;
  if(out.channels.empty())out.error=unavailable;
  else if(limited)out.notice="Free TV loading limit reached. Choose fewer countries or reload channels.";
  else if(failed)out.notice="Some countries could not be loaded. Reload channels to retry.";

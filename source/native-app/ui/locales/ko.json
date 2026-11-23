@@ -576,6 +576,16 @@
     "1.0.1.0: search with a multilingual controller keyboard and configured-catalog title suggestions.": "1.0.1.0: 다국어 컨트롤러 키보드와 설정된 카탈로그의 제목 추천.",
     "Enable Top navigation in Settings > App & Updates for a dedicated Search tab.": "설정 > 앱 및 업데이트에서 상단 탐색을 켜면 검색 탭을 사용할 수 있습니다.",
     "Personal IPTV and optional free channels share one guide; choose multiple countries for free TV.": "개인 IPTV와 선택형 무료 채널을 하나의 편성표에서 보고 무료 TV 국가를 여러 개 선택하세요.",
-    "Thai subtitle fallback and SIMKL sign-in fixes are included.": "태국어 자막 대체 글꼴과 SIMKL 로그인 수정이 포함됩니다."
+    "Thai subtitle fallback and SIMKL sign-in fixes are included.": "태국어 자막 대체 글꼴과 SIMKL 로그인 수정이 포함됩니다.",
+    "Channel list auto-refresh": "채널 목록 자동 새로고침",
+    "Every hour": "1시간마다",
+    "Every 3 hours": "3시간마다",
+    "Every 6 hours": "6시간마다",
+    "Every 12 hours": "12시간마다",
+    "Every 24 hours": "24시간마다",
+    "Refresh loaded free and personal channel lists while Max'd is open. Waits during playback and menus. Failed downloads keep the last working list. Guide updates are separate.": "Max'd가 열려 있을 때 불러온 무료 및 개인 채널 목록을 새로고칩니다. 재생 중이거나 메뉴가 열려 있으면 기다리며, 다운로드 실패 시 이전 목록을 유지합니다. 편성표는 별도로 갱신됩니다.",
+    "The last refresh failed; the previous channel list was kept.": "마지막 새로고침에 실패하여 이전 채널 목록을 유지했습니다.",
+    "Choose a channel-list refresh interval in Settings > Live TV. Playback is left alone.": "설정 > 라이브 TV에서 목록 갱신 주기를 선택하세요. 재생은 중단되지 않습니다.",
+    "Multilingual search, configured-catalog title suggestions and an optional top menu with Search.": "다국어 검색, 설정된 카탈로그의 제목 추천, 검색 탭이 있는 선택형 상단 메뉴."
   }
 }

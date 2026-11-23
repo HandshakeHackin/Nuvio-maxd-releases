@@ -92,6 +92,14 @@ info = {
     'presentationTiming': {'source': 'VideoOut completed flip process timestamp', 'paths': ['GPU command', 'CPU submit'], 'minimumSamples': 3, 'maximumVideoLeadMs': 40, 'maximumSampleDelayMs': 100, 'staleAfterMs': 1000, 'physicalTvReceiverLatencyMeasured': False, 'hardwareVerified': False},
     'vlc': json.loads((root/'third_party/vlc/UPSTREAM.json').read_text()),
     'dependencyRefresh20261113': json.loads((root/'dependencies.json').read_text())['dependencyRefresh20261113'],
+    'channelListRefresh': {
+        'intervalHours': [0, 1, 3, 6, 12, 24], 'defaultHours': 6, 'profileLocal': True,
+        'freeAndPersonalSources': True, 'unifiedView': True, 'startsAfterFirstLoad': True,
+        'whileAppOpenOnly': True, 'playbackAndMenusDeferred': True, 'automaticDownloadCancellation': True,
+        'failedOrPartialRefreshKeepsLastListAndGuide': True, 'manualRefreshWithOff': True,
+        'retryBackoffSeconds': [300, 600, 1200, 2400, 3600], 'encryptedBackup': True,
+        'hardwareVerified': False,
+    },
     'searchNavigation': {
         'issue': 19, 'keyboardLanguages': ['en', 'de', 'es', 'fr', 'he', 'ar', 'ru', 'th', 'ja', 'ko', 'zh-Hans'],
         'chineseAndKanjiConversion': 'PS5 system IME', 'hangulComposition': True,

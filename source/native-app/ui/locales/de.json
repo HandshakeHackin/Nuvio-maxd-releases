@@ -1487,6 +1487,16 @@
     "1.0.1.0: search with a multilingual controller keyboard and configured-catalog title suggestions.": "1.0.1.0: Mehrsprachige Controller-Tastatur und Titelvorschläge aus deinen Katalogen.",
     "Enable Top navigation in Settings > App & Updates for a dedicated Search tab.": "Obere Navigation unter Einstellungen > App & Updates aktivieren, um einen Such-Tab zu nutzen.",
     "Personal IPTV and optional free channels share one guide; choose multiple countries for free TV.": "Eigene IPTV- und optionale Gratis-Sender in einem Programmführer; mehrere Länder für Gratis-TV auswählbar.",
-    "Thai subtitle fallback and SIMKL sign-in fixes are included.": "Korrekturen für Thai-Untertitel und die SIMKL-Anmeldung sind enthalten."
+    "Thai subtitle fallback and SIMKL sign-in fixes are included.": "Korrekturen für Thai-Untertitel und die SIMKL-Anmeldung sind enthalten.",
+    "Channel list auto-refresh": "Senderliste automatisch laden",
+    "Every hour": "Jede Stunde",
+    "Every 3 hours": "Alle 3 Stunden",
+    "Every 6 hours": "Alle 6 Stunden",
+    "Every 12 hours": "Alle 12 Stunden",
+    "Every 24 hours": "Alle 24 Stunden",
+    "Refresh loaded free and personal channel lists while Max'd is open. Waits during playback and menus. Failed downloads keep the last working list. Guide updates are separate.": "Aktualisiert geladene Gratis- und eigene Senderlisten, solange Max'd geöffnet ist. Wartet bei Wiedergabe und Menüs. Bei Fehlern bleibt die letzte Liste erhalten. Programmführer werden separat aktualisiert.",
+    "The last refresh failed; the previous channel list was kept.": "Die letzte Aktualisierung ist fehlgeschlagen; die vorige Senderliste bleibt erhalten.",
+    "Choose a channel-list refresh interval in Settings > Live TV. Playback is left alone.": "Aktualisierungsintervall unter Einstellungen > Live-TV wählen. Die Wiedergabe wird nicht unterbrochen.",
+    "Multilingual search, configured-catalog title suggestions and an optional top menu with Search.": "Mehrsprachige Suche, Titelvorschläge aus deinen Katalogen und ein optionales oberes Menü mit Suche."
   }
 }

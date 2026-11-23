@@ -14,6 +14,7 @@
 #include "free_tv.h"
 #include "board.hpp"
 #include "search_keyboard_draw.hpp"
+#include "live_refresh.hpp"
 #include "top_navigation.hpp"
 #include "library.hpp"
 #include "addons.hpp"
@@ -83,7 +84,12 @@ int main(int argc, char** argv) {
     };
     const auto backdrop_texture=artwork(1920,1080,0);
     const auto poster_texture=artwork(480,720,3);
-    if(mode=="search-keyboard"||mode=="search-keyboard-he"||mode=="search-keyboard-th"||mode=="search-keyboard-ko"||mode=="top-navigation"||mode=="top-navigation-last") {
+    if(mode=="playlist-refresh") {
+        sx::DropdownState d;d.title=sx::i18n::tr("Channel list auto-refresh");d.active=d.selected=3;d.wide=true;
+        for(const auto& choice:sx::live_refresh::choices)d.options.emplace_back(sx::i18n::tr(choice.label));
+        d.message=sx::i18n::tr("Refresh loaded free and personal channel lists while Max'd is open. Waits during playback and menus. Failed downloads keep the last working list. Guide updates are separate.");
+        sx::draw_dropdown(list,env,d,1);
+    }else if(mode=="search-keyboard"||mode=="search-keyboard-he"||mode=="search-keyboard-th"||mode=="search-keyboard-ko"||mode=="top-navigation"||mode=="top-navigation-last") {
         if(mode.starts_with("search-keyboard")){
             sx::search_keyboard::State entry;entry.title=sx::i18n::tr("Search movies, series and more");entry.language=sx::search_keyboard::language_index(mode=="search-keyboard-he"?"he":mode=="search-keyboard-th"?"th":mode=="search-keyboard-ko"?"ko":sx::i18n::code());entry.text=entry.language==4?"שלום":entry.language==5?"العربية":entry.language==7?"ภาษาไทย":entry.language==9?"한국어":"Dune";entry.status=sx::i18n::tr("From your configured catalogs");entry.suggestions={{"tt1","movie","Dune: Part Two","2024"},{"tt2","series","Dune: Prophecy","2024"}};entry.row=2;entry.col=4;
             sx::draw_search_keyboard(list,env,entry);

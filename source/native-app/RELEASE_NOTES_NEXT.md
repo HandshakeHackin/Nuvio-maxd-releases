@@ -1,3 +1,12 @@
+# Automatic channel-list refresh
+
+- Add Off, 1, 3, 6, 12 and 24-hour choices in Settings → Live TV, with a six-hour
+  per-profile default and encrypted-backup support.
+- Refresh the currently loaded free/personal source or unified list while the app
+  is open. Avoid overlapping downloads and defer/cancel during playback or menus.
+- Keep channels and guides on complete/partial refresh failure; reject stale
+  source/profile replies and keep the existing loader bounds and private copies.
+
 # Search and navigation (#19)
 
 - Multilingual controller search keyboard, with quick language switching and

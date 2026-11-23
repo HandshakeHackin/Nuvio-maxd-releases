@@ -41,8 +41,8 @@ if [ -z "${PREVIEW_MODES:-}" ]; then
     modes+=(age-movie age-series age-fallback age-missing age-country ar-age-country ar-age-movie zh-Hans-age-series ja-age-movie ko-age-series)
     modes+=(integrity-warning integrity-credits integrity-verified)
     modes+=(start-page channel-options backup-channels hidden-channels)
-    modes+=(search-keyboard search-keyboard-he search-keyboard-th search-keyboard-ko top-navigation top-navigation-last)
-    for language in de es fr ar zh-Hans ja ko;do modes+=("$language-search-keyboard" "$language-top-navigation-last");done
+    modes+=(playlist-refresh search-keyboard search-keyboard-he search-keyboard-th search-keyboard-ko top-navigation top-navigation-last)
+    for language in de es fr ar zh-Hans ja ko;do modes+=("$language-playlist-refresh" "$language-search-keyboard" "$language-top-navigation-last");done
     modes+=(free-tv-settings free-tv-disclaimer free-tv-countries unified-guide)
     for language in de es fr ar zh-Hans ja ko;do modes+=("$language-free-tv-settings" "$language-free-tv-disclaimer" "$language-free-tv-countries" "$language-unified-guide");done
     for language in de es fr ar zh-Hans ja ko;do modes+=("$language-start-page" "$language-channel-options" "$language-backup-channels" "$language-hidden-channels");done

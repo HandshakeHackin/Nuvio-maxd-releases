@@ -576,6 +576,16 @@
     "1.0.1.0: search with a multilingual controller keyboard and configured-catalog title suggestions.": "1.0.1.0 : clavier multilingue et suggestions issues de vos catalogues.",
     "Enable Top navigation in Settings > App & Updates for a dedicated Search tab.": "Activez Navigation supérieure dans Paramètres > Application et mises à jour pour l’onglet Recherche.",
     "Personal IPTV and optional free channels share one guide; choose multiple countries for free TV.": "Votre IPTV et les chaînes gratuites partagent un guide ; choisissez plusieurs pays.",
-    "Thai subtitle fallback and SIMKL sign-in fixes are included.": "Inclut les corrections des sous-titres thaïs et de la connexion SIMKL."
+    "Thai subtitle fallback and SIMKL sign-in fixes are included.": "Inclut les corrections des sous-titres thaïs et de la connexion SIMKL.",
+    "Channel list auto-refresh": "Actualisation auto des chaînes",
+    "Every hour": "Toutes les heures",
+    "Every 3 hours": "Toutes les 3 heures",
+    "Every 6 hours": "Toutes les 6 heures",
+    "Every 12 hours": "Toutes les 12 heures",
+    "Every 24 hours": "Toutes les 24 heures",
+    "Refresh loaded free and personal channel lists while Max'd is open. Waits during playback and menus. Failed downloads keep the last working list. Guide updates are separate.": "Actualise les listes gratuites et personnelles chargées quand Max'd est ouvert. Attend pendant la lecture et les menus. En cas d’échec, conserve la dernière liste. Le guide se met à jour séparément.",
+    "The last refresh failed; the previous channel list was kept.": "La dernière actualisation a échoué ; la liste précédente est conservée.",
+    "Choose a channel-list refresh interval in Settings > Live TV. Playback is left alone.": "Choisissez l’intervalle dans Paramètres > TV en direct. La lecture n’est pas interrompue.",
+    "Multilingual search, configured-catalog title suggestions and an optional top menu with Search.": "Recherche multilingue, suggestions de vos catalogues et menu supérieur avec Recherche en option."
   }
 }

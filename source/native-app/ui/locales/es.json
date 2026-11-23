@@ -576,6 +576,16 @@
     "1.0.1.0: search with a multilingual controller keyboard and configured-catalog title suggestions.": "1.0.1.0: teclado multilingüe y sugerencias de tus catálogos.",
     "Enable Top navigation in Settings > App & Updates for a dedicated Search tab.": "Activa Navegación superior en Ajustes > App y actualizaciones para tener una pestaña Buscar.",
     "Personal IPTV and optional free channels share one guide; choose multiple countries for free TV.": "Tu IPTV y los canales gratuitos opcionales comparten guía; elige varios países.",
-    "Thai subtitle fallback and SIMKL sign-in fixes are included.": "Incluye correcciones para subtítulos tailandeses y el inicio de sesión de SIMKL."
+    "Thai subtitle fallback and SIMKL sign-in fixes are included.": "Incluye correcciones para subtítulos tailandeses y el inicio de sesión de SIMKL.",
+    "Channel list auto-refresh": "Actualización automática de canales",
+    "Every hour": "Cada hora",
+    "Every 3 hours": "Cada 3 horas",
+    "Every 6 hours": "Cada 6 horas",
+    "Every 12 hours": "Cada 12 horas",
+    "Every 24 hours": "Cada 24 horas",
+    "Refresh loaded free and personal channel lists while Max'd is open. Waits during playback and menus. Failed downloads keep the last working list. Guide updates are separate.": "Actualiza las listas gratuitas y personales cargadas mientras Max'd está abierto. Espera durante la reproducción y los menús. Si falla, conserva la última lista. La guía se actualiza por separado.",
+    "The last refresh failed; the previous channel list was kept.": "La última actualización falló; se conservó la lista anterior.",
+    "Choose a channel-list refresh interval in Settings > Live TV. Playback is left alone.": "Elige el intervalo en Ajustes > TV en vivo. La reproducción no se interrumpe.",
+    "Multilingual search, configured-catalog title suggestions and an optional top menu with Search.": "Búsqueda multilingüe, sugerencias de tus catálogos y menú superior opcional con Buscar."
   }
 }

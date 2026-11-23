@@ -5,12 +5,16 @@
 #include <sys/stat.h>
 #include "config_backup.h"
 void free_tv_core_cases();
+void live_refresh_cases(const std::filesystem::path&);
 static int public_requests=0;
+bool public_fails=false,public_fails_uk=false;
 static std::vector<std::string> guide_paths;
 namespace feature_http {
 Response perform(const Query& q,const std::atomic<bool>* cancel) {
  ++public_requests;assert(q.url.starts_with(free_tv::data_root)&&q.headers.empty()&&q.method=="GET"&&q.body.empty());
- Response r;if(cancel&&*cancel){r.error="cancelled";return r;}r.status=200;
+ Response r;if(cancel&&*cancel){r.error="cancelled";return r;}
+ if(public_fails||(public_fails_uk&&q.url.ends_with("c/uk.json"))){r.error="private fixture failure";return r;}
+ r.status=200;
  r.body=q.url.ends_with("countries.json")?R"({"us":{"name":"United States"},"uk":{"name":"United Kingdom"}})":R"([{"id":"fixture.us","n":"Fixture TV","c":["news"],"s":[{"u":"https://public.invalid/live.m3u8","o":"iptv","k":1}]}])";
  if(q.url.ends_with("c/uk.json")){auto rows=json::parse(r.body);rows[0]["id"]="fixture.uk";r.body=rows.dump();}
  if(q.url.find("/g/")!=std::string::npos){guide_paths.push_back(q.url);const auto now=now_epoch_ms()/1000;r.body=json::array({{{"s",now-30},{"e",now+600},{"t","Fixture schedule"}}}).dump();}
@@ -92,5 +96,6 @@ int main(int argc,char** argv) {
  auto previous=s.live_state_;s.profile_dir_=(root/"missing").string();s.free_tv_toggle();s.choose(1);
  assert(s.live_state_==previous&&s.live_source_=="own"&&g_tasks.work.empty());
  s.profile_dir_=(root/"b").string();
+ live_refresh_cases(root/"refresh");
  std::cout<<"Free TV session: disclaimer acceptance/cancel, private save, rollback, country changes, personal-source preservation, disable/late replies and profile boundaries passed\n";
 }

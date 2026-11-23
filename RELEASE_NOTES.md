@@ -2,6 +2,7 @@
 
 - **Free live TV:** enable it in Settings → Live TV, accept the disclaimer and choose one or more countries. Channels come from independent providers; availability and playback quality vary.
 - **One TV guide:** browse personal IPTV sources and enabled free channels together, with each channel's own guide, favorites and playback details. Four-screen TV remains available.
+- **Automatic channel updates:** choose Off, 1, 3, 6, 12 or 24 hours in Settings → Live TV. Refresh runs while Max'd is open, waits during playback and keeps the last working list if a download fails.
 - **Easier search:** multilingual controller keyboard, title suggestions from your configured catalogues, and an optional top menu with a Search tab.
 - **Fixes and TV controls:** SIMKL phone/QR sign-in and Thai subtitles, plus a per-profile start page, remembered TV groups, channel rename/hide controls and backup channel selection.
 

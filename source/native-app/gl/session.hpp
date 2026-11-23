@@ -28,6 +28,7 @@
 #include "tasks.h"
 #include "stream_result_cache.hpp"
 #include "live_tv.h"
+#include "live_refresh.hpp"
 #include "free_tv.h"
 #include "unified_tv.h"
 #include "live_guide.h"
@@ -528,6 +529,15 @@ class Session
     void live_load();
     bool live_save();
     void live_build();
+    void live_refresh_menu();
+    void live_refresh_reset();
+    void live_refresh_load();
+    void live_refresh_tick();
+    bool live_refresh_begin();
+    bool live_refresh_blocked() const;
+    void live_refresh_complete(live_refresh::Outcome);
+    live_refresh::Timer live_refresh_timer_;
+    bool live_refresh_requested_=false,live_refresh_inflight_=false,live_refresh_failed_=false;
     void live_guide_reset();
     void live_guide_unified_update(int);
     const live_guide::Listings* live_guide_programmes(const live_tv::Channel&) const;

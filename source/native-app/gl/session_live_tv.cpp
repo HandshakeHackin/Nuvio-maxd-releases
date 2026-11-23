@@ -34,6 +34,7 @@ bool contains(const json &a, const std::string &s) {
 }
 } // namespace
 void Session::live_reset() {
+  live_refresh_reset();
   if(free_tv_cancel_)*free_tv_cancel_=true;
   ++free_tv_generation_;free_tv_country_loading_=false;free_tv_countries_.clear();
   iptv_reset();
@@ -70,6 +71,7 @@ void Session::live_load() {
     live_state_["recent"] = json::array();
   live_channel_prefs::normalise(live_state_);
   free_tv::normalise(live_state_);
+  live_refresh_load();
   live_source_ = jstr(live_state_, "selected");
   if(live_source_.empty()&&!free_tv::sources(live_state_).empty())live_source_=unified_tv::source_id;
   if(live_source_==free_tv::source_id&&!free_tv::enabled(live_state_)) {
@@ -198,7 +200,10 @@ void Session::live_build() {
   changed_ |= kLive;
 }
 void Session::live_reload() {
-  live_guide_reset();live_guide_auto_url_.clear();live_source_guides_.clear();
+  const bool automatic=live_refresh_begin();
+  if (!automatic) {
+    live_guide_reset();live_guide_auto_url_.clear();live_source_guides_.clear();
+  }
   iptv_probe();
   if (!profile_ready_) {
     say(sx::i18n::tr("Choose a profile first"), 5);
@@ -234,21 +239,29 @@ void Session::live_reload() {
        if(view==unified_tv::source_id)return unified_tv::fetch(state,cancel.get(),fetcher);
        unified_tv::Result result;result.playlist=fetcher(source,cancel.get());return result;
       },
-      [this, generation, profile](unified_tv::Result &loaded) {
+      [this, generation, profile, automatic, cancel](unified_tv::Result &loaded) {
         auto& r=loaded.playlist;
         if (generation != live_generation_ || profile != profile_generation_)
           return;
         live_loading_ = false;
-        if (!r.error.empty()) {
-          say(i18n::tr(r.error.c_str()), 10, true);
+        if (automatic && (*cancel || live_refresh_blocked())) {
+          live_refresh_complete(live_refresh::Outcome::deferred);
           live_build();
           return;
         }
+        if (!r.error.empty() || (automatic && r.partial_failure && !live_channels_.empty())) {
+          live_refresh_complete(live_refresh::Outcome::failure);
+          if (!automatic) say(i18n::tr(r.error.c_str()), 10, true);
+          live_build();
+          return;
+        }
+        if (automatic) live_guide_reset();
         live_guide_auto_url_ = r.guide_url;live_source_guides_=std::move(loaded.guide_urls);
         live_channels_ = std::move(r.channels);
+        live_refresh_complete(live_refresh::Outcome::success);
         if(!live_group_.empty()&&std::none_of(live_channels_.begin(),live_channels_.end(),[this](const auto& c){return c.in_group(live_group_);}))live_group_.clear();
         live_build();
-        say(i18n::tr(r.notice.empty()?"Live TV channels loaded":r.notice.c_str()),r.notice.empty()?4:10);
+        if (!automatic) say(i18n::tr(r.notice.empty()?"Live TV channels loaded":r.notice.c_str()),r.notice.empty()?4:10);
       });
 }
 void Session::live_groups() {

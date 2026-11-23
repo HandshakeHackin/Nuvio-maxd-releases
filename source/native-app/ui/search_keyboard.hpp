@@ -87,7 +87,11 @@ struct State {
   if(std::string_view(languages[language].code)=="ko"&&c>=0xac00&&c<=0xd7a3){auto n=c-0xac00,t=n%28,v=(n%588)/28;
    if(t){char32_t keep=0;for(const auto& p:pairs)if(p.result==finals[t])keep=p.a;c=c-t+(keep?finals.find(keep):0);}
    else {char32_t keep=0;for(const auto& p:pairs)if(p.result==vowels[v])keep=p.a;if(keep)c=c-v*28+vowels.find(keep)*28;else c=initials[n/588];}}
-  else points.pop_back();text.clear();for(auto cp:points)text+=utf8(cp);
+  else {
+   points.pop_back();
+  }
+  text.clear();
+  for(auto cp:points)text+=utf8(cp);
  }
  Event input(const hui::InputFrame& in){
   using hui::Action;using hui::Direction;clamp();
