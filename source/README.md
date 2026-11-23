@@ -1,7 +1,11 @@
 # Nuvio Max'd source
 
-Matching source for **1.0.1.0**, the native PS5 release with free live TV,
-a unified guide, automatic channel refresh and multilingual search.
+Source for the **1.0.1.1 issue #25 test**, based on stable 1.0.1.0. It adds
+a subtitle/stream-resource follow-up while preserving free live TV, the unified
+guide, automatic channel refresh and multilingual search.
+
+[Test changes and console checklist](native-app/TESTING-ISSUE25-FOLLOWUP.md).
+The download links below refer to stable 1.0.1.0; this test is delivered in #25.
 
 - [Downloads and installation](https://github.com/HandshakeHackin/Nuvio-maxd-releases/blob/v1.0.1.0-native/README.md)
 - [Native app, features and build guide](native-app/README.md)
