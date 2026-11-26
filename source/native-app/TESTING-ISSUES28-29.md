@@ -25,6 +25,6 @@ Cache capacity remains 1/2/4/6 GiB. IPC uses at most 256 KiB per chunk, a five-s
 
 ## Verification
 
-Regression coverage includes the actual provider request/execute pipeline and stale-path recovery; the production cache helper/client over a loader socket fixture; sparse six-GiB bounds, invalid protocol messages, isolated sessions, anonymous cleanup, missing mounts, directory symlinks and a killed helper; and real torrent-engine verified-piece recovery on cache open/write/read failures with an unchanged internal-cache sentinel.
+Regression coverage includes the actual provider request/execute pipeline and stale-path recovery; the production cache helper/client over a loader socket fixture; sparse six-GiB bounds, invalid protocol messages, isolated sessions, anonymous cleanup, missing mounts, directory symlinks and a killed helper; and real torrent-engine verified-piece recovery on cache open/write/read failures with an unchanged internal-cache sentinel. Cached readers also reject cancellation and shutdown before accessing the closed cache.
 
 Delivery requires the complete PS5 app build, matching ZIP/native-image/source checks, existing functional/player regressions and honest hosted CI evidence. These checks do not establish physical console compatibility. Pinned dependency versions remain unchanged; the dependency audit's proposed upgrades are separate work.

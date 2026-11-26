@@ -730,10 +730,12 @@ bool slot_write(Torrent* t, int slot, const std::string& data) {
 }
 
 bool slot_read(Torrent* t, int slot, int64_t off, uint8_t* buf, int n) {
+	if (slot < 0 || slot >= t->nslots) return false;
 	if (t->cache) {
 		if (t->cache->read(int64_t(slot) * t->plen + off, buf, size_t(n))) return true;
 		cache_to_ram(t); return false;
 	}
+	if (size_t(slot) >= t->ram.size()) return false;
 	const std::string& s = t->ram[size_t(slot)];
 	if (off + n > int64_t(s.size())) return false;
 	memcpy(buf, s.data() + off, size_t(n));
@@ -2414,7 +2416,7 @@ void Engine::shutdown() {
 	stop_web_drop();
 	{
 		std::lock_guard<std::mutex> lock(I.mu);
-		if (!I.running) { for (auto& t : I.torrents) t->cache.reset(); return; }
+		if (!I.running) { for (auto& t : I.torrents) { t->stopped = true; t->cache.reset(); } return; }
 		I.quit = true;
 		for (auto& t : I.torrents) t->stopped = true;
 	}
@@ -2967,6 +2969,7 @@ int Engine::read(const std::shared_ptr<Torrent>& t, int reader_id, int file_idx,
 	Impl& I = impl();
 	std::unique_lock<std::mutex> lock(I.mu);
 	if (!t || file_idx < 0 || size_t(file_idx) >= t->files.size() || pos < 0 || n < 0 || (n > 0 && !buf)) return -4;
+	if (t->stopped) return -2;
 	const FileInfo& f = t->files[size_t(file_idx)];
 	if (pos >= f.size || n <= 0) return 0;
 	int64_t abs = f.offset + pos;
@@ -2995,11 +2998,12 @@ int Engine::read(const std::shared_ptr<Torrent>& t, int reader_id, int file_idx,
 	int64_t in_piece = abs - int64_t(piece) * t->plen;
 	int64_t k = std::min<int64_t>({int64_t(n), t->piece_size(piece) - in_piece, f.size - pos});
 	for (;;) {
-		while (!t->have[size_t(piece)]) {
-			if (t->stopped) return -2;
-			if ((abort && abort->load()) || (read_interrupt && read_interrupt->load())) return -1;
-			if (deadline > 0 && now_seconds() >= deadline) return -3;
+		if (t->stopped) return -2;
+		if ((abort && abort->load()) || (read_interrupt && read_interrupt->load())) return -1;
+		if (deadline > 0 && now_seconds() >= deadline) return -3;
+		if (!t->have[size_t(piece)]) {
 			I.cv.wait_for(lock, std::chrono::milliseconds(50));
+			continue;
 		}
 		const int slot = t->slot_of[size_t(piece)];
 		const bool had_file = bool(t->cache);

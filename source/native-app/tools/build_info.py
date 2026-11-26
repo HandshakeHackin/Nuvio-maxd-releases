@@ -60,7 +60,8 @@ info = {
         'socketTimeoutSeconds': 1, 'ramFallbackMaxBytes': 402653184,
         'fallbackWritesInternalRollingCache': False, 'lostPiecesRequestedAgain': True,
         'settingsAndMetadataRemainInternal': True, 'cachePrivatePerSession': True,
-        'closeOnStopAndProfileSwitch': True, 'cacheChangesDuringPlayback': False,
+        'closeOnStopAndProfileSwitch': True, 'cachedReaderStopAndCancelGuard': True,
+        'cacheChangesDuringPlayback': False,
         'hardwareVerified': False,
     },
     'missingProviderRecovery': {

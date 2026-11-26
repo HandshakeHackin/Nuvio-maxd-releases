@@ -695,7 +695,7 @@ int main(int argc, char** argv) {
         info.d["pieces"]=BValue(std::string(reinterpret_cast<char*>(digest),20));
         BValue torrent=BValue::dict();torrent.d["info"]=info;torrent.d["url-list"]=BValue(std::string("http://fixture.invalid/video.mkv"));
         const auto internal=test_dir+"/torrent-cache.bin";assert(write_file(internal,"keep-internal-cache"));
-        for(int failure=0;failure<3;++failure) {
+        for(int failure=0;failure<4;++failure) {
             eng.shutdown();auto faults=std::make_shared<CacheFaults>();faults->write=failure==1;
             assert(eng.set_cache_storage(0,[failure,faults](int mount,int64_t limit,std::string&)->std::unique_ptr<CacheFile>{
                 assert(mount==0 && limit>=(int64_t(512)<<20) && limit<=(int64_t(6)<<30));
@@ -712,13 +712,22 @@ int main(int argc, char** argv) {
             faults->read=failure==2;
             std::string data(verified_seed.size(),'\0');std::atomic<bool> cancel{false};
             assert(eng.read(handle,reader,0,0,reinterpret_cast<uint8_t*>(data.data()),int(data.size()),&cancel,nullptr,now_seconds()+4)==int(data.size()));
-            assert(data==verified_seed && eng.cache_status().find("RAM")!=std::string::npos);
+            assert(data==verified_seed);
+            if(failure<3)assert(eng.cache_status().find("RAM")!=std::string::npos);
+            else {
+                assert(eng.cache_status().empty());
+                cancel=true;
+                assert(eng.read(handle,reader,0,0,reinterpret_cast<uint8_t*>(data.data()),1,&cancel)==-1);
+                cancel=false;
+                eng.shutdown();
+                assert(eng.read(handle,reader,0,0,reinterpret_cast<uint8_t*>(data.data()),1,&cancel)==-2);
+            }
             std::string unchanged;assert(read_file(internal,unchanged)&&unchanged=="keep-internal-cache");
             eng.close_reader(handle,reader);handle.reset();assert(eng.clear_cache(&error));
             if(failure)assert(faults->destroyed==1);
         }
         eng.shutdown();assert(eng.set_cache_storage(-1));
-        std::cout<<"USB torrent engine: open/write/read failure, verified RAM recovery, active-reader refusal and no internal rolling-cache writes passed\n";
+        std::cout<<"USB torrent engine: open/write/read failure, verified RAM recovery, cached-reader cancellation/shutdown, active-reader refusal and no internal rolling-cache writes passed\n";
     }
     // Actual recovery/menu/diagnostic methods with a controlled playback boundary.
     {
