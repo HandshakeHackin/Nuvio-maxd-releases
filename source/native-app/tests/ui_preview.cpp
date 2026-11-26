@@ -290,9 +290,16 @@ int main(int argc, char** argv) {
         const auto& scene=scenes.at("source-preferences");sx::DropdownState d;d.title=scene.at("title");d.message=scene.at("message");d.options=scene.at("options").get<std::vector<std::string>>();d.selected=mode=="source-preferences-last"?int(d.options.size())-1:0;
         sx::draw_dropdown(list,env,d,1);
     }
-    else if(mode=="torrent-resume" || mode=="torrent-settings" || mode=="playback-recovery") {
+    else if(mode=="torrent-resume" || mode=="torrent-settings" || mode=="playback-recovery" ||
+            mode=="torrent-cache-location" || mode=="torrent-cache-location-last") {
         std::ifstream input(root+"/test-output/torrent-streaming/ui-scenes.json");nlohmann::json scenes;input>>scenes;
-        const auto& scene=scenes.at(mode);sx::DropdownState d;d.title=scene.at("title");d.message=scene.at("message");d.options=scene.at("options").get<std::vector<std::string>>();d.selected=0;
+        const auto& scene=scenes.at(mode=="torrent-cache-location-last"?"torrent-cache-location":mode);sx::DropdownState d;
+        d.title=sx::i18n::tr(scene.at("title").get<std::string>());
+        d.message=sx::i18n::tr(scene.at("message").get<std::string>());d.wide=scene.value("wide",false);
+        d.options=scene.at("options").get<std::vector<std::string>>();
+        for(auto& option:d.options)option=sx::i18n::tr(option);
+        d.selected=mode=="torrent-cache-location-last"?int(d.options.size())-1:0;
+        if(mode.find("torrent-cache-location")==0 && fonts.regular.font->wrap(d.message,26.0f,772.0f).size()>3)return 22;
         sx::draw_dropdown(list,env,d,1);
     }
     else if(mode=="diagnostic-summary") {

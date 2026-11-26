@@ -17,7 +17,8 @@ jobs:
     defaults:
       run:
         working-directory: source
-    timeout-minutes: 35
+    # Full functional checks plus all language previews exceeded 35 minutes.
+    timeout-minutes: 50
     steps:
       - uses: actions/checkout@v7
       - name: Install host dependencies

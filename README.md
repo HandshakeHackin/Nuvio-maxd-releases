@@ -12,7 +12,7 @@
   <a href="https://github.com/HandshakeHackin/Nuvio-maxd-releases/issues">Report a problem</a>
 </p>
 
-**Issue #25 test branch: 1.0.1.1** — an unconfirmed subtitle/network follow-up. See [test details](source/native-app/TESTING-ISSUE25-FOLLOWUP.md). The stable release remains 1.0.1.0.
+**Issues #28 / #29 test branch: 1.0.1.2** — USB torrent cache selection and a possible recovery for missing provider scripts. See [test instructions](source/native-app/TESTING-ISSUES28-29.md). This test includes the earlier issue #25 follow-up; stable remains 1.0.1.0.
 
 **Latest release: 1.0.1.0** — free live TV, a unified guide, selectable channel-list refresh, multilingual search and a choice of menu layout.
 

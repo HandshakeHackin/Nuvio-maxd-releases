@@ -14,7 +14,7 @@ permissions:
 jobs:
   account-and-transport:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 50
     steps:
       - uses: actions/checkout@v4
       - name: Install host dependencies

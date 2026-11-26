@@ -620,6 +620,7 @@ class Session
     int torrent_view_ = 0;
     std::shared_ptr<std::atomic<bool>> torrent_cancel_;
     void torrent_set_cache(int gb);
+    void torrent_set_storage(int mount);
     void torrent_poll_drop();
     bool torrent_drop_open_ = false;
     bool hdr_fallback_session_ = false;

@@ -586,6 +586,14 @@
     "Refresh loaded free and personal channel lists while Max'd is open. Waits during playback and menus. Failed downloads keep the last working list. Guide updates are separate.": "Max'd 打开时刷新已加载的免费和个人频道列表。播放或打开菜单时等待。下载失败时保留上次可用列表。节目指南单独更新。",
     "The last refresh failed; the previous channel list was kept.": "上次刷新失败，已保留原频道列表。",
     "Choose a channel-list refresh interval in Settings > Live TV. Playback is left alone.": "在设置 > 直播电视中选择频道刷新间隔。不会中断播放。",
-    "Multilingual search, configured-catalog title suggestions and an optional top menu with Search.": "多语言搜索、已配置目录的片名建议，以及带搜索标签的可选顶部菜单。"
+    "Multilingual search, configured-catalog title suggestions and an optional top menu with Search.": "多语言搜索、已配置目录的片名建议，以及带搜索标签的可选顶部菜单。",
+    "Cache location: ": "缓存位置：",
+    "Could not change torrent cache storage.": "无法更改缓存存储位置。",
+    "Internal SSD": "内部 SSD",
+    "Torrent cache location": "种子缓存位置",
+    "Torrent cache location saved.": "缓存位置已保存。",
+    "USB cache failed; using bounded RAM. No internal cache writes.": "USB 缓存失败；使用有上限的内存，不向内部 SSD 写入缓存。",
+    "USB cache requires the payload loader on port 9021. Keep the drive connected; unavailable storage uses RAM.": "USB 缓存需要端口 9021 上的载荷加载器。请保持驱动器连接；存储不可用时使用内存。",
+    "USB cache unavailable; using bounded RAM. No internal cache writes.": "USB 缓存不可用；使用有上限的内存，不向内部 SSD 写入缓存。"
   }
 }

@@ -34,6 +34,7 @@ struct Session {
     ::Stream w_stream_;std::vector<::Stream> d_streams_;
     enum {kDetail=2};
     void torrent_set_cache(int gb);
+    void torrent_set_storage(int mount);
     void torrent_poll_drop();
     bool torrent_drop_open_=false,profile_ready_=true;
     int profile_generation_=0;
@@ -89,7 +90,7 @@ struct Session {
     DetailContent detail;
     SignInState sign_in;
     bool sign_in_open = false;
-    struct { std::string message; } dropdown;
+    struct { std::string message; bool wide=false; } dropdown;
     struct {
         double time = 42.0, duration_value = 120.0;
         double position() const { return time; }
@@ -111,6 +112,7 @@ struct Session {
     void open_dropdown(const std::string &title, const std::vector<std::string> &options, int,
                        std::function<void(int)> chosen) {
         dropdown_title=title;
+        dropdown.message.clear();dropdown.wide=false;
         choices = options;
         pick = std::move(chosen);
     }

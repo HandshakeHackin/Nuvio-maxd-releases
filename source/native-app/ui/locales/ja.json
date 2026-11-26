@@ -586,6 +586,14 @@
     "Refresh loaded free and personal channel lists while Max'd is open. Waits during playback and menus. Failed downloads keep the last working list. Guide updates are separate.": "Max'd起動中に読み込み済みの無料・個人チャンネル一覧を更新。再生中やメニュー表示中は待機し、失敗時は前の一覧を保持します。番組表は別途更新されます。",
     "The last refresh failed; the previous channel list was kept.": "前回の更新に失敗したため、以前のチャンネル一覧を保持しています。",
     "Choose a channel-list refresh interval in Settings > Live TV. Playback is left alone.": "設定 > ライブTVで一覧の更新間隔を選べます。再生は中断されません。",
-    "Multilingual search, configured-catalog title suggestions and an optional top menu with Search.": "多言語検索、設定済みカタログの作品候補、検索タブ付きの任意の上部メニュー。"
+    "Multilingual search, configured-catalog title suggestions and an optional top menu with Search.": "多言語検索、設定済みカタログの作品候補、検索タブ付きの任意の上部メニュー。",
+    "Cache location: ": "キャッシュの保存先: ",
+    "Could not change torrent cache storage.": "キャッシュの保存先を変更できませんでした。",
+    "Internal SSD": "内蔵 SSD",
+    "Torrent cache location": "Torrent キャッシュの保存先",
+    "Torrent cache location saved.": "キャッシュの保存先を保存しました。",
+    "USB cache failed; using bounded RAM. No internal cache writes.": "USB キャッシュに失敗しました。制限付きの RAM を使用し、内蔵 SSD にはキャッシュを書き込みません。",
+    "USB cache requires the payload loader on port 9021. Keep the drive connected; unavailable storage uses RAM.": "USB キャッシュにはポート 9021 のペイロードローダーが必要です。ドライブを接続したままにしてください。使用できない場合は RAM を使用します。",
+    "USB cache unavailable; using bounded RAM. No internal cache writes.": "USB キャッシュを使用できません。制限付きの RAM を使用し、内蔵 SSD にはキャッシュを書き込みません。"
   }
 }

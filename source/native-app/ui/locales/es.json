@@ -586,6 +586,14 @@
     "Refresh loaded free and personal channel lists while Max'd is open. Waits during playback and menus. Failed downloads keep the last working list. Guide updates are separate.": "Actualiza las listas gratuitas y personales cargadas mientras Max'd está abierto. Espera durante la reproducción y los menús. Si falla, conserva la última lista. La guía se actualiza por separado.",
     "The last refresh failed; the previous channel list was kept.": "La última actualización falló; se conservó la lista anterior.",
     "Choose a channel-list refresh interval in Settings > Live TV. Playback is left alone.": "Elige el intervalo en Ajustes > TV en vivo. La reproducción no se interrumpe.",
-    "Multilingual search, configured-catalog title suggestions and an optional top menu with Search.": "Búsqueda multilingüe, sugerencias de tus catálogos y menú superior opcional con Buscar."
+    "Multilingual search, configured-catalog title suggestions and an optional top menu with Search.": "Búsqueda multilingüe, sugerencias de tus catálogos y menú superior opcional con Buscar.",
+    "Cache location: ": "Ubicación de caché: ",
+    "Could not change torrent cache storage.": "No se pudo cambiar la ubicación de caché.",
+    "Internal SSD": "SSD interno",
+    "Torrent cache location": "Ubicación de caché de torrents",
+    "Torrent cache location saved.": "Ubicación de caché guardada.",
+    "USB cache failed; using bounded RAM. No internal cache writes.": "Falló la caché USB; se usa RAM limitada. No se escribe la caché en el SSD interno.",
+    "USB cache requires the payload loader on port 9021. Keep the drive connected; unavailable storage uses RAM.": "La caché USB necesita el cargador de payloads en el puerto 9021. Mantén la unidad conectada; si falla, se usará RAM.",
+    "USB cache unavailable; using bounded RAM. No internal cache writes.": "Caché USB no disponible; se usa RAM limitada. No se escribe la caché en el SSD interno."
   }
 }

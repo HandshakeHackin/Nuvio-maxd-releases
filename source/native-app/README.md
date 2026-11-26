@@ -1,5 +1,16 @@
 # Native Nuvio Max'd for PS5
 
+## USB torrent cache and provider recovery — 1.0.1.2 test
+
+Choose **Settings → Torrent settings → Cache location** for Internal SSD or
+USB 0–7. USB caching needs the existing payload loader on port 9021. Stop
+playback before changing the location. Unavailable USB storage uses bounded
+RAM for the rolling buffer; settings and torrent metadata remain internal.
+
+Missing provider scripts now trigger one refresh of the configured repository
+and a retry of the same provider's current path. See the [test checklist and
+limits](TESTING-ISSUES28-29.md). Both changes need tester confirmation.
+
 ## Automatic channel updates
 
 Choose **Settings → Live TV → Channel list auto-refresh**: Off, 1, 3, 6, 12 or

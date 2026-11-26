@@ -26,6 +26,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include "cache_file.hpp"
 
 namespace bt {
 
@@ -89,6 +90,10 @@ public:
 	// Call once before start(); cache_bytes is the rolling cache's size.
 	void configure(const std::string& data_dir, int64_t cache_bytes);
 	void set_cache_bytes(int64_t cache_bytes);
+	// -1 keeps the internal cache. 0..7 use only the selected USB helper;
+	// unavailability falls back to bounded RAM, never the internal cache.
+	bool set_cache_storage(int mount, CacheFactory factory = {});
+	std::string cache_status() const;
 	int64_t cache_bytes() const;
 	void shutdown();
     int64_t cache_storage_bytes() const;

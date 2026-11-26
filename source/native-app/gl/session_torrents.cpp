@@ -7,6 +7,7 @@
 #include "qrcodegen.h"
 #include "torrent/engine.h"
 #include "torrent/torrent_stream.h"
+#include "torrent_usb_cache.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -129,6 +130,8 @@ void Session::torrent_reset()
 void Session::torrent_load()
 {
     torrent_reset();
+    bt::Engine::get().set_cache_storage(prefs_.torrent_cache_mount,
+        prefs_.torrent_cache_mount>=0 ? torrent_usb_cache_factory() : bt::CacheFactory{});
     load_json(profile_dir_ + "/torrents.json", torrent_state_);
     if (!torrent_state_.is_object())
         torrent_state_ = json::object();
@@ -398,10 +401,11 @@ void Session::torrent_menu(bool settings_only)
         sx::i18n::tr("Cached storage: ") + format_bytes(bt::Engine::get().cache_storage_bytes()) + sx::i18n::tr(" (limit ") + std::to_string(prefs_.torrent_cache_gb) + " GB)",
         sx::i18n::tr("Turn off torrents and clear buffered data"),
         bt::Engine::get().web_drop_url().empty() ? sx::i18n::tr("Web Drop: inactive") : sx::i18n::tr("Web Drop: pairing active (close pairing)"),
+        sx::i18n::tr("Cache location: ") + (prefs_.torrent_cache_mount<0 ? sx::i18n::tr("Internal SSD") : "USB " + std::to_string(prefs_.torrent_cache_mount)),
     };
-    if(settings_only)options={options[5],options[10],options[11],options[12]};
+    if(settings_only)options={options[5],options[13],options[10],options[11],options[12]};
     open_dropdown(settings_only?sx::i18n::tr("Torrent settings"):sx::i18n::tr("Torrents & Magnet Streaming"), options, 0, [this, settings_only, generation=profile_generation_](int pick) {
-        if(settings_only){if(pick<0 || pick>=4)return;static constexpr int actions[]={5,10,11,12};pick=actions[pick];}
+        if(settings_only){if(pick<0 || pick>=5)return;static constexpr int actions[]={5,13,10,11,12};pick=actions[pick];}
         if(generation!=profile_generation_ || !profile_ready_)return;
         switch (pick)
         {
@@ -448,8 +452,24 @@ void Session::torrent_menu(bool settings_only)
             torrent_view_ = pick - 6;
             torrent_build();
             break;
-        case 10:
-            say(sx::i18n::tr("Buffered torrent pieces use this storage. .torrent files and saved progress are separate. The limit controls rolling storage, not total video size."),12);break;
+        case 10: {
+            const auto status=bt::Engine::get().cache_status();
+            if(!status.empty())say(sx::i18n::tr(status),12,true);
+            else say(sx::i18n::tr("Buffered torrent pieces use this storage. .torrent files and saved progress are separate. The limit controls rolling storage, not total video size."),12);
+            break;
+        }
+        case 13: {
+            std::vector<std::string> locations{sx::i18n::tr("Internal SSD")};
+            for(int i=0;i<8;++i)locations.push_back("USB "+std::to_string(i));
+            open_dropdown(sx::i18n::tr("Torrent cache location"),locations,prefs_.torrent_cache_mount+1,
+                [this,generation=profile_generation_](int choice){
+                    if(generation!=profile_generation_ || !profile_ready_ || choice<0 || choice>8)return;
+                    torrent_set_storage(choice-1);
+                });
+            dropdown.wide=true;
+            dropdown.message=sx::i18n::tr("USB cache requires the payload loader on port 9021. Keep the drive connected; unavailable storage uses RAM.");
+            break;
+        }
         case 11:
             open_dropdown(sx::i18n::tr("Clear buffered torrent data?"),{sx::i18n::tr("Cancel"),sx::i18n::tr("Turn off torrents and clear buffer")},0,
                 [this,generation=profile_generation_](int choice){
@@ -477,7 +497,8 @@ void Session::torrent_menu(bool settings_only)
             break;
         }
     });
-    dropdown.message = sx::i18n::tr("Place .torrent files on any USB drive (/mnt/usb0..7) or in /data/torrents on your PS5, paste a magnet link, or scan the Web Drop QR code with your phone.");
+    dropdown.message = settings_only ? sx::i18n::tr("Buffered torrent pieces use this storage. .torrent files and saved progress are separate. The limit controls rolling storage, not total video size.") :
+        sx::i18n::tr("Place .torrent files on any USB drive (/mnt/usb0..7) or in /data/torrents on your PS5, paste a magnet link, or scan the Web Drop QR code with your phone.");
 }
 
 void Session::torrent_activate(int index, bool secondary)
@@ -853,6 +874,18 @@ void Session::torrent_set_cache(int gb) {
     bt::Engine::get().set_cache_bytes(int64_t(gb)<<30);
     bt::Engine::get().set_enabled(prefs_.builtin_torrents);
     save_prefs();torrent_load();refresh_settings();
+}
+
+void Session::torrent_set_storage(int mount) {
+    if(mount < -1 || mount > 7)return;
+    if(watching||resuming_){say(sx::i18n::tr("Stop playback before changing the torrent cache"),5,true);return;}
+    torrent_reset();
+    if(!bt::Engine::get().set_cache_storage(mount,mount>=0?torrent_usb_cache_factory():bt::CacheFactory{})){
+        say(sx::i18n::tr("Could not change torrent cache storage."),7,true);return;
+    }
+    prefs_.torrent_cache_mount=mount;save_prefs();torrent_load();refresh_settings();
+    say(mount>=0?sx::i18n::tr("USB cache requires the payload loader on port 9021. Keep the drive connected; unavailable storage uses RAM."):
+        sx::i18n::tr("Torrent cache location saved."),12);
 }
 
 void Session::torrent_poll_drop() {

@@ -20,6 +20,7 @@ extern "C" {
 
 #include <atomic>
 #include <future>
+#include <iostream>
 #include <cassert>
 #include <chrono>
 #include <cstdio>
@@ -34,9 +35,33 @@ static std::atomic<double> time_offset{0};
 double wrapped_now_seconds(){return real_now_seconds()+time_offset.load();}
 
 static json ui_scenes=json::object();
-static void scene(const char* key,const sx::Session& sess){ui_scenes[key]={{"title",sess.dropdown_title},{"message",sess.dropdown.message},{"options",sess.choices}};}
+static void scene(const char* key,const sx::Session& sess){ui_scenes[key]={{"title",sess.dropdown_title},{"message",sess.dropdown.message},{"wide",sess.dropdown.wide},{"options",sess.choices}};}
 static const std::string verified_seed(262144, 'v');
 static std::atomic<bool> block_seed{false},seed_started{false};
+
+namespace sx {
+bt::CacheFactory torrent_usb_cache_factory() {
+    return [](int, int64_t, std::string&) -> std::unique_ptr<bt::CacheFile> { return {}; };
+}
+}
+struct CacheFaults { std::atomic<bool> read{false}, write{false}; std::atomic<int> destroyed{0}; };
+class FaultCache final : public bt::CacheFile {
+    std::shared_ptr<CacheFaults> faults_;
+    std::string body_;
+public:
+    explicit FaultCache(std::shared_ptr<CacheFaults> faults) : faults_(std::move(faults)) {}
+    ~FaultCache() override { ++faults_->destroyed; }
+    bool write(int64_t offset, const void* data, size_t bytes) override {
+        if (faults_->write || offset < 0 || offset + int64_t(bytes) > (1 << 20)) return false;
+        body_.resize(std::max(body_.size(), size_t(offset) + bytes));
+        std::memcpy(body_.data() + offset, data, bytes); return true;
+    }
+    bool read(int64_t offset, void* data, size_t bytes) override {
+        if (faults_->read || offset < 0 || uint64_t(offset) + bytes > body_.size()) return false;
+        std::memcpy(data, body_.data() + offset, bytes); return true;
+    }
+    int64_t storage_bytes() const override { return int64_t(body_.size()); }
+};
 
 // Minimal POSIX socket HTTP client for testing Web Drop server without libcurl-dev on host VM
 std::string HttpResponse::describe() const {
@@ -648,11 +673,52 @@ int main(int argc, char** argv) {
         unlink((test_dir+"/torrent-cache.bin").c_str());
         sx::Session settings;settings.data_dir_=test_dir;settings.profile_dir_=test_dir+"/profile1";
         settings.prefs_.builtin_torrents=false;settings.torrent_menu(true);
-        assert(settings.choices.size()==4 && settings.choices[2]=="Turn off torrents and clear buffered data");
+        assert(settings.choices.size()==5 && settings.choices[3]=="Turn off torrents and clear buffered data");
         scene("torrent-settings",settings);
-        auto menu=settings.pick;menu(2);assert(settings.choices.front()=="Cancel");
+        auto menu=settings.pick;menu(3);assert(settings.choices.front()=="Cancel");
         auto confirm=settings.pick;++settings.profile_generation_;confirm(1);
         assert(settings.messages.empty());
+        settings.torrent_menu(true);auto location=settings.pick;location(1);
+        assert(settings.choices.size()==9 && settings.choices.front()=="Internal SSD" && settings.choices.back()=="USB 7");
+        scene("torrent-cache-location",settings);
+        auto select=settings.pick;select(1);assert(settings.prefs_.torrent_cache_mount==0);
+        settings.watching=true;settings.torrent_set_storage(7);assert(settings.prefs_.torrent_cache_mount==0);
+        settings.watching=false;settings.torrent_set_storage(-1);assert(settings.prefs_.torrent_cache_mount==-1);
+    }
+    // Actual engine + verified webseed: external open/write/read failures must
+    // recover into RAM without touching the previous internal rolling cache.
+    {
+        using namespace bt;
+        unsigned char digest[20];SHA1(reinterpret_cast<const unsigned char*>(verified_seed.data()),verified_seed.size(),digest);
+        BValue info=BValue::dict();info.d["name"]=BValue(std::string("video.mkv"));
+        info.d["length"]=BValue(int64_t(verified_seed.size()));info.d["piece length"]=BValue(int64_t(262144));
+        info.d["pieces"]=BValue(std::string(reinterpret_cast<char*>(digest),20));
+        BValue torrent=BValue::dict();torrent.d["info"]=info;torrent.d["url-list"]=BValue(std::string("http://fixture.invalid/video.mkv"));
+        const auto internal=test_dir+"/torrent-cache.bin";assert(write_file(internal,"keep-internal-cache"));
+        for(int failure=0;failure<3;++failure) {
+            eng.shutdown();auto faults=std::make_shared<CacheFaults>();faults->write=failure==1;
+            assert(eng.set_cache_storage(0,[failure,faults](int mount,int64_t limit,std::string&)->std::unique_ptr<CacheFile>{
+                assert(mount==0 && limit>=(int64_t(512)<<20) && limit<=(int64_t(6)<<30));
+                if(failure==0)return {};
+                return std::make_unique<FaultCache>(faults);
+            }));
+            eng.set_enabled(true);bt::TorrentMeta meta;std::string error;
+            assert(eng.load_torrent_buffer(bencode(torrent),meta,&error));eng.select_file(meta.info_hash_hex,0);
+            for(int i=0;i<150&&eng.stats(meta.info_hash_hex).cached_bytes!=int64_t(verified_seed.size());++i)
+                std::this_thread::sleep_for(std::chrono::milliseconds(20));
+            assert(eng.stats(meta.info_hash_hex).cached_bytes==int64_t(verified_seed.size()));
+            int reader=0;int64_t size=0;auto handle=eng.open_reader(meta.info_hash_hex,0,&reader,&size,&error);assert(handle);
+            assert(!eng.set_cache_storage(-1));
+            faults->read=failure==2;
+            std::string data(verified_seed.size(),'\0');std::atomic<bool> cancel{false};
+            assert(eng.read(handle,reader,0,0,reinterpret_cast<uint8_t*>(data.data()),int(data.size()),&cancel,nullptr,now_seconds()+4)==int(data.size()));
+            assert(data==verified_seed && eng.cache_status().find("RAM")!=std::string::npos);
+            std::string unchanged;assert(read_file(internal,unchanged)&&unchanged=="keep-internal-cache");
+            eng.close_reader(handle,reader);handle.reset();assert(eng.clear_cache(&error));
+            if(failure)assert(faults->destroyed==1);
+        }
+        eng.shutdown();assert(eng.set_cache_storage(-1));
+        std::cout<<"USB torrent engine: open/write/read failure, verified RAM recovery, active-reader refusal and no internal rolling-cache writes passed\n";
     }
     // Actual recovery/menu/diagnostic methods with a controlled playback boundary.
     {

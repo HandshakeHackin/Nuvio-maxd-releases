@@ -608,6 +608,34 @@ Identity identify(const std::string &video_id, const Meta &meta) {
 }
 
 namespace {
+bool decode_download(const json& response, std::string& body, size_t limit) {
+  auto encoded=jstr(response,"body");
+  if(encoded.empty() || encoded.size()>4*((limit+2)/3))return false;
+  body.assign(encoded.size(),'\0');
+  auto size=EVP_DecodeBlock(reinterpret_cast<unsigned char*>(body.data()),
+                          reinterpret_cast<const unsigned char*>(encoded.data()),encoded.size());
+  if(size<0)return false;
+  for(size_t i=encoded.size();i && encoded[i-1]=='=';--i)--size;
+  if(size<=0 || size_t(size)>limit)return false;
+  body.resize(size_t(size));return true;
+}
+// Account snapshots can outlive renamed scripts. Revalidate only the user's
+// original repository, only on a missing script, and only for the same ID.
+// Keep the profile's enabled flag and settings; never import another repository.
+std::string refreshed_script_url(Execution& e,const Addon& repository,const ProviderScript& p) {
+  const auto manifest_url=normalize_addon_url(repository.transport_url);
+  auto response=request(e,{{"url",manifest_url}});
+  std::string body;
+  if(jnum(response,"status")!=200 || !jstr(response,"error").empty() ||
+     !decode_download(response,body,1024*1024))return {};
+  const auto manifest=json::parse(body,nullptr,false);
+  const auto& entries=jobj(manifest,"scrapers");
+  if(!manifest.is_object() || !entries.is_array() || entries.size()>256)return {};
+  std::string filename;unsigned matches=0;
+  for(const auto& entry:entries)if(jstr(entry,"id")==p.id){filename=jstr(entry,"filename");++matches;}
+  if(matches!=1 || filename.empty() || filename.size()>=2048)return {};
+  return resolve_url(manifest_url,filename);
+}
 std::string load_script(const Addon& repository, const ProviderScript& p,
                         std::string& error, const std::atomic<bool>* cancel) {
   if (cancel && *cancel) { error="Provider request cancelled";return {}; }
@@ -620,19 +648,22 @@ std::string load_script(const Addon& repository, const ProviderScript& p,
   }
   Execution e;e.cancel=cancel;e.deadline=Clock::now()+std::chrono::seconds(15);
   auto response=request(e,{{"url",url}});
+  if(jstr(response,"error").empty() &&
+     (jnum(response,"status")==404 || jnum(response,"status")==410)) {
+    const auto fresh=refreshed_script_url(e,repository,p);
+    if(!fresh.empty() && fresh!=url && !e.stopped()) {
+      response=request(e,{{"url",fresh}});
+      dlog("provider: retried missing script using refreshed repository metadata");
+    }
+  }
   if(!jstr(response,"error").empty() || jnum(response,"status")!=200) {
     const auto reason=jstr(response,"error");
     error="Could not download provider script ("+(reason.empty()?"HTTP "+std::to_string(static_cast<int>(jnum(response,"status"))):reason)+")";
     dlog("provider: script download failed id=%s status=%d",p.id.c_str(),static_cast<int>(jnum(response,"status")));
     return {};
   }
-  auto encoded=jstr(response,"body");std::string code(encoded.size(),'\0');
-  auto size=EVP_DecodeBlock(reinterpret_cast<unsigned char*>(code.data()),
-                          reinterpret_cast<const unsigned char*>(encoded.data()),encoded.size());
-  if(size<0) {error="Invalid provider script download";return {};}
-  while(!encoded.empty() && encoded.back()=='=') {--size;encoded.pop_back();}
-  if(size<=0 || size>1024*1024) {error="Provider script is empty or exceeds 1 MB";return {};}
-  code.resize(size);
+  std::string code;
+  if(!decode_download(response,code,1024*1024)) {error="Provider script is invalid, empty or exceeds 1 MB";return {};}
   if(cancel && *cancel) {error="Provider request cancelled";return {};}
   {
     std::lock_guard<std::mutex> lock(scripts_mutex);

@@ -586,6 +586,14 @@
     "Refresh loaded free and personal channel lists while Max'd is open. Waits during playback and menus. Failed downloads keep the last working list. Guide updates are separate.": "Max'd가 열려 있을 때 불러온 무료 및 개인 채널 목록을 새로고칩니다. 재생 중이거나 메뉴가 열려 있으면 기다리며, 다운로드 실패 시 이전 목록을 유지합니다. 편성표는 별도로 갱신됩니다.",
     "The last refresh failed; the previous channel list was kept.": "마지막 새로고침에 실패하여 이전 채널 목록을 유지했습니다.",
     "Choose a channel-list refresh interval in Settings > Live TV. Playback is left alone.": "설정 > 라이브 TV에서 목록 갱신 주기를 선택하세요. 재생은 중단되지 않습니다.",
-    "Multilingual search, configured-catalog title suggestions and an optional top menu with Search.": "다국어 검색, 설정된 카탈로그의 제목 추천, 검색 탭이 있는 선택형 상단 메뉴."
+    "Multilingual search, configured-catalog title suggestions and an optional top menu with Search.": "다국어 검색, 설정된 카탈로그의 제목 추천, 검색 탭이 있는 선택형 상단 메뉴.",
+    "Cache location: ": "캐시 위치: ",
+    "Could not change torrent cache storage.": "캐시 저장 위치를 변경하지 못했습니다.",
+    "Internal SSD": "내부 SSD",
+    "Torrent cache location": "토렌트 캐시 위치",
+    "Torrent cache location saved.": "캐시 위치를 저장했습니다.",
+    "USB cache failed; using bounded RAM. No internal cache writes.": "USB 캐시 오류로 제한된 RAM을 사용합니다. 내부 SSD에 캐시를 쓰지 않습니다.",
+    "USB cache requires the payload loader on port 9021. Keep the drive connected; unavailable storage uses RAM.": "USB 캐시는 포트 9021의 페이로드 로더가 필요합니다. 드라이브를 연결해 두세요. 사용할 수 없으면 RAM을 사용합니다.",
+    "USB cache unavailable; using bounded RAM. No internal cache writes.": "USB 캐시를 사용할 수 없어 제한된 RAM을 사용합니다. 내부 SSD에 캐시를 쓰지 않습니다."
   }
 }

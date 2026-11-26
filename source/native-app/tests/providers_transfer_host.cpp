@@ -20,6 +20,9 @@ static long reply_status = 200;
 static CURLcode reply_error = CURLE_OK;
 static bool redirect = false;
 static int ipv4_setups = 0;
+static bool recover_missing = false;
+static std::string fresh_manifest;
+static std::vector<std::string> requested_urls;
 extern "C" CURLcode __real_curl_easy_setopt(CURL *, CURLoption, ...);
 extern "C" CURLcode __wrap_curl_easy_setopt(CURL *c, CURLoption opt, ...) {
   // This sees the real shared http.cpp setup; the isolated transfer options
@@ -72,7 +75,17 @@ static CURLcode fixture_getinfo(CURL *, CURLINFO info, ...) {
 static CURLcode fixture_perform(CURL *c) {
   auto &t = transfers.at(c);
   assert(t.setup && t.open && t.open_data && t.body && t.headers);
-  assert(t.url == "https://example.com/repo/providers/sample.js?secret=hidden");
+  requested_urls.push_back(t.url);
+  assert(t.url == "https://example.com/repo/providers/sample.js?secret=hidden" ||
+         t.url == "https://example.com/repo/providers/renamed.js" ||
+         t.url == "https://example.com/repo/manifest.json");
+  if(recover_missing) {
+    std::string body=script;
+    reply_status=200;
+    if(t.url=="https://example.com/repo/providers/sample.js?secret=hidden")reply_status=404;
+    if(t.url=="https://example.com/repo/manifest.json")body=fresh_manifest;
+    t.write(body.data(),1,body.size(),t.body);return CURLE_OK;
+  }
   if (reply_error != CURLE_OK) return reply_error;
   if (redirect) {
     std::string h = "Location: http://example.com/insecure.js\r\n";
@@ -110,5 +123,27 @@ int main(int argc, char **argv) {
   ip->sin_family = AF_INET; ip->sin_addr.s_addr = htonl(INADDR_LOOPBACK);
   assert(providers::open_socket(&transfer, CURLSOCKTYPE_IPCXN, &addr) == CURL_SOCKET_BAD && transfer.blocked_address);
   assert(providers::transport_error(CURLE_COULDNT_CONNECT, transfer).find("public address") != std::string::npos);
+  // A saved manifest still points to a renamed script. The old script must
+  // actually fail, then the same repository and exact ID recover it once.
+  providers::clear_script_cache();redirect=false;reply_error=CURLE_OK;recover_missing=true;
+  fresh_manifest=R"({"name":"Fixture","scrapers":[{"id":"sample","filename":"providers/renamed.js","version":"2"}]})";
+  a.providers[0].settings={{"language","de"}};
+  requested_urls.clear();r=run();
+  assert(r.error.empty() && r.streams.size()==1 && requested_urls.size()==3);
+  assert(requested_urls[1]==a.transport_url && requested_urls.back()=="https://example.com/repo/providers/renamed.js");
+  assert(a.providers[0].enabled && a.providers[0].settings==json({{"language","de"}}));
+  const auto requests=requested_urls.size();r=run();assert(r.error.empty() && requested_urls.size()==requests);
+  for(const auto& invalid:std::vector<std::string>{"not JSON",
+      R"({"name":"Fixture","scrapers":[{"id":"other","filename":"providers/renamed.js"}]})",
+      R"({"name":"Fixture","scrapers":[{"id":"sample","filename":"providers/renamed.js"},{"id":"sample","filename":"elsewhere.js"}]})"}) {
+    providers::clear_script_cache();fresh_manifest=invalid;requested_urls.clear();r=run();
+    assert(r.streams.empty() && r.error.find("HTTP 404")!=std::string::npos && requested_urls.size()==2);
+  }
+  providers::clear_script_cache();recover_missing=false;reply_status=401;requested_urls.clear();r=run();
+  assert(r.streams.empty() && requested_urls.size()==1); // Never retry authorization errors.
+  std::atomic<bool> cancelled{true};requested_urls.clear();
+  r=providers::streams(a,"movie","tmdb:10378",Meta{},&cancelled);
+  assert(requested_urls.empty() && r.streams.empty());
   std::cout << "Provider download pipeline: script execution, relative URLs, HTTP errors, timeout, redirect and address protection passed\n";
+  std::cout << "Missing provider recovery: renamed script, original repository, same ID, settings, cache, invalid/ambiguous manifests, authorization and cancellation passed\n";
 }

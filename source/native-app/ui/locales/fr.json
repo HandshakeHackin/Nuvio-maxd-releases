@@ -586,6 +586,14 @@
     "Refresh loaded free and personal channel lists while Max'd is open. Waits during playback and menus. Failed downloads keep the last working list. Guide updates are separate.": "Actualise les listes gratuites et personnelles chargées quand Max'd est ouvert. Attend pendant la lecture et les menus. En cas d’échec, conserve la dernière liste. Le guide se met à jour séparément.",
     "The last refresh failed; the previous channel list was kept.": "La dernière actualisation a échoué ; la liste précédente est conservée.",
     "Choose a channel-list refresh interval in Settings > Live TV. Playback is left alone.": "Choisissez l’intervalle dans Paramètres > TV en direct. La lecture n’est pas interrompue.",
-    "Multilingual search, configured-catalog title suggestions and an optional top menu with Search.": "Recherche multilingue, suggestions de vos catalogues et menu supérieur avec Recherche en option."
+    "Multilingual search, configured-catalog title suggestions and an optional top menu with Search.": "Recherche multilingue, suggestions de vos catalogues et menu supérieur avec Recherche en option.",
+    "Cache location: ": "Emplacement du cache : ",
+    "Could not change torrent cache storage.": "Impossible de changer le stockage du cache.",
+    "Internal SSD": "SSD interne",
+    "Torrent cache location": "Emplacement du cache torrent",
+    "Torrent cache location saved.": "Emplacement du cache enregistré.",
+    "USB cache failed; using bounded RAM. No internal cache writes.": "Échec du cache USB ; utilisation limitée de la RAM. Aucun cache écrit sur le SSD interne.",
+    "USB cache requires the payload loader on port 9021. Keep the drive connected; unavailable storage uses RAM.": "Le cache USB nécessite le chargeur de payload sur le port 9021. Gardez le disque connecté ; en cas de problème, la RAM est utilisée.",
+    "USB cache unavailable; using bounded RAM. No internal cache writes.": "Cache USB indisponible ; utilisation limitée de la RAM. Aucun cache écrit sur le SSD interne."
   }
 }

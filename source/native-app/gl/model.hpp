@@ -65,6 +65,7 @@ struct Prefs : ExperiencePreferences
     int display_refresh = 60; // 120 Hz is opt-in, applies on restart; SDK retains 60 if unsupported
     bool auto_hdr_fallback = true; // new installs use Auto; legacy preferences keep their HDR choice
     int torrent_cache_gb = 6;
+    int torrent_cache_mount = -1; // -1: internal; 0..7: explicitly selected USB
     bool native_hdr = true; // PQ sources request HDR10; SDR conversion is an explicit setting
     int read_ahead_seconds = 60;
     bool vlc_player = false;

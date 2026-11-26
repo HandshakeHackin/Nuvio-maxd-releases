@@ -40,14 +40,14 @@ bool UpdateChannel::line(std::string& out,const std::atomic<bool>& cancel) {
         char c=input_[at_++];if(c=='\n')return true;out+=c;
     }return false;
 }
-bool UpdateChannel::open(const std::string& helper,const std::atomic<bool>& cancel,std::string& error,unsigned deadline_seconds) {
+bool UpdateChannel::open(const std::string& helper,const std::atomic<bool>& cancel,std::string& error,unsigned deadline_seconds,unsigned io_timeout_seconds) {
     close();deadline_=deadline_seconds?std::chrono::steady_clock::now()+std::chrono::seconds(deadline_seconds):std::chrono::steady_clock::time_point::max();
     int fd=::open(helper.c_str(),O_RDONLY);if(fd<0){error=sx::i18n::tr("The bundled helper is missing");return false;}
     struct stat st{};if(fstat(fd,&st)||!S_ISREG(st.st_mode)||st.st_size<=0||st.st_size>16*1024*1024){::close(fd);error=sx::i18n::tr("Invalid bundled helper");return false;}
     struct Address {std::uint8_t len,family;std::uint16_t port;std::uint32_t address;std::uint16_t vport;std::uint8_t pad[6];};
     static_assert(sizeof(Address)==16);
     const Address a{16,2,std::uint16_t((9021<<8)|(9021>>8)),0x0100007f,0,{}};
-    const int io=30000000,connect=5000000;
+    const int io=int(std::clamp(io_timeout_seconds,1u,30u))*1000000,connect=5000000;
     socket_=sceNetSocket("nuvio_update",2,1,6);
     bool ok=socket_>=0 && sceNetSetsockopt(socket_,0xffff,0x1105,&io,sizeof(io))>=0 &&
         sceNetSetsockopt(socket_,0xffff,0x1106,&io,sizeof(io))>=0 && sceNetSetsockopt(socket_,0xffff,0x1109,&connect,sizeof(connect))>=0 &&

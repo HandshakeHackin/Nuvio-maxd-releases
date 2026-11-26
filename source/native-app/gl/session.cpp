@@ -277,6 +277,8 @@ void Session::load_prefs()
         prefs_.builtin_torrents = jbool(j, "allow_torrents", false);
         const double cache=jnum(j,"torrent_cache_gb",6);
         prefs_.torrent_cache_gb=(cache==1||cache==2||cache==4||cache==6)?int(cache):6;
+        const double mount=jnum(j,"torrent_cache_mount",-1);
+        prefs_.torrent_cache_mount=(mount>=0 && mount<=7 && mount==int(mount))?int(mount):-1;
         prefs_.onboarding_done = jbool(j, "onboarding_done");
         prefs_.subtitle_langs = jstr(j, "subtitle_languages", prefs_.subtitle_langs);
         prefs_.auto_subtitles = jbool(j, "auto_subtitles", prefs_.auto_subtitles);
@@ -308,6 +310,7 @@ void Session::save_prefs()
     j["onboarding_done"] = prefs_.onboarding_done;
     j["allow_torrents"] = prefs_.builtin_torrents;
     j["torrent_cache_gb"] = prefs_.torrent_cache_gb;
+    j["torrent_cache_mount"] = prefs_.torrent_cache_mount;
     j["subtitle_languages"] = prefs_.subtitle_langs;
     j["auto_subtitles"] = prefs_.auto_subtitles;
     j["subtitle_size"] = prefs_.sub_size;

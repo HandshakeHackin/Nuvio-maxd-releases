@@ -360,7 +360,7 @@ struct Torrent {
 	int file = -1;
 
 	// Rolling cache: slots of one piece each, in a file (or memory).
-	FILE* cache = nullptr;
+	std::unique_ptr<CacheFile> cache;
 	std::vector<std::string> ram;  // slots in memory when the file can't be used
 	int nslots = 0, slots_used = 0;
 	std::vector<int> slot_of, piece_in_slot;
@@ -397,9 +397,6 @@ struct Torrent {
 
 	int64_t piece_size(int p) const { return std::min<int64_t>(plen, total - int64_t(p) * plen); }
 	int blocks(int p) const { return int((piece_size(p) + kBlock - 1) / kBlock); }
-	~Torrent() {
-		if (cache) fclose(cache);
-	}
 };
 
 // ---------------------------------------------------------------------------
@@ -415,6 +412,9 @@ struct Impl {
 	std::vector<std::shared_ptr<Torrent>> torrents;
 	std::string data_dir;
 	int64_t cache_bytes = 1ll << 30;
+	int cache_mount = -1;
+	CacheFactory cache_factory;
+	std::string cache_error;
 	std::string peer_id;
 
 	// DHT
@@ -702,14 +702,9 @@ void pick(Torrent* t, Peer* p, double now) {
 // ---------------------------------------------------------------------------
 // Cache
 
-bool slot_write(Torrent* t, int slot, const std::string& data) {
-	if (t->cache) {
-		if (fseeko(t->cache, off_t(slot) * t->plen, SEEK_SET) == 0 &&
-		    fwrite(data.data(), 1, data.size(), t->cache) == data.size() && fflush(t->cache) == 0)
-			return true;
-		dlog("torrent: cache file write failed (errno %d); keeping pieces in memory", errno);
-		fclose(t->cache);
-		t->cache = nullptr;
+void cache_to_ram(Torrent* t) {
+		t->cache.reset();
+		if (impl().cache_mount >= 0) impl().cache_error = "USB cache failed; using bounded RAM. No internal cache writes.";
 		// Start over in memory: what was in the file is gone.
 		for (int s = 0; s < t->slots_used; s++) {
 			int p = t->piece_in_slot[size_t(s)];
@@ -722,7 +717,13 @@ bool slot_write(Torrent* t, int slot, const std::string& data) {
 		t->slot_touch.assign(size_t(t->nslots), 0);
 		t->ram.assign(size_t(t->nslots), std::string());
 		t->wanted_dirty = true;
-		return false;
+		impl().cv.notify_all();
+}
+bool slot_write(Torrent* t, int slot, const std::string& data) {
+	if (t->cache) {
+		if (t->cache->write(int64_t(slot) * t->plen, data.data(), data.size())) return true;
+		dlog("torrent: cache write failed; using bounded memory");
+		cache_to_ram(t); return false;
 	}
 	t->ram[size_t(slot)] = data;
 	return true;
@@ -730,8 +731,8 @@ bool slot_write(Torrent* t, int slot, const std::string& data) {
 
 bool slot_read(Torrent* t, int slot, int64_t off, uint8_t* buf, int n) {
 	if (t->cache) {
-		return fseeko(t->cache, off_t(slot) * t->plen + off, SEEK_SET) == 0 &&
-		       fread(buf, 1, size_t(n), t->cache) == size_t(n);
+		if (t->cache->read(int64_t(slot) * t->plen + off, buf, size_t(n))) return true;
+		cache_to_ram(t); return false;
 	}
 	const std::string& s = t->ram[size_t(slot)];
 	if (off + n > int64_t(s.size())) return false;
@@ -847,16 +848,21 @@ bool parse_info(Torrent* t, const std::string& raw) {
 	Impl& I = impl();
 	for (auto& other : I.torrents) {
 		if (other.get() != t && other->stopped && other->cache) {
-			fclose(other->cache);
-			other->cache = nullptr;
+			other->cache.reset();
 		}
 	}
 	int64_t slots = std::max<int64_t>(8, std::min<int64_t>(np, I.cache_bytes / plen));
 	t->nslots = int(slots);
-	std::string path = I.data_dir + "/torrent-cache.bin";
-	t->cache = fopen(path.c_str(), "w+b");
+	I.cache_error.clear();
+	if (I.cache_mount >= 0) {
+		if (I.cache_factory) t->cache = I.cache_factory(I.cache_mount, I.cache_bytes, I.cache_error);
+		if (!t->cache) I.cache_error = "USB cache unavailable; using bounded RAM. No internal cache writes.";
+	} else {
+		const auto path = I.data_dir + "/torrent-cache.bin";
+		if (auto* file = fopen(path.c_str(), "w+b")) t->cache = std::make_unique<LocalCacheFile>(file);
+	}
 	if (!t->cache) {
-		dlog("torrent: can't create %s (errno %d); keeping pieces in memory", path.c_str(), errno);
+		dlog("torrent: selected cache unavailable; using bounded memory");
 		t->nslots = int(std::max<int64_t>(8, std::min<int64_t>(slots, kMaxRamCache / plen)));
 		t->ram.assign(size_t(t->nslots), std::string());
 	}
@@ -2347,9 +2353,29 @@ int64_t Engine::cache_bytes() const {
 	return impl().cache_bytes;
 }
 
+bool Engine::set_cache_storage(int mount, CacheFactory factory) {
+	if (mount < -1 || mount > 7 || (mount >= 0 && !factory)) return false;
+	auto& I = impl(); std::lock_guard<std::mutex> lock(I.mu);
+	for (const auto& t : I.torrents) if (!t->readers.empty()) return false;
+	for (auto& t : I.torrents) {
+		if (!t->stopped && t->has_meta) return false;
+		t->cache.reset();
+	}
+	I.cache_mount = mount; I.cache_factory = std::move(factory); I.cache_error.clear();
+	return true;
+}
+std::string Engine::cache_status() const {
+	auto& I = impl(); std::lock_guard<std::mutex> lock(I.mu); return I.cache_error;
+}
+
 bool Engine::enabled() const { return impl().enabled; }
 int64_t Engine::cache_storage_bytes() const {
     std::lock_guard<std::mutex> lock(impl().mu);
+    if (impl().cache_mount >= 0) {
+        int64_t bytes = 0;
+        for (const auto& t : impl().torrents) if (t->cache) bytes += t->cache->storage_bytes();
+        return bytes;
+    }
     struct stat st{};
     const auto path=impl().data_dir+"/torrent-cache.bin";
     return lstat(path.c_str(),&st)==0 && S_ISREG(st.st_mode) ? int64_t(st.st_blocks)*512 : 0;
@@ -2367,6 +2393,10 @@ bool Engine::clear_cache(std::string* error) {
     }
     shutdown();
     std::lock_guard<std::mutex> lock(I.mu);
+    if (I.cache_mount >= 0) {
+        for (auto& t : I.torrents) t->cache.reset();
+        I.cache_error.clear(); return true; // Anonymous USB files close; no directory-wide deletion.
+    }
     const auto path=I.data_dir+"/torrent-cache.bin";
     struct stat st{};
     if(lstat(path.c_str(),&st)!=0) {
@@ -2384,7 +2414,7 @@ void Engine::shutdown() {
 	stop_web_drop();
 	{
 		std::lock_guard<std::mutex> lock(I.mu);
-		if (!I.running) return;
+		if (!I.running) { for (auto& t : I.torrents) t->cache.reset(); return; }
 		I.quit = true;
 		for (auto& t : I.torrents) t->stopped = true;
 	}
@@ -2393,6 +2423,7 @@ void Engine::shutdown() {
 	unmap_port();
 	std::lock_guard<std::mutex> lock(I.mu);
 	I.running = false;
+    for (auto& t : I.torrents) t->cache.reset();
     if(I.listen_fd>=0){close(I.listen_fd);I.listen_fd=-1;}
 }
 
@@ -2961,23 +2992,28 @@ int Engine::read(const std::shared_ptr<Torrent>& t, int reader_id, int file_idx,
         refresh_wanted(t.get());
         dlog("torrent %s: reader %d waiting for piece %d (pos=%lld)", t->hex.c_str(), reader_id, piece, (long long)pos);
     }
-	while (!t->have[size_t(piece)]) {
-		if (t->stopped) return -2;
-		if ((abort && abort->load()) || (read_interrupt && read_interrupt->load())) return -1;
-		if (deadline > 0 && now_seconds() >= deadline) return -3;
-		I.cv.wait_for(lock, std::chrono::milliseconds(50));
-	}
 	int64_t in_piece = abs - int64_t(piece) * t->plen;
 	int64_t k = std::min<int64_t>({int64_t(n), t->piece_size(piece) - in_piece, f.size - pos});
-	int slot = t->slot_of[size_t(piece)];
-	if (slot < 0 || !slot_read(t.get(), slot, in_piece, buf, int(k))) {
-		dlog("torrent %s: cache read failed for piece %d", t->hex.c_str(), piece);
-		t->have[size_t(piece)] = 0;  // download it again
+	for (;;) {
+		while (!t->have[size_t(piece)]) {
+			if (t->stopped) return -2;
+			if ((abort && abort->load()) || (read_interrupt && read_interrupt->load())) return -1;
+			if (deadline > 0 && now_seconds() >= deadline) return -3;
+			I.cv.wait_for(lock, std::chrono::milliseconds(50));
+		}
+		const int slot = t->slot_of[size_t(piece)];
+		const bool had_file = bool(t->cache);
+		if (slot >= 0 && slot_read(t.get(), slot, in_piece, buf, int(k))) {
+			t->slot_touch[size_t(slot)] = now_seconds(); return int(k);
+		}
+		t->have[size_t(piece)] = 0;
 		t->wanted_dirty = true;
-		return -1;
+		if (!had_file) return -1;
+		// A disconnected/failed disk cache has become RAM. Ask for this verified
+		// piece again under the existing reader cancellation/deadline policy.
+		t->waiting_readers[reader_id] = {now_seconds(), piece, abort};
+		refresh_wanted(t.get());
 	}
-	t->slot_touch[size_t(slot)] = now_seconds();
-	return int(k);
 }
 
 int Engine::guess_file(const std::vector<FileInfo>& files, int season, int episode) {
