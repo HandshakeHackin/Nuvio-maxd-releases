@@ -1,3 +1,5 @@
+**Superseded internal candidate:** use the [corrected 1.0.1.2 test](../issues28-29-6a64471/README.md). These earlier artifacts remain available for provenance.
+
 # Issues #28 / #29: 1.0.1.2 test
 
 Unconfirmed, unsigned test for USB torrent caching and missing provider scripts. Stable 1.0.1.0 remains available.
