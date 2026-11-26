@@ -1,0 +1,186 @@
+[nuvio] curl libcurl/8.14.1 OpenSSL/3.5.7 zlib/1.3.1 brotli/1.1.0 zstd/1.5.7 libidn2/2.3.8 libpsl/0.21.2 libssh2/1.11.1 nghttp2/1.64.0 nghttp3/1.8.0 librtmp/2.3 OpenLDAP/2.6.10, CA bundle  (MISSING)
+[nuvio] player: playback engine Nuvio native
+[nuvio] player: opening stream
+[nuvio] player: head-only container startup; explicit seek can load deferred indexes
+[nuvio] player: colours BT.601 (transfer 2, matrix 2, primaries 2)
+[nuvio] player: software video decoding (host software test)
+[nuvio] audio: output stereo PCM 16-bit
+[nuvio] audio: PCM clock accounts for two output grains (10.67 ms estimate)
+[nuvio] player: matroska,webm, 10s, video #0 h264, audio #1 aac
+[nuvio] player: about 0 Mbit/s, buffering 2 s before playing
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] player: seek inline target=5.000 landed=5.021 first_picture_ms=6.2 paused=0
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] player: seek playing target=5.000 first_picture_ms=6.2 playing_ms=9.4
+[nuvio] player: playback engine Nuvio native
+[nuvio] player: opening stream
+[nuvio] player: colours BT.601 (transfer 2, matrix 2, primaries 2)
+[nuvio] player: software video decoding (host software test)
+[nuvio] audio: output stereo PCM 16-bit
+[nuvio] audio: PCM clock accounts for two output grains (10.67 ms estimate)
+[nuvio] player: matroska,webm, 10s, video #0 h264, audio #1 aac
+[nuvio] player: about 0 Mbit/s, buffering 2 s before playing
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] player: seek inline target=5.000 landed=5.021 first_picture_ms=6.2 paused=0
+[nuvio] player: seek playing target=5.000 first_picture_ms=6.2 playing_ms=9.3
+[nuvio] player: playback engine Nuvio native
+[nuvio] player: opening stream
+[nuvio] player: head-only container startup; explicit seek can load deferred indexes
+[nuvio] player: colours BT.601 (transfer 2, matrix 2, primaries 2)
+[nuvio] player: software video decoding (host software test)
+[nuvio] audio: output stereo PCM 16-bit
+[nuvio] audio: PCM clock accounts for two output grains (10.67 ms estimate)
+[nuvio] player: mpegts, 0s, video #0 h264, audio #1 aac
+[nuvio] player: about 0 Mbit/s, buffering 2 s before playing
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] player: seek inline target=5.000 landed=5.021 first_picture_ms=6.1 paused=0
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] player: seek playing target=5.000 first_picture_ms=6.1 playing_ms=9.3
+[nuvio] player: playback engine Nuvio native
+[nuvio] player: opening stream
+[nuvio] player: colours BT.601 (transfer 2, matrix 2, primaries 2)
+[nuvio] player: software video decoding (host software test)
+[nuvio] audio: output stereo PCM 16-bit
+[nuvio] audio: PCM clock accounts for two output grains (10.67 ms estimate)
+[nuvio] player: mpegts, 10s, video #0 h264, audio #1 aac
+[nuvio] player: about 0 Mbit/s, buffering 2 s before playing
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] player: seek inline target=5.000 landed=5.021 first_picture_ms=9.2 paused=0
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] player: seek playing target=5.000 first_picture_ms=9.2 playing_ms=12.3
+[nuvio] player: playback engine Nuvio native
+[nuvio] player: opening stream
+[nuvio] player: head-only container startup; explicit seek can load deferred indexes
+[nuvio] player: colours BT.601 (transfer 2, matrix 2, primaries 2)
+[nuvio] player: software video decoding (host software test)
+[nuvio] audio: output stereo PCM 16-bit
+[nuvio] audio: PCM clock accounts for two output grains (10.67 ms estimate)
+[nuvio] player: mpegts, 0s, video #0 h264, audio #1 aac
+[nuvio] player: about 0 Mbit/s, buffering 2 s before playing
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] player: seek inline target=5.000 landed=5.021 first_picture_ms=9.2 paused=0
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] player: seek playing target=5.000 first_picture_ms=9.2 playing_ms=12.4
+[nuvio] player: playback engine Nuvio native
+[nuvio] player: opening stream
+[nuvio] player: colours BT.601 (transfer 2, matrix 2, primaries 2)
+[nuvio] player: software video decoding (host software test)
+[nuvio] audio: output stereo PCM 16-bit
+[nuvio] audio: PCM clock accounts for two output grains (10.67 ms estimate)
+[nuvio] player: mpegts, 10s, video #0 h264, audio #1 aac
+[nuvio] player: about 0 Mbit/s, buffering 2 s before playing
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] player: seek inline target=5.000 landed=5.021 first_picture_ms=9.4 paused=0
+[nuvio] player: seek playing target=5.000 first_picture_ms=9.4 playing_ms=12.5
+[nuvio] player: playback engine Nuvio native
+[nuvio] player: opening stream
+[mov,mp4,m4a,3gp,3g2,mj2 @ 0x7f024c1155c0] Protocol name not provided, cannot determine if input is local or a network protocol, buffers and access patterns cannot be configured optimally without knowing the protocol
+[nuvio] player: colours BT.601 (transfer 2, matrix 2, primaries 2)
+[nuvio] player: software video decoding (host software test)
+[nuvio] audio: output stereo PCM 16-bit
+[nuvio] audio: PCM clock accounts for two output grains (10.67 ms estimate)
+[nuvio] player: mov,mp4,m4a,3gp,3g2,mj2, 10s, video #0 h264, audio #1 aac
+[nuvio] player: about 0 Mbit/s, buffering 2 s before playing
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] player: seek inline target=5.000 landed=5.000 first_picture_ms=6.1 paused=0
+[nuvio] player: seek playing target=5.000 first_picture_ms=6.1 playing_ms=9.3
+[nuvio] player: playback engine Nuvio native
+[nuvio] player: opening stream
+[mov,mp4,m4a,3gp,3g2,mj2 @ 0x7f024c1155c0] Protocol name not provided, cannot determine if input is local or a network protocol, buffers and access patterns cannot be configured optimally without knowing the protocol
+[nuvio] player: colours BT.601 (transfer 2, matrix 2, primaries 2)
+[nuvio] player: software video decoding (host software test)
+[nuvio] audio: output stereo PCM 16-bit
+[nuvio] audio: PCM clock accounts for two output grains (10.67 ms estimate)
+[nuvio] player: mov,mp4,m4a,3gp,3g2,mj2, 10s, video #0 h264, audio #1 aac
+[nuvio] player: about 0 Mbit/s, buffering 2 s before playing
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] player: seek inline target=5.000 landed=5.000 first_picture_ms=6.2 paused=0
+[nuvio] player: seek playing target=5.000 first_picture_ms=6.2 playing_ms=9.3
+[nuvio] player: playback engine Nuvio native
+[nuvio] player: opening stream
+[mov,mp4,m4a,3gp,3g2,mj2 @ 0x7f024c1155c0] Protocol name not provided, cannot determine if input is local or a network protocol, buffers and access patterns cannot be configured optimally without knowing the protocol
+[nuvio] player: colours BT.601 (transfer 2, matrix 2, primaries 2)
+[nuvio] player: software video decoding (host software test)
+[nuvio] audio: output stereo PCM 16-bit
+[nuvio] audio: PCM clock accounts for two output grains (10.67 ms estimate)
+[nuvio] player: mov,mp4,m4a,3gp,3g2,mj2, 10s, video #0 h264, audio #1 aac
+[nuvio] player: about 0 Mbit/s, buffering 2 s before playing
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] player: seek inline target=5.000 landed=5.000 first_picture_ms=9.2 paused=0
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] player: seek playing target=5.000 first_picture_ms=9.2 playing_ms=12.4
+[nuvio] player: playback engine Nuvio native
+[nuvio] player: opening stream
+[mov,mp4,m4a,3gp,3g2,mj2 @ 0x7f024c1155c0] Protocol name not provided, cannot determine if input is local or a network protocol, buffers and access patterns cannot be configured optimally without knowing the protocol
+[nuvio] player: colours BT.601 (transfer 2, matrix 2, primaries 2)
+[nuvio] player: software video decoding (host software test)
+[nuvio] audio: output stereo PCM 16-bit
+[nuvio] audio: PCM clock accounts for two output grains (10.67 ms estimate)
+[nuvio] player: mov,mp4,m4a,3gp,3g2,mj2, 10s, video #0 h264, audio #1 aac
+[nuvio] player: about 0 Mbit/s, buffering 2 s before playing
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] player: seek inline target=5.000 landed=5.000 first_picture_ms=9.3 paused=0
+[nuvio] player: seek playing target=5.000 first_picture_ms=9.3 playing_ms=12.4
+Torrent player: MKV/TS/M2TS/front- and tail-moov MP4 startup, resume and seek passed
+[nuvio] player: playback engine Nuvio native
+[nuvio] player: opening stream
+[nuvio] player: head-only container startup; explicit seek can load deferred indexes
+[nuvio] player: colours BT.601 (transfer 2, matrix 2, primaries 2)
+[nuvio] player: software video decoding (host software test)
+[nuvio] audio: output stereo PCM 16-bit
+[nuvio] audio: PCM clock accounts for two output grains (10.67 ms estimate)
+[nuvio] player: matroska,webm, 10s, video #0 h264, audio #1 aac
+[nuvio] player: about 0 Mbit/s, buffering 2 s before playing
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] player: seek to 7.0 failed: Input/output error
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] player: seek inline target=7.000 landed=0.188 first_picture_ms=9.3 paused=0
+[nuvio] player: seek playing target=7.000 first_picture_ms=9.3 playing_ms=12.4
+[nuvio] player: seek to 7.0 failed: Input/output error
+[nuvio] player: seek to 7.0 failed: Input/output error
+[nuvio] player: Torrent seek could not recover safely. Restart playback or choose another stream.
+[matroska,webm @ 0x7f024c1155c0] Element at 0x39a5c ending at 0x39a60 exceeds containing master element ending at 0xb4ac
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] player: playback engine Nuvio native
+[nuvio] player: opening stream
+[nuvio] player: colours BT.601 (transfer 2, matrix 2, primaries 2)
+[nuvio] player: software video decoding (host software test)
+[nuvio] audio: output stereo PCM 16-bit
+[nuvio] audio: PCM clock accounts for two output grains (10.67 ms estimate)
+[nuvio] player: matroska,webm, 10s, video #0 h264, audio #1 aac
+[nuvio] player: about 0 Mbit/s, buffering 2 s before playing
+[nuvio] player: seek to 3.0 failed: Input/output error
+[nuvio] player: The saved torrent position is unavailable. Try Play from beginning.
+[nuvio] player: playback engine Nuvio native
+[nuvio] player: opening stream
+[nuvio] player: head-only container startup; explicit seek can load deferred indexes
+[nuvio] player: colours BT.601 (transfer 2, matrix 2, primaries 2)
+[nuvio] audio: output stereo PCM 16-bit
+[nuvio] audio: PCM clock accounts for two output grains (10.67 ms estimate)
+[nuvio] player: matroska,webm, 10s, video #0 h264, audio #1 aac
+[nuvio] player: about 0 Mbit/s, buffering 2 s before playing
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] player: decoder recovery to software at 0.274 s; rebuffering audio and video together
+[nuvio] player: seek to 0.3 failed: Input/output error
+[nuvio] player: Decoder recovery could not seek this source. Choose another stream.
+[nuvio] player: playback engine Nuvio native
+[nuvio] player: opening stream
+[nuvio] player: head-only container startup; explicit seek can load deferred indexes
+[nuvio] player: colours BT.601 (transfer 2, matrix 2, primaries 2)
+[nuvio] player: software video decoding (host software test)
+[nuvio] audio: output stereo PCM 16-bit
+[nuvio] audio: PCM clock accounts for two output grains (10.67 ms estimate)
+[nuvio] player: matroska,webm, 10s, video #0 h264, audio #1 aac
+[nuvio] player: about 0 Mbit/s, buffering 2 s before playing
+[nuvio] audio: PCM conversion input=mono 48000 Hz fltp output=2 channels 48000 Hz S16; explicit normalized downmix
+[nuvio] audio: output stereo PCM 16-bit
+[nuvio] audio: PCM clock accounts for two output grains (10.67 ms estimate)
+[nuvio] player: audio switch to #2 at 0.209 s (paused 0)
+[nuvio] player: seek to 0.2 failed: Input/output error
+[nuvio] player: Could not resynchronize the selected audio track. Restart playback or choose another stream.
+Torrent player: seek rollback/deadline, startup failure, decoder/audio errors and no reopen loops passed

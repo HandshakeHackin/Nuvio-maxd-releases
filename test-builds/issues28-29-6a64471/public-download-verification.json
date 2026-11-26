@@ -1,0 +1,32 @@
+{
+  "sourceCommit": "6a64471e0a8dfc23430083fc8759586c515ed611",
+  "zipCrcPassed": true,
+  "entryPointChecked": true,
+  "newNativeHelperPresent": true,
+  "newBuildConfigurationChecked": true,
+  "cachedReaderGuardPresent": true,
+  "matchingSourceMetadataChecked": true,
+  "files": [
+    {
+      "name": "NuvioMaxd-1.0.1.2-issues28-29-test.zip",
+      "url": "https://raw.githubusercontent.com/HandshakeHackin/Nuvio-maxd-releases/d65eaed8835b78c2d11d44d26a78ac83238cf1b0/test-builds/issues28-29-6a64471/NuvioMaxd-1.0.1.2-issues28-29-test.zip",
+      "bytes": 47708527,
+      "sha256": "67f42614fcd396dc5d1bd197b73e87dd8d3145c40c9dd17909019afa70f6de02",
+      "downloadVerified": true
+    },
+    {
+      "name": "NuvioMaxd-1.0.1.2-issues28-29-test.ffpfsc",
+      "url": "https://raw.githubusercontent.com/HandshakeHackin/Nuvio-maxd-releases/d65eaed8835b78c2d11d44d26a78ac83238cf1b0/test-builds/issues28-29-6a64471/NuvioMaxd-1.0.1.2-issues28-29-test.ffpfsc",
+      "bytes": 50135040,
+      "sha256": "db031893485c6369e3ec5941ad132b4f0b9a89cb9277691e178a456850fd7270",
+      "downloadVerified": true
+    },
+    {
+      "name": "NuvioMaxd-1.0.1.2-source.tar.gz",
+      "url": "https://raw.githubusercontent.com/HandshakeHackin/Nuvio-maxd-releases/d65eaed8835b78c2d11d44d26a78ac83238cf1b0/test-builds/issues28-29-6a64471/NuvioMaxd-1.0.1.2-source.tar.gz",
+      "bytes": 47755009,
+      "sha256": "4f265dc736e7f620a30b634bee1db63688f02ed31d2277ce7b2b0853bb8b2376",
+      "downloadVerified": true
+    }
+  ]
+}

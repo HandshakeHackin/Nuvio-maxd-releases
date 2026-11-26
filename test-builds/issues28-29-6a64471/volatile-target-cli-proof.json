@@ -1,0 +1,35 @@
+{
+  "target/user/homebrew/bin/iconv": {
+    "originalSha256": "94ba5fc0c4e45a1bff5cc1f312aba7bf599326b65891bdd3829c052aa7debc33",
+    "relinkedSha256": "224d3d7e6455d70f59f16f5a577838e4a17fc137fb77cd19c06400b3a2330070",
+    "normalizedSha256": "6ae559f3dda1797ce4bd2380d8d578ec2580ba08fe80b6f4b4110c18792efe18",
+    "buildIdOffset": 1213720,
+    "buildIdBytes": 16,
+    "sameSize": 1305584,
+    "allOtherBytesIdentical": true,
+    "appBuildInput": false,
+    "packaged": false
+  },
+  "target/user/homebrew/bin/curl": {
+    "originalSha256": "e0022f5ff69a1d4b3517565bee339d6fa262948a41f0763a038b2bfab688ba1b",
+    "relinkedSha256": "12af9937b6eb512108116954fc4fb34e3f3a567edacf048f123b40bf2440e871",
+    "normalizedSha256": "b54823a996b2363bbe132b958da4b6c42adfd8197d6c2b428d0607913ff010e0",
+    "buildIdOffset": 7679112,
+    "buildIdBytes": 16,
+    "sameSize": 8737440,
+    "allOtherBytesIdentical": true,
+    "appBuildInput": false,
+    "packaged": false
+  },
+  "target/user/homebrew/bin/psl": {
+    "originalSha256": "4f0d27ca221e8331c53adf02f1966051213d3c8f5d0a46f62dced46b98ea8a16",
+    "relinkedSha256": "064c4bd393855ea96cfc2cdcf51199f9c09769c84c9456b7584b9e4c2235f0cb",
+    "normalizedSha256": "2df242a5f200efb5fa4b3e14c87a0a85837d6edc0fd2fb8802d4eb8efc11a53d",
+    "buildIdOffset": 153336,
+    "buildIdBytes": 16,
+    "sameSize": 179488,
+    "allOtherBytesIdentical": true,
+    "appBuildInput": false,
+    "packaged": false
+  }
+}

@@ -1,0 +1,8 @@
+Menu catalogs: en 1504/1504, de 1504/1504, es 593/1504, fr 593/1504, ar 593/1504, zh-Hans 593/1504, ja 593/1504, ko 593/1504; complete core and reproducible table
+............
+----------------------------------------------------------------------
+Ran 12 tests in 0.871s
+
+OK
+Localization: eight saved languages, aliases, invalid settings, English fallback, stable category IDs, Latin/Arabic/CJK search, Arabic shaping and 4485 menu glyph rasters passed
+Localization dialogs: eight native language names, real persistence/readback, failed-save rollback, restart boundary and stable USB cancellation purposes passed

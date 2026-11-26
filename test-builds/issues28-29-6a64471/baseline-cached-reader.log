@@ -1,0 +1,65 @@
+[nuvio] torrent: accepting peers on port 6881
+[nuvio] torrent 5739665c05e34ccde200a3a3bed45e6f353d48a4: "Sample.Show.S01", 2 files, 5242880 bytes, 20 pieces of 256 KB, cache 20 pieces
+[nuvio] torrent 5739665c05e34ccde200a3a3bed45e6f353d48a4: metadata from the cache
+[nuvio] torrent 5739665c05e34ccde200a3a3bed45e6f353d48a4: starting with 15 trackers, 1 webseeds
+[nuvio] torrent 5739665c05e34ccde200a3a3bed45e6f353d48a4: reader 2 waiting for piece 12 (pos=2097152)
+[nuvio] torrent 5739665c05e34ccde200a3a3bed45e6f353d48a4: 0 peers (0 connecting, 0 known), 0.00 MB/s, 0 pieces cached, 0 active
+[nuvio] torrent 5739665c05e34ccde200a3a3bed45e6f353d48a4: reader 2 waiting for piece 12 (pos=2097152)
+[nuvio] torrent: playing file 1 of 5739665c05e34ccde200a3a3bed45e6f353d48a4 (4194304 bytes)
+[nuvio] torrent 5739665c05e34ccde200a3a3bed45e6f353d48a4: reader 3 waiting for piece 15 (pos=2883584)
+[nuvio] torrent 5739665c05e34ccde200a3a3bed45e6f353d48a4: reader 3 waiting for piece 15 (pos=2883584)
+[nuvio] torrent 5739665c05e34ccde200a3a3bed45e6f353d48a4: nobody is watching, pausing
+[nuvio] torrent 5739665c05e34ccde200a3a3bed45e6f353d48a4: 0 peers (0 connecting, 0 known), 0.00 MB/s, 0 pieces cached, 0 active
+[nuvio] tracker udp://tracker.opentrackr.org:1337/announce: no answer, 0 peers
+[nuvio] tracker udp://open.stealth.si:80/announce: no answer, 0 peers
+[nuvio] torrent: accepting peers on port 6881
+[nuvio] torrent 5739665c05e34ccde200a3a3bed45e6f353d48a4: "Sample.Show.S01", 2 files, 5242880 bytes, 20 pieces of 256 KB, cache 20 pieces
+[nuvio] torrent 5739665c05e34ccde200a3a3bed45e6f353d48a4: metadata from the cache
+[nuvio] torrent 5739665c05e34ccde200a3a3bed45e6f353d48a4: starting with 15 trackers, 1 webseeds
+[nuvio] torrent 2222222222222222222222222222222222222222: starting with 15 trackers, 0 webseeds
+[nuvio] torrent 5739665c05e34ccde200a3a3bed45e6f353d48a4: "Sample.Show.S01", 2 files, 5242880 bytes, 20 pieces of 256 KB, cache 20 pieces
+[nuvio] torrent 5739665c05e34ccde200a3a3bed45e6f353d48a4: metadata from the cache
+[nuvio] torrent 5739665c05e34ccde200a3a3bed45e6f353d48a4: starting with 15 trackers, 1 webseeds
+[nuvio] tracker udp://open.stealth.si:80/announce: no answer, 0 peers
+[nuvio] tracker udp://tracker.opentrackr.org:1337/announce: no answer, 0 peers
+[nuvio] tracker udp://tracker.opentrackr.org:1337/announce: no answer, 0 peers
+[nuvio] tracker udp://tracker.opentrackr.org:1337/announce: no answer, 0 peers
+[nuvio] tracker udp://open.stealth.si:80/announce: no answer, 0 peers
+[nuvio] torrent: accepting peers on port 6881
+[nuvio] torrent 6b6963b190e71302cc68ceb0aac4209f67ad409c: "video.mkv", 1 files, 262144 bytes, 1 pieces of 256 KB, cache 8 pieces
+[nuvio] torrent 6b6963b190e71302cc68ceb0aac4209f67ad409c: metadata from the cache
+[nuvio] torrent 6b6963b190e71302cc68ceb0aac4209f67ad409c: starting with 15 trackers, 1 webseeds
+[nuvio] tracker udp://open.demonii.com:1337/announce: no answer, 0 peers
+[nuvio] tracker udp://tracker.opentrackr.org:1337/announce: no answer, 0 peers
+[nuvio] torrent: accepting peers on port 6881
+[nuvio] torrent: selected cache unavailable; using bounded memory
+[nuvio] torrent 6b6963b190e71302cc68ceb0aac4209f67ad409c: "video.mkv", 1 files, 262144 bytes, 1 pieces of 256 KB, cache 8 pieces
+[nuvio] torrent 6b6963b190e71302cc68ceb0aac4209f67ad409c: metadata from the cache
+[nuvio] torrent 6b6963b190e71302cc68ceb0aac4209f67ad409c: starting with 15 trackers, 1 webseeds
+[nuvio] torrent 6b6963b190e71302cc68ceb0aac4209f67ad409c: reader 1 unblocked for piece 0
+[nuvio] tracker udp://tracker.opentrackr.org:1337/announce: no answer, 0 peers
+[nuvio] tracker udp://open.demonii.com:1337/announce: no answer, 0 peers
+[nuvio] torrent: accepting peers on port 6881
+[nuvio] torrent 6b6963b190e71302cc68ceb0aac4209f67ad409c: "video.mkv", 1 files, 262144 bytes, 1 pieces of 256 KB, cache 8 pieces
+[nuvio] torrent 6b6963b190e71302cc68ceb0aac4209f67ad409c: metadata from the cache
+[nuvio] torrent 6b6963b190e71302cc68ceb0aac4209f67ad409c: starting with 15 trackers, 1 webseeds
+[nuvio] torrent: cache write failed; using bounded memory
+[nuvio] torrent 6b6963b190e71302cc68ceb0aac4209f67ad409c: reader 1 unblocked for piece 0
+[nuvio] tracker udp://open.demonii.com:1337/announce: no answer, 0 peers
+[nuvio] tracker udp://tracker.opentrackr.org:1337/announce: no answer, 0 peers
+[nuvio] torrent: accepting peers on port 6881
+[nuvio] torrent 6b6963b190e71302cc68ceb0aac4209f67ad409c: "video.mkv", 1 files, 262144 bytes, 1 pieces of 256 KB, cache 8 pieces
+[nuvio] torrent 6b6963b190e71302cc68ceb0aac4209f67ad409c: metadata from the cache
+[nuvio] torrent 6b6963b190e71302cc68ceb0aac4209f67ad409c: starting with 15 trackers, 1 webseeds
+[nuvio] torrent 6b6963b190e71302cc68ceb0aac4209f67ad409c: 0 peers (0 connecting, 0 known), 0.00 MB/s, 0 pieces cached, 0 active
+[nuvio] torrent 6b6963b190e71302cc68ceb0aac4209f67ad409c: reader 1 unblocked for piece 0
+[nuvio] tracker udp://open.demonii.com:1337/announce: no answer, 0 peers
+[nuvio] tracker udp://tracker.opentrackr.org:1337/announce: no answer, 0 peers
+[nuvio] torrent: accepting peers on port 6881
+[nuvio] torrent 6b6963b190e71302cc68ceb0aac4209f67ad409c: "video.mkv", 1 files, 262144 bytes, 1 pieces of 256 KB, cache 8 pieces
+[nuvio] torrent 6b6963b190e71302cc68ceb0aac4209f67ad409c: metadata from the cache
+[nuvio] torrent 6b6963b190e71302cc68ceb0aac4209f67ad409c: starting with 15 trackers, 1 webseeds
+[nuvio] torrent 6b6963b190e71302cc68ceb0aac4209f67ad409c: reader 1 unblocked for piece 0
+[nuvio] torrent 6b6963b190e71302cc68ceb0aac4209f67ad409c: reader 1 unblocked for piece 0
+torrent-streaming-baseline-host: /workspace/nuvio-issues28-29/source/native-app/tests/torrent_streaming_host.cpp:720: int main(int, char**): Assertion `eng.read(handle,reader,0,0,reinterpret_cast<uint8_t*>(data.data()),1,&cancel)==-1' failed.
+/workspace/nuvio-issues28-29-evidence/baseline-torrent.sh: line 32: 548106 Aborted                 "$ROOT/test-output/torrent-streaming-baseline-host" "$B/bt-test-dir"

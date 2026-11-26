@@ -1,0 +1,19 @@
+{
+  "sourceCommit": "c4f5094a490bd7be01b6fd341ab7aceac1148abe",
+  "bytes": 262144,
+  "offset": 65537,
+  "containsNulAndNewlines": true,
+  "all256ByteValues": true,
+  "roundTripPassed": true,
+  "anonymousCleanupPassed": true,
+  "payloadSha256": "2312394bd99545d9de131c24efb781e765ac1aec243f2ed9347597a793a415e9",
+  "helperSourcesUnchangedAt": "6a64471e0a8dfc23430083fc8759586c515ed611",
+  "unchangedSourceBlobs": {
+    "cache/helper.cpp": "de6569d2b8cc4ec2e4cc907c330f3eb9b4dd6ad5",
+    "cache/protocol.hpp": "84df91970bed0ac0844c7074be7307ba62859f42",
+    "cache/storage.hpp": "e34634c9a672d39a0afda452073c64480d21b584",
+    "gl/torrent_usb_cache.cpp": "b1f4e34c498e77200e79199044cbdb7fa0f09fa2",
+    "gl/update_channel.cpp": "f40741a14b3c4ff6e9d4ac5b0358e2a7391da5c9",
+    "src/torrent/cache_file.hpp": "bdf8805278ce87cc654932aedf06e58c4cf091c3"
+  }
+}

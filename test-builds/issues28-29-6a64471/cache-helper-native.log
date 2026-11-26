@@ -1,0 +1,4 @@
+make: Entering directory '/workspace/nuvio-issues28-29/source/native-app/cache'
+/workspace/nuvio-deps24/sdk/bin/prospero-clang++ -std=c++20 -O2 -Wall -Wextra -I../third_party -c helper.cpp -o /workspace/nuvio-issues28-29-build/cache-helper.elf.o
+/workspace/nuvio-deps24/sdk/bin/prospero-clang++ /workspace/nuvio-issues28-29-build/cache-helper.elf.o -Wl,--build-id=none -o /workspace/nuvio-issues28-29-build/cache-helper.elf
+make: Leaving directory '/workspace/nuvio-issues28-29/source/native-app/cache'

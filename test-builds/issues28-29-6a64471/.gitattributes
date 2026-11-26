@@ -1,0 +1,2 @@
+# Keep raw build/CI log bytes, including terminal progress whitespace.
+*.log -whitespace

@@ -1,0 +1,9 @@
+{
+  "baselineSourceCommit": "c4f5094a490bd7be01b6fd341ab7aceac1148abe",
+  "fixedSourceCommit": "6a64471e0a8dfc23430083fc8759586c515ed611",
+  "baselineFailedAsExpected": true,
+  "failure": "cached-reader cancellation assertion (log preserves original signal/diagnostic)",
+  "sameFixturePassesFixedSource": true,
+  "fixedLog": "torrent-regression-final.log",
+  "includesCachedReaderShutdown": true
+}

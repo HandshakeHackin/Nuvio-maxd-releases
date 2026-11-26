@@ -1,0 +1,2 @@
+USB cache protocol: 11 invalid opens and8 invalid I/O requests rejected; no path input or unrelated file writes
+USB cache: real helper/client, fragmented binary I/O, sparse6GiB bounds, session isolation, anonymous cleanup, disconnection, unavailable mounts and symlink refusal passed

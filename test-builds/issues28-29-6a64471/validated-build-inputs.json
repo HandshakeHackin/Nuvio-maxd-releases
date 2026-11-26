@@ -1,0 +1,27 @@
+{
+  "exactOutputPins": 738,
+  "totalDeclaredOutputPins": 741,
+  "allAppLibrariesAndHeadersMatch": true,
+  "originalFullOutputPinCheckPassed": false,
+  "unusedTargetUtilityExceptions": [
+    {
+      "path": "target/user/homebrew/bin/curl",
+      "pinnedSha256": "98fbe337a558b335420d455b081e8e85aabf66ad7979ba18726f67f153fa4c1b",
+      "actualSha256": "e0022f5ff69a1d4b3517565bee339d6fa262948a41f0763a038b2bfab688ba1b",
+      "reason": "Unused PS5 target CLI; SDK linker --build-id=uuid; independent relink differs only in this 16-byte ID. Not invoked, linked or packaged."
+    },
+    {
+      "path": "target/user/homebrew/bin/iconv",
+      "pinnedSha256": "de6ad99749694c9e27b4825b46f4115a925ea8c97ec7a16e8b35c76592f8349a",
+      "actualSha256": "94ba5fc0c4e45a1bff5cc1f312aba7bf599326b65891bdd3829c052aa7debc33",
+      "reason": "Unused PS5 target CLI; SDK linker --build-id=uuid; independent relink differs only in this 16-byte ID. Not invoked, linked or packaged."
+    },
+    {
+      "path": "target/user/homebrew/bin/psl",
+      "pinnedSha256": "c154b6057c72c29dbfbe5f466e8d2407d5e0eebb14d3e72733efd2ceb3f345a4",
+      "actualSha256": "4f0d27ca221e8331c53adf02f1966051213d3c8f5d0a46f62dced46b98ea8a16",
+      "reason": "Unused PS5 target CLI; SDK linker --build-id=uuid; independent relink differs only in this 16-byte ID. Not invoked, linked or packaged."
+    }
+  ],
+  "sdkCoreGraphicsSourceRecipeAndAssetPinsMatch": true
+}
