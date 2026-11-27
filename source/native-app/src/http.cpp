@@ -185,7 +185,7 @@ static HttpResponse perform(const std::string& url, const std::string* post_body
 	}
 	if (rc != CURLE_OK) {
 		// Curl's detailed buffer may include a private subtitle URL/hostname.
-		r.error = body_limit ? (sink.oversized ? "Source manifest exceeds 1 MiB" : curl_easy_strerror(rc)) :
+		r.error = body_limit ? (sink.oversized ? (body_limit==1024u*1024 ? "Source manifest exceeds 1 MiB" : "Source manifest exceeds 64 MiB") : curl_easy_strerror(rc)) :
             subtitle ? (sink.oversized ? "Subtitle file is too large" : curl_easy_strerror(rc)) : (errbuf[0] ? errbuf : curl_easy_strerror(rc));
 		if (cancel && cancel->load()) r.error = "cancelled";
 		char* ip = nullptr;
@@ -222,7 +222,8 @@ HttpResponse http_get_https(const std::string& url, long timeout_s, const std::a
 HttpResponse http_get_manifest(const std::string& url, long timeout_s,
                                const std::atomic<bool>* cancel, bool pinned_repository) {
     return perform(url, nullptr, std::clamp(timeout_s, 1L, 15L), cancel, {},
-                   pinned_repository, "application/json", !pinned_repository, false, 1024u * 1024);
+                   pinned_repository, "application/json", !pinned_repository, false,
+                   pinned_repository ? 1024u * 1024 : 64u * 1024 * 1024);
 }
 
 HttpResponse http_provider_request(const std::string& url, const std::string* body,

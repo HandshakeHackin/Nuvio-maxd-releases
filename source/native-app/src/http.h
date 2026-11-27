@@ -26,8 +26,8 @@ HttpResponse http_get_subtitle(const std::string& url, const std::atomic<bool>* 
 // Release metadata must never follow a redirect to plaintext HTTP.
 HttpResponse http_get_https(const std::string& url, long timeout_s = 20, const std::atomic<bool>* cancel = nullptr,
                             const std::vector<std::string>& headers = {});
-// Source metadata: one MiB, sanitized transport errors. A pinned public
-// repository additionally requires HTTPS and refuses redirects.
+// Preserve the ordinary addon client's 64 MiB metadata limit and sanitize
+// errors. Pinned CloudStream metadata uses one MiB, HTTPS and no redirects.
 HttpResponse http_get_manifest(const std::string& url, long timeout_s,
                                const std::atomic<bool>* cancel = nullptr, bool pinned_repository = false);
 HttpResponse http_post_json(const std::string& url, const std::string& body, long timeout_s = 20,

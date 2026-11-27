@@ -138,6 +138,9 @@ class Backend(http.server.BaseHTTPRequestHandler):
                 for _ in range(300): self.wfile.write(b'x' * 8192)
             except (BrokenPipeError, ConnectionResetError):
                 pass
+        elif path == '/large-valid/manifest.json':
+            self.send_json(200, {'id': 'large-valid', 'name': 'Large valid source',
+                'resources': ['stream'], 'types': ['movie'], 'extra': 'x' * (1024 * 1024 + 4096)})
         elif path == '/provider/form':
             assert self.headers['Content-Type'] == 'application/x-www-form-urlencoded'
             assert self.headers['Authorization'] == 'Bearer provider-test'
@@ -642,11 +645,24 @@ class AccountTests(unittest.TestCase):
 
     def test_source_manifest_download_is_bounded(self):
         self.assertTrue(self.pair()['ok'])
-        self.state['addon_rows'] = [{'url': self.server.base + '/large/manifest.json', 'name': 'Large source', 'enabled': True}]
+        url = self.server.base + '/large-valid/manifest.json'
+        pinned = self.command('manifest_download', url=url, pinned=True)
+        self.assertFalse(pinned['ok'])
+        self.assertEqual(pinned['error'], 'Source manifest exceeds 1 MiB')
+        self.assertLessEqual(pinned['bytes'], 1024 * 1024)
+        # Ordinary Stremio/Nuvio addons retain their pre-existing 64 MiB cap.
+        self.state['addon_rows'] = [{'url': url, 'name': 'Large source', 'enabled': True}]
         result = self.command('addons'); self.assertTrue(result['ok'], result)
         row = result['result']['addons'][0]
-        self.assertTrue(row['unavailable'])
-        self.assertEqual(row['loadError'], 'Source manifest exceeds 1 MiB')
+        self.assertFalse(row.get('unavailable', False))
+        self.assertEqual(row['manifest']['id'], 'large-valid')
+        self.assertGreater(len(row['manifest']['extra']), 1024 * 1024)
+        redirect = self.command('manifest_download', url=self.server.base + '/update/redirect', pinned=True)
+        self.assertFalse(redirect['ok']); self.assertEqual(redirect['status'], 302)
+        before = len(self.state['calls'])
+        cancelled = self.command('manifest_download', url=url, pinned=True, cancel=True)
+        self.assertFalse(cancelled['ok']); self.assertEqual(cancelled['error'], 'cancelled')
+        self.assertEqual(len(self.state['calls']), before)
 
     def test_logout_survives_process_restart(self):
         self.assertTrue(self.pair()['ok']); self.assertTrue(self.command('logout')['ok'])

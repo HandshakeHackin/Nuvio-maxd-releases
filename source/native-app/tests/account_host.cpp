@@ -35,6 +35,10 @@ int main(int argc, char** argv) {
             q.headers={"Authorization: Bearer fixture-credential","Content-Type: application/json"};
             std::atomic<bool> cancel{jbool(cmd,"cancel")};const auto r=feature_http::perform(q,&cancel);
             out={{"ok",r.ok()},{"status",r.status},{"error",r.error},{"body",r.body},{"etag",r.etag}};
+        } else if (op == "manifest_download") {
+            std::atomic<bool> cancel{jbool(cmd,"cancel")};
+            const auto r=http_get_manifest(jstr(cmd,"url"),5,&cancel,jbool(cmd,"pinned"));
+            out={{"ok",r.ok()},{"status",r.status},{"error",r.error},{"bytes",r.body.size()}};
         } else if (op == "https_update") {
             const auto r = http_get_https(jstr(cmd, "url"));
             out = {{"ok", r.ok()}, {"error", r.error}, {"status", r.status}};
