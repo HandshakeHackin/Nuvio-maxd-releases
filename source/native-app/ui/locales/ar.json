@@ -594,6 +594,19 @@
     "Torrent cache location saved.": "تم حفظ موقع التخزين المؤقت.",
     "USB cache failed; using bounded RAM. No internal cache writes.": "فشل التخزين المؤقت عبر USB؛ تُستخدم ذاكرة عشوائية محدودة دون كتابة التخزين المؤقت على القرص الداخلي.",
     "USB cache requires the payload loader on port 9021. Keep the drive connected; unavailable storage uses RAM.": "يتطلب التخزين المؤقت عبر USB مشغل الحمولة على المنفذ 9021. أبق القرص متصلاً؛ عند تعذره تُستخدم الذاكرة العشوائية.",
-    "USB cache unavailable; using bounded RAM. No internal cache writes.": "التخزين المؤقت عبر USB غير متاح؛ تُستخدم ذاكرة عشوائية محدودة دون كتابة التخزين المؤقت على القرص الداخلي."
+    "USB cache unavailable; using bounded RAM. No internal cache writes.": "التخزين المؤقت عبر USB غير متاح؛ تُستخدم ذاكرة عشوائية محدودة دون كتابة التخزين المؤقت على القرص الداخلي.",
+    "Source unavailable": "المصدر غير متاح",
+    "Retry source": "إعادة محاولة المصدر",
+    "No PS5 port: ": "لا يوجد إصدار PS5: ",
+    "No PS5 port is available for this provider.": "لا يتوفر إصدار PS5 لهذا المزود.",
+    "Standalone PS5 ports": "إصدارات PS5 مستقلة",
+    " unavailable. Select to manage.": " غير متاحة. اختر للإدارة.",
+    "Using saved source metadata. ": "تُستخدم بيانات المصدر المحفوظة. ",
+    "On: ": "مفعّل: ",
+    "Standalone PS5 ports for 20 German providers, including KellerKino. Enable them from Addons.": "إصدارات PS5 مستقلة لـ20 مزودًا ألمانيًا، بما في ذلك KellerKino. فعّلها من الإضافات.",
+    "CloudStream repositories label providers that do not have a PS5 port.": "توضح مستودعات CloudStream المزودين الذين ليس لديهم إصدار PS5.",
+    "Unavailable sources stay visible with retry and remove options. Saved source metadata is preserved.": "تبقى المصادر غير المتاحة ظاهرة مع خيارات لإعادة المحاولة والإزالة. تُحفظ بيانات المصدر السابقة.",
+    "Includes the previous subtitle fixes and optional USB torrent cache.": "يتضمن إصلاحات الترجمة السابقة وذاكرة تورنت USB المؤقتة الاختيارية.",
+    "Remove repository": "إزالة المستودع"
   }
 }

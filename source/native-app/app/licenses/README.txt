@@ -9,6 +9,9 @@ text is in this folder. THIRD_PARTY.md lists where each one is used.
 
 Component                                  License                         File
 -----------------------------------------  ------------------------------  ---------------------
+German provider PS5 ports (Bnyro, dw98-git) GPL-3.0                         cloudstream-ports/LICENSE,
+  20 pinned JavaScript ports; source and provenance                         UPSTREAM.json, PORTS.json
+  in source/native-app/third_party/cloudstream-ports.
 ps5-native-app-boilerplate (BlackBear-     GPL-3.0-or-later                ../LICENSE
   Reloaded), ps5-payload-sdk, PacBrew,
   FFmpeg build, MkPFS, SharpProspero

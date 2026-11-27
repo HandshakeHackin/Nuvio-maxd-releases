@@ -1,0 +1,48 @@
+name: Provider smoke test
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: smoke
+  cancel-in-progress: false
+
+env:
+  ISSUE_TITLE: "Provider-Smoke-Test: Ausfälle"
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - name: Run smoke test
+        env:
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+        run: npm run smoke
+      - name: Publish report
+        if: always()
+        run: cat smoke-report.md >> "$GITHUB_STEP_SUMMARY" || true
+      - name: Open, update or close the failure issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          [ -f smoke-report.md ] || exit 1
+          number="$(gh issue list --state open --search "\"$ISSUE_TITLE\" in:title" --json number,title --jq "map(select(.title == \"$ISSUE_TITLE\"))[0].number // empty")"
+          if [ -s smoke-failures.txt ]; then
+            body="$(printf 'Diese Provider haben im letzten Lauf ohne erkennbare Sperre keine Streams geliefert (Seite oder Hoster geändert?):\n\n%s\n\n%s\n\n[Lauf](%s/%s/actions/runs/%s)' \
+              "$(sed 's/^/- /' smoke-failures.txt)" "$(cat smoke-report.md)" "$GITHUB_SERVER_URL" "$GITHUB_REPOSITORY" "$GITHUB_RUN_ID")"
+            if [ -n "$number" ]; then gh issue edit "$number" --body "$body"
+            else gh issue create --title "$ISSUE_TITLE" --body "$body"; fi
+          elif [ -n "$number" ]; then
+            gh issue close "$number" --comment "Alle Provider liefern wieder Streams."
+          fi

@@ -4,7 +4,7 @@
 set -euo pipefail
 ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 : "${QUICKJS_DIR:?Set QUICKJS_DIR as for tests/providers.sh}"
-[ "$#" -eq 4 ] || { echo 'Supply the four German provider scripts in documented order' >&2; exit 2; }
+[ "$#" -eq 4 ] || [ "$#" -eq 5 ] || { echo 'Supply four German scripts and optionally a native ports fixture directory' >&2; exit 2; }
 BUILD="$ROOT/test-output/provider-objects"
 read -r -a libs <<< "$(pkg-config --libs libcurl openssl)"
 read -r -a incs <<< "$(pkg-config --cflags libcurl openssl)"

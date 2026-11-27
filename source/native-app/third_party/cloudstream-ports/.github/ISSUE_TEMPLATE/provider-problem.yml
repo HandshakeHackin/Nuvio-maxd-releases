@@ -1,0 +1,75 @@
+name: Problem mit einem Provider
+description: Ein Provider findet keine Streams, liefert falsche Titel oder die Wiedergabe startet nicht.
+labels: ["bug"]
+body:
+  - type: dropdown
+    id: provider
+    attributes:
+      label: Provider
+      options:
+        - Netzkino
+        - ARD Mediathek
+        - PlutoTV
+        - Arte
+        - FilmFrei24
+        - Filmo
+        - FlixiTV
+        - Serienstream
+        - Aniworld
+        - DMAX
+        - TELE 5
+        - TLC
+        - South Park
+        - Moflix
+        - Huhu
+        - FilmPalast
+        - Megakino
+        - HDFilme
+        - KinoKing
+        - KellerKino
+        - Mehrere / alle
+    validations:
+      required: true
+  - type: dropdown
+    id: problem
+    attributes:
+      label: Was passiert?
+      options:
+        - Keine Streams gefunden
+        - Falscher Film / falsche Folge
+        - Stream wird gefunden, spielt aber nicht ab
+        - Plugin lässt sich nicht installieren / laden
+        - Etwas anderes
+    validations:
+      required: true
+  - type: input
+    id: title
+    attributes:
+      label: Film oder Serie
+      description: Titel, bei Serien mit Staffel und Folge. Die TMDB-ID hilft sehr (steht in der URL auf themoviedb.org).
+      placeholder: "Breaking Bad S01E02 (TMDB 1396)"
+    validations:
+      required: true
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Plattform
+      options:
+        - Android
+        - Android TV
+        - iOS / iPadOS
+        - macOS
+        - Windows
+        - Tizen / webOS
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Nuvio-Version
+      placeholder: "z. B. 1.2.3"
+  - type: textarea
+    id: details
+    attributes:
+      label: Details
+      description: Was hast du erwartet, was ist stattdessen passiert? Screenshots oder Logs (z. B. aus Nuvios Plugin-Tester) gerne hier rein.

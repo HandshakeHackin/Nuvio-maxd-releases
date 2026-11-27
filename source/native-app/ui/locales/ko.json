@@ -594,6 +594,19 @@
     "Torrent cache location saved.": "캐시 위치를 저장했습니다.",
     "USB cache failed; using bounded RAM. No internal cache writes.": "USB 캐시 오류로 제한된 RAM을 사용합니다. 내부 SSD에 캐시를 쓰지 않습니다.",
     "USB cache requires the payload loader on port 9021. Keep the drive connected; unavailable storage uses RAM.": "USB 캐시는 포트 9021의 페이로드 로더가 필요합니다. 드라이브를 연결해 두세요. 사용할 수 없으면 RAM을 사용합니다.",
-    "USB cache unavailable; using bounded RAM. No internal cache writes.": "USB 캐시를 사용할 수 없어 제한된 RAM을 사용합니다. 내부 SSD에 캐시를 쓰지 않습니다."
+    "USB cache unavailable; using bounded RAM. No internal cache writes.": "USB 캐시를 사용할 수 없어 제한된 RAM을 사용합니다. 내부 SSD에 캐시를 쓰지 않습니다.",
+    "Source unavailable": "소스를 사용할 수 없음",
+    "Retry source": "소스 다시 시도",
+    "No PS5 port: ": "PS5 이식 버전 없음: ",
+    "No PS5 port is available for this provider.": "이 제공업체의 PS5 이식 버전은 없습니다.",
+    "Standalone PS5 ports": "독립 실행 PS5 이식 버전",
+    " unavailable. Select to manage.": "개 사용 불가. 선택하여 관리하세요.",
+    "Using saved source metadata. ": "저장된 소스 정보를 사용 중입니다. ",
+    "On: ": "켜짐: ",
+    "Standalone PS5 ports for 20 German providers, including KellerKino. Enable them from Addons.": "KellerKino를 포함한 독일 제공업체 20개의 PS5 독립 실행 이식 버전을 지원합니다. 애드온에서 활성화하세요.",
+    "CloudStream repositories label providers that do not have a PS5 port.": "CloudStream 저장소에서 PS5 이식 버전이 없는 제공업체를 표시합니다.",
+    "Unavailable sources stay visible with retry and remove options. Saved source metadata is preserved.": "사용할 수 없는 소스도 표시되며 다시 시도하거나 제거할 수 있습니다. 저장된 소스 정보는 유지됩니다.",
+    "Includes the previous subtitle fixes and optional USB torrent cache.": "이전 자막 수정 사항과 선택적 USB 토렌트 캐시를 포함합니다.",
+    "Remove repository": "저장소 제거"
   }
 }

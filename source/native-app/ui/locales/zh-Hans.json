@@ -594,6 +594,19 @@
     "Torrent cache location saved.": "缓存位置已保存。",
     "USB cache failed; using bounded RAM. No internal cache writes.": "USB 缓存失败；使用有上限的内存，不向内部 SSD 写入缓存。",
     "USB cache requires the payload loader on port 9021. Keep the drive connected; unavailable storage uses RAM.": "USB 缓存需要端口 9021 上的载荷加载器。请保持驱动器连接；存储不可用时使用内存。",
-    "USB cache unavailable; using bounded RAM. No internal cache writes.": "USB 缓存不可用；使用有上限的内存，不向内部 SSD 写入缓存。"
+    "USB cache unavailable; using bounded RAM. No internal cache writes.": "USB 缓存不可用；使用有上限的内存，不向内部 SSD 写入缓存。",
+    "Source unavailable": "来源不可用",
+    "Retry source": "重试来源",
+    "No PS5 port: ": "无 PS5 移植版：",
+    "No PS5 port is available for this provider.": "此提供商暂无 PS5 移植版。",
+    "Standalone PS5 ports": "独立 PS5 移植版",
+    " unavailable. Select to manage.": " 个不可用。选择以管理。",
+    "Using saved source metadata. ": "正在使用已保存的来源信息。 ",
+    "On: ": "已启用：",
+    "Standalone PS5 ports for 20 German providers, including KellerKino. Enable them from Addons.": "提供20个德国来源的独立PS5移植版，包括KellerKino。请在插件页面启用。",
+    "CloudStream repositories label providers that do not have a PS5 port.": "CloudStream仓库会标明尚无PS5移植版的提供商。",
+    "Unavailable sources stay visible with retry and remove options. Saved source metadata is preserved.": "不可用的来源仍会显示，并提供重试和移除选项。已保存的来源信息会保留。",
+    "Includes the previous subtitle fixes and optional USB torrent cache.": "包含之前的字幕修复和可选的USB种子缓存功能。",
+    "Remove repository": "移除仓库"
   }
 }

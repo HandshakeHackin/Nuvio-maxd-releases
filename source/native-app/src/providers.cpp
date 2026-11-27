@@ -1,6 +1,7 @@
 #include "providers.h"
 #ifdef NUVIO_HAVE_PROVIDERS
 #include "http.h"
+#include "cloudstream.h"
 #include "trailers.h"
 extern "C" {
 #include <quickjs.h>
@@ -21,6 +22,7 @@ namespace providers {
 namespace {
 using Clock = std::chrono::steady_clock;
 std::string runtime_source;
+std::string native_ports_dir;
 std::mutex config_mutex;
 std::string tmdb_key;
 struct CachedScript { std::string code; Clock::time_point expires; };
@@ -394,6 +396,7 @@ bool initialize(const std::string &path) {
   if (source.empty() || source.size() > 4 * 1024 * 1024)
     return false;
   runtime_source = std::move(source);
+  native_ports_dir = path_dir(path) + "/cloudstream";
   return true;
 }
 bool configure(const std::string &path) {
@@ -639,12 +642,36 @@ std::string refreshed_script_url(Execution& e,const Addon& repository,const Prov
 std::string load_script(const Addon& repository, const ProviderScript& p,
                         std::string& error, const std::atomic<bool>* cancel) {
   if (cancel && *cancel) { error="Provider request cancelled";return {}; }
-  const auto url=resolve_url(repository.transport_url,p.filename);
+  const auto* native = repository.cloudstream_repository && cloudstream::known_source(repository.transport_url)
+      ? cloudstream::port(p.native_port) : nullptr;
+  if(!p.native_port.empty() && !native) {error="Unsupported PS5 provider port";return {};}
+  const auto url=native ? std::string("builtin:cloudstream/")+native->id : resolve_url(repository.transport_url,p.filename);
   const auto key=url+"\n"+p.version;
   {
     std::lock_guard<std::mutex> lock(scripts_mutex);
     auto it=scripts.find(key);
     if(it!=scripts.end() && Clock::now()<it->second.expires) return it->second.code;
+  }
+  if(native) {
+    // Only a fixed registry ID selects a bundled file. No repository-supplied
+    // path, .cs3 executable, server or private account file is opened.
+    std::ifstream file(native_ports_dir+"/"+native->id+".js",std::ios::binary);
+    std::string code(1024*1024+1,'\0');file.read(code.data(),std::streamsize(code.size()));
+    const auto size=file.gcount();
+    if(size<=0 || size>1024*1024){error="PS5 provider port is missing or too large";return {};}
+    code.resize(size_t(size));
+    unsigned char hash[EVP_MAX_MD_SIZE];unsigned length=0;
+    if(EVP_Digest(code.data(),code.size(),hash,&length,EVP_sha256(),nullptr)!=1 || length!=32) {
+      error="Could not verify PS5 provider port";return {};
+    }
+    static constexpr char hex[]="0123456789abcdef";std::string digest;
+    for(unsigned i=0;i<length;++i){digest+=hex[hash[i]>>4];digest+=hex[hash[i]&15];}
+    if(digest!=native->sha256){error="PS5 provider port verification failed";return {};}
+    if(cancel && *cancel){error="Provider request cancelled";return {};}
+    std::lock_guard<std::mutex> lock(scripts_mutex);
+    if(scripts.size()>=8 && !scripts.count(key))scripts.erase(scripts.begin());
+    scripts[key]={code,Clock::now()+std::chrono::minutes(5)};
+    return code;
   }
   Execution e;e.cancel=cancel;e.deadline=Clock::now()+std::chrono::seconds(15);
   auto response=request(e,{{"url",url}});

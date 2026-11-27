@@ -7,9 +7,9 @@ inline bool should_show_release_notes(std::string_view seen, std::string_view cu
     return !current.empty() && seen != current;
 }
 inline constexpr std::array<const char*,4> release_note_items = {
-    "Multilingual search, configured-catalog title suggestions and an optional top menu with Search.",
-    "Choose a channel-list refresh interval in Settings > Live TV. Playback is left alone.",
-    "Personal IPTV and optional free channels share one guide; choose multiple countries for free TV.",
-    "Thai subtitle fallback and SIMKL sign-in fixes are included.",
+    "Standalone PS5 ports for 20 German providers, including KellerKino. Enable them from Addons.",
+    "CloudStream repositories label providers that do not have a PS5 port.",
+    "Unavailable sources stay visible with retry and remove options. Saved source metadata is preserved.",
+    "Includes the previous subtitle fixes and optional USB torrent cache.",
 };
 }

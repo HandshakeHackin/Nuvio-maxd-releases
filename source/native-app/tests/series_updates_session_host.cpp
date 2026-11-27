@@ -28,3 +28,8 @@ int main(){
     s.series_updates_reset();s.series_history_ready_=true;s.want_series_updates(item);++s.profile_generation_;s.series_updates_reset();g_tasks.one();assert(s.series_updates_.due("show",now_seconds()));
     std::cout<<"PASS: production series requests, deduplication, card badge updates, watched marks, cooldown and stale source/profile replies\n";
 }
+
+// Manifest transport uses the same in-process HTTP fixture.
+HttpResponse http_get_manifest(const std::string& url,long timeout,const std::atomic<bool>* cancel,bool) {
+    return http_get(url,timeout,cancel,{});
+}

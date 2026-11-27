@@ -34,6 +34,7 @@ extern "C" CURLcode __wrap_curl_easy_setopt(CURL *c, CURLoption opt, ...) {
 static std::string script;
 static int metadata_status=200;
 static int metadata_calls=0;
+static int transfer_calls=0;
 static CURLcode fixture_setopt(CURL *c, CURLoption opt, ...);
 static CURLcode fixture_perform(CURL *c);
 static CURLcode fixture_getinfo(CURL *c, CURLINFO info, ...);
@@ -74,6 +75,7 @@ static CURLcode fixture_getinfo(CURL *, CURLINFO info, ...) {
   va_end(args); return CURLE_OK;
 }
 static CURLcode fixture_perform(CURL *c) {
+  ++transfer_calls;
   auto &t=transfers.at(c);assert(t.setup && t.open && t.body);
   std::string body;reply_status=200;
   if(t.url.find("fixture.example/providers/")!=std::string::npos)body=script;
@@ -97,15 +99,21 @@ static CURLcode fixture_perform(CURL *c) {
     body=R"({"sources":[{"url":"https://embed.fixture.invalid/video"}]})";
   else if(t.url=="https://embed.fixture.invalid/video")
     body=R"(<script>player = {sources: [{file:"https://cdn.fixture.invalid/video.m3u8", label:"1080p"}]};</script>)";
+  else if(t.url.find("https://www.kellerkino.com/wp-json/wp/v2/search?")==0)
+    body=R"JSON([{"subtype":"post","title":"Fixture","url":"https://www.kellerkino.com/fixture"}])JSON";
+  else if(t.url=="https://www.kellerkino.com/fixture")
+    body=R"(<article class="movie-detail"><span class="nfo-movie-imdb-id">: tt123</span></article><iframe src="https://embed.fixture.invalid/video"></iframe>)";
+  else if(t.url=="https://cdn.fixture.invalid/video.m3u8")
+    body="#EXTM3U\n#EXT-X-STREAM-INF:BANDWIDTH=2000000,RESOLUTION=1920x1080,CODECS=\"avc1\"\nhttps://cdn.fixture.invalid/1080.m3u8\n";
   else {std::cerr<<"Unexpected fixture request\n";assert(false);}
   t.write(body.data(),1,body.size(),t.body);return CURLE_OK;
 }
 int main(int argc,char** argv) {
-  assert(argc==6 && providers::initialize(argv[1]));
+  assert((argc==6 || argc==7) && providers::initialize(argv[1]));
   const auto path="/tmp/nuvio-provider-apps-"+std::to_string(getpid())+".json";
   assert(save_json(path,{{"tmdb",{{"api_key","11111111111111111111111111111111"}}}}));
   assert(providers::configure(path));remove(path.c_str());
-  for(int i=2;i<argc;++i) {
+  for(int i=2;i<6;++i) {
     std::ifstream f(argv[i]);script.assign(std::istreambuf_iterator<char>(f),{});assert(!script.empty());
     providers::clear_script_cache();
     Addon a;a.provider_repository=true;a.name="Fixture";a.transport_url="https://fixture.example/manifest.json";
@@ -121,4 +129,33 @@ int main(int argc,char** argv) {
     std::cout<<"German provider fixture "<<(i-1)<<": stream and playback headers returned; metadata rejection reported\n";
   }
   assert(metadata_calls==8);
+  if(argc==7) {
+    // The fixture directory represents /app0/providers/cloudstream; it contains
+    // copies so the corruption test never modifies the pinned upstream files.
+    providers::native_ports_dir=argv[6];
+    Addon a;a.provider_repository=true;a.cloudstream_repository=true;
+    a.transport_url=cloudstream::source_url;a.name="German Providers";
+    const int before=transfer_calls;
+    for(const auto& native:cloudstream::ports) {
+      ProviderScript p;p.id=native.id;p.name=native.name;p.version="1.0.16";
+      p.filename=std::string("builtin:cloudstream/")+native.id;p.native_port=native.id;p.enabled=true;
+      std::string error;providers::settings_layout(a,p,error);
+      if(!error.empty())std::cerr<<native.id<<": "<<error<<"\n";
+      assert(error.empty());if(p.id=="kellerkino")a.providers={p};
+    }
+    assert(transfer_calls==before); // No .cs3 or provider script downloads.
+    auto r=providers::streams(a,"movie","tmdb:1",Meta{},nullptr);
+    if(!r.error.empty())std::cerr<<r.error<<"\n";
+    if(r.streams.size()!=1)std::cerr<<"Keller fixture returned "<<r.streams.size()<<" streams after "<<(transfer_calls-before)<<" transfers\n";
+    assert(r.error.empty() && r.streams.size()==1 && r.streams[0].url=="https://cdn.fixture.invalid/video.m3u8");
+    assert(!r.streams[0].request_headers.empty());
+    const auto file=std::string(argv[6])+"/kellerkino.js";std::string original;
+    assert(read_file(file,original));{std::ofstream changed(file,std::ios::app);changed<<"\n";}
+    providers::clear_script_cache();r=providers::streams(a,"movie","tmdb:1",Meta{},nullptr);
+    assert(r.streams.empty() && r.error.find("verification failed")!=std::string::npos);
+    {std::ofstream restore(file,std::ios::binary);restore<<original;}
+    a.providers[0].native_port="../../private";
+    r=providers::streams(a,"movie","tmdb:1",Meta{},nullptr);assert(r.streams.empty() && !r.error.empty());
+    std::cout<<"Native CloudStream ports: all 20 initialize without downloads; KellerKino returns a stream with headers; tampering and invalid IDs rejected\n";
+  }
 }

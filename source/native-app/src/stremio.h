@@ -35,10 +35,15 @@ struct AddonResource {
 struct ProviderScript {
  std::string id, name, filename, version; std::vector<std::string> types; bool enabled=false;
  json settings=json::object();
+ std::string native_port;
 };
 
 struct Addon {
  bool provider_repository=false;
+ bool cloudstream_repository=false;
+ bool unavailable=false;
+ std::string load_error;
+ std::vector<std::string> unsupported_providers;
  std::vector<ProviderScript> providers;
 	std::string transport_url;  // .../manifest.json
 	std::string base;           // transport_url without /manifest.json

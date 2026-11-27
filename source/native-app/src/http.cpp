@@ -117,7 +117,7 @@ static int progress_cb(void* clientp, curl_off_t, curl_off_t, curl_off_t, curl_o
 static HttpResponse perform(const std::string& url, const std::string* post_body, long timeout_s,
                             const std::atomic<bool>* cancel, const std::vector<std::string>& headers, bool https_only = false,
                             const std::string& content_type = "application/json", bool redirects = true,
-                            bool subtitle = false) {
+                            bool subtitle = false, size_t body_limit = 0) {
 	HttpResponse r;
 	if (cancel && cancel->load()) { r.error="cancelled"; return r; }
 	CURL* c = curl_easy_init();
@@ -126,7 +126,7 @@ static HttpResponse perform(const std::string& url, const std::string* post_body
 		return r;
 	}
 	char errbuf[CURL_ERROR_SIZE] = {0};
-	BodySink sink{&r.body, subtitle ? 8u * 1024 * 1024 : 64u * 1024 * 1024};
+	BodySink sink{&r.body, body_limit ? body_limit : subtitle ? 8u * 1024 * 1024 : 64u * 1024 * 1024};
 	struct curl_slist* hdrs = nullptr;
 	for (auto& h : headers) hdrs = curl_slist_append(hdrs, h.c_str());
 	if (post_body) hdrs = curl_slist_append(hdrs, ("Content-Type: " + content_type).c_str());
@@ -185,7 +185,8 @@ static HttpResponse perform(const std::string& url, const std::string* post_body
 	}
 	if (rc != CURLE_OK) {
 		// Curl's detailed buffer may include a private subtitle URL/hostname.
-		r.error = subtitle ? (sink.oversized ? "Subtitle file is too large" : curl_easy_strerror(rc)) : (errbuf[0] ? errbuf : curl_easy_strerror(rc));
+		r.error = body_limit ? (sink.oversized ? "Source manifest exceeds 1 MiB" : curl_easy_strerror(rc)) :
+            subtitle ? (sink.oversized ? "Subtitle file is too large" : curl_easy_strerror(rc)) : (errbuf[0] ? errbuf : curl_easy_strerror(rc));
 		if (cancel && cancel->load()) r.error = "cancelled";
 		char* ip = nullptr;
 		curl_easy_getinfo(c, CURLINFO_PRIMARY_IP, &ip);
@@ -216,6 +217,12 @@ HttpResponse http_post_json(const std::string& url, const std::string& body, lon
 HttpResponse http_get_https(const std::string& url, long timeout_s, const std::atomic<bool>* cancel,
                             const std::vector<std::string>& headers) {
 	return perform(url, nullptr, timeout_s, cancel, headers, true);
+}
+
+HttpResponse http_get_manifest(const std::string& url, long timeout_s,
+                               const std::atomic<bool>* cancel, bool pinned_repository) {
+    return perform(url, nullptr, std::clamp(timeout_s, 1L, 15L), cancel, {},
+                   pinned_repository, "application/json", !pinned_repository, false, 1024u * 1024);
 }
 
 HttpResponse http_provider_request(const std::string& url, const std::string* body,

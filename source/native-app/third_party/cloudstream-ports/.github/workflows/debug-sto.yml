@@ -1,0 +1,34 @@
+name: Debug Serienstream
+
+on:
+  workflow_dispatch:
+    inputs:
+      series:
+        description: Series path on serienstream.to
+        default: /serie/breaking-bad
+      season:
+        default: "1"
+      episode:
+        default: "2"
+
+permissions:
+  contents: read
+
+jobs:
+  debug:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Ask s.to what its hoster links answer
+        run: node scripts/debug-sto.js "${{ inputs.series }}" "${{ inputs.season }}" "${{ inputs.episode }}" | tee debug.txt
+      - name: Show result
+        if: always()
+        run: |
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          cat debug.txt >> "$GITHUB_STEP_SUMMARY" || true
+          echo '```' >> "$GITHUB_STEP_SUMMARY"

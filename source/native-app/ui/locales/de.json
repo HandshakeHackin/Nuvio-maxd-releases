@@ -1505,6 +1505,18 @@
     "Torrent cache location saved.": "Cache-Speicherort gespeichert.",
     "USB cache failed; using bounded RAM. No internal cache writes.": "USB-Cache ausgefallen; begrenzter RAM wird verwendet. Keine Cache-Schreibzugriffe auf die interne SSD.",
     "USB cache requires the payload loader on port 9021. Keep the drive connected; unavailable storage uses RAM.": "Der USB-Cache benötigt den Payload-Loader auf Port 9021. Das Laufwerk muss verbunden bleiben. Bei Problemen wird RAM verwendet.",
-    "USB cache unavailable; using bounded RAM. No internal cache writes.": "USB-Cache nicht verfügbar; begrenzter RAM wird verwendet. Keine Cache-Schreibzugriffe auf die interne SSD."
+    "USB cache unavailable; using bounded RAM. No internal cache writes.": "USB-Cache nicht verfügbar; begrenzter RAM wird verwendet. Keine Cache-Schreibzugriffe auf die interne SSD.",
+    "Source unavailable": "Quelle nicht verfügbar",
+    "Retry source": "Quelle erneut laden",
+    "No PS5 port: ": "Keine PS5-Portierung: ",
+    "No PS5 port is available for this provider.": "Für diesen Anbieter ist keine PS5-Portierung verfügbar.",
+    "Standalone PS5 ports": "Eigenständige PS5-Portierungen",
+    " unavailable. Select to manage.": " nicht verfügbar. Zum Verwalten auswählen.",
+    "Using saved source metadata. ": "Gespeicherte Quelldaten werden verwendet. ",
+    "On: ": "An: ",
+    "Standalone PS5 ports for 20 German providers, including KellerKino. Enable them from Addons.": "Eigenständige PS5-Portierungen für 20 deutsche Anbieter, einschließlich KellerKino. Unter Addons aktivieren.",
+    "CloudStream repositories label providers that do not have a PS5 port.": "CloudStream-Repositories kennzeichnen Anbieter ohne PS5-Portierung.",
+    "Unavailable sources stay visible with retry and remove options. Saved source metadata is preserved.": "Nicht verfügbare Quellen bleiben mit Optionen zum erneuten Laden und Entfernen sichtbar. Gespeicherte Quelldaten bleiben erhalten.",
+    "Includes the previous subtitle fixes and optional USB torrent cache.": "Enthält die bisherigen Untertitelkorrekturen und den optionalen USB-Torrent-Cache."
   }
 }

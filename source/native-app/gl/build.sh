@@ -185,6 +185,10 @@ cp "$ROOT/app/sce_sys/icon0.png" "$APP/sce_sys/"
 bash "$BP/tools/validate-assets.sh" "$APP/sce_sys" >/dev/null
 mkdir -p "$APP/providers"
 cp "$ROOT/third_party/provider-runtime/runtime.js" "$APP/providers/"
+python3 "$ROOT/tools/verify_cloudstream_ports.py"
+mkdir -p "$APP/providers/cloudstream" "$APP/licenses/cloudstream-ports"
+cp "$ROOT"/third_party/cloudstream-ports/providers/*.js "$APP/providers/cloudstream/"
+cp "$ROOT"/third_party/cloudstream-ports/{LICENSE,UPSTREAM.json,PORTS.json} "$APP/licenses/cloudstream-ports/"
 python3 "$ROOT/tools/validate_provider_applications.py" \
     "${NUVIO_PROVIDER_APPLICATIONS:-$ROOT/app/provider-applications.json}" "$APP/providers/applications.json"
 python3 - "$APP/providers/applications.json" "${NUVIO_ALLOW_UNCONFIGURED_PROVIDERS:-0}" <<'PY'

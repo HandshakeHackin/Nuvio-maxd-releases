@@ -1,0 +1,328 @@
+{
+  "_comment": "Per provider: candidate titles (one returning streams is enough). 'optional': the site's catalog changes or is region-locked, so no hit is shown as a note and never opens a failure issue. 'timeout' is in seconds.",
+  "netzkino": {
+    "candidates": [
+      {
+        "type": "movie",
+        "tmdbId": 603
+      },
+      {
+        "type": "movie",
+        "tmdbId": 550
+      },
+      {
+        "type": "movie",
+        "tmdbId": 680
+      }
+    ],
+    "optional": true,
+    "probe": "https://api.netzkino.de.simplecache.net/capi-2.0a/search?q=matrix&d=www"
+  },
+  "ard": {
+    "candidates": [
+      {
+        "type": "movie",
+        "tmdbId": 550
+      },
+      {
+        "type": "tv",
+        "tmdbId": 1396,
+        "season": 1,
+        "episode": 1
+      },
+      {
+        "type": "tv",
+        "tmdbId": 2190,
+        "season": 1,
+        "episode": 1
+      }
+    ],
+    "optional": true,
+    "probe": "https://api.ardmediathek.de/search-system/search/shows/ard?query=tatort&pageSize=1&platform=MEDIA_THEK"
+  },
+  "plutotv": {
+    "candidates": [
+      {
+        "type": "movie",
+        "tmdbId": 603
+      },
+      {
+        "type": "tv",
+        "tmdbId": 456,
+        "season": 1,
+        "episode": 1
+      },
+      {
+        "type": "tv",
+        "tmdbId": 1668,
+        "season": 1,
+        "episode": 1
+      }
+    ],
+    "optional": true
+  },
+  "arte": {
+    "candidates": [
+      {
+        "type": "movie",
+        "tmdbId": 550
+      },
+      {
+        "type": "movie",
+        "tmdbId": 603
+      },
+      {
+        "type": "tv",
+        "tmdbId": 1396,
+        "season": 1,
+        "episode": 1
+      }
+    ],
+    "optional": true
+  },
+  "filmfrei24": {
+    "candidates": [
+      {
+        "type": "movie",
+        "tmdbId": 550
+      },
+      {
+        "type": "movie",
+        "tmdbId": 603
+      }
+    ]
+  },
+  "filmo": {
+    "candidates": [
+      {
+        "type": "movie",
+        "tmdbId": 550
+      },
+      {
+        "type": "movie",
+        "tmdbId": 603
+      }
+    ]
+  },
+  "flixitv": {
+    "candidates": [
+      {
+        "type": "movie",
+        "tmdbId": 550
+      },
+      {
+        "type": "movie",
+        "tmdbId": 603
+      }
+    ]
+  },
+  "serienstream": {
+    "candidates": [
+      {
+        "type": "tv",
+        "tmdbId": 1396,
+        "season": 1,
+        "episode": 2
+      },
+      {
+        "type": "tv",
+        "tmdbId": 1668,
+        "season": 1,
+        "episode": 1
+      }
+    ],
+    "probe": "https://serienstream.to/suche?term=breaking%20bad&tab=shows"
+  },
+  "aniworld": {
+    "candidates": [
+      {
+        "type": "tv",
+        "tmdbId": 46260,
+        "season": 1,
+        "episode": 1
+      },
+      {
+        "type": "tv",
+        "tmdbId": 31911,
+        "season": 1,
+        "episode": 1
+      }
+    ]
+  },
+  "dmax": {
+    "candidates": [
+      {
+        "type": "tv",
+        "tmdbId": 1396,
+        "season": 1,
+        "episode": 1
+      },
+      {
+        "type": "movie",
+        "tmdbId": 550
+      }
+    ],
+    "optional": true
+  },
+  "tele5": {
+    "candidates": [
+      {
+        "type": "movie",
+        "tmdbId": 550
+      },
+      {
+        "type": "tv",
+        "tmdbId": 1396,
+        "season": 1,
+        "episode": 1
+      }
+    ],
+    "optional": true
+  },
+  "tlc": {
+    "candidates": [
+      {
+        "type": "tv",
+        "tmdbId": 1396,
+        "season": 1,
+        "episode": 1
+      },
+      {
+        "type": "movie",
+        "tmdbId": 550
+      }
+    ],
+    "optional": true
+  },
+  "southpark": {
+    "candidates": [
+      {
+        "type": "tv",
+        "tmdbId": 2190,
+        "season": 1,
+        "episode": 1
+      },
+      {
+        "type": "tv",
+        "tmdbId": 2190,
+        "season": 5,
+        "episode": 1
+      }
+    ],
+    "optional": true,
+    "probe": "https://www.southpark.de/seasons/south-park"
+  },
+  "moflix": {
+    "candidates": [
+      {
+        "type": "movie",
+        "tmdbId": 550
+      },
+      {
+        "type": "movie",
+        "tmdbId": 603
+      },
+      {
+        "type": "tv",
+        "tmdbId": 1396,
+        "season": 1,
+        "episode": 1
+      }
+    ]
+  },
+  "huhuto": {
+    "candidates": [
+      {
+        "type": "movie",
+        "tmdbId": 550
+      },
+      {
+        "type": "tv",
+        "tmdbId": 1396,
+        "season": 1,
+        "episode": 1
+      }
+    ]
+  },
+  "filmpalast": {
+    "candidates": [
+      {
+        "type": "movie",
+        "tmdbId": 550
+      },
+      {
+        "type": "tv",
+        "tmdbId": 1396,
+        "season": 1,
+        "episode": 1
+      }
+    ],
+    "probe": "https://filmpalast.to/"
+  },
+  "megakino": {
+    "candidates": [
+      {
+        "type": "movie",
+        "tmdbId": 550
+      },
+      {
+        "type": "movie",
+        "tmdbId": 603
+      }
+    ]
+  },
+  "hdfilme": {
+    "candidates": [
+      {
+        "type": "movie",
+        "tmdbId": 550
+      },
+      {
+        "type": "movie",
+        "tmdbId": 603
+      }
+    ]
+  },
+  "kinoking": {
+    "candidates": [
+      {
+        "type": "tv",
+        "tmdbId": 1396,
+        "season": 1,
+        "episode": 1
+      },
+      {
+        "type": "tv",
+        "tmdbId": 1668,
+        "season": 1,
+        "episode": 1
+      },
+      {
+        "type": "tv",
+        "tmdbId": 1399,
+        "season": 1,
+        "episode": 1
+      },
+      {
+        "type": "tv",
+        "tmdbId": 1418,
+        "season": 1,
+        "episode": 1
+      }
+    ],
+    "probe": "https://kinoking.cc/"
+  },
+  "kellerkino": {
+    "candidates": [
+      {
+        "type": "movie",
+        "tmdbId": 550
+      },
+      {
+        "type": "movie",
+        "tmdbId": 603
+      }
+    ],
+    "probe": "https://www.kellerkino.com/wp-json/wp/v2/search?search=matrix&per_page=1"
+  }
+}

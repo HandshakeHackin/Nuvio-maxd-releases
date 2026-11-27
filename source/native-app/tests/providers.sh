@@ -31,6 +31,10 @@ done
 "$CXX" -std=c++20 -O1 -I"$ROOT/ui" "$ROOT/tests/dropdown_window_host.cpp" -o "$ROOT/test-output/dropdown-window-host"
 "$ROOT/test-output/dropdown-window-host"
 python3 "$ROOT/tests/provider_applications_test.py"
+native_fixture="$ROOT/test-output/cloudstream-fixture"
+mkdir -p "$native_fixture"
+cp "$ROOT"/third_party/cloudstream-ports/providers/*.js "$native_fixture/"
+bash "$ROOT/tests/providers_german.sh" "$ROOT"/third_party/cloudstream-ports/providers/{moflix,huhuto,filmpalast,hdfilme}.js "$native_fixture"
 "$CXX" -std=c++20 -O0 -I"$ROOT/gl" -I"$ROOT/src" -I"$ROOT/third_party" \
  "$ROOT/tests/stream_result_cache_host.cpp" "$BUILD/util.cpp.o" "${libraries[@]}" -pthread -o "$ROOT/test-output/stream-result-cache-host"
 "$ROOT/test-output/stream-result-cache-host"

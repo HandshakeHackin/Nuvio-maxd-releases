@@ -279,7 +279,7 @@
     "The reader runs with the existing payload loader's privileges to read USB playlists. Max'd stays sandboxed. Only a selected, validated playlist is saved privately to this profile.": "Le lecteur utilise les droits du chargeur de payloads existant pour lire les listes USB. Max'd reste isolé. Seule la liste choisie et validée est enregistrée dans ce profil.",
     "Add M3U playlist": "Ajouter une liste M3U",
     "Add Xtream Codes": "Ajouter Xtream Codes",
-    "Remove source": "Retirer la source",
+    "Remove source": "Supprimer la source",
     "Reload channels": "Recharger les chaînes",
     "Type": "Type",
     "Show": "Afficher",
@@ -594,6 +594,19 @@
     "Torrent cache location saved.": "Emplacement du cache enregistré.",
     "USB cache failed; using bounded RAM. No internal cache writes.": "Échec du cache USB ; utilisation limitée de la RAM. Aucun cache écrit sur le SSD interne.",
     "USB cache requires the payload loader on port 9021. Keep the drive connected; unavailable storage uses RAM.": "Le cache USB nécessite le chargeur de payload sur le port 9021. Gardez le disque connecté ; en cas de problème, la RAM est utilisée.",
-    "USB cache unavailable; using bounded RAM. No internal cache writes.": "Cache USB indisponible ; utilisation limitée de la RAM. Aucun cache écrit sur le SSD interne."
+    "USB cache unavailable; using bounded RAM. No internal cache writes.": "Cache USB indisponible ; utilisation limitée de la RAM. Aucun cache écrit sur le SSD interne.",
+    "Source unavailable": "Source indisponible",
+    "Retry source": "Réessayer la source",
+    "No PS5 port: ": "Aucun portage PS5 : ",
+    "No PS5 port is available for this provider.": "Aucun portage PS5 n’est disponible pour ce fournisseur.",
+    "Standalone PS5 ports": "Portages PS5 autonomes",
+    " unavailable. Select to manage.": " indisponibles. Sélectionnez pour gérer.",
+    "Using saved source metadata. ": "Utilisation des données de source enregistrées. ",
+    "On: ": "Activé : ",
+    "Standalone PS5 ports for 20 German providers, including KellerKino. Enable them from Addons.": "Portages PS5 autonomes pour 20 fournisseurs allemands, dont KellerKino. Activez-les dans Extensions.",
+    "CloudStream repositories label providers that do not have a PS5 port.": "Les dépôts CloudStream signalent les fournisseurs sans portage PS5.",
+    "Unavailable sources stay visible with retry and remove options. Saved source metadata is preserved.": "Les sources indisponibles restent visibles avec des options pour réessayer ou supprimer. Les données enregistrées sont conservées.",
+    "Includes the previous subtitle fixes and optional USB torrent cache.": "Inclut les corrections précédentes des sous-titres et le cache torrent USB facultatif.",
+    "Remove repository": "Supprimer le dépôt"
   }
 }

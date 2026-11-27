@@ -1,5 +1,20 @@
 # Native Nuvio Max'd for PS5
 
+## Standalone German provider ports — 1.0.1.3 test
+
+Add `https://raw.githubusercontent.com/Bnyro/GermanProviders/master/repo.json`,
+or reload Addons if it is already saved in your Nuvio account. Select the
+repository card and enable the providers you want. Twenty bundled PS5 ports
+include KellerKino, FilmPalast, Moflix, ARD and Arte. Seven repository entries
+currently have no PS5 port and are marked unavailable. No extra device or
+server is needed; Android `.cs3` files are not executed.
+
+Sources that fail to load remain visible. Select one to retry or remove it.
+An existing cached manifest is retained when refresh fails. Provider switches
+and settings stay in the selected profile. The original authors, GPL license
+and preferred source are included; see [third-party notices](THIRD_PARTY.md).
+Console playback still needs testing.
+
 ## USB torrent cache and provider recovery — 1.0.1.2 test
 
 Choose **Settings → Torrent settings → Cache location** for Internal SSD or

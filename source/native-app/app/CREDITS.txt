@@ -1,5 +1,7 @@
 Nuvio Max'd
 Maintained by HandshakeHackin.
+Standalone German provider ports: Bnyro/GermanProviders and
+dw98-git/nuvio-german-providers, GPL-3.0. See licenses/cloudstream-ports/.
 Optional Free Live TV catalogue: jyotiprakash101/nuvio-livetv, as used by
 Horizon Home Kit; source listings from iptv-org, Free-TV, AdeelWajid,
 dearbulut and Matt Huisman's i.mjh.nz (Samsung TV Plus, Pluto TV and Roku).

@@ -63,3 +63,8 @@ int main() {
     assert(bounded.size()==255 && bounded.back()=='a');
     std::cout<<"PASS: local Library search, type/sort/progress, accents/UTF-8, clear/cancel, source/profile isolation and zero search requests\n";
 }
+
+// Manifest transport uses the same in-process HTTP fixture.
+HttpResponse http_get_manifest(const std::string& url,long timeout,const std::atomic<bool>* cancel,bool) {
+    return http_get(url,timeout,cancel,{});
+}

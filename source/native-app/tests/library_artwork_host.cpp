@@ -50,3 +50,8 @@ int main() {
     s.page_=sx::Page::board;s.meta_asked_.clear();s.refresh_art({});assert(g_tasks.pending.empty());
     std::cout<<"PASS: cold Library posters, addon fallback, existing art, scrolling, request bounds, offline handling and profile isolation\n";
 }
+
+// Manifest transport uses the same in-process HTTP fixture.
+HttpResponse http_get_manifest(const std::string& url,long timeout,const std::atomic<bool>* cancel,bool) {
+    return http_get(url,timeout,cancel,{});
+}

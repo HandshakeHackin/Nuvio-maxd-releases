@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - name: Committed bundles must match src/
+        run: git diff --exit-code -- providers manifest.json
+      - run: npm test
+      - run: npm run meta:check
+      - name: Plugin changes need a new version
+        if: github.event_name == 'pull_request'
+        run: node scripts/check-version-bump.js "origin/${{ github.base_ref }}"

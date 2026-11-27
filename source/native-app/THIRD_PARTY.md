@@ -9,6 +9,15 @@ This native adaptation incorporates [Sp9nky/unofficial-stremio-ps5-port](https:/
 
 ## Code included in this repository
 
+The standalone German provider ports are pinned to
+[dw98-git/nuvio-german-providers](https://github.com/dw98-git/nuvio-german-providers),
+commit `ab054659edcdfee0599a50af0e219509d835415c` (GPL-3.0), which ports
+[Bnyro/GermanProviders](https://github.com/Bnyro/GermanProviders) for Nuvio.
+Twenty unmodified JavaScript bundles run in the existing bounded QuickJS
+runtime. Original modular source, build inputs, license, hashes and the native
+module mapping are in `third_party/cloudstream-ports/`. The app verifies each
+bundle's SHA-256 before execution. It never executes Android `.cs3` bytecode.
+
 The optional Free Live TV feature uses public catalogue and programme data
 from [jyotiprakash101/nuvio-livetv](https://github.com/jyotiprakash101/nuvio-livetv),
 the data source used by Horizon Home Kit. Its independently written GPL client

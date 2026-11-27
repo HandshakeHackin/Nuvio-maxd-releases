@@ -285,6 +285,21 @@ int main(int argc, char** argv) {
         const auto& scene=scenes.at(mode);sx::DropdownState d;d.title=scene.at("title");d.message=scene.at("message");d.options=scene.at("options").get<std::vector<std::string>>();d.selected=0;
         sx::draw_dropdown(list,env,d,1);
     }
+    else if(mode=="cloudstream-ports" || mode=="cloudstream-ports-last" || mode=="cloudstream-unavailable" || mode=="cloudstream-sources") {
+        std::ifstream input(root+"/test-output/addon-sources/scenes.json");nlohmann::json scenes;input>>scenes;
+        const auto& language=scenes.at(sx::i18n::code());
+        if(mode=="cloudstream-sources") {
+            sx::AddonsContent content;for(const auto& row:language.at("sources")) {
+                sx::Addon a;a.name=row.at("name");a.version=row.at("version");a.description=row.at("description");a.types=row.at("types");a.initial=row.at("initial");content.items.push_back(a);
+            }
+            sx::Addons page(env);page.set_content(&content);page.enter();hui::InputFrame idle;
+            for(int i=0;i<120;++i)page.update(idle,1.f/60);hui::gfx::BackdropSpec bg;page.draw(list,bg);
+        } else {
+            const auto& scene=language.at(mode=="cloudstream-unavailable"?"unavailable":"ports");sx::DropdownState d;
+            d.title=scene.at("title");d.message=scene.at("message");d.options=scene.at("options").get<std::vector<std::string>>();
+            d.danger=scene.at("danger");d.selected=mode=="cloudstream-ports-last"?int(d.options.size())-1:0;sx::draw_dropdown(list,env,d,1);
+        }
+    }
     else if(mode=="source-preferences" || mode=="source-preferences-last") {
         std::ifstream input(root+"/test-output/source-preferences/ui-scenes.json");nlohmann::json scenes;input>>scenes;
         const auto& scene=scenes.at("source-preferences");sx::DropdownState d;d.title=scene.at("title");d.message=scene.at("message");d.options=scene.at("options").get<std::vector<std::string>>();d.selected=mode=="source-preferences-last"?int(d.options.size())-1:0;

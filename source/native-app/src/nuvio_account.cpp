@@ -1,6 +1,7 @@
 // Nuvio account protocol: device pairing, refresh rotation and addon sync.
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "nuvio_account.h"
+#include "cloudstream.h"
 #include "config_backup.h"
 #include "stremio.h"
 #include "http.h"
@@ -502,7 +503,7 @@ ApiResult api_addon_collection(const std::string& key) {
     if (plugin_response.ok() && plugin_rows.is_array()) {
         for (auto plugin : plugin_rows) {
             const auto type = jstr(plugin, "repo_type");
-            if (!enabled(plugin) || (!type.empty() && type != "NUVIO_JS")) continue;
+            if (!enabled(plugin) || (!type.empty() && type != "NUVIO_JS" && type != "EXTERNAL_DEX")) continue;
             plugin["is_plugin"] = true;
             rows.push_back(std::move(plugin));
         }
@@ -520,14 +521,20 @@ ApiResult api_addon_collection(const std::string& key) {
         if (fetch_addon(url, a, error)) list.push_back(json{{"transportUrl", url}, {"manifest", a.manifest}, {"plugin", jbool(r, "is_plugin")}});
         else {
             ++failed;
+            bool restored=false;
             if (cached.is_array()) for (const auto& c : cached)
-                if (jstr(c, "transportUrl") == url) { list.push_back(c); break; }
+                if (normalize_addon_url(jstr(c, "transportUrl")) == url && jobj(c,"manifest").is_object()) {
+                    auto entry=c;entry["transportUrl"]=url;entry["loadError"]=error;
+                    list.push_back(std::move(entry));restored=true;break;
+                }
+            if(!restored)list.push_back({{"transportUrl",url},{"manifest",nullptr},
+                {"name",jstr(r,"name","Source unavailable")},{"unavailable",true},
+                {"plugin",jbool(r,"is_plugin")},{"loadError",error}});
         }
     }
-    if (failed && list.empty()) return failure("Nuvio addon manifests could not be reached; retry in Settings");
     if (!save_json(profile_dir + "/account-addons.json", list)) return failure("Could not save account addons");
     chmod((profile_dir + "/account-addons.json").c_str(), 0600);
-    return success(json{{"addons", filter_pending_removals(list)}, {"syncError", sync_error}});
+    return success(json{{"addons", filter_pending_removals(list)}, {"syncError", sync_error}, {"failedSources",failed}});
 }
 ApiResult api_library_get(const std::string& key) {
     std::lock_guard<std::mutex> lock(mutex);
@@ -804,7 +811,7 @@ ApiResult update_source_locked(const std::string& url, bool plugin, bool remove_
         if (!fetch_addon(url, addon, error)) return failure("Could not read source manifest");
         if (addon.provider_repository != plugin) return failure("Source manifest type changed; remove and add the source again");
         json entry{{"url", url}, {"name", addon.name}, {"enabled", true}, {"sort_order", next.size()}};
-        if (plugin) entry["repo_type"] = "NUVIO_JS";
+        if (plugin) entry["repo_type"] = addon.cloudstream_repository ? "EXTERNAL_DEX" : "NUVIO_JS";
         next.push_back(entry);
     }
     const auto client = source_client();

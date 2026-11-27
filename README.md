@@ -12,7 +12,7 @@
   <a href="https://github.com/HandshakeHackin/Nuvio-maxd-releases/issues">Report a problem</a>
 </p>
 
-**Issues #28 / #29 test branch: 1.0.1.2** — USB torrent cache selection and a possible recovery for missing provider scripts. See [test instructions](source/native-app/TESTING-ISSUES28-29.md). This test includes the earlier issue #25 follow-up; stable remains 1.0.1.0.
+**Issue #29 test branch: 1.0.1.3** — standalone PS5 ports for 20 German providers, including KellerKino. Add [Bnyro’s repository](https://raw.githubusercontent.com/Bnyro/GermanProviders/master/repo.json), select its card in Addons, and enable the providers you want. Seven entries currently have no PS5 port and are labelled unavailable. Failed sources stay visible with retry/remove options. Android `.cs3` plugins are not executed. This test also includes the earlier subtitle and USB-cache changes; stable remains 1.0.1.0.
 
 **Latest release: 1.0.1.0** — free live TV, a unified guide, selectable channel-list refresh, multilingual search and a choice of menu layout.
 

@@ -129,6 +129,15 @@ class Backend(http.server.BaseHTTPRequestHandler):
         elif path == '/js-plugin/manifest.json':
             self.send_json(200, {'name': 'Fixture repository', 'scrapers': [
                 {'id': 'fixture', 'name': 'Fixture', 'filename': 'fixture.js'}]})
+        elif path == '/cloudstream/repo.json':
+            self.send_json(200, {'name': 'CloudStream fixture', 'manifestVersion': 1,
+                'pluginLists': ['https://127.0.0.1/private-never-requested']})
+        elif path == '/large/manifest.json':
+            self.send_response(200); self.end_headers()
+            try:
+                for _ in range(300): self.wfile.write(b'x' * 8192)
+            except (BrokenPipeError, ConnectionResetError):
+                pass
         elif path == '/provider/form':
             assert self.headers['Content-Type'] == 'application/x-www-form-urlencoded'
             assert self.headers['Authorization'] == 'Bearer provider-test'
@@ -191,6 +200,8 @@ class Backend(http.server.BaseHTTPRequestHandler):
                  'infoHash': 'f' * 40, 'behaviorHints': {'proxyHeaders': {'request': {'Authorization': 'Bearer debrid-only'}}}},
                 {'name': 'Raw torrent', 'infoHash': 'e' * 40}]})
         elif path in ('/metadata/manifest.json', '/streams/manifest.json'):
+            if state.get('manifests_offline'):
+                self.send_json(404, {}); return
             # Addons receive no Nuvio credentials.
             assert self.headers.get('Authorization') is None
             self.send_json(200, {'id': path.split('/')[1], 'name': 'AIO test addon', 'version': '1.0',
@@ -596,6 +607,46 @@ class AccountTests(unittest.TestCase):
         after = self.command('addons'); self.assertTrue(after['ok'])
         self.assertTrue(after['result']['offline'])
         self.assertEqual(before['result']['addons'], after['result']['addons'])
+
+    def test_missing_manifest_stays_visible_and_recovers(self):
+        self.assertTrue(self.pair()['ok'])
+        url = self.server.base + '/missing/manifest.json'
+        self.state['addon_rows'] = [{'url': url, 'name': 'Missing source', 'enabled': True}]
+        result = self.command('addons'); self.assertTrue(result['ok'], result)
+        row = result['result']['addons'][0]
+        self.assertEqual(row['transportUrl'], url)
+        self.assertTrue(row['unavailable']); self.assertIn('HTTP 404', row['loadError'])
+        self.state['addon_rows'] = [{'url': self.server.base + '/metadata/manifest.json', 'enabled': True}]
+        fresh = self.command('addons')['result']['addons'][0]
+        self.state['manifests_offline'] = True
+        cached = self.command('addons')['result']['addons'][0]
+        self.assertEqual(cached['manifest'], fresh['manifest'])
+        self.assertIn('HTTP 404', cached['loadError'])
+        self.assertFalse(cached.get('unavailable', False))
+        self.state['manifests_offline'] = False
+        recovered = self.command('addons')['result']['addons'][0]
+        self.assertNotIn('loadError', recovered)
+        self.assertEqual((self.profile_path() / 'account-addons.json').stat().st_mode & 0o777, 0o600)
+
+    def test_external_dex_source_is_visible_without_executing_bytecode(self):
+        self.assertTrue(self.pair()['ok'])
+        url = self.server.base + '/cloudstream/repo.json'
+        self.state['plugins_1'] = [{'url': url, 'name': 'CloudStream fixture', 'enabled': True, 'repo_type': 'EXTERNAL_DEX'}]
+        result = self.command('addons'); self.assertTrue(result['ok'], result)
+        rows = [r for r in result['result']['addons'] if r.get('plugin')]
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]['transportUrl'], url)
+        self.assertTrue(rows[0]['unavailable'])
+        self.assertIn('PS5 provider ports', rows[0]['loadError'])
+        self.assertFalse(any('private-never-requested' in p for p, _, _ in self.state['calls']))
+
+    def test_source_manifest_download_is_bounded(self):
+        self.assertTrue(self.pair()['ok'])
+        self.state['addon_rows'] = [{'url': self.server.base + '/large/manifest.json', 'name': 'Large source', 'enabled': True}]
+        result = self.command('addons'); self.assertTrue(result['ok'], result)
+        row = result['result']['addons'][0]
+        self.assertTrue(row['unavailable'])
+        self.assertEqual(row['loadError'], 'Source manifest exceeds 1 MiB')
 
     def test_logout_survives_process_restart(self):
         self.assertTrue(self.pair()['ok']); self.assertTrue(self.command('logout')['ok'])

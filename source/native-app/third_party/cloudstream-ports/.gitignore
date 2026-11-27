@@ -1,0 +1,8 @@
+node_modules/
+.tmdb_key
+.DS_Store
+.sto_login
+smoke-report.md
+smoke-failures.txt
+UPSTREAM_UPDATE.md
+debug.txt

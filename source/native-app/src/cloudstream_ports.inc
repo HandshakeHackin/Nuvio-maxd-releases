@@ -1,0 +1,23 @@
+// Generated from third_party/cloudstream-ports/PORTS.json.
+inline constexpr Port ports[] = {
+    {"netzkino", "netzkino", "Netzkino", "5a7c3999e340292629fdb202a87eb9aad04ce34c3d239373d21f59e2e6a6d433", 1},
+    {"ard", "ard", "ARD Mediathek", "b33528aa749c36d35547f0e574a09ad30eff807cfeedebc0a60d77194c94f7f3", 3},
+    {"plutotv", "plutotv", "PlutoTV", "e577103a57204f8e46a99d0a967c515e734cd4b90cb2097f07544e3816f83b9d", 3},
+    {"arte", "arte", "Arte", "b3cce677749e40d4c85cf19c11c3de2238aae07ea5cc7989efec1e3c49a5fa07", 3},
+    {"filmfrei24", "filmfrei24", "FilmFrei24", "29c65268e28ac482748e4d89b1081753d34a3ef7dc008223f1e61ac7ed5227cd", 3},
+    {"filmo", "filmo", "Filmo", "5317bca314118373f906efebb755f062f85cf9962a835e871bf12cac3224d37d", 1},
+    {"flixitv", "flixitv", "FlixiTV", "dc86a7b6c085e963e5c42907ac91b1f5d2cb7f71e40aaf8e6f3409e3464cf286", 3},
+    {"serienstream", "serienstream", "Serienstream", "629d0c29622b91f4076fd75cbd7c08257e19efdeae498a4ac83f8a25869f9884", 2},
+    {"aniworld", "aniworld", "Aniworld", "64062e25c4b438ae588a964d43421e5b92e0961b30a59b4fd7eabadecc228fec", 3},
+    {"discovery", "dmax", "DMAX", "8cd91e9576b673933e1356ba059815850d1e91327c8badeafb23301c247a3c05", 3},
+    {"discovery", "tele5", "TELE 5", "5d100021e210e2d0857515c736847da6f986557809c77ca93cf83bac2b038ac0", 3},
+    {"discovery", "tlc", "TLC", "ac15b01b182bdbf99b23a22be5b626112bdc96d9d32ce1f631d89202fa8024fa", 3},
+    {"southpark", "southpark", "South Park", "e1d74f1a0433463db0549c40ef5152da19e65adf9c618303c666f9d24d83977d", 2},
+    {"moflix", "moflix", "Moflix", "c8642560c1ce2f170aae031145397bf0f233b63df708f84ec2a00eac0d475b6b", 3},
+    {"huhuto", "huhuto", "Huhu", "e1119ca0a8e597f9d8acdace02e362468406a8e228d756f26b789e889bcc77b2", 3},
+    {"filmpalast", "filmpalast", "FilmPalast", "d99b694810d9ea6a3aad56767697f92889cee2a865cc56ee122180fbc426f9b0", 3},
+    {"megakino", "megakino", "Megakino", "fe71d9930dc7aa22b7a2bb897d2c306080711734840d6258319a54a79e48797b", 3},
+    {"hdfilme", "hdfilme", "HDFilme", "22a24994bfc835cf933b1b18188816dd4949a92c266d5443383e95ea70bb13fb", 1},
+    {"kinoking", "kinoking", "KinoKing", "4afee5007a2c2af25b42ec8d403e7f8ca181a28f6b7f8dd852fbebee066cff12", 2},
+    {"kellerkino", "kellerkino", "KellerKino", "994e9810ff1c8aec73d65a28416640fc79d4b01e4f213f9b1c5c4f96ff54fbbe", 1},
+};

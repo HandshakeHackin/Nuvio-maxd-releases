@@ -86,3 +86,8 @@ int main(int argc,char** argv) {
     sx::TexCacheProbe::private_art();sx::TexCacheProbe::check();std::filesystem::remove_all("/tmp/maxd-artwork-queue-test");
     std::cout<<"Production artwork workers: bounded request/decoded queues, backpressure and shutdown cancellation passed\n";
 }
+
+// Manifest transport uses the same in-process HTTP fixture.
+HttpResponse http_get_manifest(const std::string& url,long timeout,const std::atomic<bool>* cancel,bool) {
+    return http_get(url,timeout,cancel,{});
+}

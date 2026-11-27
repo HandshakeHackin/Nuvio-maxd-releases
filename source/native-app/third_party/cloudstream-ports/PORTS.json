@@ -1,0 +1,198 @@
+{
+  "version": "1.0.16",
+  "ports": [
+    {
+      "module": "netzkino",
+      "id": "netzkino",
+      "name": "Netzkino",
+      "types": [
+        "movie"
+      ],
+      "sha256": "5a7c3999e340292629fdb202a87eb9aad04ce34c3d239373d21f59e2e6a6d433"
+    },
+    {
+      "module": "ard",
+      "id": "ard",
+      "name": "ARD Mediathek",
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "sha256": "b33528aa749c36d35547f0e574a09ad30eff807cfeedebc0a60d77194c94f7f3"
+    },
+    {
+      "module": "plutotv",
+      "id": "plutotv",
+      "name": "PlutoTV",
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "sha256": "e577103a57204f8e46a99d0a967c515e734cd4b90cb2097f07544e3816f83b9d"
+    },
+    {
+      "module": "arte",
+      "id": "arte",
+      "name": "Arte",
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "sha256": "b3cce677749e40d4c85cf19c11c3de2238aae07ea5cc7989efec1e3c49a5fa07"
+    },
+    {
+      "module": "filmfrei24",
+      "id": "filmfrei24",
+      "name": "FilmFrei24",
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "sha256": "29c65268e28ac482748e4d89b1081753d34a3ef7dc008223f1e61ac7ed5227cd"
+    },
+    {
+      "module": "filmo",
+      "id": "filmo",
+      "name": "Filmo",
+      "types": [
+        "movie"
+      ],
+      "sha256": "5317bca314118373f906efebb755f062f85cf9962a835e871bf12cac3224d37d"
+    },
+    {
+      "module": "flixitv",
+      "id": "flixitv",
+      "name": "FlixiTV",
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "sha256": "dc86a7b6c085e963e5c42907ac91b1f5d2cb7f71e40aaf8e6f3409e3464cf286"
+    },
+    {
+      "module": "serienstream",
+      "id": "serienstream",
+      "name": "Serienstream",
+      "types": [
+        "tv"
+      ],
+      "sha256": "629d0c29622b91f4076fd75cbd7c08257e19efdeae498a4ac83f8a25869f9884"
+    },
+    {
+      "module": "aniworld",
+      "id": "aniworld",
+      "name": "Aniworld",
+      "types": [
+        "tv",
+        "movie"
+      ],
+      "sha256": "64062e25c4b438ae588a964d43421e5b92e0961b30a59b4fd7eabadecc228fec"
+    },
+    {
+      "module": "discovery",
+      "id": "dmax",
+      "name": "DMAX",
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "sha256": "8cd91e9576b673933e1356ba059815850d1e91327c8badeafb23301c247a3c05"
+    },
+    {
+      "module": "discovery",
+      "id": "tele5",
+      "name": "TELE 5",
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "sha256": "5d100021e210e2d0857515c736847da6f986557809c77ca93cf83bac2b038ac0"
+    },
+    {
+      "module": "discovery",
+      "id": "tlc",
+      "name": "TLC",
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "sha256": "ac15b01b182bdbf99b23a22be5b626112bdc96d9d32ce1f631d89202fa8024fa"
+    },
+    {
+      "module": "southpark",
+      "id": "southpark",
+      "name": "South Park",
+      "types": [
+        "tv"
+      ],
+      "sha256": "e1d74f1a0433463db0549c40ef5152da19e65adf9c618303c666f9d24d83977d"
+    },
+    {
+      "module": "moflix",
+      "id": "moflix",
+      "name": "Moflix",
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "sha256": "c8642560c1ce2f170aae031145397bf0f233b63df708f84ec2a00eac0d475b6b"
+    },
+    {
+      "module": "huhuto",
+      "id": "huhuto",
+      "name": "Huhu",
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "sha256": "e1119ca0a8e597f9d8acdace02e362468406a8e228d756f26b789e889bcc77b2"
+    },
+    {
+      "module": "filmpalast",
+      "id": "filmpalast",
+      "name": "FilmPalast",
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "sha256": "d99b694810d9ea6a3aad56767697f92889cee2a865cc56ee122180fbc426f9b0"
+    },
+    {
+      "module": "megakino",
+      "id": "megakino",
+      "name": "Megakino",
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "sha256": "fe71d9930dc7aa22b7a2bb897d2c306080711734840d6258319a54a79e48797b"
+    },
+    {
+      "module": "hdfilme",
+      "id": "hdfilme",
+      "name": "HDFilme",
+      "types": [
+        "movie"
+      ],
+      "sha256": "22a24994bfc835cf933b1b18188816dd4949a92c266d5443383e95ea70bb13fb"
+    },
+    {
+      "module": "kinoking",
+      "id": "kinoking",
+      "name": "KinoKing",
+      "types": [
+        "tv"
+      ],
+      "sha256": "4afee5007a2c2af25b42ec8d403e7f8ca181a28f6b7f8dd852fbebee066cff12"
+    },
+    {
+      "module": "kellerkino",
+      "id": "kellerkino",
+      "name": "KellerKino",
+      "types": [
+        "movie"
+      ],
+      "sha256": "994e9810ff1c8aec73d65a28416640fc79d4b01e4f213f9b1c5c4f96ff54fbbe"
+    }
+  ]
+}

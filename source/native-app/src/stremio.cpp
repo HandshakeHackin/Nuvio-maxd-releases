@@ -3,6 +3,8 @@
 #include <algorithm>
 
 #include "http.h"
+#include "cloudstream.h"
+#include <chrono>
 
 const char* kCinemetaUrl = "https://v3-cinemeta.strem.io/manifest.json";
 const char* kOpenSubtitlesUrl = "https://opensubtitles-v3.strem.io/manifest.json";
@@ -62,7 +64,10 @@ std::string normalize_addon_url(std::string url) {
 	const std::string query = query_start == std::string::npos ? "" : url.substr(query_start);
 	std::string path = url.substr(0, query_start);
 	while (!path.empty() && path.back() == '/') path.pop_back();
-	if (!ends_with(lower(path), "/manifest.json")) path += "/manifest.json";
+	if(query.empty() && cloudstream::known_source(path)) return cloudstream::source_url;
+	const auto path_start=path.find('/',path.find("://")+3);
+	const auto name=path_start==std::string::npos?std::string{}:lower(path.substr(path.find_last_of('/')+1));
+	if (name!="manifest" && !ends_with(name,".json")) path += "/manifest.json";
 	return path + query;
 }
 
@@ -72,12 +77,15 @@ bool parse_addon(const json& m, const std::string& transport_url, Addon& a) {
     if (!repository && jstr(m,"id").empty()) return false;
     a = Addon{};
     a.provider_repository = repository;
+    a.cloudstream_repository = repository && cloudstream::known_source(transport_url) &&
+        jnum(m,"_nuvioCloudstreamPorts")==1;
 	a.manifest = m;
 	a.transport_url = transport_url;
 	const size_t query_start = transport_url.find('?');
 	a.query = query_start == std::string::npos ? "" : transport_url.substr(query_start);
 	a.base = transport_url.substr(0, query_start);
 	if (ends_with(lower(a.base), "/manifest.json")) a.base.resize(a.base.size() - 14);
+	else if (ends_with(lower(a.base), "/manifest")) a.base.resize(a.base.size() - 9);
 	a.id = jstr(m, "id", "provider:" + transport_url);
 	a.name = jstr(m, "name", a.id);
 	a.version = jstr(m, "version");
@@ -91,10 +99,17 @@ bool parse_addon(const json& m, const std::string& transport_url, Addon& a) {
             ProviderScript p; p.id=jstr(entry,"id");p.name=jstr(entry,"name",p.id);p.filename=jstr(entry,"filename");
             p.version=jstr(entry,"version",a.version);
             p.types=str_array(jobj(entry,"supportedTypes"));
+            if(a.cloudstream_repository) {
+                const auto native=jstr(entry,"nativePort");
+                const auto* port=cloudstream::port(native);
+                if(!port || native!=p.id || p.filename!="builtin:cloudstream/"+native)continue;
+                p.native_port=native;
+            }
             if(!p.id.empty() && !p.filename.empty() && p.filename.size()<2048 && a.providers.size()<256)
                 a.providers.push_back(std::move(p));
         }
-        return !a.providers.empty();
+        if(a.cloudstream_repository) a.unsupported_providers=str_array(jobj(m,"unsupportedProviders"));
+        return !a.providers.empty() || (a.cloudstream_repository && !a.unsupported_providers.empty());
     }
 	const json& res = jobj(m, "resources");
 	if (res.is_array()) {
@@ -154,6 +169,7 @@ bool parse_addon(const json& m, const std::string& transport_url, Addon& a) {
 }
 
 bool Addon::supports(const std::string& resource, const std::string& type, const std::string& id) const {
+    if(unavailable)return false;
     if(provider_repository) {
         if(resource!="stream") return false;
         for(const auto& p:providers) if(p.enabled && (p.types.empty() || std::find(p.types.begin(),p.types.end(),type)!=p.types.end() ||
@@ -195,8 +211,24 @@ bool fetch_json(const std::string& url, json& out, std::string& err, long timeou
 }
 
 bool fetch_addon(const std::string& url, Addon& out, std::string& err, const std::atomic<bool>* cancel, long timeout_s) {
-	json m;
-	if (!fetch_json(url, m, err, std::clamp(timeout_s, 1L, 15L), cancel)) return false;
+	const auto deadline=std::chrono::steady_clock::now()+std::chrono::seconds(std::clamp(timeout_s,1L,15L));
+    const bool native=cloudstream::known_source(url);
+    const auto response=http_get_manifest(url,std::clamp(timeout_s,1L,15L),cancel,native);
+    if(!response.ok()){err=response.describe();return false;}
+    json m=json::parse(response.body,nullptr,false);
+    if(m.is_discarded()){err="Invalid source manifest JSON";return false;}
+    if(cloudstream::repository(m)) {
+        if(!native || !cloudstream::valid_list(m)) {
+            err="This CloudStream repository has no supported PS5 provider ports";return false;
+        }
+        const auto remaining=std::chrono::duration_cast<std::chrono::seconds>(deadline-std::chrono::steady_clock::now()).count();
+        if(remaining<=0 || (cancel && *cancel)){err="Source request cancelled or timed out";return false;}
+        const auto list=http_get_manifest(cloudstream::list_url,remaining,cancel,true);
+        if(!list.ok()){err="CloudStream provider list unavailable ("+list.describe()+")";return false;}
+        json adapted;
+        if(!cloudstream::adapt(m,json::parse(list.body,nullptr,false),adapted,err))return false;
+        m=std::move(adapted);
+    }
 	if (!parse_addon(m, url, out)) {
 		err = "not an addon manifest";
 		return false;

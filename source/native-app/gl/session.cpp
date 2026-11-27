@@ -8,6 +8,7 @@
 #include "session.hpp"
 #include "tracking.h"
 #include "release_notes.hpp"
+#include "cloudstream.h"
 #include "settings_navigation.hpp"
 #include "i18n.hpp"
 #include "build_integrity_text.hpp"
@@ -405,6 +406,7 @@ void Session::load_addons()
         bool account_failed = false;
     };
     if (!profile_ready_) return;
+    if(cloudstream::migrate_aliases(prefs_.extra_addons,prefs_.provider_enabled,prefs_.provider_settings))save_prefs();
     const std::string key = prefs_.auth_key;
     const std::vector<std::string> extra = prefs_.extra_addons;
     const int gen = ++addons_gen_;
@@ -430,16 +432,23 @@ void Session::load_addons()
                             const std::string url = jstr(e, "transportUrl");
                             if (parse_addon(jobj(e, "manifest"), url, *a))
                             {
+                                a->load_error=jstr(e,"loadError");
                                 ::Addon fresh;
                                 std::string refresh_error;
                                 const auto remaining = std::chrono::duration_cast<std::chrono::seconds>(
                                     manifest_deadline - std::chrono::steady_clock::now()).count();
-                                if (remaining > 0 && fetch_addon(url, fresh, refresh_error, nullptr,
+                                if (a->load_error.empty() && remaining > 0 && fetch_addon(url, fresh, refresh_error, nullptr,
                                                                std::min<long>(3, remaining)))
                                     *a = std::move(fresh);
                                 a->from_account = true;
                                 if (seen.insert(url).second)
                                     r.addons.push_back(a);
+                            }
+                            else if(jbool(e,"unavailable") && !url.empty()) {
+                                a->transport_url=url;a->id=url;a->name=jstr(e,"name","Source unavailable").substr(0,160);
+                                a->provider_repository=jbool(e,"plugin");a->unavailable=true;
+                                a->load_error=jstr(e,"loadError","Could not load source");a->from_account=true;
+                                if(seen.insert(url).second)r.addons.push_back(a);
                             }
                         }
                 }
@@ -453,7 +462,7 @@ void Session::load_addons()
                 }
             }
             std::vector<std::string> urls;
-            if (r.addons.empty())
+            if (std::none_of(r.addons.begin(),r.addons.end(),[](const auto& a){return !a->unavailable;}))
                 urls = {kCinemetaUrl, kOpenSubtitlesUrl};
             for (const auto &u : extra)
                 urls.push_back(u);
@@ -471,6 +480,10 @@ void Session::load_addons()
                 else
                 {
                     r.errors.push_back(sx::i18n::tr("Could not reach an addon (") + err + ")");
+                    if(std::find(extra.begin(),extra.end(),u)!=extra.end()) {
+                        a->transport_url=u;a->id=u;a->name=sx::i18n::tr("Source unavailable");
+                        a->unavailable=true;a->load_error=err;seen.insert(u);r.addons.push_back(a);
+                    }
                 }
             }
             return r;
@@ -506,7 +519,7 @@ void Session::load_addons()
             }
             if (extra_before != prefs_.extra_addons) save_prefs();
             if (signed_in()) for (const auto& a : addons_)
-                if (!a->from_account &&
+                if (!a->from_account && !a->unavailable &&
                     std::find(prefs_.extra_addons.begin(), prefs_.extra_addons.end(), a->transport_url) != prefs_.extra_addons.end() &&
                     !(a->provider_repository ? inherit_plugins_ : inherit_addons_))
                     sync_source(a->transport_url, a->provider_repository, false, true);
@@ -611,14 +624,31 @@ void Session::addon_activate(int index, int provider_cursor)
         return;
     const std::string url = addons_[static_cast<std::size_t>(index)]->transport_url;
     auto &selected = *addons_[static_cast<std::size_t>(index)];
-    if (selected.provider_repository ? inherit_plugins_ : inherit_addons_) {
+    if ((!selected.unavailable || selected.from_account) && (selected.provider_repository ? inherit_plugins_ : inherit_addons_)) {
         say(sx::i18n::tr("This profile uses the primary profile's sources. Manage them in that profile."), 7.0); return;
+    }
+    if(selected.unavailable) {
+        const bool account=selected.from_account,plugin=selected.provider_repository;
+        open_dropdown(selected.name,{sx::i18n::tr("Retry source"),sx::i18n::tr("Remove source"),sx::i18n::tr("Cancel")},-1,
+            [this,url,account,plugin](int pick){
+                if(pick==0){addons_reload();return;}
+                if(pick!=1)return;
+                auto& ex=prefs_.extra_addons;ex.erase(std::remove(ex.begin(),ex.end(),url),ex.end());
+                prefs_.provider_enabled.erase(url);prefs_.provider_settings.erase(url);save_prefs();
+                if(account)sync_source(url,plugin,true);
+                load_addons();
+            });
+        dropdown.danger=1;
+        dropdown.message=std::string(sx::i18n::tr("Source unavailable"))+": "+selected.load_error;
+        say(std::string(sx::i18n::tr("Source unavailable"))+": "+selected.load_error,7.0,true);return;
     }
     if (selected.provider_repository)
     {
         std::vector<std::string> choices;
         for (const auto &p : selected.providers)
-            choices.push_back(std::string(p.enabled ? "On: " : sx::i18n::tr("Off: ")) + p.name);
+            choices.push_back(std::string(p.enabled ? sx::i18n::tr("On: ") : sx::i18n::tr("Off: ")) + p.name);
+        for(const auto& name:selected.unsupported_providers)
+            choices.push_back(sx::i18n::tr("No PS5 port: ")+name);
         const int count = static_cast<int>(choices.size());
         choices.push_back(sx::i18n::tr("Provider settings"));
         choices.push_back(sx::i18n::tr("Remove repository"));
@@ -647,6 +677,9 @@ void Session::addon_activate(int index, int provider_cursor)
                               load_addons();
                               return;
                           }
+                          if(pick>=static_cast<int>(a->providers.size())) {
+                              say(sx::i18n::tr("No PS5 port is available for this provider."),7.0);return;
+                          }
                           auto &p = a->providers[static_cast<size_t>(pick)];
                           p.enabled = !p.enabled;
                           prefs_.provider_enabled[url][p.id] = p.enabled;
@@ -663,6 +696,8 @@ void Session::addon_activate(int index, int provider_cursor)
                       });
         dropdown.selected = std::clamp(provider_cursor, 0, count + 2);
         dropdown.danger = count+1;
+        if(selected.cloudstream_repository)dropdown.message=std::string(sx::i18n::tr("Standalone PS5 ports"))+"\nBnyro / dw98-git · GPL-3.0";
+        if(!selected.load_error.empty())dropdown.message=sx::i18n::tr("Using saved source metadata. ")+selected.load_error+"\n"+dropdown.message;
         return;
     }
     const auto it = std::find(prefs_.extra_addons.begin(), prefs_.extra_addons.end(), url);
@@ -696,14 +731,19 @@ void Session::refresh_addons()
         row.name = a->name;
         row.version = a->version.empty() ? "" : "v" + a->version;
         row.description = a->description;
-        if (a->provider_repository)
+        if(a->unavailable)row.description=std::string(sx::i18n::tr("Source unavailable"))+": "+a->load_error;
+        else if (a->provider_repository)
         {
             size_t enabled = 0;
             for (const auto &p : a->providers)
                 enabled += p.enabled;
             row.description = sx::i18n::tr("Plugin repository · ") + std::to_string(enabled) + " of " +
                               std::to_string(a->providers.size()) + sx::i18n::tr(" providers enabled. Select to manage.");
+            if(a->cloudstream_repository)row.description=std::string(sx::i18n::tr("Standalone PS5 ports"))+" · "+
+                sx::i18n::tr("Enabled")+": "+std::to_string(enabled)+"/"+std::to_string(a->providers.size())+" · "+
+                std::to_string(a->unsupported_providers.size())+sx::i18n::tr(" unavailable. Select to manage.");
         }
+        if(!a->unavailable && !a->load_error.empty())row.description=sx::i18n::tr("Using saved source metadata. ")+row.description;
         std::vector<std::string> types;
         for (const auto &t : a->types)
             types.push_back(t);

@@ -1,0 +1,36 @@
+name: Debug hoster
+
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: Embed URL of the hoster (e.g. https://vinovo.to/e/...)
+        required: true
+      referer:
+        description: Referer the plugin sends
+        default: https://filmpalast.to/
+
+permissions:
+  contents: read
+
+jobs:
+  debug:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Ask the hoster what it answers
+        env:
+          URL: ${{ inputs.url }}
+          REFERER: ${{ inputs.referer }}
+        run: node scripts/debug-host.js "$URL" "$REFERER" | tee debug.txt
+      - name: Show result
+        if: always()
+        run: |
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          cat debug.txt >> "$GITHUB_STEP_SUMMARY" || true
+          echo '```' >> "$GITHUB_STEP_SUMMARY"

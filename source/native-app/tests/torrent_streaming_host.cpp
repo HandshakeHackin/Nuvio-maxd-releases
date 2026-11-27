@@ -762,3 +762,8 @@ int main(int argc, char** argv) {
     std::printf("ALL TORRENT STREAMING HOST TESTS PASSED!\n");
     return 0;
 }
+
+// Manifest transport uses the same in-process HTTP fixture.
+HttpResponse http_get_manifest(const std::string& url,long timeout,const std::atomic<bool>* cancel,bool) {
+    return http_get(url,timeout,cancel,{});
+}

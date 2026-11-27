@@ -1,0 +1,66 @@
+name: Upstream GermanProviders sync
+
+on:
+  schedule:
+    - cron: "17 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: upstream-sync
+  cancel-in-progress: false
+
+env:
+  BRANCH: automation/upstream-sync
+
+jobs:
+  upstream-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - name: Fetch upstream
+        run: |
+          git remote add upstream https://github.com/Bnyro/GermanProviders.git
+          git fetch --no-tags upstream master
+      - name: Detect and document upstream changes
+        run: node scripts/upstream-report.js
+      - name: Compare with the open sync branch
+        id: changes
+        run: |
+          # no report -> upstream is unchanged since .upstream.json
+          if [ ! -f UPSTREAM_UPDATE.md ]; then echo "changed=false" >> "$GITHUB_OUTPUT"; exit 0; fi
+          # the report has no timestamp, so an identical report means nothing new since the last run
+          if git fetch --no-tags origin "$BRANCH" 2>/dev/null \
+             && git show "origin/$BRANCH:UPSTREAM_UPDATE.md" | cmp -s - UPSTREAM_UPDATE.md; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Push report to the sync branch
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B "$BRANCH"
+          git add -f UPSTREAM_UPDATE.md .upstream.json
+          git commit -m "chore: document upstream GermanProviders changes"
+          git push --force --set-upstream origin "$BRANCH"
+      - name: Create or update the draft pull request
+        if: steps.changes.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          number="$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number // empty')"
+          if [ -n "$number" ]; then
+            gh pr edit "$number" --body-file UPSTREAM_UPDATE.md
+          else
+            # needs Settings -> Actions -> General -> "Allow GitHub Actions to create and approve pull requests"
+            gh pr create --head "$BRANCH" --base main --draft \
+              --title "chore: upstream GermanProviders update" --body-file UPSTREAM_UPDATE.md \
+              || echo "::warning::Could not open the pull request (enable 'Allow GitHub Actions to create and approve pull requests' in Settings -> Actions -> General). The report is on branch $BRANCH: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/compare/main...${BRANCH}?expand=1"
+          fi

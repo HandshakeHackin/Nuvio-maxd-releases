@@ -6,6 +6,7 @@ B="$ROOT/test-output"
 read -r -a bidi_cflags <<< "$(pkg-config --cflags fribidi)"
 read -r -a bidi_libs <<< "$(pkg-config --libs fribidi)"
 mkdir -p "$B"
+if [[ -z "${PREVIEW_MODES:-}" || "${PREVIEW_MODES:-}" == *cloudstream-* ]]; then bash "$ROOT/tests/addon_sources.sh"; fi
 if [[ -z "${PREVIEW_MODES:-}" || "${PREVIEW_MODES:-}" =~ title-actions|watched-confirm ]]; then bash "$ROOT/tests/title_actions.sh"; fi
 if [[ -z "${PREVIEW_MODES:-}" || "${PREVIEW_MODES:-}" == *remote-* ]]; then bash "$ROOT/tests/remote_session.sh"; fi
 if [[ -z "${PREVIEW_MODES:-}" || "${PREVIEW_MODES:-}" =~ torrent-resume|torrent-settings|torrent-cache-location|playback-recovery|diagnostic-summary ]]; then
@@ -43,6 +44,10 @@ if [ -z "${PREVIEW_MODES:-}" ]; then
     modes+=(start-page channel-options backup-channels hidden-channels)
     modes+=(playlist-refresh search-keyboard search-keyboard-he search-keyboard-th search-keyboard-ko top-navigation top-navigation-last)
     modes+=(torrent-cache-location torrent-cache-location-last)
+    modes+=(cloudstream-ports cloudstream-ports-last cloudstream-unavailable cloudstream-sources)
+    for language in de es fr ar zh-Hans ja ko;do
+        for scene in ports ports-last unavailable sources;do modes+=("$language-cloudstream-$scene");done
+    done
     for language in de es fr ar zh-Hans ja ko;do modes+=("$language-torrent-cache-location" "$language-torrent-cache-location-last");done
     for language in de es fr ar zh-Hans ja ko;do modes+=("$language-playlist-refresh" "$language-search-keyboard" "$language-top-navigation-last");done
     modes+=(free-tv-settings free-tv-disclaimer free-tv-countries unified-guide)

@@ -594,6 +594,19 @@
     "Torrent cache location saved.": "キャッシュの保存先を保存しました。",
     "USB cache failed; using bounded RAM. No internal cache writes.": "USB キャッシュに失敗しました。制限付きの RAM を使用し、内蔵 SSD にはキャッシュを書き込みません。",
     "USB cache requires the payload loader on port 9021. Keep the drive connected; unavailable storage uses RAM.": "USB キャッシュにはポート 9021 のペイロードローダーが必要です。ドライブを接続したままにしてください。使用できない場合は RAM を使用します。",
-    "USB cache unavailable; using bounded RAM. No internal cache writes.": "USB キャッシュを使用できません。制限付きの RAM を使用し、内蔵 SSD にはキャッシュを書き込みません。"
+    "USB cache unavailable; using bounded RAM. No internal cache writes.": "USB キャッシュを使用できません。制限付きの RAM を使用し、内蔵 SSD にはキャッシュを書き込みません。",
+    "Source unavailable": "ソースを利用できません",
+    "Retry source": "ソースを再試行",
+    "No PS5 port: ": "PS5移植版なし：",
+    "No PS5 port is available for this provider.": "このプロバイダーのPS5移植版はありません。",
+    "Standalone PS5 ports": "単独動作するPS5移植版",
+    " unavailable. Select to manage.": " 件利用不可。選択して管理。",
+    "Using saved source metadata. ": "保存済みのソース情報を使用しています。 ",
+    "On: ": "オン：",
+    "Standalone PS5 ports for 20 German providers, including KellerKino. Enable them from Addons.": "KellerKinoを含む20のドイツ語プロバイダーがPS5単体で動作します。アドオンで有効にしてください。",
+    "CloudStream repositories label providers that do not have a PS5 port.": "CloudStreamリポジトリではPS5移植版のないプロバイダーを明示します。",
+    "Unavailable sources stay visible with retry and remove options. Saved source metadata is preserved.": "利用できないソースも表示され、再試行や削除が可能です。保存済みのソース情報は保持されます。",
+    "Includes the previous subtitle fixes and optional USB torrent cache.": "以前の字幕修正と、任意で使えるUSBトレントキャッシュを含みます。",
+    "Remove repository": "リポジトリを削除"
   }
 }
