@@ -1,0 +1,8 @@
+Menu catalogs: en 1516/1516, de 1516/1516, es 606/1516, fr 606/1516, ar 606/1516, zh-Hans 606/1516, ja 606/1516, ko 606/1516; complete core and reproducible table
+............
+----------------------------------------------------------------------
+Ran 12 tests in 0.742s
+
+OK
+Localization: eight saved languages, aliases, invalid settings, English fallback, stable category IDs, Latin/Arabic/CJK search, Arabic shaping and 4485 menu glyph rasters passed
+Localization dialogs: eight native language names, real persistence/readback, failed-save rollback, restart boundary and stable USB cancellation purposes passed

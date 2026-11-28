@@ -1,0 +1,21 @@
+Provider bundle and dependency lock match the recorded build pins
+JS exception: Error: Unsupported provider module: fs
+Provider runtime, parsing, crypto, timers, cancellation, isolation and manifest tests passed
+[nuvio] provider: script download failed id=sample status=404
+[nuvio] provider: script download failed id=sample status=0
+[nuvio] provider: script download failed id=sample status=0
+[nuvio] provider: retried missing script using refreshed repository metadata
+[nuvio] provider: script download failed id=sample status=404
+[nuvio] provider: script download failed id=sample status=404
+[nuvio] provider: script download failed id=sample status=404
+[nuvio] provider: script download failed id=sample status=401
+Provider download pipeline: script execution, relative URLs, HTTP errors, timeout, redirect and address protection passed
+Missing provider recovery: renamed script, original repository, same ID, settings, cache, invalid/ambiguous manifests, authorization and cancellation passed
+Dropdown scrolling: every selection stays visible, first/last choices reachable, panel fits screen
+Six provider registration validation cases passed (values omitted)
+German provider fixture 1: stream and playback headers returned; metadata rejection reported
+German provider fixture 2: stream and playback headers returned; metadata rejection reported
+German provider fixture 3: stream and playback headers returned; metadata rejection reported
+German provider fixture 4: stream and playback headers returned; metadata rejection reported
+Native CloudStream ports: all 20 initialize without downloads; KellerKino returns a stream with headers; tampering and invalid IDs rejected
+Stream result cache: HTTP/torrent expiry, stable torrent metadata, profile/options isolation, signed URL exclusion, memory/count/LRU bounds, reload and clearing passed

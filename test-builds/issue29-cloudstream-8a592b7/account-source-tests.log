@@ -1,0 +1,10 @@
+test_missing_manifest_stays_visible_and_recovers (__main__.AccountTests.test_missing_manifest_stays_visible_and_recovers) ... ok
+test_external_dex_source_is_visible_without_executing_bytecode (__main__.AccountTests.test_external_dex_source_is_visible_without_executing_bytecode) ... ok
+test_source_manifest_download_is_bounded (__main__.AccountTests.test_source_manifest_download_is_bounded) ... ok
+test_profile_source_inheritance_separate_for_plugins_and_addons (__main__.AccountTests.test_profile_source_inheritance_separate_for_plugins_and_addons) ... ok
+test_accounts_never_share_profile_cache (__main__.AccountTests.test_accounts_never_share_profile_cache) ... ok
+
+----------------------------------------------------------------------
+Ran 5 tests in 3.120s
+
+OK

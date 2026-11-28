@@ -1,0 +1,47 @@
+update: numeric versions and downgrade refusal
+update: malformed version refusal
+update: temporary revision ordering and upgrade to next release
+update: canonical temporary revision parsing
+update: 1.0 upgrade ordering
+update: stable release tag and version-matched assets
+update: 1.0 legacy upgrade tag retained
+update: native stable tag accepted
+update: tag and declared version must match
+update: unknown tag suffix refused
+update: stable binary requires matching source
+update: stable draft is not advertised
+update: new native image with matching source
+update: malformed release cannot hide a valid later release
+update: no binary advertised without matching source
+update: wrong repository or plaintext URL refusal
+update: missing digest refusal
+update: oversized image refusal
+update: managed homebrew paths only
+update: resolve exact title's physical image
+update: wrong title refusal
+update: persistent backing mount refusal
+update: fully released image accepted
+update: disconnected storage is not an unmount
+update: successful runtime unmount still waits for backing image
+update: busy title cannot authorize replacement even with released snapshot
+update: later independent snapshot completes release wait
+update: terminal unmount error is not retried
+update: transient API outage is retried without replacing
+update: malformed status cannot authorize replacement
+update: missing image is not proof of release
+update: storage disconnection cannot authorize replacement
+update: verified staging leaves original installed
+update: cancellation removes only the owned stage
+update: truncated transfer refusal
+update: corrupt image SHA-256 refusal
+update: busy image retains original
+update: external install changes are preserved
+update: symlink image refusal
+update: symlink parent refusal
+update: stage tampering after verification refusal
+update: remount before commit retains original
+update: rename failure retains installed image and verified backup
+update: storage sync failure refuses replacement
+update: existing backup is never overwritten
+update: atomic install retains backup and saved data
+FFPFSC updater: 46 tests, 0 failures

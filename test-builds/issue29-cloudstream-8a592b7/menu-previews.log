@@ -1,0 +1,36 @@
+Production source menus: port toggles, unsupported entries, settings/removal indices, inherited sources, retry/removal, profile separation and eight localized scenes passed
+[HUI] program batch2d built in 18 ms
+[HUI] program mesh2d built in 0 ms
+[HUI] program backdrop built in 35 ms
+[HUI] program blur built in 1 ms
+cloudstream-ports: GL error 0x0; 159 shapes
+[HUI] program batch2d built in 17 ms
+[HUI] program mesh2d built in 0 ms
+[HUI] program backdrop built in 42 ms
+[HUI] program blur built in 1 ms
+cloudstream-ports-last: GL error 0x0; 194 shapes
+[HUI] program batch2d built in 16 ms
+[HUI] program mesh2d built in 0 ms
+[HUI] program backdrop built in 28 ms
+[HUI] program blur built in 1 ms
+cloudstream-unavailable: GL error 0x0; 84 shapes
+[HUI] program batch2d built in 18 ms
+[HUI] program mesh2d built in 0 ms
+[HUI] program backdrop built in 30 ms
+[HUI] program blur built in 1 ms
+cloudstream-sources: GL error 0x0; 259 shapes
+[HUI] program batch2d built in 19 ms
+[HUI] program mesh2d built in 0 ms
+[HUI] program backdrop built in 34 ms
+[HUI] program blur built in 1 ms
+ar-cloudstream-ports-last: GL error 0x0; 206 shapes
+[HUI] program batch2d built in 18 ms
+[HUI] program mesh2d built in 0 ms
+[HUI] program backdrop built in 31 ms
+[HUI] program blur built in 1 ms
+de-cloudstream-unavailable: GL error 0x0; 99 shapes
+[HUI] program batch2d built in 18 ms
+[HUI] program mesh2d built in 0 ms
+[HUI] program backdrop built in 30 ms
+[HUI] program blur built in 1 ms
+release-notes: GL error 0x0; 333 shapes

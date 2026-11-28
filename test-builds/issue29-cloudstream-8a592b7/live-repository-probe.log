@@ -1,0 +1,2 @@
+[nuvio] curl libcurl/8.23.0 OpenSSL/3.5.7 zlib/1.3.1, CA bundle /workspace/nuvio-cloudstream/source/native-app/app/ca-bundle.crt (found)
+{"error":"","nativePorts":true,"ok":true,"providers":20,"unavailableEntries":7}
