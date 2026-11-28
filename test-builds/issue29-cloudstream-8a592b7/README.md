@@ -15,3 +15,5 @@ The complete native app, package/source checks and [both exact-source CI jobs](h
 Reload Addons, select German Providers and enable KellerKino or another available port. Twenty ports are bundled, and seven entries currently have no PS5 port. The app does not execute Android `.cs3` bytecode or require a companion server. Failed sources stay visible with retry/remove options.
 
 Close the app before installing and retain your saved data and previous installer. The dismissible **Unverified build** notice is expected. This test includes the prior subtitle and USB-cache changes; stable remains 1.0.1.0.
+
+All three public downloads were fetched and matched their verified local files. See the [download receipt](public-download-verification.json).
